@@ -1,0 +1,10 @@
+
+# Account creation 
+
+/usr/sbin/groupadd -g 47110 opunixccount creation
+groups | grep opunix
+
+/usr/sbin/useradd -g 47110 -u 30330  -s /bin/ksh -c "Maurizio Stephane" -m  maurise
+passwd -r files maurise
+
+

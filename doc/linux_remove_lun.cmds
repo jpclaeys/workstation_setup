@@ -1,0 +1,27 @@
+ecdc-disk-remove 
+
+Example:
+
+2 root@tegmine:->disk-list -qdt | grep -v asm
+             LUN       DM        Size                Usage           Class Type Devices
+             sda        -      278 GB    linux_raid_member      NOLUNMATCH  HDD -
+             sdb        -      278 GB    linux_raid_member      NOLUNMATCH  HDD -
+    HOST31C52D87    dm-13      220 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdn,sdgj
+    HOST31C58D05    dm-14       55 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdgk,sdo
+    HOST31C58D06    dm-15       55 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdp,sdgl
+    HOST32C52D87     dm-2      220 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdfy,sdc
+    HOST32C58D05     dm-3       55 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdfz,sdd
+    HOST32C58D06     dm-4       55 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sde,sdga
+3 root@tegmine:->ecdc-disk-remove HOST31C52D87
+
+parted --script /dev/san/HOST31C52D87 mklabel msdos
+multipath -f HOST31C52D87
+blockdev --flushbufs /dev/sdn
+echo offline > /sys/block/sdn/device/state
+echo 1 > /sys/block/sdn/device/delete
+blockdev --flushbufs /dev/sdgj
+echo offline > /sys/block/sdgj/device/state
+echo 1 > /sys/block/sdgj/device/delete
+sed -i.bkp "/HOST31C52D87/d" /etc/udev/rules.d/99-oracle-asm.rules
+
+

@@ -1,0 +1,52 @@
+powermt display
+powermt check
+powermt display dev=all|grep d24
+zpool import eurovocvb-tz-data
+less -f /dev/rdsk/c2t500009740835F5A1d24s0
+
+cldev status
+cldev clear
+cldev show -v d2
+cldev show -v d3
+cldev populate
+devfsadm -vC
+less -f /dev/rdsk/c1t500009740828019Dd23s2
+# offline faulty disks
+luxadm -e offline /dev/rdsk/c1t500009740828019Dd23s2
+luxadm -e offline /dev/rdsk/c1t500009740828019Dd24s2
+etc ...
+devfsadm -vC
+luxadm -e port
+luxadm -e forcelip ...
+
+powermt display dev=all|grep d24
+
+cldev show
+cldev status
+cldev populate
+powermt display
+cldev status -s fail
+
+cldev show -v d2
+cldev show -v d3
+cldev show -v |grep d24
+cldev show -v |grep d23
+cldev show -v |grep d28
+less -f /dev/rdsk/c1t500009740835F59Dd28s0
+
+devfsadm -vC
+cldev clear
+powermt display
+cldev populate
+/usr/sbin/update_drv -f did
+cldev populate
+
+cldev repair
+cldev clear
+cldev status -s fail
+less -f /dev/did/rdsk/d3s2
+less -f /dev/did/rdsk/d3s0
+
+
+cldev status -s fail
+

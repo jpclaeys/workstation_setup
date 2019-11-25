@@ -1,0 +1,117 @@
+Create PV, VG, LV and format it in Linux when Multipath Enabled
+----------------------------------------------------------------
+
+Refs:
+https://www.dbappweb.com/2017/05/25/create-pv-vg-lv-format-linux-multipath-enabled/
+https://linoxide.com/linux-how-to/lvm-configuration-linux/
+
+VGNAME=vgdata
+PVNAME=digicom_data
+LVNAME=digicom
+
+. Get the devices list
+-----------------------
+
+. Rescan the Disks
+--------------------
+
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+
+ll /dev/mapper | egrep -v 'root|control'
+
+multipath -ll| grep EMC -A1
+
+. Configure the new LUNs
+-------------------------
+# Get the device list
+DEVLIST=`ll /dev/mapper | awk '/36000/ {print $9}'` && echo $DEVLIST
+
+# Generate the multipath.conf new entries
+
+ALIASPREFIX=$PVNAME
+i=0 && for DEV in $DEVLIST; do
+((i++))
+echo "
+    multipath {
+       wwid $DEV
+       alias ${ALIASPREFIX}${i}
+    }"
+done
+
+TIMESTAMP=`date "+%d%m%Y"`
+
+cd /etc
+cp multipath.conf multipath.conf.bak_$TIMESTAMP
+vi multipath.conf
+... insert new aliases
+
+# Check the syntax
+multipath -d -v 2
+
+# force devmap reload
+multipath -r
+
+# Reload change
+service multipathd reload
+
+. Create the physical volumes:
+-------------------------------
+
+ll /dev/mapper/${PVNAME}*
+
+DEVNB=10
+for i in {1..$DEVNB}; do echo pvcreate /dev/mapper/${PVNAME}$i;done
+if OK, execute the commands
+for i in {1..$DEVNB}; do echo pvcreate /dev/mapper/${PVNAME}$i;done | bash
+
+Alternative:
+-------------
+pvcreate  /dev/mapper/${PVNAME}[123456789] /dev/mapper/${PVNAME}10
+
+. Create the volume group:
+---------------------------
+
+echo -n "vgcreate $VGNAME " && for i in {1..10}; do echo /dev/mapper/${PVNAME}$i;done | xargs
+
+
+CMD=`echo -n "vgcreate $VGNAME " && for i in {1..10}; do echo /dev/mapper/${PVNAME}$i;done` && echo $CMD
+eval $CMD && vgs
+
+
+
+Alternative
+-----------
+vgcreate $VGNAME  /dev/mapper/${PVNAME}[123456789] /dev/mapper/${PVNAME}10
+vgdisplay $VGNAME
+
+
+Create Logical Volume:
+-----------------------
+
+lvcreate -n $LVNAME -l 100%FREE $VGNAME
+lvdisplay /dev/$VGNAME/$LVNAME
+lvs -o+lv_layout,stripes,devices $VGNAME
+lvs --segments $VGNAME
+
+
+. Make the filesystem (takes +/- 1 min/TB)
+-------------------------------------------
+mkfs.xfs /dev/$VGNAME/$LVNAME
+
+. Create the mountpoint & update fstab
+----------------------------------------
+ 
+MOUNTPOINT=/$LVNAME
+mkdir $MOUNTPOINT
+
+cat /etc/fstab
+cp /etc/fstab /etc/fstab.bask_$TIMESTAMP
+echo "/dev/$VGNAME/$LVNAME	$MOUNTPOINT	xfs	defaults	0 0" >> /etc/fstab
+diff /etc/fstab.bask_$TIMESTAMP /etc/fstab 
+
+mount $MOUNTPOINT
+df -hlT $MOUNTPOINT
+
+
+
+

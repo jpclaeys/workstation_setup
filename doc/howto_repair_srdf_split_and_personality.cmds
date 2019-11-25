@@ -1,0 +1,9 @@
+
+
+Pour faire le personality swap :
+symrdf –g dgname swap
+
+Pour faire la synchro :
+symrdf –g dgname establish
+
+

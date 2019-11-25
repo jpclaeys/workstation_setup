@@ -1,0 +1,70 @@
+Howto a system user to an LDAP group with SSSD
+-----------------------------------------------
+
+Ref: https://unix.stackexchange.com/questions/187197/adding-a-system-user-to-an-ldap-group-with-sssd
+
+
+This was enabled in sssd 1.9.5, by setting sssd.conf to include:
+
+ldap_rfc2307_fallback_to_local_users = true
+
+================================================================================================================================
+
+Our LDAP server is running RFC 2307 groups (memberuid contains a username, not a DN). With our old nscd/nss_ldap/pam_ldap setup, you could list a non-LDAP user (a system user from /etc/passwd) in an LDAP group's memberuid attribute, and that system user will be a member of the group.
+
+However, on machines I've upgraded to SSSD, this no longer works: SSSD just strips out the non-LDAP user from the member list.
+
+I've confirmed this behavior by logging in as the user and using id and also by running getent group group.
+
+Here is my sssd.conf (with some details redacted and clearly marked as such)
+
+[sssd]
+config_file_version = 2
+services = nss, pam
+domains = REDACTED.net
+
+[nss]
+# defaults are OK
+
+[pam]
+# defaults are OK
+
+[domain/REDACTED.net]
+enumerate = true
+id_provider = ldap
+auth_provider = ldap
+access_provider = ldap
+chpass_provider = ldap
+
+ldap_uri = _srv_
+ldap_chpass_uri = ldap://haruhi.REDACTED.net
+ldap_search_base = dc=REDACTED,dc=net?subtree?
+ldap_schema = rfc2307
+ldap_tls_cacert = /usr/local/share/ca-certificates/REDACTED-CA.crt
+ldap_id_use_start_tls = true
+ldap_pwd_policy = shadow
+
+ldap_access_filter = memberOf=cn=UNIX Users,ou=Policies,dc=REDACTED,dc=net
+ldap_access_order = filter, authorized_service, host
+
+ldap_default_bind_dn = uid=haruhi,ou=Machines,dc=REDACTED,dc=net
+ldap_default_authtok = VERY_REDACTED
+/etc/nsswitch.conf has boring entries for passwd/group/shadow:
+
+passwd:         compat ldap sss
+group:          compat ldap sss
+shadow:         compat sss
+(ldap is still in there, but it isn't actually installed on the system any more)
+
+Also, I doubt it matters (as I see the same behavior on other machines) but this machine—Haruhi—is also the master LDAP server, running OpenLDAP.
+
+How do I configure SSSD to not strip out system users from LDAP groups?
+
+Answer:
+-------
+This was enabled in sssd 1.9.5, by setting sssd.conf to include:
+
+ldap_rfc2307_fallback_to_local_users = true
+
+================================================================================================================================
+

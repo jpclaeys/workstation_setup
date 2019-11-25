@@ -1,0 +1,17 @@
+Howto install the VMware tools on RHEL6
+----------------------------------------
+
+1. Add the CD-Rom device with the Vsphere console
+
+2. Add drivers CD with the Vsphere console : Action / Guest OS / Install VMware drivers
+
+3. SSH to the VM :
+
+4. mount /dev/sr0 /media && cp /media/VMwareTools-10.3.5-10430147.tar.gz /tmp/ && tar -xvf /tmp/VMwareTools-10.3.5-10430147.tar.gz && /tmp/vmware-tools-distrib/vmware-install.pl -d
+
+5. Reboot the server and check installation status :
+
+6. /etc/vmware-tools/services.sh status
+
+7. Remove the CD-Rom device with the Vsphere console
+

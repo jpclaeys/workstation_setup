@@ -1,0 +1,160 @@
+# Check disk group state
+symrdf -g <group-name> verify [-summary|-synchronized]
+
+# Switch srdf device group
+symrdf -g <device_group> failover -establish -nop
+
+   failover       Switches data processing from the source (R1) to the target (R2) side.
+
+                  If the source (R1) is operational, suspends I/O traffic on the SRDF links and write disables the devices on the source (R1)
+                  side to their local hosts. Then, it suspends traffic on the SRDF links, write enables the devices on the target side
+                  to their local hosts.
+
+   -establish     Begins a device copy. 
+                  When used with failover, the dynamic SRDF device pairs swap personality and an incremental establish is initiated.
+
+   -noprompt      Requests that prompts are not displayed after the command is entered. The default is to prompt the user for confirmation.
+
+# Check that R1-R2 pair is synchronized
+symrdf -g <device_group> query | grep DEV
+
+# View status of RDF devices
+symrdf -g <device_group> query
+
+
+# Restore disk group status after power-failure on one datacenter (ex MER)
+---------------------------------------------------------------------------
+
+Status example:
+---------------
+
+[root@karadoc /]# symdg_personality_info mdr-tz     
+Group Name:  mdr-tz
+    Group Type                                   : RDF2     (RDFA)
+        Device RDF State                       : Ready           (RW)
+        Remote Device RDF State                : Ready           (RW)
+        RDF Pair State (  R1 <=\=> R2 )        : Split
+
+
+Disks are both RW, and personality is RDF2 on current (remaining) host
+
+# What it should be is:
+-----------------------
+
+[root@karadoc /]# symdg_personality_info mdr-tz
+Group Name:  mdr-tz
+    Group Type                                   : RDF1     (RDFA)
+        Device RDF State                       : Ready           (RW)
+        Remote Device RDF State                : Write Disabled  (WD)
+        RDF Pair State (  R1 <===> R2 )        : Synchronized
+
+
+# How to proceed:
+-----------------
+1. Swap the personality
+2. Put the remote disks in WD, and synchronize the disks
+
+# Commands:
+------------
+symrdf -g $DG swap -nop  && symdg_personality_info $DG
+symrdf -g $DG establish -nop && symdg_personality_info $DG
+symrdf -g $DG verify
+symrdf -g $DG query
+
+
+====================================================================================================================================
+Various Pair Status:
+--------------------
+Synchronized – R1 and R2s are in synchronized state, and both have same content with no invalid tracks between R1/R2.
+
+SyncInProg – Synchronization is underway between R1 and R2 because there are invalid tracks between R1/R2.
+
+Consistent – Same as Synchronized but for SRDF/A devices.
+
+Transmit Idle – SRDF/A can’t push the data in the transmit cycle because the link is down.
+
+Split – Both R1 and R2 are RW available to their respective hosts, but the link is not ready and no data is being transferred between R1/R2.
+
+R1 Updated – R1s are WD, and have no invalid tracks. The link is RW.
+
+R1 UpdInProg – R1s are WD, and have invalid tracks, data is being copied from R2 to R1, and the link is RW.
+
+Failed Over – R1 is WD and R2 is RW. No data is being transferred between R1/R2.
+
+Partitioned – SYMAPI can’t communicate with the remote Symmetrix to show its correct status.
+
+Suspended – No data is being transferred between R1/R2. IOs on R1 will accumulate as invalid tracks and will be transmitted to R2 upon resumption of the link.
+
+Mixed – A SRDF group has devices with more than one pair status.
+
+Invalid – Default state when no other SRDF state applies.
+
+
+
+====================================================================================================================================
+Outcome of SRDF commands:
+--------------------------
+
+
+Establish – Write disables Destination R2s, suspends the replication, Synchronises Destination R2s with data from Source R1s, resumes replication from R1s to R2s. If after the split, you want to preserve the data on Source R1s, you will run establish. Source R1 data is retained, and destination R2 data is overwritten.
+       Source (R1) View                 Target (R2) View     MODES
+--------------------------------    ------------------------ ----- ------------
+             ST                  LI      ST
+Standard      A                   N       A
+Logical       T  R1 Inv   R2 Inv  K       T  R1 Inv   R2 Inv       RDF Pair
+Device  Dev   E  Tracks   Tracks  S Dev   E  Tracks   Tracks MDAE  STATE
+-------------------------------- -- ------------------------ ----- ------------
+N/A     1F00 RW       0        0 NR 1600 RW       0        0 S...  Split
+
+# symrdf -sid 1234 -rdfg 2 -f srdf_devs establish -nop
+       Source (R1) View                 Target (R2) View     MODES
+--------------------------------    ------------------------ ----- ------------
+             ST                  LI      ST
+Standard      A                   N       A
+Logical       T  R1 Inv   R2 Inv  K       T  R1 Inv   R2 Inv       RDF Pair
+Device  Dev   E  Tracks   Tracks  S Dev   E  Tracks   Tracks MDAE  STATE
+-------------------------------- -- ------------------------ ----- ------------
+N/A     1F00 RW       0        0 RW 1600 WD       0        0 S...  Synchronized
+
+====================================================================================================================================
+====================================================================================================================================
+SUMMARY OF STATUS BEFORE and AFTER the operation:
+-------------------------------------------------
+
+            Source          Destination     Replication     RDF Status
+            Before  After   Before  After   Before  After   Before                      After
+Failover    RW      WD      WD      RW      RW      NR      Synchronized, Suspended     Failed Over
+Swap        RW      WD      WD      RW      RW      RW      Failed Over, Split          Suspended from Failed Over, Split from Split
+Failback    RW      RW      RW      WD      NR      RW      Failed Over, Split          Synchronized
+Split       RW      RW      WD      RW      RW      NR      Synchronized, Suspended     Split
+Establish   RW      RW      RW      WD      NR      RW      Split, Suspended            Synchronized
+Suspend     RW      RW      WD      WD      RW      NR      Synchronized                Suspended
+Resume      RW      RW      WD      WD      NR      RW      Suspended                   Synchronized
+
+====================================================================================================================================
+Quick handy notes
+* Reverse the replication – failover/swap/resume OR failover/swap/establish OR failover -establish
+
+* Making R2s available for read-write and R1s WD with no replication, and then coming back to original position – failover/failback
+
+* Making R2s available for read-write at the same time having R1s as read-write with no replication, and then coming back to original state – split/failback or split/establish
+
+* To suspend the replication between R1s and R2s, and then resume the replication again – suspend/resume or suspend/establish
+
+* To suspend the replication between R1s and R2s, and then reverse the replication after swapping the personality – suspend/split/swap/establish
+
+* Suspend/failover is same as failover
+
+* Swap will change the personalities if RDF status is either “Failed Over” (changes status to Suspended), and “Split” (leaves status as Split). It will not work if the status is “Suspended”.
+
+* Resume will resume the replication from R1s to R2s when RDF status is “Suspended”. It will not work if the status is either “Failed Over” or “Split”. (Not allowed – failover/resume, split/resume)
+
+* Establish will resume the replication from R1 to R2 when RDF status is either “Suspended”, and “Split”. It will not work if the status is “Failed Over”. (Not allowed – failover/establish)
+
+* Only way to come out of “Failed Over” is either to run “swap” to change the status to “Suspended” and run resume/establish (reverses the R1/R2 roles and replication) OR use failback (brings back to original status).
+
+* Failback will resume the replication from R1 to R2 when RDF status is either “Failed Over” or “Split”. It will not work when the status is “Suspended”.
+====================================================================================================================================
+
+
+

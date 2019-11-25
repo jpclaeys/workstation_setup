@@ -1,0 +1,42 @@
+C:\Users\bortodi>net user /domain claeyje
+
+
+User name                    claeyje
+Full Name                    CLAEYS Jean-Pierre (OP-EXT)
+
+Global Group memberships     *VM-Unix-Admins       *OPDL INFRA SYSTEMS
+                             *Centreon-Users       *NEW_A3-AllUsers
+                             *Domain Users         *Terminal Server Users
+                             *OP-TWK-USEREXT
+
+
+C:\Users\bortodi>net user /domain bortodi
+
+
+User name                    bortodi
+Full Name                    BORTOLIN Didier (OP-EXT)
+Global Group memberships     *VM-Unix-Admins       *OPDL INFRA SYSTEMS
+                                                               *Centreon-Users       *OLD_A4-TWK-ExtUsers
+                                                               *NEW_A3-AllUsers      *Domain Users
+                                                               *OLD_A4-AllUsers      *A4-Exploitation-Syste
+                                                               *OP8-REGIE-WEB        *A4-DriveG
+                                                               *DFA-OP-INFRA-OPENSYST*opunix
+                                                               *Terminal Server Users*OP-TWK-USEREXT
+
+
+
+After adding to the group A4-Exploitation-Syste
+
+Microsoft Windows [Version 6.1.7601]
+Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
+
+C:\Users\claeyje>net user /domain claeyje
+The request will be processed at a domain controller for domain publications.win.
+
+User name                    claeyje
+Full Name                    CLAEYS Jean-Pierre (OP-EXT)
+Global Group memberships     *VM-Unix-Admins       	*OPDL INFRA SYSTEMS
+                             *Centreon-Users       	*NEW_A3-AllUsers
+                             *Domain Users         	*A4-Exploitation-Syste
+                             *Terminal Server Users	*OP-TWK-USEREXT
+

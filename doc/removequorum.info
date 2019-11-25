@@ -1,0 +1,46 @@
+# Removing the (Last) Quorum Device
+
+# [Identify the quorum LUN:]
+unset LUN
+if [ ` clq list -v | grep -c "shared_disk"` -gt 0 ]; then 
+   DID=`clq list -v | awk '/shared_disk/ {print $1}'`
+   FULLLUN=(`scdidadm -l | sed 's/:/ /' | awk '/'$DID' /'`)
+   LUN=${FULLLUN[2]}
+   DIDPATH=${FULLLUN[3]}
+   echo "FULL LUN:= ${FULLLUN[@]}"
+   echo "Quorum LUN:= $LUN"
+   echo "Disk Path:= $DIDPATH"
+   else
+      echo "No quorum disk present"
+fi
+
+# [Display reservation keys:]
+echo "Display reservation keys"
+/usr/cluster/lib/sc/pgre -c pgre_inkeys -d $DIDPATH
+# [Show the devive owner:]
+echo "Show device Owner"
+/usr/cluster/lib/sc/pgre -c pgre_inresv -d $DIDPATH
+
+# [Place the cluster in install mode:]
+cluster set -p installmode=enabled
+
+# [Show the quorum info:]
+clq list -v
+
+# [Remove the quorum device:]
+clquorum remove $DID
+
+#[Verify that the quorum device has been removed:]
+clquorum list -v
+
+#If the quorum device uses a SCSI2 reservation, scrub the SCSI2 reservation from the old quorum and verify that no SCSI2 reservations remain.
+
+/usr/cluster/lib/sc/pgre -c pgre_scrub  -d $DIDPATH
+# [Display reservation keys:]
+echo "Display reservation keys"
+/usr/cluster/lib/sc/pgre -c pgre_inkeys -d $DIDPATH
+# [Show the devive owner:]
+echo "Show device Owner"
+/usr/cluster/lib/sc/pgre -c pgre_inresv -d $DIDPATH
+
+

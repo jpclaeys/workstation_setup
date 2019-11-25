@@ -1,0 +1,172 @@
+  247  2017-03-01 17:02:12 : cat /etc/dcim/rac_cluster.desc 
+  248  2017-03-01 17:36:05 : /usr/nagios/plugins/check_all 
+  249  2017-03-01 18:50:26 : passwd sapadm
+  250  2017-03-01 18:10:56 : df -h
+  251  2017-03-01 18:10:58 : pvs
+  252  2017-03-01 18:11:07 : lvs
+  253  2017-03-01 18:11:29 : ls /usr/sap/
+  254  2017-03-01 18:11:48 : rmdir /usr/sap/
+  255  2017-03-01 18:14:50 : vgs
+  256  2017-03-01 18:17:14 : lvcreate -L100%VG -n usr_sap vgdata
+  257  2017-03-01 18:17:23 : lvcreate -l100%VG -n usr_sap vgdata
+  258  2017-03-01 18:17:25 : lvs
+  259  2017-03-01 18:18:08 : cat /etc/fstab
+  260  2017-03-01 18:19:29 : mkfs -t ext4 /dev/mapper/vgdata-usr_sap 
+  261  2017-03-01 18:22:51 : mkdir /usr/sap
+  262  2017-03-01 18:22:54 : find -ls 
+  263  2017-03-01 18:22:56 : find -ls /usr/sap
+  264  2017-03-01 18:23:01 : find  /usr/sap -ls
+  265  2017-03-01 18:24:00 : cfe3 run
+  266  2017-03-01 18:28:30 : mount /usr/sap
+  267  2017-03-01 18:28:32 : df -h
+  268  2017-03-01 18:30:55 : cat /etc/passwd
+  269  2017-03-01 18:37:06 : grep sapsys /etc/group
+  270  2017-03-02 07:41:02 : passwd sapadm
+  271  2017-03-02 07:41:07 : exit
+  272  2017-03-02 11:31:10 : df -h
+  273  2017-03-02 11:31:12 : df -hPT
+  274  2017-03-02 11:41:46 : ls -la /ec/prod/server/oracle/
+  275  2017-03-03 08:06:59 : pvscan
+  276  2017-03-03 08:07:02 : lvscan
+  277  2017-03-03 11:19:20 : scsi-rescan 
+  278  2017-03-03 11:20:06 : disk-list -q |grep 50D10
+  279  2017-03-03 11:28:46 : mdadm -C /dev/md3 -l 1 -n 2 /dev/san/WIND9C50D10  /dev/san/BETZ9C50D10
+  280  2017-03-03 11:29:05 : mdadm --detail /dev/md3 
+  281  2017-03-03 11:30:36 : vgs
+  282  2017-03-03 11:30:56 : vgextend vgdata /dev/md3
+  283  2017-03-03 11:31:00 : vgs
+  284  2017-03-03 11:33:16 : vgs vgdata
+  285  2017-03-03 12:10:08 : ecdc-cfengine run
+  286  2017-03-03 12:14:21 : sudo -U sapadm -l
+root@orion:->/usr/nagios/plugins/check_mpxio
+
+
+check_mpxio CRITICAL (2 critical errors)(50 disks checked, channels 4/4/2/2, md 2, dm 4, vgs 2, pvs 3): 1 md device is missing option bitmap (md3), 1 md device is missing in /etc/mdadm.conf (md3)
+
+Adding missing bitmap option:
+-----------------------------
+mdadm -G -b internal /dev/md3
+
+Adding info in the /etc/mdadm.conf:
+-----------------------------------
+
+
+
+3 root@orion:->cat /etc/mdadm.conf
+MAILADDR DIGIT-DATACENTER-UNIX@ec.europa.eu
+AUTO +imsm +1.x -all
+HOMEHOST orion
+ARRAY /dev/md0 metadata=1.0 name=orion:0 UUID=caa55adc:17dcde89:c466e84b:23dd02ba
+ARRAY /dev/md1 metadata=1.1 name=orion:1 UUID=a5d74c89:cd37c882:10ef57db:4311493b
+ARRAY /dev/md2 metadata=1.2 name=orion:2 UUID=8f430c67:79a4a9c5:67f54294:d74878a3
+
+
+Update the /etc/mdadm.conf
+
+root@orion:->mdadm -D --scan
+ARRAY /dev/md1 metadata=1.1 name=orion:1 UUID=a5d74c89:cd37c882:10ef57db:4311493b
+ARRAY /dev/md0 metadata=1.0 name=orion:0 UUID=caa55adc:17dcde89:c466e84b:23dd02ba
+ARRAY /dev/md2 metadata=1.2 name=orion:2 UUID=8f430c67:79a4a9c5:67f54294:d74878a3
+ARRAY /dev/md3 metadata=1.2 name=orion:3 UUID=c768d828:bd49995c:f813588a:21475096
+
+--> add the last line to the /etc/mdadm.conf
+
+3 root@orion:->cat /etc/mdadm.conf 
+MAILADDR DIGIT-DATACENTER-UNIX@ec.europa.eu
+AUTO +imsm +1.x -all
+HOMEHOST orion
+ARRAY /dev/md0 metadata=1.0 name=orion:0 UUID=caa55adc:17dcde89:c466e84b:23dd02ba
+ARRAY /dev/md1 metadata=1.1 name=orion:1 UUID=a5d74c89:cd37c882:10ef57db:4311493b
+ARRAY /dev/md2 metadata=1.2 name=orion:2 UUID=8f430c67:79a4a9c5:67f54294:d74878a3
+ARRAY /dev/md3 metadata=1.2 name=orion:3 UUID=c768d828:bd49995c:f813588a:21475096
+
+
+
+2 root@betria:->disk-list -q |grep 50D10
+     BETZ9C50D10    dm-62       55 GB    linux_raid_member         DEFAULT
+     WIND9C50D10    dm-61       55 GB    linux_raid_member         DEFAULT
+
+mdadm --detail /dev/md3 3 root@betria:->mdadm --detail /dev/md3 
+/dev/md3:
+        Version : 1.2
+  Creation Time : Fri Mar  3 11:28:48 2017
+     Raid Level : raid1
+     Array Size : 57639232 (54.97 GiB 59.02 GB)
+  Used Dev Size : 57639232 (54.97 GiB 59.02 GB)
+   Raid Devices : 2
+  Total Devices : 2
+    Persistence : Superblock is persistent
+
+    Update Time : Fri Mar  3 12:22:33 2017
+          State : clean 
+ Active Devices : 2
+Working Devices : 2
+ Failed Devices : 0
+  Spare Devices : 0
+
+           Name : betria:3  (local to host betria)
+           UUID : 021af311:8dd0d250:ebbca3c9:9e5b204f
+         Events : 19
+
+    Number   Major   Minor   RaidDevice State
+       0     253       61        0      active sync   /dev/dm-61
+       1     253       62        1      active sync   /dev/dm-62
+
+root@betria:->vgs
+  VG     #PV #LV #SN Attr   VSize   VFree  
+  vgdata   2   5   0 wz--n- 274.84g  53.96g
+  vgroot   1   9   0 wz--n- 277.34g 213.34g
+
+root@betria:->pvs
+  PV         VG     Fmt  Attr PSize   PFree  
+  /dev/md1   vgroot lvm2 a--  277.34g 213.34g
+  /dev/md2   vgdata lvm2 a--  219.87g      0 
+  /dev/md3   vgdata lvm2 a--   54.96g  53.96g
+
+ 
+4 root@orion:->disk-hbamap
+C#  INST   PORT WWN          MODEL    FCODE   STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----   -----    ----          -----------                                              ------  
+1   host1  10000090fab19285  42D0485  5.30a7  offline  0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host1  -       
+2   host2  10000090fab181bf  42D0485  5.30a7  8Gb      0000:20:00.0  /sys/devices/pci0000:00/0000:00:03.2/0000:20:00.0/host2  2       
+3   host3  10000090fab18589  42D0485  5.30a7  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090fab1954d  42D0485  5.30a7  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -       
+
+5 root@orion:->ecdc-lsslots
+Slot                             PCI Address      Device           Category: Vendor Product
+ML2  Slot 9                      0000:16:00.0     eth4             Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+ML2  Slot 9                      0000:16:00.1     eth0             Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+ML2  Slot 9                      0000:16:00.2     unused_if_0      Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+ML2  Slot 9                      0000:16:00.3     unused_if_1      Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+Onboard                          0000:11:00.0     host0            RAID bus controller: LSI Logic / Symbios Logic MegaRAID SAS-3 3108 [Invader]
+PCIE Slot 1                      0000:5a:00.0
+PCIE Slot 2                      0000:55:00.0     eth6             Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+PCIE Slot 2                      0000:55:00.1     eth3             Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+PCIE Slot 2                      0000:55:00.2     unused_if_4      Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+PCIE Slot 2                      0000:55:00.3     unused_if_5      Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+PCIE Slot 3                      0000:4b:00.0     host3            Fibre Channel: Emulex Corporation Saturn-X: LightPulse Fibre Channel Host Adapter
+PCIE Slot 4                      0000:50:00.0     host4            Fibre Channel: Emulex Corporation Saturn-X: LightPulse Fibre Channel Host Adapter
+PCIE Slot 5                      0000:46:00.0     eth1             Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+PCIE Slot 5                      0000:46:00.1     eth2             Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+PCIE Slot 5                      0000:46:00.2     unused_if_2      Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+PCIE Slot 5                      0000:46:00.3     unused_if_3      Ethernet controller: Intel Corporation I350 Gigabit Network Connection
+PCIE Slot 6                      0000:20:00.0     host2            Fibre Channel: Emulex Corporation Saturn-X: LightPulse Fibre Channel Host Adapter
+PCIE Slot 7                      0000:1b:00.0     host1            Fibre Channel: Emulex Corporation Saturn-X: LightPulse Fibre Channel Host Adapter
+PCIE Slot 8                      0000:0c:00.0
+
+6 root@orion:->lspci -s 0000:4b:00.0 -vmm
+Slot:	4b:00.0
+Class:	Fibre Channel
+Vendor:	Emulex Corporation
+Device:	Saturn-X: LightPulse Fibre Channel Host Adapter
+SVendor:	Emulex Corporation
+SDevice:	Saturn-X: LightPulse Fibre Channel Host Adapter
+Rev:	03
+
+NB 
+  339  2017-03-03 13:34:20 : disk-hbamap 
+  341  2017-03-03 13:34:51 : lspci -s 0000:4b:00.0 -vmm
+  342  2017-03-03 13:35:01 : ecdc-lsslots 
+
+
+

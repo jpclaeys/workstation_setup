@@ -1,0 +1,26 @@
+# Get poolname from the device
+-------------------------------
+
+zdb -l /dev/rdsk/${DISK} | grep -i name
+
+Note:
+-l: Read the vdev labels from the specified device
+
+# Get zpool history 
+--------------------
+
+1. zpool history from the zpool(import it in read only mode first): 
+
+# zpool import -o readonly=on -R / eurlexbo-rz-data 
+# zpool history -il eurlexbo-rz-data > /var/tmp/zpool_history_il.eurlexbo-rz-data.out 
+
+
+3. Please run the following and provide the resulted outputs: 
+
+# zdb -h -e eurlexbo-rz-data > /var/tmp/zdb-eh_eurlexbo-rz-data.out 
+# zdb -h -p /dev/dsk/emcpower34a -e eurlexbo-rz-data > /var/tmp/zdb-eh_eurlexbo-rz-data_2.out 
+
+Note:
+-h: Display pool history similar to zpool history, but  include internal changes, transaction, and dataset information.
+-e: operate on an exported pool
+-p: The -p flag specifies the path under which devices are to be searched.

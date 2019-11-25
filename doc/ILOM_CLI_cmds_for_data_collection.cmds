@@ -1,0 +1,130 @@
+Quick Reference
+
+URL: http://newquickreference.weebly.com/t5-servers-ilom-commands.html#
+
+[SPARC T5] Effective ILOM CLI commands for remote data collection and resolution
+SPARC T5-8 - Version All Versions to All Versions [Release All Releases]
+SPARC T5-4 - Version All Versions to All Versions [Release All Releases]
+SPARC T5-2 - Version All Versions to All Versions [Release All Releases]
+SPARC T5-1B - Version All Versions to All Versions [Release All Releases]
+Netra SPARC T5-1B Server Module - Version All Versions to All Versions [Release All Releases]
+Information in this document applies to any platform.
+
+These ILOM CLI commands will collect HW part numbers and status of multiple HW components. [Processor, Memory, Fans, Power Supply and PCI Card]
+
+show /SYS keyswitch_state product_name product_serial_number fault_state power_state
+show /HOST gm_version hostconfig_version hypervisor_version obp_version post_version sysfw_version -t
+show /HOST status status_detail -t
+show -l all /SYS fault_state==Faulted fru_part_number -t
+show /SYS -l 2 type=="Processor Board" fru_part_number -t
+show -l all /SYS type==DIMM fru_part_number -t
+show -l all /System/Cooling/Fans location health -t
+show -l all /System/PCI_Devices/Add-on part_number location -t
+show -l all /System/Power/Power_Supplies location part_number health -t
+show -l all /System/Power/Power_Supplies input_power location -t
+show -l all /System/Power/Power_Supplies manufacturer serial_number location -t
+
+
+
+ILOM CLI commands to collect the active LDOM configuration
+
+show /HOST/bootmode config -t
+show /HOST/domain/configs date_created -t
+show /HOST/domain/control -t
+
+
+
+Collecting ILOM System Logs
+
+show /SP/logs/event/list Class==Sensor
+show /SP/logs/event/list Class==Fault
+show /SP/logs/event/list Class==Power
+show /SP/logs/event/list Class==IPMI
+
+Note: See example below for for more events logs data collection suggestions
+
+
+The following commands will only work if Oracle Hardware Management Pack is Installed in Solaris
+
+show -l all /System/Storage/Volumes health raid_id  level disk_ids -t
+show -l all /System/Storage/Disks health location  part_number -t
+show -l all /System/Storage/Disks manufacturer wwn location -t
+
+
+Generate a core dump for hang situations
+
+set /HOST send_break_action=dumpcore
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+Example output of Simple ILOM CLI data collection commands
+
+This CLI command will collect the system type and platform serial number, Serial number is an essential information when creating a service request in My Oracle Support. 
+
+-> show /SYS keyswitch_state product_name product_serial_number fault_state power_state
+
+  /SYS
+    Properties:
+        keyswitch_state = Normal
+        product_name = SPARC T5-8
+        product_serial_number = AK00085964
+        fault_state = OK
+        power_state = On
+
+ 
+
+ILOM firmware may be collected with the ILOM CLI command "version".
+
+-> version
+SP firmware 3.2.1.5.f
+SP firmware build number: 83464
+SP firmware date: Tue Sep 10 15:18:31 PDT 2013
+SP filesystem version: 0.2.7
+
+-> 
+
+ 
+
+From ILOM CLI we can determine when the system last completed HW POST by running the following.
+
+-> show /HOST status status_detail -t
+Target                                    | Property                                         | Value                                                                   
+------------------------------------------+--------------------------------------------------+-------------------------------------------------------------------------
+/HOST                                     | status                                           | Solaris running
+/HOST                                     | status_detail                                    | 20140114 12:43:49: Start Host completed successfully
+
+-> 
+
+ 
+
+Below are examples of suspected faulty hardware and partnumbers. 
+
+-> show -l all /SYS fault_state==Faulted fru_part_number -t
+Target                                    | Property                                         | Value                                                                   
+------------------------------------------+--------------------------------------------------+-------------------------------------------------------------------------
+show: Query found no matches.
+
+
+-> 
+-> show -l all /SYS fault_state==Faulted fru_part_number -t
+Target              | Property               | Value                           
+--------------------+------------------------+---------------------------------
+/SYS/MB             | fru_part_number        | 7062198                         
+
+-> 
+
+ 
+The partnumber of the Processor Module can be listed by the following
+
+-> show /SYS -l 2 type=="Processor Board" fru_part_number -t
+Target                                    | Property                                         | Value                                                                  
+------------------------------------------+--------------------------------------------------+------------------------------------------------------------------------
+/SYS/PM0                                  | fru_part_number                                  | 7056873
+/SYS/PM1                                  | fru_part_number                                  | 7056873
+/SYS/PM2                                  | fru_part_number                                  | 7056873
+/SYS/PM3                                  | fru_part_number                                  | 7056873
+
+etc ...
+
+

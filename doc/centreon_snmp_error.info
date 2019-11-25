@@ -1,0 +1,18 @@
+Centreon snmp error for anninter_pz:
+
+Nothing we can do about it. It’s because the orabkp filesystem is currently mounted:
+
+Filesystem                                                     Size  Used Available Capacity Mounted
+nfs-infra.isilon:/orabkp                                       2.1T  1.7T  381G   82% /home/orabkp
+
+The zone is running Solaris 10, filesystems larger than 1TB will always cause an SNMP
+error. This will go away as soon as the automounter drops the filesystem again.
+
+23/07/2019: same issue on virtua-pz
+
+same problem as last time. Solaris 10 SNMP doesn’t handle filesystems larger than 1TB properly:
+nfs-infra.isilon:/intstore
+                       2.1T   1.8T       240G    89%    /home/intstore
+
+I’ve unmounted it manually, but the problem will come back as soon as someone accesses it again.
+

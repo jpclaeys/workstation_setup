@@ -1,0 +1,33 @@
+Create a new xfs FS:
+--------------------
+
+# Create LVM components : pvcreate, vgcreate and lvcreate.
+lvcreate --size 4G -n sw_oracle vgdata
+
+# Create XFS file system on lvm parition
+mkfs.xfs /dev/vgdata/sw_oracle
+
+# Extend the size of xfs file system
+vgs vgdata # check free space
+
+# So we will extend the file system by 3GB using lvextend command with “-r” option
+lvextend -L +3G /dev/vgdata/sw_oracle -r
+
+# Give the whole free space
+lvextend -l +100%FREE /dev/volgroup/logvol -r
+ex.
+lvextend -l +100%FREE /dev/ecodp/logs -r
+OR
+lvextend -l +100%FREE /dev/mapper/ecodp-logs -r
+
+Note: 
+On RHEL6, we cannot specify /dev/mapper/... ; we need to use the /dev/volgroup/logvol instead
+
+In order to find the path, use lvdisplay cmd:
+
+[root@opvmwsodp01 ~]# lvdisplay /dev/mapper/ecodp-logs | grep Path
+  LV Path                /dev/ecodp/logs
+
+
+if the "-r" is omitted, then we need to resize the FS afterwards:
+resize2fs /dev/mapper/ecodp-logs

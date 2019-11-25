@@ -1,0 +1,189 @@
+
+[root@perceval eurovocvb-tz]# cldg create -n perceval,karadoc -t rawdisk -d d25,d26 eurovocvb-tz
+cldg:  (C671346) A disk set, disk group or other device is already in use in another device group.
+cldg:  (C527552) Creation of device group "eurovocvb-tz" failed.
+Ref: SR 3-17305503471
+
+-------------------- ACTION PLAN DETAILS BELOW--------------------- 
+
+Who : INFRA-SYSTEMS (Customer) 
+
+------------------------------------------------------ 
+
+What : 
+Follow next steps: 
+
+# cldg offline dsk/d14 
+
+# cldgr disable dsk/d14 
+
+# cldg delete dsk/d14 
+
+# cldg create -d d8,d11,d14 planpubli2-pz 
+
+Update SR about results. 
+------------------------------------------------------ 
+
+
+
+
+
+Root cause: the resource was already used in the past, and there are still references to those dg (device groups)
+
+Solution :
+
+[root@perceval eurovocvb-tz]# cldg list -v
+Device group        Type                Node list
+------------        ----                ---------
+dsk/d26             Disk                perceval, karadoc
+dsk/d25             Disk                perceval, karadoc
+
+dsk/d31             Disk                karadoc, perceval
+planpubli2-tz       Disk                perceval, karadoc
+dsk/d24             Disk                karadoc, perceval
+dsk/d23             Disk                karadoc, perceval
+ceres_tz            Disk                perceval, karadoc
+anninter_tz         Disk                perceval, karadoc
+opgtwint-tz         Disk                perceval, karadoc
+procatx_tz          Disk                perceval, karadoc
+bari                Disk                perceval, karadoc
+ojmonitor-tz        Disk                perceval, karadoc
+mdr-tz              Disk                perceval, karadoc
+woodgtw-rz          Disk                perceval, karadoc
+metaconv-rz         Disk                perceval, karadoc
+eurovocportal-tz    Disk                perceval, karadoc
+digital-tz          Disk                perceval, karadoc
+metaconv-tz         Disk                perceval, karadoc
+dsk/d67             Disk                karadoc, perceval
+esendtool-tz        Disk                perceval, karadoc
+dsk/d101            Disk                karadoc
+dsk/d98             Disk                perceval, karadoc
+dsk/d97             Disk                perceval, karadoc
+dsk/d93             Disk                perceval, karadoc
+dsk/d119            Disk                perceval
+dsk/d118            Disk                karadoc
+dsk/d117            Disk                karadoc
+dsk/d116            Disk                karadoc
+dsk/d115            Disk                perceval, karadoc
+dsk/d114            Disk                perceval, karadoc
+dsk/d113            Disk                perceval, karadoc
+dsk/d112            Disk                perceval, karadoc
+dsk/d111            Disk                perceval, karadoc
+dsk/d110            Disk                perceval, karadoc
+dsk/d109            Disk                perceval
+dsk/d108            Disk                perceval
+dsk/d107            Disk                perceval, karadoc
+dsk/d106            Disk                perceval, karadoc
+dsk/d105            Disk                karadoc
+dsk/d104            Disk                perceval, karadoc
+dsk/d103            Disk                karadoc
+dsk/d102            Disk                karadoc
+dsk/d92             Disk                karadoc
+dsk/d91             Disk                perceval, karadoc
+dsk/d90             Disk                karadoc
+dsk/d89             Disk                karadoc
+dsk/d88             Disk                perceval, karadoc
+dsk/d87             Disk                perceval, karadoc
+dsk/d86             Disk                karadoc
+dsk/d85             Disk                karadoc
+dsk/d82             Disk                karadoc
+dsk/d81             Disk                karadoc
+dsk/d79             Disk                karadoc
+dsk/d78             Disk                karadoc
+dsk/d77             Disk                karadoc
+dsk/d76             Disk                karadoc
+dsk/d75             Disk                karadoc
+dsk/d74             Disk                karadoc
+dsk/d73             Disk                karadoc
+dsk/d72             Disk                karadoc
+dsk/d71             Disk                karadoc
+dsk/d70             Disk                karadoc
+dsk/d69             Disk                karadoc
+dsk/d68             Disk                karadoc
+dsk/d64             Disk                karadoc, perceval
+dsk/d63             Disk                karadoc, perceval
+dsk/d62             Disk                karadoc, perceval
+dsk/d61             Disk                karadoc, perceval
+dsk/d59             Disk                perceval, karadoc
+dsk/d58             Disk                perceval, karadoc
+dsk/d57             Disk                perceval, karadoc
+dsk/d52             Disk                karadoc, perceval
+dsk/d51             Disk                karadoc, perceval
+dsk/d50             Disk                karadoc, perceval
+dsk/d49             Disk                karadoc, perceval
+dsk/d48             Disk                karadoc, perceval
+dsk/d46             Disk                perceval, karadoc
+dsk/d45             Disk                perceval, karadoc
+dsk/d44             Disk                karadoc, perceval
+dsk/d42             Disk                karadoc, perceval
+dsk/d29             Disk                karadoc, perceval
+dsk/d41             Disk                karadoc, perceval
+dsk/d40             Disk                karadoc, perceval
+dsk/d39             Disk                karadoc, perceval
+dsk/d38             Disk                karadoc, perceval
+dsk/d37             Disk                karadoc, perceval
+dsk/d36             Disk                karadoc, perceval
+dsk/d35             Disk                karadoc, perceval
+dsk/d32             Disk                karadoc, perceval
+dsk/d34             Disk                karadoc, perceval
+dsk/d33             Disk                karadoc, perceval
+dsk/d30             Disk                karadoc, perceval
+dsk/d56             Disk                karadoc
+dsk/d55             Disk                karadoc, perceval
+dsk/d54             Disk                karadoc, perceval
+dsk/d53             Disk                karadoc, perceval
+dsk/d28             Disk                perceval
+dsk/d27             Disk                perceval
+[root@perceval eurovocvb-tz]# cldg show dsk/d25
+
+=== Device Groups ===                          
+
+Device Group Name:                              dsk/d25
+  Type:                                            Disk
+  failback:                                        false
+  Node List:                                       perceval, karadoc
+  preferenced:                                     false
+  localonly:                                       false
+  autogen:                                         true
+  numsecondaries:                                  1
+  device names:                                    /dev/did/rdsk/d25s2
+
+[root@perceval eurovocvb-tz]# cldg show dsk/d26
+
+=== Device Groups ===                          
+
+Device Group Name:                              dsk/d26
+  Type:                                            Disk
+  failback:                                        false
+  Node List:                                       perceval, karadoc
+  preferenced:                                     false
+  localonly:                                       false
+  autogen:                                         true
+  numsecondaries:                                  1
+  device names:                                    /dev/did/rdsk/d26s2
+
+[root@perceval eurovocvb-tz]# cldg list -v|grep d25
+dsk/d25             Disk                perceval, karadoc
+[root@perceval eurovocvb-tz]# cldg list -v|grep d26
+dsk/d26             Disk                perceval, karadoc
+[root@perceval eurovocvb-tz]#  cldg show -v|grep d25
+Device Group Name:                              dsk/d25
+  device names:                                    /dev/did/rdsk/d25s2
+[root@perceval eurovocvb-tz]#  cldg show -v|grep d26
+Device Group Name:                              dsk/d26
+  device names:                                    /dev/did/rdsk/d26s2
+[root@perceval eurovocvb-tz]# cldg list -v|grep d25
+dsk/d25             Disk                perceval, karadoc
+[root@perceval eurovocvb-tz]# cldg list -v|grep d26
+dsk/d26             Disk                perceval, karadoc
+[root@perceval eurovocvb-tz]# cldg offline dsk/d25
+[root@perceval eurovocvb-tz]# cldg disable dsk/d25
+[root@perceval eurovocvb-tz]# cldg delete dsk/d25
+[root@perceval eurovocvb-tz]# cldg offline dsk/d26
+[root@perceval eurovocvb-tz]# cldg disable dsk/d26
+[root@perceval eurovocvb-tz]# cldg delete dsk/d26
+[root@perceval eurovocvb-tz]# cldg create -n perceval,karadoc -t rawdisk -d d25,d26 eurovocvb-tz
+[root@perceval eurovocvb-tz]#  cldg list -v |grep d25
+[root@perceval eurovocvb-tz]#  cldg list -v |grep d26
+[root@perceval eurovocvb-tz]# 
+

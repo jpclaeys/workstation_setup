@@ -1,0 +1,59 @@
+All HP servers where RHEL7 has been installed show the same check error:
+
+bkpsnd3a;disks_health;2;check_disks_health CRITICAL (1 critical error)(checked: R: 0/0/0: S: 2/2): missing /usr/sbin/hpacucli
+
+The tool has been deprecated in RHEL7 and substituted with ssacli. 
+
+
+[root@fred ~]# which hpssacli
+/sbin/hpssacli
+
+hpssacli ctrl all show config
+
+
+[root@fred ~]# hpssacli ctrl all show config
+
+Smart Array P410i in Slot 0 (Embedded)    (sn: 50014380231459D0)
+
+
+   Port Name: 1I
+
+   Port Name: 2I
+
+   Internal Drive Cage at Port 1I, Box 1, OK
+
+   Internal Drive Cage at Port 2I, Box 1, OK
+   array A (SAS, Unused Space: 0  MB)
+
+
+      logicaldrive 1 (1.6 TB, RAID 50, Recovering, 19% complete)
+
+      physicaldrive 1I:1:1 (port 1I:box 1:bay 1, SAS, 300 GB, Rebuilding)
+      physicaldrive 1I:1:2 (port 1I:box 1:bay 2, SAS, 300 GB, OK)
+      physicaldrive 1I:1:3 (port 1I:box 1:bay 3, SAS, 300 GB, OK)
+      physicaldrive 1I:1:4 (port 1I:box 1:bay 4, SAS, 300 GB, OK)
+      physicaldrive 2I:1:5 (port 2I:box 1:bay 5, SAS, 300 GB, OK)
+      physicaldrive 2I:1:6 (port 2I:box 1:bay 6, SAS, 300 GB, OK)
+      physicaldrive 2I:1:7 (port 2I:box 1:bay 7, SAS, 300 GB, OK)
+      physicaldrive 2I:1:8 (port 2I:box 1:bay 8, SAS, 300 GB, OK)
+
+   SEP (Vendor ID PMCSIERA, Model  SRC 8x6G) 250  (WWID: 50014380231459DF)
+
+[root@fred ~]# which hpssacli
+/sbin/hpssacli
+[root@fred ~]# hpssacli ctrl all show status
+
+Smart Array P410i in Slot 0 (Embedded)
+   Controller Status: OK
+   Cache Status: OK
+   Battery/Capacitor Status: OK
+
+
+[root@fred ~]# hpssacli ctrl all show status
+
+Smart Array P410i in Slot 0 (Embedded)
+   Controller Status: OK
+   Cache Status: OK
+   Battery/Capacitor Status: OK
+
+

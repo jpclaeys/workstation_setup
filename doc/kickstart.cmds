@@ -1,0 +1,8 @@
+How to re-arm the kickstarter at command line
+
+cd /ec/prod/app/ksweb/tool
+
+./ksmon <hostname> &
+
+Note: 
+After this command, the green bullet on the kickstart web interface becomes red.

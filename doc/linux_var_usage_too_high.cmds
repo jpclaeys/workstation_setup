@@ -1,0 +1,10 @@
+Howto cleanup var usage too high on linux
+------------------------------------------
+
+In some cases, atop logs are not cleaned up properly after log rotation.
+If /var/cache/atop.d is too big, just restart the atop service
+
+systemctl restart atop
+
+The restart normaly cleans left over open file from the atop process.
+

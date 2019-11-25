@@ -1,0 +1,2 @@
+ssh-copy-id — use locally available keys to authorise logins on a remote machine
+ssh-copy-id userid@hostname

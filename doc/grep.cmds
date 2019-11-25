@@ -1,0 +1,32 @@
+How to extract only 7 characters using grep
+--------------------------------------------
+Use extended grep:
+grep  -E '^[a-zA-Z0-9]{7}$' <myfile>
+
+or your own version like:
+grep '^[a-zA-Z0-9]\{7\}$' <myfile>
+
+or even:
+egrep '^.{7}$' <myfile>
+
+
+Ex. get user directories in the exchange folder
+
+cd /net/nfs-infra.isilon/xchange
+
+ls -c1 | grep "^[A-Za-z0-9]\{7\}$"
+
+ferrear
+valleje
+zadraju
+zachacy
+<snip>
+
+
+ls -c1 | grep "^[A-Za-z0-9]\{7\}$" | while read -r user; do du -sh $user 2>/dev/null; done
+
+55G	/net/nfs-infra.isilon/xchange/ferrear
+209G	/net/nfs-infra.isilon/xchange/valleje
+32K	/net/nfs-infra.isilon/xchange/zadraju
+4,0G	/net/nfs-infra.isilon/xchange/zachacy
+<snip>

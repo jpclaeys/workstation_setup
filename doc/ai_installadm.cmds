@@ -1,0 +1,276 @@
+Automated Installer
+
+host: aiserver-pz
+
+Commands
+
+  cd /usr/share/auto_install/
+   ll
+   cd manifest/
+   ll
+   less ai_manifest.xml
+   installadm list -a
+   installadm list -av
+   installadm list -n opoce-sparc-sol11_2_2_7_0
+   installadm list -c
+   installadm list -e 00:21:28:57:07:EE
+   installadm list -p
+   installadm list -m
+   installadm list -s
+
+
+[root@aiserver-pz manifest]# ipadm show-addr| grep -v lo
+ADDROBJ           TYPE     STATE        ADDR
+net0/v4           static   ok           158.167.99.124/22
+net1/v4           inherited ok          10.167.99.124/16
+
+installadm create-service -s /root/sol-11_3-ai-x86.iso -i 192.168.114.90 -c 2 -d /export/ai/install -n n
+
+installadm create-client -e 00:50:56:2A:0D:F6 -n n
+
+installadm create-manifest -n n -f /root/n.xml -m mac -c mac=00:50:56:2A:0D:F6
+
+installadm set-service -M mac -n n
+
+
+
+[root@aiserver-pz manifest]#    installadm list -c
+Service Name              Client Address    Arch  Secure Custom Args Custom Grub
+------------              --------------    ----  ------ ----------- -----------
+opoce-sparc-sol11_2_2_7_0 00:21:28:46:AD:40 sparc no     no          no         
+                          00:21:28:46:AD:46 sparc no     no          no         
+                          00:21:28:57:07:EE sparc no     no          no         
+                          00:21:28:57:0B:58 sparc no     no          no         
+opoce-x86-sol11_2_2_7_0   00:10:E0:23:79:DA i386  no     yes         no         
+opoce-x86-sol11_3_9_4_0   64:51:06:2A:5B:73 i386  no     no          no         
+[root@aiserver-pz manifest]#    installadm list -p
+Service Name            Profile Name                               Environment Criteria
+------------            ------------                               ----------- --------
+default-sparc           opoce-globalzone-netconfig-10.199.99.0.xml system      none    
+                        opoce-globalzone-sysconfig.xml             system      none    
+opoce-x86-sol11_3_9_4_0 opoce-globalzone-netconfig-10.199.99.0.xml system      none    
+                        opoce-globalzone-sysconfig.xml             system      none    
+[root@aiserver-pz manifest]#    installadm list -v
+
+Service Name  Status Arch  Type Secure Alias Aliases Clients Profiles Manifests
+------------  ------ ----  ---- ------ ----- ------- ------- -------- ---------
+default-sparc on     sparc iso  no     yes   0       0       2        5        
+
+   Image Path ........ /applications/ai/images/sol_11_2_2_7_0-sparc
+   Status ............ on
+   Base Service ...... opoce-sparc-sol11_2_2_7_0
+   Aliased By ........ -
+   Default Service? .. yes
+   Default Manifest .. opoce-solaris-large-server-very-small-disks.ksh
+   Boot Args ......... none
+   Custom grub.cfg? .. no
+   Publishers ........ none
+   Supports Security?  yes
+   Security Policy ... optional
+   Security Key? ..... no
+   Security Cert ..... none
+   CA Certificates ... none
+   FW Encr Key (AES) . none
+   FW HMAC Key (SHA1)  none
+
+
+Service Name              Status Arch  Type Secure Alias Aliases Clients Profiles Manifests
+------------              ------ ----  ---- ------ ----- ------- ------- -------- ---------
+opoce-sparc-sol11_2_2_7_0 on     sparc iso  no     no    1       4       0        1        
+
+   Image Path ........ /applications/ai/images/sol_11_2_2_7_0-sparc
+   Status ............ on
+   Base Service ...... -
+   Aliased By ........ default-sparc
+   Default Service? .. no
+   Default Manifest .. orig_default
+   Boot Args ......... none
+   Custom grub.cfg? .. no
+   Publishers ........ none
+   Supports Security?  yes
+   Security Policy ... optional
+   Security Key? ..... no
+   Security Cert ..... none
+   CA Certificates ... none
+   FW Encr Key (AES) . none
+   FW HMAC Key (SHA1)  none
+
+
+Service Name            Status Arch Type Secure Alias Aliases Clients Profiles Manifests
+------------            ------ ---- ---- ------ ----- ------- ------- -------- ---------
+opoce-x86-sol11_2_2_7_0 on     i386 iso  no     no    0       1       0        2        
+
+   Image Path ........ /applications/ai/images/sol_11_2_2_7_0-x86
+   Status ............ on
+   Base Service ...... -
+   Aliased By ........ -
+   Default Service? .. no
+   Default Manifest .. opoce-solaris-large-server.ksh
+   Boot Args ......... install = true
+   Custom grub.cfg? .. no
+   Publishers ........ none
+   Supports Security?  yes
+   Security Policy ... optional
+   Security Key? ..... no
+   Security Cert ..... none
+   CA Certificates ... none
+
+
+Service Name      Status Arch Type Secure Alias Aliases Clients Profiles Manifests
+------------      ------ ---- ---- ------ ----- ------- ------- -------- ---------
+opoce-x86-sol11_3 on     i386 iso  no     no    0       0       0        1        
+
+   Image Path ........ /applications/ai/images/sol_11_3-x86
+   Status ............ on
+   Base Service ...... -
+   Aliased By ........ -
+   Default Service? .. no
+   Default Manifest .. orig_default
+   Boot Args ......... none
+   Custom grub.cfg? .. no
+   Publishers ........ none
+   Supports Security?  yes
+   Security Policy ... optional
+   Security Key? ..... no
+   Security Cert ..... none
+   CA Certificates ... none
+
+
+Service Name            Status Arch Type Secure Alias Aliases Clients Profiles Manifests
+------------            ------ ---- ---- ------ ----- ------- ------- -------- ---------
+opoce-x86-sol11_3_9_4_0 on     i386 iso  no     no    0       1       2        2        
+
+   Image Path ........ /applications/ai/images/opoce-x86-sol11_3_9_4_0
+   Status ............ on
+   Base Service ...... -
+   Aliased By ........ -
+   Default Service? .. no
+   Default Manifest .. opoce-solaris-large-server.ksh
+   Boot Args ......... none
+   Custom grub.cfg? .. no
+   Publishers ........ none
+   Supports Security?  yes
+   Security Policy ... optional
+   Security Key? ..... no
+   Security Cert ..... none
+   CA Certificates ... none
+
+
+
+[root@aiserver-pz manifest]#    installadm list -s
+AI Server Parameter  Value
+-------------------  -----
+Hostname ........... aiserver-pz
+Architecture ....... sparc
+Active Networks .... 10.167.99.124
+                     158.167.99.124
+Image Path Base Dir  /export/auto_install
+Managing DHCP? ..... yes
+Security Enabled? .. no
+Server Credentials?  no
+Number of Services . 5
+Number of Clients .. 6
+Number of Manifests  11
+Number of Profiles . 4
+
+[root@aiserver-pz manifest]#    installadm list -n default-sparc -m
+Service Name  Manifest Name                                             Type    Status           Criteria                                                                                                                              
+------------  -------------                                             ----    ------           --------                                                                                                                              
+default-sparc opoce-solaris-large-server-small-disks.ksh                derived active           hostname = itchy,scratchy,bessie,sally,jupiter,ulysse,penelope,ariane,thesee,fillmore,flo,athena,artemis,seymour,skinner,persee,pegase
+              opoce-solaris-large-server.ksh                            derived active           hostname = apollon,aphrodite                                                                                                          
+              without-mirror-rpool                                      xml     active           hostname = rama,sita,lava,kusha                                                                                                       
+              opoce-solaris-large-server-very-small-disks.ksh           derived default / active hostname = vulcain,venus,neo,trinity,morpheus,niobe,tank,dozer,perceval,karadoc,hansel,gretel                                         
+              opoce-solaris-large-server-small-disks-without-mirror.ksh derived inactive         none                                                               
+
+
+[root@aiserver-pz ai]# svcs -a | grep dns
+disabled       Aug_07   svc:/network/dns/multicast:default
+online         Aug_07   svc:/network/dns/client:default
+[root@aiserver-pz ai]# svcadm enable dns/multicast
+[root@aiserver-pz ai]# svcs -a | grep dns
+online         Aug_07   svc:/network/dns/client:default
+offline*        8:45:03 svc:/network/dns/multicast:default
+
+
+[root@aiserver-pz ai]# installadm list -c
+Service Name              Client Address    Arch  Secure Custom Args Custom Grub
+------------              --------------    ----  ------ ----------- -----------
+opoce-sparc-sol11_2_2_7_0 00:21:28:46:AD:40 sparc no     no          no         
+                          00:21:28:46:AD:46 sparc no     no          no         
+                          00:21:28:57:07:EE sparc no     no          no         
+                          00:21:28:57:0B:58 sparc no     no          no         
+opoce-x86-sol11_2_2_7_0   00:10:E0:23:79:DA i386  no     yes         no         
+opoce-x86-sol11_3_9_4_0   64:51:06:2A:5B:73 i386  no     no          no         
+[root@aiserver-pz ai]# installadm create-client -e 0:10:e0:20:b4:c6 -n opoce-sparc-sol11_2_2_7_0
+Created Client: '00:10:E0:20:B4:C6'
+[root@aiserver-pz ai]# installadm list -c
+Service Name              Client Address    Arch  Secure Custom Args Custom Grub
+------------              --------------    ----  ------ ----------- -----------
+opoce-sparc-sol11_2_2_7_0 00:10:E0:20:B4:C6 sparc no     no          no         
+                          00:21:28:46:AD:40 sparc no     no          no         
+                          00:21:28:46:AD:46 sparc no     no          no         
+                          00:21:28:57:07:EE sparc no     no          no         
+                          00:21:28:57:0B:58 sparc no     no          no         
+opoce-x86-sol11_2_2_7_0   00:10:E0:23:79:DA i386  no     yes         no         
+opoce-x86-sol11_3_9_4_0   64:51:06:2A:5B:73 i386  no     no          no         
+
+
+[root@aiserver-pz ai]# installadm delete-client -e 0:10:e0:20:b4:c6
+Deleted Client: '00:10:E0:20:B4:C6'
+[root@aiserver-pz ai]# installadm list -c
+Service Name              Client Address    Arch  Secure Custom Args Custom Grub
+------------              --------------    ----  ------ ----------- -----------
+opoce-sparc-sol11_2_2_7_0 00:21:28:46:AD:40 sparc no     no          no         
+                          00:21:28:46:AD:46 sparc no     no          no         
+                          00:21:28:57:07:EE sparc no     no          no         
+                          00:21:28:57:0B:58 sparc no     no          no         
+opoce-x86-sol11_2_2_7_0   00:10:E0:23:79:DA i386  no     yes         no         
+opoce-x86-sol11_3_9_4_0   64:51:06:2A:5B:73 i386  no     no          no         
+
+
+
+
+[claeyje@opvmwstsx11 ~]# mypssH "`thosts`" '(/usr/sbin/eeprom network-boot-arguments;:)'
+[1] 11:18:49 [FAILURE] rama Exited with error code 255
+[2] 11:18:49 [FAILURE] sita Exited with error code 255
+[3] 11:18:49 [SUCCESS] niobe
+network-boot-arguments=host-ip=10.199.99.79,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=niobe,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[4] 11:18:49 [SUCCESS] harpo
+network-boot-arguments: data not available.
+[5] 11:18:49 [SUCCESS] karadoc
+network-boot-arguments=host-ip=10.199.99.211,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=karadoc,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[6] 11:18:49 [SUCCESS] trinity
+network-boot-arguments=host-ip=10.199.99.78,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=trinity,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[7] 11:18:49 [SUCCESS] gretel
+network-boot-arguments=host-ip=10.199.99.166,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=gretel,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[8] 11:18:49 [SUCCESS] hansel
+network-boot-arguments=host-ip=10.199.99.165,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=hansel,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[9] 11:18:50 [SUCCESS] neo
+network-boot-arguments=host-ip=10.199.99.76,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=neo,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[10] 11:18:50 [SUCCESS] lava
+network-boot-arguments=host-ip=10.199.99.157,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=lava,file=http://158.167.98.87:5555/cgi-bin/wanboot-cgi
+[11] 11:18:50 [SUCCESS] perceval
+network-boot-arguments=host-ip=10.199.99.209,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=perceval,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[12] 11:18:51 [SUCCESS] dozer
+network-boot-arguments=host-ip=10.199.99.210,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=dozer,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[13] 11:18:52 [SUCCESS] zeppo
+network-boot-arguments: data not available.
+[14] 11:18:52 [SUCCESS] morpheus
+network-boot-arguments=host-ip=10.199.99.77,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=morpheus,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[15] 11:18:52 [FAILURE] chico Exited with error code 255
+[16] 11:18:52 [FAILURE] groucho Exited with error code 255
+[17] 11:18:54 [SUCCESS] tank
+network-boot-arguments=host-ip=10.199.99.208,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=tank,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+[18] 11:18:56 [SUCCESS] kusha
+network-boot-arguments=host-ip=10.199.99.158,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=kusha,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+
+
+
+[root@aiserver-pz manifest]# ll /var/ai/service/default-sparc/AI_data
+total 30
+-rw-------   1 webservd root        2.2K Nov 23  2015 opoce-solaris-large-server-small-disks-without-mirror.ksh
+-rw-------   1 webservd root        2.5K Mar 24  2017 opoce-solaris-large-server-small-disks.ksh
+-rw-------   1 webservd root        2.5K Mar 24  2017 opoce-solaris-large-server-very-small-disks.ksh
+-rw-------   1 webservd root        2.5K Nov 23  2015 opoce-solaris-large-server.ksh
+-rw-------   1 webservd root        2.3K Nov 23  2015 without-mirror-rpool
+

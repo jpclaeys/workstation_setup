@@ -1,0 +1,10 @@
+ssh -L 5900:vanadium:5900 claeyje@banta
+
+ssh -L 5900:localhost:5900 vanadium
+virsh vncdisplay
+
+launch Tigervncviewer
+127.0.0.1:5900
+
+
+

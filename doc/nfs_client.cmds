@@ -1,0 +1,19 @@
+Linux / Unix Command To Find Out NFS Clients Connected To My NFS Server:
+------------------------------------------------------------------------
+
+netstat:
+---------
+IP=$(host `hostname` | awk '{print $NF}'); echo $IP
+netstat -an | grep $IP
+
+showmount:
+----------
+showmount -e
+showmount -a
+showmount -d
+
+rmtab:
+------
+cat /var/lib/nfs/rmtab
+
+

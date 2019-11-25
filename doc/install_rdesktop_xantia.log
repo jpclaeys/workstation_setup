@@ -1,0 +1,625 @@
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+
+# cd Packages 
+# Download the tarball by means of a browser: https://github.com/rdesktop/rdesktop/releases/download/v1.8.6/rdesktop-1.8.6.tar.gz
+# tar xvzf rdesktop-1.8.6.tar.gz
+
+cd rdesktop-1.8.6
+yum install gcc libX11-devel openssl-devel
+make
+make install
+which rdesktop
+ll /usr/local/bin/rdesktop
+
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+
+https://www.tecmint.com/rdesktop-connect-windows-desktop-from-linux/
+
+rdesktop – A RDP Client to Connect Windows Desktop from Linux
+
+rdesktop is an open source software that enables you to connect and manage your remote Windows desktop from your Linux computer using RDP – Remote Desktop Protocol. In other words, while you are sitting in front of your Linux system at home or office, and access your Windows desktop as if you’re sitting in front of the Windows machine.
+
+Read Also: 11 Best Tools to Access Remote Linux Desktop
+
+In this article, we will explain how to install rdesktop in Linux system to access the remote desktop of Windows computer using the Hostname and IP Address.
+
+Windows Settings
+
+To enable rdesktop to connect to any given Windows machine, you need to make few following changes on the Windows box itself.
+
+Enable RDP port no. 3389 in Firewall.
+Enable remote desktop under Windows Operating System.
+Require at least one user with a password.
+Once you make all of the above Windows configuration settings, you can now move further to install rdesktop on your Linux system to access your Windows desktop.
+
+Install rdesktop (Remote Desktop) in Linux
+It is always preferable to use a default package manager such as yum, dnf or apt to install software to handle dependencies automatically during installation.
+
+# yum install rdesktop   [On CentOS/RHEL 7]
+# dnf install rdesktop   [On CentOS/RHEL 8 and Fedora]
+# apt install rdesktop   [On Debian/Ubuntu]
+
+If rdesktop is not available to install from the default repositories, you can download the tarball from Github here or use the following wget command to download and install it as shown.
+
+# wget https://github.com/rdesktop/rdesktop/releases/download/v1.8.6/rdesktop-1.8.6.tar.gz
+# tar xvzf rdesktop-1.8.6.tar.gz
+# cd rdesktop-1.8.6/
+# ./configure --disable-credssp --disable-smartcard
+# make 
+# make install
+
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+
+[root@xantia ~]# cd ~claeyje/Packages/
+[root@xantia Packages]# ll rdesktop-1.8.6.tar.gz
+-rw-r--r-- 1 claeyje opunix   322459 19 juil. 13:46 rdesktop-1.8.6.tar.gz
+
+# tar xvzf rdesktop-1.8.6.tar.gz
+
+
+[root@xantia Packages]# cd rdesktop
+[root@xantia rdesktop]# ll
+total 632
+drwxr-xr-x 4 claeyje opunix   1828 19 juil. 13:50 rdesktop-1.8.6
+-rw-r--r-- 1 claeyje opunix 322459 19 juil. 13:50 rdesktop-1.8.6.tar.gz
+[root@xantia rdesktop]# cd rdesktop-1.8.6
+[root@xantia rdesktop-1.8.6]# ll
+ll
+-rw-r--r-- 1 claeyje opunix  14731  5 juin  12:00 ewmhints.c
+-rwxr-xr-x 1 claeyje opunix   5569  5 juil.  2016 install-sh
+-rw-r--r-- 1 claeyje opunix   8040  5 juin  12:00 iso.c
+drwxr-xr-x 2 claeyje opunix    867 19 juil. 13:50 keymaps
+-rw-r--r-- 1 claeyje opunix  11080  5 juin  12:00 licence.c
+-rw-r--r-- 1 claeyje opunix   4581  5 juin  12:00 lspci.c
+-rw-r--r-- 1 claeyje opunix   5122  5 juin  12:00 Makefile.in
+-rw-r--r-- 1 claeyje opunix   7856  5 juin  12:00 mcs.c
+-rw-r--r-- 1 claeyje opunix   8661  5 juin  12:00 mppc.c
+-rw-r--r-- 1 claeyje opunix  32116  5 juin  12:00 orders.c
+-rw-r--r-- 1 claeyje opunix   5761 10 avril 12:22 orders.h
+-rw-r--r-- 1 claeyje opunix   4466  5 juin  12:00 parallel.c
+-rw-r--r-- 1 claeyje opunix   2041  5 juin  12:00 parse.c
+-rw-r--r-- 1 claeyje opunix   6229  5 juin  12:00 parse.h
+-rw-r--r-- 1 claeyje opunix   4274  5 juin  12:00 printer.c
+-rw-r--r-- 1 claeyje opunix   7482  5 juin  12:00 printercache.c
+-rw-r--r-- 1 claeyje opunix  16793  5 juin  12:00 proto.h
+-rw-r--r-- 1 claeyje opunix    893  5 juin  12:00 proto.head
+-rw-r--r-- 1 claeyje opunix     74  5 juin  12:00 proto.tail
+-rw-r--r-- 1 claeyje opunix   5330  5 juin  12:00 pstcache.c
+-rw-r--r-- 1 claeyje opunix  42627  5 juin  12:00 rdesktop.c
+-rw-r--r-- 1 claeyje opunix   4837  5 juin  12:00 rdesktop.h
+-rw-r--r-- 1 claeyje opunix    884  5 juin  12:00 rdesktop.spec
+-rw-r--r-- 1 claeyje opunix   2958  5 juin  12:00 rdp5.c
+-rw-r--r-- 1 claeyje opunix  44575  5 juin  12:00 rdp.c
+-rw-r--r-- 1 claeyje opunix  28388  5 juin  12:00 rdpdr.c
+-rw-r--r-- 1 claeyje opunix  11382  5 juin  12:00 rdpsnd_alsa.c
+-rw-r--r-- 1 claeyje opunix  22928  5 juin  12:00 rdpsnd.c
+-rw-r--r-- 1 claeyje opunix  10556  5 juin  12:00 rdpsnd_dsp.c
+-rw-r--r-- 1 claeyje opunix   1302 10 avril 12:22 rdpsnd_dsp.h
+-rw-r--r-- 1 claeyje opunix   1925  5 juin  12:00 rdpsnd.h
+-rw-r--r-- 1 claeyje opunix   4927  5 juin  12:00 rdpsnd_libao.c
+-rw-r--r-- 1 claeyje opunix  10460  5 juin  12:00 rdpsnd_oss.c
+-rw-r--r-- 1 claeyje opunix   7471  5 juin  12:00 rdpsnd_sgi.c
+-rw-r--r-- 1 claeyje opunix  10061  5 juin  12:00 rdpsnd_sun.c
+-rw-r--r-- 1 claeyje opunix   1681  5 juin  12:00 README
+-rw-r--r-- 1 claeyje opunix   9629  5 juin  12:00 scancodes.h
+-rw-r--r-- 1 claeyje opunix  68324  5 juin  12:00 scard.c
+-rw-r--r-- 1 claeyje opunix   6051  5 juin  12:00 scard.h
+-rw-r--r-- 1 claeyje opunix  10587  5 juin  12:00 seamless.c
+-rw-r--r-- 1 claeyje opunix    795 10 avril 12:22 seamless.h
+-rw-r--r-- 1 claeyje opunix  25147  5 juin  12:00 secure.c
+-rw-r--r-- 1 claeyje opunix  27286  5 juin  12:00 serial.c
+-rw-r--r-- 1 claeyje opunix   5861  5 juin  12:00 ssl.c
+-rw-r--r-- 1 claeyje opunix   2619  5 juin  12:00 ssl.h
+-rw-r--r-- 1 claeyje opunix  11222  5 juin  12:00 tcp.c
+-rw-r--r-- 1 claeyje opunix   5719  5 juin  12:00 types.h
+-rw-r--r-- 1 claeyje opunix   4125  5 juin  12:00 utils.c
+-rw-r--r-- 1 claeyje opunix  36489  5 juin  12:00 xclip.c
+-rw-r--r-- 1 claeyje opunix  26528  5 juin  12:00 xkeymap.c
+-rw-r--r-- 1 claeyje opunix    883  5 juin  12:00 xproto.h
+-rw-r--r-- 1 claeyje opunix 102523  5 juin  12:00 xwin.c
+
+
+[root@xantia rdesktop-1.8.6]# yum install gcc
+Loaded plugins: fastestmirror
+Existing lock /var/run/yum.pid: another copy is running as pid 23432.
+Another app is currently holding the yum lock; waiting for it to exit...
+  The other application is: PackageKit
+    Memory :  69 M RSS (412 MB VSZ)
+    Started: Fri Jul 19 13:55:15 2019 - 00:04 ago
+    State  : Uninterruptible, pid: 23432
+Existing lock /var/run/yum.pid: another copy is running as pid 23438.
+Another app is currently holding the yum lock; waiting for it to exit...
+  The other application is: PackageKit
+    Memory :  29 M RSS (373 MB VSZ)
+    Started: Fri Jul 19 13:55:20 2019 - 00:01 ago
+    State  : Sleeping, pid: 23438
+Another app is currently holding the yum lock; waiting for it to exit...
+  The other application is: PackageKit
+    Memory :  34 M RSS (378 MB VSZ)
+    Started: Fri Jul 19 13:55:20 2019 - 00:03 ago
+    State  : Sleeping, pid: 23438
+Another app is currently holding the yum lock; waiting for it to exit...
+  The other application is: PackageKit
+    Memory :  34 M RSS (378 MB VSZ)
+    Started: Fri Jul 19 13:55:20 2019 - 00:05 ago
+    State  : Sleeping, pid: 23438
+Loading mirror speeds from cached hostfile
+ * base: centos.crazyfrogs.org
+ * extras: centos.cu.be
+ * updates: centos.cu.be
+Resolving Dependencies
+--> Running transaction check
+---> Package gcc.x86_64 0:4.8.5-36.el7_6.2 will be installed
+--> Processing Dependency: cpp = 4.8.5-36.el7_6.2 for package: gcc-4.8.5-36.el7_6.2.x86_64
+--> Running transaction check
+---> Package cpp.x86_64 0:4.8.5-36.el7_6.2 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+==============================================================================================================================================================
+ Package                         Arch                               Version                                         Repository                           Size
+==============================================================================================================================================================
+Installing:
+ gcc                             x86_64                             4.8.5-36.el7_6.2                                updates                              16 M
+Installing for dependencies:
+ cpp                             x86_64                             4.8.5-36.el7_6.2                                updates                             5.9 M
+
+Transaction Summary
+==============================================================================================================================================================
+Install  1 Package (+1 Dependent package)
+
+Total download size: 22 M
+Installed size: 52 M
+Is this ok [y/d/N]: y
+Downloading packages:
+(1/2): cpp-4.8.5-36.el7_6.2.x86_64.rpm                                                                                                 | 5.9 MB  00:00:00     
+(2/2): gcc-4.8.5-36.el7_6.2.x86_64.rpm                                                                                                 |  16 MB  00:00:03     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Total                                                                                                                         7.0 MB/s |  22 MB  00:00:03     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : cpp-4.8.5-36.el7_6.2.x86_64                                                                                                                1/2 
+  Installing : gcc-4.8.5-36.el7_6.2.x86_64                                                                                                                2/2 
+  Verifying  : gcc-4.8.5-36.el7_6.2.x86_64                                                                                                                1/2 
+  Verifying  : cpp-4.8.5-36.el7_6.2.x86_64                                                                                                                2/2 
+
+Installed:
+  gcc.x86_64 0:4.8.5-36.el7_6.2                                                                                                                               
+
+Dependency Installed:
+  cpp.x86_64 0:4.8.5-36.el7_6.2                                                                                                                               
+
+Complete!
+
+ERROR: Could not find X Window System headers/libraries.
+Probably you need to install the libX11-devel package.
+To specify paths manually, use the options --x-includes and --x-libraries.
+
+
+[root@xantia rdesktop-1.8.6]# yum install libX11-devel
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: centos.crazyfrogs.org
+ * extras: centos.cu.be
+ * updates: centos.cu.be
+Resolving Dependencies
+--> Running transaction check
+---> Package libX11-devel.x86_64 0:1.6.5-2.el7 will be installed
+--> Processing Dependency: pkgconfig(xcb) >= 1.11.1 for package: libX11-devel-1.6.5-2.el7.x86_64
+--> Processing Dependency: pkgconfig(xproto) for package: libX11-devel-1.6.5-2.el7.x86_64
+--> Processing Dependency: pkgconfig(xcb) for package: libX11-devel-1.6.5-2.el7.x86_64
+--> Processing Dependency: pkgconfig(kbproto) for package: libX11-devel-1.6.5-2.el7.x86_64
+--> Running transaction check
+---> Package libxcb-devel.x86_64 0:1.13-1.el7 will be installed
+--> Processing Dependency: pkgconfig(xau) >= 0.99.2 for package: libxcb-devel-1.13-1.el7.x86_64
+---> Package xorg-x11-proto-devel.noarch 0:2018.4-1.el7 will be installed
+--> Running transaction check
+---> Package libXau-devel.x86_64 0:1.0.8-2.1.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+==============================================================================================================================================================
+ Package                                        Arch                             Version                                 Repository                      Size
+==============================================================================================================================================================
+Installing:
+ libX11-devel                                   x86_64                           1.6.5-2.el7                             base                           980 k
+Installing for dependencies:
+ libXau-devel                                   x86_64                           1.0.8-2.1.el7                           base                            14 k
+ libxcb-devel                                   x86_64                           1.13-1.el7                              base                           1.1 M
+ xorg-x11-proto-devel                           noarch                           2018.4-1.el7                            base                           280 k
+
+Transaction Summary
+==============================================================================================================================================================
+Install  1 Package (+3 Dependent packages)
+
+Total download size: 2.3 M
+Installed size: 5.4 M
+Is this ok [y/d/N]: y
+Downloading packages:
+(1/4): libXau-devel-1.0.8-2.1.el7.x86_64.rpm                                                                                           |  14 kB  00:00:00     
+(2/4): libxcb-devel-1.13-1.el7.x86_64.rpm                                                                                              | 1.1 MB  00:00:00     
+(3/4): xorg-x11-proto-devel-2018.4-1.el7.noarch.rpm                                                                                    | 280 kB  00:00:00     
+(4/4): libX11-devel-1.6.5-2.el7.x86_64.rpm                                                                                             | 980 kB  00:00:01     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Total                                                                                                                         1.6 MB/s | 2.3 MB  00:00:01     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : xorg-x11-proto-devel-2018.4-1.el7.noarch                                                                                                   1/4 
+  Installing : libXau-devel-1.0.8-2.1.el7.x86_64                                                                                                          2/4 
+  Installing : libxcb-devel-1.13-1.el7.x86_64                                                                                                             3/4 
+  Installing : libX11-devel-1.6.5-2.el7.x86_64                                                                                                            4/4 
+  Verifying  : libX11-devel-1.6.5-2.el7.x86_64                                                                                                            1/4 
+  Verifying  : libXau-devel-1.0.8-2.1.el7.x86_64                                                                                                          2/4 
+  Verifying  : libxcb-devel-1.13-1.el7.x86_64                                                                                                             3/4 
+  Verifying  : xorg-x11-proto-devel-2018.4-1.el7.noarch                                                                                                   4/4 
+
+Installed:
+  libX11-devel.x86_64 0:1.6.5-2.el7                                                                                                                           
+
+Dependency Installed:
+  libXau-devel.x86_64 0:1.0.8-2.1.el7                libxcb-devel.x86_64 0:1.13-1.el7                xorg-x11-proto-devel.noarch 0:2018.4-1.el7               
+
+Complete!
+
+ERROR: Could not find OpenSSL headers/libraries.
+Probably you need to install the openssl-devel package.
+To specify a path manually, use the --with-openssl option.
+
+[root@xantia rdesktop-1.8.6]# yum install openssl-devel
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: centos.crazyfrogs.org
+ * extras: centos.cu.be
+ * updates: centos.cu.be
+Resolving Dependencies
+--> Running transaction check
+---> Package openssl-devel.x86_64 1:1.0.2k-16.el7_6.1 will be installed
+--> Processing Dependency: zlib-devel(x86-64) for package: 1:openssl-devel-1.0.2k-16.el7_6.1.x86_64
+--> Processing Dependency: krb5-devel(x86-64) for package: 1:openssl-devel-1.0.2k-16.el7_6.1.x86_64
+--> Running transaction check
+---> Package krb5-devel.x86_64 0:1.15.1-37.el7_6 will be installed
+--> Processing Dependency: libkadm5(x86-64) = 1.15.1-37.el7_6 for package: krb5-devel-1.15.1-37.el7_6.x86_64
+--> Processing Dependency: libverto-devel for package: krb5-devel-1.15.1-37.el7_6.x86_64
+--> Processing Dependency: libselinux-devel for package: krb5-devel-1.15.1-37.el7_6.x86_64
+--> Processing Dependency: libcom_err-devel for package: krb5-devel-1.15.1-37.el7_6.x86_64
+--> Processing Dependency: keyutils-libs-devel for package: krb5-devel-1.15.1-37.el7_6.x86_64
+---> Package zlib-devel.x86_64 0:1.2.7-18.el7 will be installed
+--> Running transaction check
+---> Package keyutils-libs-devel.x86_64 0:1.5.8-3.el7 will be installed
+---> Package libcom_err-devel.x86_64 0:1.42.9-13.el7 will be installed
+---> Package libkadm5.x86_64 0:1.15.1-37.el7_6 will be installed
+---> Package libselinux-devel.x86_64 0:2.5-14.1.el7 will be installed
+--> Processing Dependency: libsepol-devel(x86-64) >= 2.5-10 for package: libselinux-devel-2.5-14.1.el7.x86_64
+--> Processing Dependency: pkgconfig(libsepol) for package: libselinux-devel-2.5-14.1.el7.x86_64
+--> Processing Dependency: pkgconfig(libpcre) for package: libselinux-devel-2.5-14.1.el7.x86_64
+---> Package libverto-devel.x86_64 0:0.2.5-4.el7 will be installed
+--> Running transaction check
+---> Package libsepol-devel.x86_64 0:2.5-10.el7 will be installed
+---> Package pcre-devel.x86_64 0:8.32-17.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+==============================================================================================================================================================
+ Package                                     Arch                           Version                                     Repository                       Size
+==============================================================================================================================================================
+Installing:
+ openssl-devel                               x86_64                         1:1.0.2k-16.el7_6.1                         updates                         1.5 M
+Installing for dependencies:
+ keyutils-libs-devel                         x86_64                         1.5.8-3.el7                                 base                             37 k
+ krb5-devel                                  x86_64                         1.15.1-37.el7_6                             updates                         271 k
+ libcom_err-devel                            x86_64                         1.42.9-13.el7                               base                             31 k
+ libkadm5                                    x86_64                         1.15.1-37.el7_6                             updates                         178 k
+ libselinux-devel                            x86_64                         2.5-14.1.el7                                base                            187 k
+ libsepol-devel                              x86_64                         2.5-10.el7                                  base                             77 k
+ libverto-devel                              x86_64                         0.2.5-4.el7                                 base                             12 k
+ pcre-devel                                  x86_64                         8.32-17.el7                                 base                            480 k
+ zlib-devel                                  x86_64                         1.2.7-18.el7                                base                             50 k
+
+Transaction Summary
+==============================================================================================================================================================
+Install  1 Package (+9 Dependent packages)
+
+Total download size: 2.8 M
+Installed size: 6.0 M
+Is this ok [y/d/N]: y
+Downloading packages:
+(1/10): keyutils-libs-devel-1.5.8-3.el7.x86_64.rpm                                                                                     |  37 kB  00:00:00     
+(2/10): libcom_err-devel-1.42.9-13.el7.x86_64.rpm                                                                                      |  31 kB  00:00:00     
+(3/10): libkadm5-1.15.1-37.el7_6.x86_64.rpm                                                                                            | 178 kB  00:00:00     
+(4/10): libsepol-devel-2.5-10.el7.x86_64.rpm                                                                                           |  77 kB  00:00:00     
+(5/10): libverto-devel-0.2.5-4.el7.x86_64.rpm                                                                                          |  12 kB  00:00:00     
+(6/10): krb5-devel-1.15.1-37.el7_6.x86_64.rpm                                                                                          | 271 kB  00:00:00     
+(7/10): pcre-devel-8.32-17.el7.x86_64.rpm                                                                                              | 480 kB  00:00:00     
+(8/10): zlib-devel-1.2.7-18.el7.x86_64.rpm                                                                                             |  50 kB  00:00:00     
+(9/10): libselinux-devel-2.5-14.1.el7.x86_64.rpm                                                                                       | 187 kB  00:00:01     
+(10/10): openssl-devel-1.0.2k-16.el7_6.1.x86_64.rpm                                                                                    | 1.5 MB  00:00:03     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Total                                                                                                                         788 kB/s | 2.8 MB  00:00:03     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : libcom_err-devel-1.42.9-13.el7.x86_64                                                                                                     1/10 
+  Installing : libsepol-devel-2.5-10.el7.x86_64                                                                                                          2/10 
+  Installing : pcre-devel-8.32-17.el7.x86_64                                                                                                             3/10 
+  Installing : libselinux-devel-2.5-14.1.el7.x86_64                                                                                                      4/10 
+  Installing : libkadm5-1.15.1-37.el7_6.x86_64                                                                                                           5/10 
+  Installing : zlib-devel-1.2.7-18.el7.x86_64                                                                                                            6/10 
+  Installing : libverto-devel-0.2.5-4.el7.x86_64                                                                                                         7/10 
+  Installing : keyutils-libs-devel-1.5.8-3.el7.x86_64                                                                                                    8/10 
+  Installing : krb5-devel-1.15.1-37.el7_6.x86_64                                                                                                         9/10 
+  Installing : 1:openssl-devel-1.0.2k-16.el7_6.1.x86_64                                                                                                 10/10 
+  Verifying  : keyutils-libs-devel-1.5.8-3.el7.x86_64                                                                                                    1/10 
+  Verifying  : libverto-devel-0.2.5-4.el7.x86_64                                                                                                         2/10 
+  Verifying  : zlib-devel-1.2.7-18.el7.x86_64                                                                                                            3/10 
+  Verifying  : libkadm5-1.15.1-37.el7_6.x86_64                                                                                                           4/10 
+  Verifying  : krb5-devel-1.15.1-37.el7_6.x86_64                                                                                                         5/10 
+  Verifying  : pcre-devel-8.32-17.el7.x86_64                                                                                                             6/10 
+  Verifying  : libselinux-devel-2.5-14.1.el7.x86_64                                                                                                      7/10 
+  Verifying  : libsepol-devel-2.5-10.el7.x86_64                                                                                                          8/10 
+  Verifying  : libcom_err-devel-1.42.9-13.el7.x86_64                                                                                                     9/10 
+  Verifying  : 1:openssl-devel-1.0.2k-16.el7_6.1.x86_64                                                                                                 10/10 
+
+Installed:
+  openssl-devel.x86_64 1:1.0.2k-16.el7_6.1                                                                                                                    
+
+Dependency Installed:
+  keyutils-libs-devel.x86_64 0:1.5.8-3.el7  krb5-devel.x86_64 0:1.15.1-37.el7_6  libcom_err-devel.x86_64 0:1.42.9-13.el7  libkadm5.x86_64 0:1.15.1-37.el7_6 
+  libselinux-devel.x86_64 0:2.5-14.1.el7    libsepol-devel.x86_64 0:2.5-10.el7   libverto-devel.x86_64 0:0.2.5-4.el7      pcre-devel.x86_64 0:8.32-17.el7   
+  zlib-devel.x86_64 0:1.2.7-18.el7         
+
+Complete!
+[root@xantia rdesktop-1.8.6]# ./configure --disable-credssp --disable-smartcard
+checking build system type... x86_64-redhat-linux-gnu
+checking host system type... x86_64-redhat-linux-gnu
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking for a BSD-compatible install... /bin/install -c
+checking how to run the C preprocessor... gcc -E
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking whether byte ordering is bigendian... no
+checking for X... libraries , headers 
+checking for gethostbyname... yes
+checking for connect... yes
+checking for remove... yes
+checking for shmat... yes
+checking for IceConnectionNumber in -lICE... no
+checking for pkg-config... /bin/pkg-config
+checking for library containing socket... none required
+checking for library containing inet_aton... none required
+checking sys/select.h usability... yes
+checking sys/select.h presence... yes
+checking for sys/select.h... yes
+checking sys/modem.h usability... no
+checking sys/modem.h presence... no
+checking for sys/modem.h... no
+checking sys/filio.h usability... no
+checking sys/filio.h presence... no
+checking for sys/filio.h... no
+checking sys/strtio.h usability... no
+checking sys/strtio.h presence... no
+checking for sys/strtio.h... no
+checking locale.h usability... yes
+checking locale.h presence... yes
+checking for locale.h... yes
+checking langinfo.h usability... yes
+checking langinfo.h presence... yes
+checking for langinfo.h... yes
+checking sysexits.h usability... yes
+checking sysexits.h presence... yes
+checking for sysexits.h... yes
+checking for strip... strip
+checking for OpenSSL directory... /usr
+checking for pkg-config... (cached) /bin/pkg-config
+checking pkg-config is at least version 0.9.0... yes
+checking for XRANDR... no
+checking if architecture needs alignment... no
+checking sys/soundcard.h usability... yes
+checking sys/soundcard.h presence... yes
+checking for sys/soundcard.h... yes
+checking dmedia/audio.h usability... no
+checking dmedia/audio.h presence... no
+checking for dmedia/audio.h... no
+checking sys/audioio.h usability... no
+checking sys/audioio.h presence... no
+checking for sys/audioio.h... no
+checking for LIBAO... no
+checking for ALSA... no
+checking for LIBSAMPLERATE... no
+checking for dirent.h that defines DIR... yes
+checking for library containing opendir... none required
+checking for dirfd... yes
+checking whether dirfd is declared... yes
+checking whether dirfd is a macro... no
+checking iconv.h usability... yes
+checking iconv.h presence... yes
+checking for iconv.h... yes
+checking for iconv... yes
+checking for iconv declaration... 
+         extern size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
+checking for socklen_t... yes
+checking sys/vfs.h usability... yes
+checking sys/vfs.h presence... yes
+checking for sys/vfs.h... yes
+checking sys/statvfs.h usability... yes
+checking sys/statvfs.h presence... yes
+checking for sys/statvfs.h... yes
+checking sys/statfs.h usability... yes
+checking sys/statfs.h presence... yes
+checking for sys/statfs.h... yes
+checking sys/param.h usability... yes
+checking sys/param.h presence... yes
+checking for sys/param.h... yes
+checking for sys/mount.h... yes
+configure: checking how to get filesystem space usage...
+checking statvfs64 function (SVR4)... no
+checking statvfs function (SVR4)... yes
+checking for struct statfs.f_namemax... no
+checking for struct statvfs.f_namemax... yes
+checking for struct statfs.f_namelen... yes
+checking for struct statvfs.f_namelen... no
+checking for special C compiler options needed for large files... no
+checking for _FILE_OFFSET_BITS value needed for large files... no
+checking mntent.h usability... yes
+checking mntent.h presence... yes
+checking for mntent.h... yes
+checking for setmntent... yes
+configure: creating ./config.status
+config.status: creating Makefile
+
+
+[root@xantia rdesktop-1.8.6]# make
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o rdesktop.o -c rdesktop.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o xwin.o -c xwin.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o xkeymap.o -c xkeymap.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o ewmhints.o -c ewmhints.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o xclip.o -c xclip.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o cliprdr.o -c cliprdr.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o ctrl.o -c ctrl.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o rdpsnd.o -c rdpsnd.c
+rdpsnd.c: In function ‘rdpsnd_process_negotiate’:
+rdpsnd.c:245:9: warning: variable ‘version’ set but not used [-Wunused-but-set-variable]
+  uint16 version;
+         ^
+rdpsnd.c:244:8: warning: variable ‘pad’ set but not used [-Wunused-but-set-variable]
+  uint8 pad;
+        ^
+rdpsnd.c: In function ‘rdpsnd_process_rec_negotiate’:
+rdpsnd.c:387:9: warning: variable ‘version’ set but not used [-Wunused-but-set-variable]
+  uint16 version;
+         ^
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o rdpsnd_dsp.o -c rdpsnd_dsp.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o rdpsnd_oss.o -c rdpsnd_oss.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o tcp.o -c tcp.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o asn.o -c asn.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o iso.o -c iso.c
+iso.c: In function ‘iso_connect’:
+iso.c:251:10: warning: variable ‘length’ set but not used [-Wunused-but-set-variable]
+   uint16 length = 0;
+          ^
+iso.c:250:19: warning: variable ‘flags’ set but not used [-Wunused-but-set-variable]
+   uint8 type = 0, flags = 0;
+                   ^
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o mcs.o -c mcs.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o secure.o -c secure.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o licence.o -c licence.c
+licence.c: In function ‘licence_process_error_alert’:
+licence.c:321:9: warning: variable ‘error_info’ set but not used [-Wunused-but-set-variable]
+  uint32 error_info;
+         ^
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o rdp.o -c rdp.c
+In file included from rdesktop.h:212:0,
+                 from rdp.c:27:
+rdp.c: In function ‘rdp_out_unistr’:
+parse.h:119:49: warning: pointer targets in assignment differ in signedness [-Wpointer-sign]
+ #define out_uint8p(s,v,n) { s_assert_w(s, n); v = (s)->p; (s)->p += n; }
+                                                 ^
+rdp.c:203:2: note: in expansion of macro ‘out_uint8p’
+  out_uint8p(s, pout, len + 2);
+  ^
+rdp.c: In function ‘rdp_in_unistr’:
+parse.h:113:48: warning: pointer targets in assignment differ in signedness [-Wpointer-sign]
+ #define in_uint8p(s,v,n) { s_assert_r(s, n); v = (s)->p; (s)->p += n; }
+                                                ^
+rdp.c:295:2: note: in expansion of macro ‘in_uint8p’
+  in_uint8p(s, pin, in_len);
+  ^
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o orders.o -c orders.c
+orders.c: In function ‘process_bmpcache’:
+orders.c:952:8: warning: variable ‘pad1’ set but not used [-Wunused-but-set-variable]
+  uint8 pad1;
+        ^
+orders.c:951:18: warning: variable ‘pad2’ set but not used [-Wunused-but-set-variable]
+  uint16 bufsize, pad2, row_size, final_size;
+                  ^
+orders.c: In function ‘process_brushcache’:
+orders.c:1182:53: warning: variable ‘type’ set but not used [-Wunused-but-set-variable]
+  uint8 cache_idx, colour_code, width, height, size, type;
+                                                     ^
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o bitmap.o -c bitmap.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o cache.o -c cache.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o rdp5.o -c rdp5.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o channels.o -c channels.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o rdpdr.o -c rdpdr.c
+rdpdr.c: In function ‘rdpdr_process_irp’:
+rdpdr.c:362:3: warning: variable ‘error_mode’ set but not used [-Wunused-but-set-variable]
+   error_mode,
+   ^
+rdpdr.c:360:3: warning: variable ‘bytes_in’ set but not used [-Wunused-but-set-variable]
+   bytes_in,
+   ^
+rdpdr.c: In function ‘rdpdr_process’:
+rdpdr.c:812:9: warning: variable ‘handle’ set but not used [-Wunused-but-set-variable]
+  uint32 handle;
+         ^
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o serial.o -c serial.c
+serial.c: In function ‘serial_create’:
+serial.c:560:18: warning: variable ‘ptermios’ set but not used [-Wunused-but-set-variable]
+  struct termios *ptermios;
+                  ^
+serial.c: In function ‘serial_device_control’:
+serial.c:706:18: warning: variable ‘ptermios’ set but not used [-Wunused-but-set-variable]
+  struct termios *ptermios;
+                  ^
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o printer.o -c printer.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o disk.o -c disk.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o parallel.o -c parallel.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o printercache.o -c printercache.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o mppc.o -c mppc.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o pstcache.o -c pstcache.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o lspci.o -c lspci.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o seamless.o -c seamless.c
+seamless.c: In function ‘seamless_process_line’:
+seamless.c:66:15: warning: variable ‘tok2’ set but not used [-Wunused-but-set-variable]
+  char *tok1, *tok2, *tok3, *tok4, *tok5, *tok6, *tok7, *tok8;
+               ^
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o ssl.o -c ssl.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o utils.o -c utils.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o parse.o -c parse.c
+gcc -g -O2 -Wall -I/usr/include   -DPACKAGE_NAME=\"rdesktop\" -DPACKAGE_TARNAME=\"rdesktop\" -DPACKAGE_VERSION=\"1.8.6\" -DPACKAGE_STRING=\"rdesktop\ 1.8.6\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DL_ENDIAN=1 -DHAVE_SYS_SELECT_H=1 -DHAVE_LOCALE_H=1 -DHAVE_LANGINFO_H=1 -DHAVE_SYSEXITS_H=1 -Dssldir=\"/usr\" -DEGD_SOCKET=\"/var/run/egd-pool\" -DWITH_RDPSND=1 -DRDPSND_OSS=1 -DHAVE_DIRENT_H=1 -DHAVE_DIRFD=1 -DHAVE_DECL_DIRFD=1 -DHAVE_ICONV_H=1 -DHAVE_ICONV=1 -DICONV_CONST= -DHAVE_SYS_VFS_H=1 -DHAVE_SYS_STATVFS_H=1 -DHAVE_SYS_STATFS_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_MOUNT_H=1 -DSTAT_STATVFS=1 -DHAVE_STRUCT_STATVFS_F_NAMEMAX=1 -DHAVE_STRUCT_STATFS_F_NAMELEN=1 -DHAVE_MNTENT_H=1 -DHAVE_SETMNTENT=1 -DKEYMAP_PATH=\"/usr/local/share/rdesktop/keymaps/\" -o rdesktop rdesktop.o xwin.o xkeymap.o ewmhints.o xclip.o cliprdr.o ctrl.o rdpsnd.o rdpsnd_dsp.o rdpsnd_oss.o tcp.o asn.o iso.o mcs.o secure.o licence.o rdp.o orders.o bitmap.o cache.o rdp5.o channels.o rdpdr.o serial.o printer.o disk.o parallel.o printercache.o mppc.o pstcache.o lspci.o seamless.o ssl.o utils.o parse.o   -L/usr/lib -L/usr/lib64 -lssl -lcrypto      -lX11
+[root@xantia rdesktop-1.8.6]# make install
+mkdir -p /usr/local/bin
+/bin/install -c rdesktop /usr/local/bin
+strip /usr/local/bin/rdesktop
+chmod 755 /usr/local/bin/rdesktop
+mkdir -p /usr/local/share/rdesktop/keymaps/
+cp keymaps/?? keymaps/??-?? /usr/local/share/rdesktop/keymaps/
+cp keymaps/common /usr/local/share/rdesktop/keymaps/
+cp keymaps/modifiers /usr/local/share/rdesktop/keymaps/
+chmod 644 /usr/local/share/rdesktop/keymaps//*
+mkdir -p /usr/local/share/man/man1
+cp doc/rdesktop.1 /usr/local/share/man/man1
+chmod 644 /usr/local/share/man/man1/rdesktop.1
+[root@xantia rdesktop-1.8.6]# which rdesktop
+/usr/bin/which: no rdesktop in (/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin)
+[root@xantia rdesktop-1.8.6]# ll /usr/local/bin/rdesktop
+-rwxr-xr-x 1 root root 320704 19 juil. 14:00 /usr/local/bin/rdesktop
+

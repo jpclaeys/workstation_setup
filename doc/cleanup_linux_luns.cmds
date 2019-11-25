@@ -1,0 +1,26 @@
+---------------------------------------------------------------------------------------------------
+
+LL=`echo "
+BETZ8CC5D38
+WIND8CC5D38
+" |tr '\012' ' '` && echo "# $LL"
+
+# Get the sd devices list
+SDLIST=`for DISK in $LL; do multipath -ll $DISK | awk '/ sd/ {print $3}' | tr '\012' ' ';done ` && echo "# $SDLIST"
+
+for LUN in $LL ; do ll /dev/san/$LUN;done
+# Flush the multipath devices
+for LUN in $LL; do multipath -f $LUN;done
+
+# Flush and remove each block device
+# If not done before, get the sd devices list
+SDLIST=`disk-list -qd 2>/dev/null | grep -v BETZ | awk '/zombie/ { print $1}'| tr '\012' ' '` && echo "# $SDLIST"
+for i in $SDLIST ; do echo "# $i; blockdev --flushbufs /dev/$i ; echo 1 > /sys/block/${i}/device/delete"; done
+for i in $SDLIST ; do blockdev --flushbufs /dev/$i ; echo 1 > /sys/block/${i}/device/delete; done
+
+lvscan
+/usr/nagios/plugins/check_mpxio
+
+
+---------------------------------------------------------------------------------------------------
+

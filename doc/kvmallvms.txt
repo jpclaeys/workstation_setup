@@ -1,0 +1,140 @@
+[1;32m
+===> voyager:                                                               <===
+[0m
+ fedorafs1-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ fedorafs2-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ fedorafs3-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ fedorafs4-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ rdfngbo-pk	(ocf::heartbeat:VirtualDomain):	Started tuvok-cl 
+ rdfngfo-euf1-pk	(ocf::heartbeat:VirtualDomain):	Started tuvok-cl 
+ rdfngfo-mer1-pk	(ocf::heartbeat:VirtualDomain):	Started janeway-cl 
+ cellar2eli-mer-pk	(ocf::heartbeat:VirtualDomain):	Started janeway-cl 
+ cellar2eli-euf-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ eurlexfo-pk	(ocf::heartbeat:VirtualDomain):	Started tuvok-cl 
+ idoltmpeuf1-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ idoltmpeuf2-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ idoltmpmer1-pk	(ocf::heartbeat:VirtualDomain):	Started janeway-cl 
+ idoltmpmer2-pk	(ocf::heartbeat:VirtualDomain):	Started janeway-cl 
+ cellarbo-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ cportaldiff1-pk	(ocf::heartbeat:VirtualDomain):	Started torres-cl 
+ cportaldiff2-pk	(ocf::heartbeat:VirtualDomain):	Started tuvok-cl 
+ cportaldiff3-pk	(ocf::heartbeat:VirtualDomain):	Started janeway-cl 
+ cportaldiff4-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ cportalfs-pk	(ocf::heartbeat:VirtualDomain):	Started tuvok-cl 
+ tedmonitor-pk	(ocf::heartbeat:VirtualDomain):	Started chakotay-cl 
+ ldapb-pk	(ocf::heartbeat:VirtualDomain):	Stopped (unmanaged) 
+ planjo-pk	(ocf::heartbeat:VirtualDomain):	Started torres-cl 
+ etenderint-pk	(ocf::heartbeat:VirtualDomain):	Started tuvok-cl 
+ ppubli-pk	(ocf::heartbeat:VirtualDomain):	Started torres-cl 
+[1;32m
+===> alogens:                                                               <===
+[0m
+ cportalflex1-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started bromine-cl
+ cportalflex2-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started chlorine-cl
+ fedorafs1-recover-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started chlorine-cl
+ fedorafs2-recover-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started chlorine-cl
+ fedorafs3-recover-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started chlorine-cl
+ fedorafs4-recover-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started chlorine-cl
+ eurlexbo-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled)
+[1;32m
+===> tng:                                                                   <===
+[0m
+ cellar2eli-euf-tk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ cellar2eli-mer-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ rdfngbo-tk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ rdfngfo-euf1-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ rdfngfo-mer1-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ fedorafs1-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ rdfngbo-dk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ rdfngbo-rk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportaldiff1-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ cellarbo-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Stopped (unmanaged) 
+ fedorafs1-bk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ rdfngbo-bk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ cportaldiff2-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ fedorafs2-bk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ cellarbo-bk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportaldiff1-rk	(ocf::heartbeat:VirtualDomain):	Stopped (unmanaged) 
+ cportaldiff2-rk	(ocf::heartbeat:VirtualDomain):	Stopped 
+ cellarbo-rk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ fedorafs1-rk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ cportaldiff3-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportaldiff4-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ cportalfs-rk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportalfs-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ tedmonitor-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cellarbo-dk	(ocf::heartbeat:VirtualDomain):	Stopped (unmanaged) 
+ planjo-tk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ ppubli-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+[1;32m
+===> metals:                                                                <===
+[0m
+ cportalflex1-rk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started vanadium-cl
+ cportalflex1-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started palladium-cl
+ planjo-rk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started titanium-cl
+ cellarbo2-dk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started titanium-cl
+ eurlexbo-rk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ eurlexbo-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled)
+ fedorafs1-recover-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started vanadium-cl
+[1;32m
+===> noblegases:                                                            <===
+[0m
+ cellarfs1-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ cellarfs2-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started neon-cl
+ cpoller4-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ cpoller3-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ cpoller2-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ cpoller1-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ ccentral1-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ puppet-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ nagios-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ ldap1-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled)
+ ldapa-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ opdns001	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ opdns002	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ cellarfs1-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ cellarfs2-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started neon-cl
+ oud-mer-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ oud-euf-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ centreonbo4-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started neon-cl
+ centreonbo1-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started neon-cl
+ centreonbo3-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started krypton-cl
+ centreonbo2-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started neon-cl
+ centreonfo-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started krypton-cl
+ ldapa-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ ldapb-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ orion-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ svn-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started neon-cl
+ centreonbo1-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ infra3-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ infra2-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ centreonfo-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ kibana-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started neon-cl
+ qccoord-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ etenderint-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started krypton-cl
+ etenderext-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started krypton-cl
+ vocbenchacc-rk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ eudorarc-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ lod-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started neon-cl
+ lodref-dk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ styleguide-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ axmngt-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ vocbenchacc-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ qa-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ svn-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ eurlexrh7fo-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ eudorarc-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ axmngt-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ infra1-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl
+ infra2-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ eurlexfo-rk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ eurlexfo-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ satellite-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ etenderext-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started krypton-cl
+ esentool-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started krypton-cl
+ styleguide-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ qa-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started argon-cl
+ etenderint-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Stopped (disabled, unmanaged)
+ vocbenchacc-pk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started krypton-cl
+ esentool-tk	(ocf::heartbeat:[01;31m[KVirtual[m[KDomain):	Started xenon-cl

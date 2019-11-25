@@ -1,0 +1,191 @@
+----------------------------------------------------------------------------------------------------
+Network connection issue on server progress
+
+netstat -s command show errors please investigate them and suggest appropriate actions
+
+
+netstat -s | grep buffer
+    14071 packets pruned from receive queue because of socket buffer overrun
+    7662897 packets collapsed in receive queue due to low socket buffer
+
+
+   4934 connections reset due to unexpected data
+    1103271 connections reset due to early user close
+    37436 connections aborted due to timeout
+
+    65 packets rejects in established connections because of timestamp
+    440677621 delayed acks sent
+    101160 delayed acks further delayed because of locked socket
+
+    64559 times the listen queue of a socket overflowed
+    64559 SYNs to LISTEN sockets ignored
+
+
+2372 congestion windows partially recovered using Hoe heuristic
+
+
+Those issue have impact on all monitoring on notifications
+
+----------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+Empty template
+---------------------------------------------------------------------------------------------------
+
+TICKET=IM0016306651
+HOST=progress
+
+---------------------------------------------------------------------------------------------------
+
+output:
+-------
+
+Socket buffer overrun means that data is not fit into special memory buffer, assigned to each connection. All the data coming from network interface is put into such a buffer, and your application is reading from it. Once the application has read the data - it's flushed from this buffer. Basically you should expect application to read data as soon as it's available and application is free to process the data. But if you have not enough performance - is it CPU saturated or application locked (which is quite often with nodejs) - the data is keep coming, but buffer size is not enough to handle it all.
+
+Even if you have enourmous buffers - it's still be pruned and data discarded if you application cannot process everything in time. So I'd suggest you to tune the application performance first.
+
+
+As one can see in the top output, the java process 16741 is using a lot of cpu ...
+
+Maybe you can restart this process ?
+
+top - 10:41:47 up 78 days, 14:29,  4 users,  load average: 1.90, 1.79, 1.76
+Tasks: 1749 total,   1 running, 1748 sleeping,   0 stopped,   0 zombie
+Cpu(s):  1.8%us,  0.4%sy,  0.0%ni, 97.8%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:  529247080k total, 166085604k used, 363161476k free,   923256k buffers
+Swap: 67108860k total,0k used, 67108860k free, 105170972k cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND 
+27828 bmcptrl   20   0 14.0g 167m  16m S 98.5  0.0   0:04.11 java    
+42007 bmcptrl   20   0  275m 270m 2312 S 47.4  0.1  11690:54 mcell   
+28060 root      20   0 16376 2468  836 R  7.3  0.0   0:00.08 top     
+28108 bmcptrl   20   0 61888 3352 2544 S  5.5  0.0   0:00.03 ssh     
+45322 bmcptrl   20   0  125m  20m 1484 S  3.6  0.0   2:14.89 agentcheck_cmdb 
+16287 bmcptrl   20   0  689m 683m 2004 S  1.8  0.1 386:44.80 mcell   
+21956 bmcptrl   20   0 2033m  13m 3352 S  1.8  0.0   0:03.84 httpd   
+28039 root      20   0 47160 6836 1172 S  1.8  0.0   0:00.01 munin-node   
+   
+
+---------------------------------------------------------------------------------------------------
+
+Reference: 
+
+https://serverfault.com/questions/287157/lots-of-packets-pruned-and-packets-collapsed-because-of-socket-buffer-low-overrun
+
+https://access.redhat.com/solutions/647953
+
+http://fasterdata.es.net/fasterdata/host-tuning/linux/test-measurement-host-tuning/
+http://www.acc.umu.se/~maswan/linux-netperf.txt
+
+
+TCP traffic loss, delay, or retransmissions to Java applications
+ SOLUTION VERIFIED - Updated December 18 2013 at 2:12 AM - English 
+Environment
+Red Hat Enterprise Linux
+Java application platform
+Issue
+Java application suffers delay receiving network traffic
+Packet capture shows TCP Retransmissions to RHEL system running Java application
+There is sometimes a delay in TCP ACK from the system where our JVM app runs
+TCP data cannot be transferred smoothly to Java app
+We can see errors in the socket buffers from netstat -s:
+Raw
+123456 packets pruned from receive queue because of socket buffer overrun
+234567 packets collapsed in receive queue due to low socket buffer
+Resolution
+Increase the size of the socket buffers the application uses.
+
+System level
+If the application does not set its own socket buffer sizes, the system default size is used.
+
+You can control the default TCP socket buffer size with the net.ipv4.tcp_rmem kernel parameter.
+
+The current value can be viewed with the command:
+
+Raw
+# sysctl -a | grep tcp_rmem
+net.ipv4.tcp_rmem = 4096  87380  4194304
+The first parameter is the minimum, the second parameter is the default, the third parameter is the maximum.
+
+Increase the default parameter with the command:
+
+Raw
+# sysctl -w "net.ipv4.tcp_rmem=4096 262144 4194304"
+net.ipv4.tcp_rmem = 4096 262144 4194304
+Depending on the network, data, application, and JVM, you may need to set a different size. Start at 256Kb, move up to 512kb, then 1Mb, then 2Mb, then 4Mb.
+
+Once the kernel parameter has been changed, restart the application so the setting takes effect on newly-created socket buffers.
+
+This setting can be persisted across reboots by entering the line into the /etc/sysctl.conf file, eg:
+
+Raw
+# grep rmem /etc/sysctl.conf
+net.ipv4.tcp_rmem = 4096 262144 4194304
+Application level
+If the application does control its own socket buffer sizes, then the above settings will have no effect because the application overrides them.
+
+In this case, the setReceiveBufferSize parameter in the ServerSocket class will need to be changed within the application's source code.
+
+Root Cause
+By design, Java pauses for garbage collection, and may pause for periods up to several seconds.
+
+During this time, no traffic is received from the socket buffer, which can result in the buffer filling. It would appear most Java Virtual Machines are not suitable for realtime operation or deterministic low latency network response.
+
+When a TCP transfer is in progress and a garbage collection pause occurs, the socket buffer can easily fill the default ~85kb size. This may also simply be because the application is busy doing other things.
+
+Enlarging the buffer will just "cover" the pauses or poor performance of the application. The true solution is to work out why the JVM or application does not receive from buffers fast enough. This is likely garbage collection pauses, but may be an application programming issue. Please troubleshoot further with your Java platform and/or application vendor.
+---------------------------------------------------------------------------------------------------
+TCP tuning
+Like most modern OSes, Linux now does a good job of auto-tuning the TCP buffers, but the default maximum Linux TCP buffer sizes are still too small. Here are some example sysctl.conf commands for different types of hosts.
+
+For a host with a 10G NIC, optimized for network paths up to 100ms RTT, and for friendlyness to single and parallel stream tools, add this to /etc/sysctl.conf
+
+# allow testing with buffers up to 64MB 
+net.core.rmem_max = 67108864 
+net.core.wmem_max = 67108864 
+# increase Linux autotuning TCP buffer limit to 32MB
+net.ipv4.tcp_rmem = 4096 87380 33554432
+net.ipv4.tcp_wmem = 4096 65536 33554432
+# recommended default congestion control is htcp 
+net.ipv4.tcp_congestion_control=htcp
+# recommended for hosts with jumbo frames enabled
+net.ipv4.tcp_mtu_probing=1
+# recommended for CentOS7/Debian8 hosts
+net.core.default_qdisc = fq
+On CentOS 5/6 hosts, also add this to /etc/rc.local (where N is the number for your 10G NIC): 
+      /sbin/ifconfig ethN txqueuelen 10000
+
+On newer Linux OSes this is no longer needed.
+
+For a host with a 10G NIC optimized for network paths up to 200ms RTT, and for friendliness to single and parallel stream tools, or a 40G NIC up on paths up to 50ms RTT:
+
+# allow testing with buffers up to 128MB
+net.core.rmem_max = 134217728 
+net.core.wmem_max = 134217728 
+# increase Linux autotuning TCP buffer limit to 64MB
+net.ipv4.tcp_rmem = 4096 87380 67108864
+net.ipv4.tcp_wmem = 4096 65536 67108864
+# recommended default congestion control is htcp 
+net.ipv4.tcp_congestion_control=htcp
+# recommended for hosts with jumbo frames enabled
+net.ipv4.tcp_mtu_probing=1
+# recommended for CentOS7/Debian8 hosts
+net.core.default_qdisc = fq
+Notes: you should leave net.tcp_mem alone, as the defaults are fine. A number of performance experts say to also increase net.core.optmem_max to match net.core.rmem_max and net.core.wmem_max, but we have not found that makes any difference. Some experts also say to set net.ipv4.tcp_timestamps and net.ipv4.tcp_sack to 0, as doing that reduces CPU load. We strongly disagree with that recommendation for WAN performance, as we have observed that the default value of 1 helps in more cases than it hurts, and can help a lot.
+
+For older OSes (e.g. CentOS5/6), increasing net.core.netdev_max_backlog also improves performance.
+
+Linux supports pluggable congestion control algorithms. To get a list of congestion control algorithms that are available in your kernel (kernal  2.6.20+), run:
+
+sysctl net.ipv4.tcp_available_congestion_control
+If cubic and/or htcp are not listed try the following, as most distributions include them as loadable kernel modules:
+
+/sbin/modprobe tcp_htcp
+/sbin/modprobe tcp_cubic
+NOTE: There seem to be bugs in both bic and cubic for a number of versions of the Linux kernel up to version 2.6.33. We recommend using htcp with older kernels to be safe. To set the congestion control do:
+
+sysctl -w net.ipv4.tcp_congestion_control=htcp
+If you are using Jumbo Frames, we recommend setting tcp_mtu_probing = 1 to help avoid the problem of MTU black holes. Setting it to 2 sometimes causes performance problems.
+
+---------------------------------------------------------------------------------------------------
+
+

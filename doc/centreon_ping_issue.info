@@ -1,0 +1,21 @@
+
+Ticket: IM0018297717
+
+OP - tccp0088:  check ping to DIGIT servers
+
+Good mornig,
+Please could you check why we are not able to ping "tccp0088.cc.cec.eu.int" (DIGIT) from "ccentral1-pk" (OP)?  Is it related to missing route or firewal?
+
+[valleje@ccentral1-pk]~% ping tccp0088.cc.cec.eu.int
+PING tccp0088.cc.cec.eu.int (10.133.60.28) 56(84) bytes of data.
+
+In general, we are not able to ping servers with addresses like  10.133.X.Y from our centreon servers (ccentral1-pk, cpoller1-pk, cpoller2-pk, cpoller3-pk, cpoller4-pk)
+
+
+Solution:
+Ask to SNET to allow ICMP
+
+
+SNET:
+ccentral1-pk/cpoller[1-4]-pk are part of the monitoring infrastructure and they need to check the reachability of tccp0088.cc.cec.eu.int
+Can you please allow ICMP between those servers and tccp0088.cc.cec.eu.int? Thank you very much.

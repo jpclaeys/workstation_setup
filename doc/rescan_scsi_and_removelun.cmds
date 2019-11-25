@@ -1,0 +1,102 @@
+# Re-configure removed_luns (not yest recovered by the storage)
+----------------------------------------------------------------
+
+VM_NAME=fedorafs1-recover-tk
+virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+
+# rescan the scsi bus
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+multipath -r
+multipath -ll
+
+# remove luns
+
+multipath -ll | grep $VM_NAME
+for DEVICE in `multipath -ll|grep $VM_NAME | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $DEVICE|bash;done
+multipath -ll | grep $VM_NAME
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+
+[root@picard ~]# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+[root@picard ~]# partprobe /dev/mapper/fedorafs1-recover-tk_t2_data16
+[root@picard ~]# virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+ls: cannot access /dev/mapper/fedorafs1-recover-tk_t2_system1p1: No such file or directory
+ls: cannot access /dev/mapper/fedorafs1-recover-tk_t2_data16p1: No such file or directory
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data10p1 -> ../dm-131
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data11p1 -> ../dm-171
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data12p1 -> ../dm-177
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data13p1 -> ../dm-176
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data14p1 -> ../dm-175
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data1p1 -> ../dm-105
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data5p1 -> ../dm-121
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data6p1 -> ../dm-157
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data7p1 -> ../dm-155
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data8p1 -> ../dm-126
+lrwxrwxrwx 1 root root 9 27 aoû 15:19 /dev/mapper/fedorafs1-recover-tk_t2_data9p1 -> ../dm-144
+
+[root@picard ~]# for DEVICE in `multipath -ll|grep $VM_NAME | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $DEVICE|bash;done
+[root@picard ~]# multipath -ll|grep $VM_NAME
+
+[root@riker ~]# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+[root@riker ~]# VM_NAME=fedorafs1-recover-tk
+[root@riker ~]# multipath -ll | grep $VM_NAME
+fedorafs1-recover-tk_t2_data13 (360000970000296700060533030334146) dm-122 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data12 (360000970000296700060533030334145) dm-178 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data11 (360000970000296700060533030334144) dm-140 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data1 (360000970000296700060533030313346) dm-78 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data10 (360000970000296700060533030334143) dm-141 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_system1 (360000970000296700060533030313038) dm-9 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data9 (360000970000296700060533030334142) dm-104 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data8 (360000970000296700060533030324132) dm-145 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data7 (360000970000296700060533030333432) dm-87 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data16 (360000970000296700060533030353633) dm-82 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data6 (360000970000296700060533030324344) dm-105 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data5 (360000970000296700060533030324332) dm-56 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data14 (360000970000296700060533030334230) dm-110 EMC,SYMMETRIX
+[root@riker ~]# for DEVICE in `multipath -ll|grep $VM_NAME | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $DEVICE|bash;done
+[root@riker ~]# multipath -ll|grep $VM_NAME
+[root@riker ~]# 
+
+[root@laforge ~]# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+[root@laforge ~]# VM_NAME=fedorafs1-recover-tk
+[root@laforge ~]# multipath -ll | grep $VM_NAME
+fedorafs1-recover-tk_t2_data13 (360000970000296700069533030334146) dm-127 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data12 (360000970000296700069533030334145) dm-140 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data11 (360000970000296700069533030334144) dm-125 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data1 (360000970000296700069533030313346) dm-75 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data10 (360000970000296700069533030334143) dm-153 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_system1 (360000970000296700069533030313038) dm-68 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data9 (360000970000296700069533030334142) dm-145 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data8 (360000970000296700069533030324132) dm-128 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data7 (360000970000296700069533030333432) dm-124 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data16 (360000970000296700069533030353633) dm-56 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data6 (360000970000296700069533030324344) dm-110 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data5 (360000970000296700069533030324332) dm-76 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data14 (360000970000296700069533030334230) dm-130 EMC,SYMMETRIX
+[root@laforge ~]# for DEVICE in `multipath -ll|grep $VM_NAME | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $DEVICE|bash;done
+[root@laforge ~]# multipath -ll|grep $VM_NAME
+[root@laforge ~]# 
+
+[root@worf ~]# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+[root@worf ~]# VM_NAME=fedorafs1-recover-tk
+[root@worf ~]# multipath -ll | grep $VM_NAME
+fedorafs1-recover-tk_t2_data13 (360000970000296700069533030334146) dm-155 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data12 (360000970000296700069533030334145) dm-152 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data11 (360000970000296700069533030334144) dm-197 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data1 (360000970000296700069533030313346) dm-77 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data10 (360000970000296700069533030334143) dm-154 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_system1 (360000970000296700069533030313038) dm-52 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data9 (360000970000296700069533030334142) dm-140 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data8 (360000970000296700069533030324132) dm-123 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data7 (360000970000296700069533030333432) dm-159 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data16 (360000970000296700069533030353633) dm-30 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data6 (360000970000296700069533030324344) dm-142 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data5 (360000970000296700069533030324332) dm-96 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data14 (360000970000296700069533030334230) dm-139 EMC,SYMMETRIX
+[root@worf ~]# for DEVICE in `multipath -ll|grep $VM_NAME | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $DEVICE|bash;done
+[root@worf ~]# multipath -ll|grep $VM_NAME
+[root@worf ~]# 
+

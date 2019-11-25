@@ -1,0 +1,22 @@
+After a /var 100% full, it mught happen that some users cannot conect anymore.
+
+root cause: sssd db is corrupted
+
+Solution:
+stop sssd service
+
+cd /var/lib/sss/db
+remove the 3 files 
+
+ex. 
+[root@cellarbo-tk samba]# ll /var/lib/sss/db
+total 4084
+-rw------- 1 root root 1609728 10 sep 14:58 cache_default.ldb
+-rw------- 1 root root 1286144 25 nov  2018 config.ldb
+-rw------- 1 root root 1286144 20 oct  2015 sssd.ldb
+
+
+restart the sssd service
+
+perform some id <user> command in the goal to rebuild the sssd db files
+

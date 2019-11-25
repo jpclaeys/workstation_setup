@@ -1,0 +1,205 @@
+# Clear fmadm errors (after HW intervention)
+---------------------------------------------
+From within the host:
+---------------------
+# fmadm faulty -s
+fmadm faulty| grep Major | awk '{print $4}' | xargs -n1 echo fmadm repair| sh
+# view the events and the Problem Status
+fmadm faulty | ggrep -A4 EVENT
+ OR
+fmadm faulty | awk '/EVENT/,/Problem Status/'
+
+From the console:
+-----------------
+->  start /SP/faultmgmt/shell
+faultmgmtsp> fmadm faulty -s
+faultmgmtsp> fmadm repair <event id>
+
+====================================================================================================================================
+
+
+
+
+# grep the event ID
+root@fulmar:->fmadm faulty -s
+--------------- ------------------------------------  -------------- ---------
+TIME            EVENT-ID                              MSG-ID         SEVERITY
+--------------- ------------------------------------  -------------- ---------
+May 21 10:12:49 a9a646ff-8f38-ce45-9b8d-de6316dd80c9  SUN4V-8002-SP  Major     
+May 21 10:03:53 7b026e2b-254f-ca37-a0e1-fe51cf53edcb  SUN4V-8000-X2  Major     
+
+root@fulmar:->fmadm repair 7b026e2b-254f-ca37-a0e1-fe51cf53edcb
+fmadm: recorded repair to 7b026e2b-254f-ca37-a0e1-fe51cf53edcb
+16 root@fulmar:->fmadm repair a9a646ff-8f38-ce45-9b8d-de6316dd80c9
+fmadm: recorded repair to a9a646ff-8f38-ce45-9b8d-de6316dd80c9
+17 root@fulmar:->fmadm faulty
+---------------------------------------------------------------------------------------------------
+
+
+[claeyje@muscadet ~]$ sr ovambo-sc
+Password: 
+
+Oracle(R) Integrated Lights Out Manager
+
+Version 3.2.6.6 r119466
+
+Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+
+Warning: HTTPS certificate is set to factory default.
+
+Hostname: ovambo-sc
+
+->  start /SP/faultmgmt/shell
+Are you sure you want to start /SP/faultmgmt/shell (y/n)? y
+
+faultmgmtsp> help
+
+Built-in commands:
+  echo   - Display information to user.
+           Typical use: echo $?
+  help   - Produces this help.
+           Use 'help <command>' for more information about an external command.
+  exit   - Exit this shell.
+
+External commands:
+  fmadm  - Administers the fault management service
+  fmdump - Displays contents of the fault and ereport/error logs
+  fmstat - Displays statistics on fault management operations
+
+faultmgmtsp> fmadm faulty
+------------------- ------------------------------------ -------------- --------
+Time                UUID                                 msgid          Severity
+------------------- ------------------------------------ -------------- --------
+2018-04-21/04:08:46 05a29e12-f46e-6763-cd21-a792b272de73 SUN4V-8002-Q2  Unknown
+
+Fault class : fault.memory.memlink-uc
+
+FRU         : /SYS/MB
+              (Part Number: 7049060)
+              (Serial Number: 465769T+1317TF0LMK)
+
+Description : A fault was diagnosed by the Host Operating System.
+
+Action      : Please refer to the associated reference document at
+              http://support.oracle.com/msg/SUN4V-8002-Q2 for a complete,
+              detailed description and the latest service procedures and
+              policies regarding this diagnosis.
+
+------------------- ------------------------------------ -------------- --------
+Time                UUID                                 msgid          Severity
+------------------- ------------------------------------ -------------- --------
+2018-04-21/04:08:46 05a29e12-f46e-6763-cd21-a792b272de73 SUN4V-8002-Q2  Unknown
+
+Fault class : fault.memory.memlink-uc
+
+FRU         : /SYS/MB/CMP0/MR1
+              (Part Number: 541-4438-01)
+              (Serial Number: 0328MSL-1224TA1N1M)
+
+Description : A fault was diagnosed by the Host Operating System.
+
+Action      : Please refer to the associated reference document at
+              http://support.oracle.com/msg/SUN4V-8002-Q2 for a complete,
+              detailed description and the latest service procedures and
+              policies regarding this diagnosis.
+
+faultmgmtsp> fmadm repair 05a29e12-f46e-6763-cd21-a792b272de73
+faultmgmtsp> fmadm faulty                                     
+No problems found
+faultmgmtsp> exit
+
+
+-> show /SP/logs/event/list
+
+Event
+ID     Date/Time                 Class     Type      Severity
+-----  ------------------------  --------  --------  --------
+565    Tue Apr 24 07:39:11 2018  Fault     Repair    minor   
+       Component /SYS/MB/CMP0/MR1 repaired
+564    Tue Apr 24 07:39:11 2018  Fault     Repair    minor   
+       Fault fault.memory.memlink-uc on component /SYS/MB/CMP0/MR1 cleared
+563    Tue Apr 24 07:39:11 2018  Fault     Repair    minor   
+       Component /SYS/MB repaired
+562    Tue Apr 24 07:39:10 2018  Fault     Repair    minor   
+       Fault fault.memory.memlink-uc on component /SYS/MB cleared
+561    Sat Apr 21 04:08:46 2018  Fault     Fault     critical
+       Fault detected at time = Sat Apr 21 04:08:46 2018. The suspect component: /SYS/MB has fault.memory.memlink-uc 
+       with probability=50. Refer to http://support.oracle.com/msg/SUN4V-8002-Q2 for details.
+560    Mon Jan 15 20:37:45 2018  System    Log       minor   
+       Host: Solaris running
+                                                                                                              
+-> show /HOST
+<snip>
+    Properties:
+        autorestart = reset
+        autorunonerror = false
+        bootfailrecovery = poweroff
+        bootrestart = none
+        boottimeout = 0
+        hypervisor_version = Hypervisor 1.15.9 2017/06/07 09:53
+        ioreconfigure = true
+        macaddress = 00:10:e0:20:bc:b4
+        maxbootfail = 3
+        obp_version = OpenBoot 4.38.9 2017/06/07 09:17
+        post_version = POST 4.38.9 2017/06/07 09:22
+        send_break_action = (Cannot show property)
+        status = Solaris running
+        sysfw_version = Sun System Firmware 8.9.9 2017/07/12 10:11
+-> show /SYS
+
+<snip>
+    Properties:
+        type = Host System
+        ipmi_name = /SYS
+        keyswitch_state = Normal
+        product_name = SPARC T4-2
+        product_part_number = 31224335+1+1
+        product_serial_number = 1244BDYE4F
+        product_manufacturer = Oracle Corporation
+        fault_state = OK
+        clear_fault_action = (none)
+        power_state = On
+-> reset /SP
+Are you sure you want to reset /SP (y/n)? y
+Performing reset on /SP
+
+-> Connection to ovambo-sc closed by remote host.
+
+
+After SP rebooted:
+------------------
+
+-> show /SP/logs/event/list
+
+Event
+ID     Date/Time                 Class     Type      Severity
+-----  ------------------------  --------  --------  --------
+<snip>
+563    Tue Apr 24 07:39:11 2018  Fault     Repair    minor   
+
+
+---------------------------------------------------------------------------------------------------
+On the host:
+------------
+19 root@ovambo:->fmadm faulty
+--------------- ------------------------------------  -------------- ---------
+TIME            EVENT-ID                              MSG-ID         SEVERITY
+--------------- ------------------------------------  -------------- ---------
+Apr 21 06:08:46 05a29e12-f46e-6763-cd21-a792b272de73  SUN4V-8002-Q2  Critical  
+
+Host        : ovambo.cc.cec.eu.int
+Platform    : ORCL,SPARC-T4-2	Chassis_id  : 1244BDYE4F
+Product_sn  : 1244BDYE4F
+
+Fault class : fault.memory.memlink-uc
+<snip>
+
+20 root@ovambo:->fmadm repair 05a29e12-f46e-6763-cd21-a792b272de73
+fmadm: recorded repair to 05a29e12-f46e-6763-cd21-a792b272de73
+21 root@ovambo:->fmadm faulty
+
+22 root@ovambo:->/usr/nagios/plugins/check_hardware 
+check_hardware OK (fw: 1, obp: 1, fru: 59, cpu: 128, env: 158, io: 13, HWcompare: 2)
+
+---------------------------------------------------------------------------------------------------
+

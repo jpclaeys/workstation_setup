@@ -1,0 +1,11 @@
+[root@eurlexbo-pz /]# /home/admin/bin/rsync  --version       
+rsync  version 2.6.6  protocol version 29
+Copyright (C) 1996-2005 by Andrew Tridgell and others
+<http://rsync.samba.org/>
+Capabilities: 64-bit files, socketpairs, hard links, ACLs, symlinks, batchfiles, 
+              inplace, no IPv6, 64-bit system inums, 64-bit internal inums
+
+rsync comes with ABSOLUTELY NO WARRANTY.  This is free software, and you
+are welcome to redistribute it under certain conditions.  See the GNU
+General Public Licence for details.
+

@@ -1,0 +1,95 @@
+------------------------------------------------------------------------------------------------------------------------------------
+s opvmwstsx11
+become root
+cd /lib/systemd/system
+vi xpra@claeyje.service
+  ... change the resolution 
+systemctl daemon-reload
+systemctl stop xpra@claeyje.service
+systemctl start xpra@claeyje.service
+systemctl status xpra@claeyje.service
+------------------------------------------------------------------------------------------------------------------------------------
+[root@opvmwstsx11 system]# vi xpra@claeyje.service
+[root@opvmwstsx11 system]# systemctl daemon-reload
+[root@opvmwstsx11 system]# systemctl stop xpra@claeyje.service
+[root@opvmwstsx11 system]# systemctl start xpra@claeyje.service
+[root@opvmwstsx11 system]# systemctl status xpra@claeyje.service
+● xpra@claeyje.service - xpra display
+   Loaded: loaded (/usr/lib/systemd/system/xpra@claeyje.service; enabled; vendor preset: disabled)
+   Active: active (running) since Thu 2019-05-16 09:04:25 CEST; 20ms ago
+ Main PID: 117267 (xpra)
+   CGroup: /system.slice/system-xpra.slice/xpra@claeyje.service
+           └─117267 /usr/bin/python2 /usr/bin/xpra --pulseaudio=no --daemon=no --start-child=mate-session --start=xrandr -s 1920x1200 --exit-with-children start-desktop :6005
+
+May 16 09:04:25 opvmwstsx11 systemd[1]: Started xpra display.
+May 16 09:04:25 opvmwstsx11 systemd[1]: Starting xpra display...
+
+[root@opvmwstsx11 system]# systemctl status xpra@claeyje.service | grep start-desktop
+           ├─117267 /usr/bin/python2 /usr/bin/xpra --pulseaudio=no --daemon=no --start-child=mate-session --start=xrandr -s 1920x1200 --exit-with-children start-desktop :6005
+
+
+[root@opvmwstsx11 system]# systemctl status xpra@claeyje.service | grep Loaded
+   Loaded: loaded (/usr/lib/systemd/system/xpra@claeyje.service; enabled; vendor preset: disabled)
+
+[root@opvmwstsx11 system]# cat /usr/lib/systemd/system/xpra@claeyje.service
+[Unit]
+Description=xpra display
+
+[Service]
+Type=simple
+User=claeyje
+#EnvironmentFile=/etc/xpra/xpra_claeyje.conf
+#ExecStart=/usr/bin/xpra --pulseaudio=no --daemon=no start ${%i}
+#ExecStart=/usr/bin/xpra --pulseaudio=no --daemon=no --start-child=mate-session "--start=xrandr -s 1024x768" --exit-with-children start-desktop :6005
+#ExecStart=/usr/bin/xpra --pulseaudio=no --daemon=no --start-child=mate-session "--start=xrandr -s 3200x960" --exit-with-children start-desktop :6005
+ExecStart=/usr/bin/xpra --pulseaudio=no --daemon=no --start-child=mate-session "--start=xrandr -s 1920x1200" --exit-with-children start-desktop :6005
+#rely on SIGKILL which returns 128+15=143
+SuccessExitStatus=0 143
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+------------------------------------------------------------------------------------------------------------------------------------
+
+Get monitor resolution on iceman
+[claeyje@iceman ~]# xdpyinfo | egrep 'screen|dimensions'
+default screen number:    0
+number of screens:    1
+screen #0:
+  dimensions:    3200x1200 pixels (847x318 millimeters)
+
+[claeyje@iceman ~]# xrandr
+Screen 0: minimum 8 x 8, current 3200 x 1200, maximum 16384 x 16384
+DVI-I-0 disconnected (normal left inverted right x axis y axis)
+VGA-0 connected 1280x1024+1920+0 (normal left inverted right x axis y axis) 376mm x 300mm
+   1280x1024      60.0*+   75.0     60.0  
+   1920x1080      60.2  
+   1400x1050      60.0  
+   1280x960       60.0  
+   1152x921       66.0  
+   1152x864       75.0  
+   1024x768       75.0     70.1     60.0  
+   960x600        59.6  
+   960x540        60.2  
+   832x624        74.6  
+   800x600        75.0     72.2     60.3     56.2  
+   700x525        74.8     60.0  
+   640x480        75.0     72.8     72.8     59.9  
+   512x384        70.1     60.0  
+   400x300        72.2  
+   320x240        72.8     60.1  
+DVI-I-1 connected primary 1920x1200+0+0 (normal left inverted right x axis y axis) 519mm x 324mm
+   1920x1200      60.0*+   59.9  
+   1680x1050      60.0  
+   1440x900       59.9  
+   1400x1050      60.0  
+   1280x1024      60.0  
+   1280x960       60.0  
+   1280x800       59.8  
+   1280x720       60.0  
+   1024x768       60.0  
+   800x600        60.3     56.2  
+   720x480        59.9  
+   640x480        59.9  
+HDMI-0 disconnected (normal left inverted right x axis y axis)
+------------------------------------------------------------------------------------------------------------------------------------

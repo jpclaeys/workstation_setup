@@ -1,0 +1,61 @@
+PATH+=":/usr/symcli/bin:/etc"
+
+# VMAX: VMAX_2560|Vmax3_0069
+symaccess -sid 2560 list  | grep Storage | grep opgt
+symaccess -sid 2560 show view opgtw
+symaccess -sid 2560 show view esendtool-pz
+
+symdg list
+symdg show <disk group>
+
+# Get device Disk Group IDs
+symdg show <disk group> | awk '/\(STD\)/,/RDF Info/'|awk '/DEV/ {print $3}'| sed 's/^0//' 
+# Get SRDF personality
+symdg show <disk group> | egrep 'Group (Name:|Type)|RDF State'
+
+symdisk list
+
+symdev  list
+symdev show -sid <SID> <LUN>
+# example: get device WWN
+symdev show -sid 2560 34FD | grep 'Device WWN' | awk '{print $4;exit}'
+
+# Get the symmetrix ID list
+symdisk list| grep 'Symmetrix ID'
+
+symrdf -g <group-name> verify [-summary|-synchronized]
+
+# Switch srdf device group
+symrdf -g <device_group> failover -establish -nop
+
+   failover       Switches data processing from the source (R1) to the target (R2) side.
+
+                  If the source (R1) is operational, suspends I/O traffic on the SRDF links and write disables the devices on the source (R1)
+                  side to their local hosts. Then, it suspends traffic on the SRDF links, write enables the devices on the target side
+                  to their local hosts.
+
+   -establish     Begins a device copy. 
+                  When used with failover, the dynamic SRDF device pairs swap personality and an incremental establish is initiated.
+
+   -noprompt      Requests that prompts are not displayed after the command is entered. The default is to prompt the user for confirmation.
+
+# Check that R1-R2 pair is synchronized
+symrdf -g <device_group> query | grep DEV
+
+# View status of RDF devices
+symrdf -g <device_group> query
+
+# In order to find the corresponding devices, we use the powermt command:
+
+powermt check
+powermt display
+powermt display dev=<device name> #  (ex. emcpower13a)
+
+# Check if there are iopf issues on PowerPath
+powermt display dev=all|grep iopf
+# if there are devices in "iopf" state, then try to cleanup:
+for DEV in `powermt display dev=all|awk '/iopf/ {print $3}'`; do powermt set mode=active class=symm dev=$DEV force;done; powermt display dev=all|grep iopf
+# wait a while, and check again to ensure the error doesn't come back
+# if ok, save the configuration:
+powermt save
+

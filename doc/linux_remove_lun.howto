@@ -1,0 +1,19 @@
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/RemoveLUNfromRAChttp://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/RemoveLUNfromRAC
+LUN removal
+
+Finally, remove the disks from their paths.
+The following steps are done on each node, one after another
+
+for disk in $DISKS ;do  
+   > /tmp/ids
+   multipath -l $disk | awk '/sd/ {print $3}' | tee -a /tmp/ids
+   multipath -f $disk;
+   cat  /tmp/ids | while read id; do
+      blockdev --flushbufs /dev/${id}
+      echo 1 > /sys/block/${id}/device/delete
+     done
+done
+Make sure the LUNS are actually removed from system:
+for X in $CLUSTERMEMBERS; do ssh root@$X 'DISKS=$(cat /tmp/disk_list); for disk in $DISKS ;do  ls -1 /dev/san/*| grep $disk; done' ; done
+There should be no output.
+

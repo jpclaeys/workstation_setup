@@ -1,0 +1,44 @@
+ILOM cmds
+---------
+
+-> stop /SYS
+
+-> show /SYS power_state
+
+  /SYS
+    Properties:
+        power_state = Off
+
+
+-> set /HOST send_break_action=break
+-> start /SP/console -script        
+
+-> stop /SYS
+-> show -d properties /SYS
+
+-> set /SYS/LOCATE value=Fast_Blink
+-> show /SYS/LOCATE
+
+
+
+Boot prompt cmds
+----------------
+
+reset-all    # required after a break
+
+watch-net-all
+devalias
+show-nets
+reset-all
+devalias
+printenv nvramrc
+
+setenv network-boot-arguments host-ip=10.199.99.164,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=chico,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+
+----------------------------------------
+
+setenv auto-boot? false
+setenv local-mac-address? false
+setenv diag-switch? false
+
+----------------------------------------

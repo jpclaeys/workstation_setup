@@ -1,0 +1,67 @@
+Howto remove luns
+------------------
+1. use the script located in the admin environment:
+/home/admin/bin/removelun_rhel
+
+2. If it doesn't work, try the manual way:
+
+Cleanup and disconnect disks
+-----------------------------
+
+{
+multipath -ll
+DEVLIST=`multipath -ll | grep running | awk '{print $(NF-4)}' ` && echo $DEVLIST
+DEVALIAS=`multipath -ll | grep EMC | awk '{print $1}' ` && echo $DEVALIAS
+for i in $DEVALIAS; do echo multipath -f /dev/mapper/$i;done | bash
+for i in $DEVLIST; do echo "echo offline > /sys/block/$i/device/state"; echo "echo 1 >/sys/block/$i/device/delete" ;done | bash
+multipath -ll
+}
+
+====================================================================================================================================
+
+Example:
+---------
+
+multipath -ll
+# mpathag (360000970000296700060533030374630) dm-11 EMC     ,SYMMETRIX       
+# size=355G features='1 queue_if_no_path' hwhandler='0' wp=rw
+# `-+- policy='service-time 0' prio=1 status=active
+#   |- 1:0:0:8 sday 67:32  active ready running
+#   |- 1:0:1:8 sdba 67:64  active ready running
+#   |- 2:0:0:8 sdbc 67:96  active ready running
+#   `- 2:0:1:8 sdbe 67:128 active ready running
+# mpathaf (360000970000296700060533030374546) dm-10 EMC     ,SYMMETRIX       
+# size=45G features='1 queue_if_no_path' hwhandler='0' wp=rw
+# `-+- policy='service-time 0' prio=1 status=active
+#   |- 1:0:0:7 sdax 67:16  active ready running
+#   |- 1:0:1:7 sdaz 67:48  active ready running
+#   |- 2:0:0:7 sdbb 67:80  active ready running
+#   `- 2:0:1:7 sdbd 67:112 active ready running
+DEVLIST=`multipath -ll | grep running | awk '{print $(NF-4)}' ` && echo $DEVLIST
+ 
+# sday sdba sdbc sdbe sdax sdaz sdbb sdbd
+DEVALIAS=`multipath -ll | grep EMC | awk '{print $1}' ` && echo $DEVALIAS
+# mpathag mpathaf
+for i in $DEVALIAS; do echo multipath -f /dev/mapper/$i;done | bash
+# multipath -f /dev/mapper/mpathag
+# multipath -f /dev/mapper/mpathaf
+for i in $DEVLIST; do echo "echo offline > /sys/block/$i/device/state"; echo "echo 1 >/sys/block/$i/device/delete" ;done | bash
+# echo offline > /sys/block/sday/device/state
+# echo 1 >/sys/block/sday/device/delete
+# echo offline > /sys/block/sdba/device/state
+# echo 1 >/sys/block/sdba/device/delete
+# echo offline > /sys/block/sdbc/device/state
+# echo 1 >/sys/block/sdbc/device/delete
+# echo offline > /sys/block/sdbe/device/state
+# echo 1 >/sys/block/sdbe/device/delete
+# echo offline > /sys/block/sdax/device/state
+# echo 1 >/sys/block/sdax/device/delete
+# echo offline > /sys/block/sdaz/device/state
+# echo 1 >/sys/block/sdaz/device/delete
+# echo offline > /sys/block/sdbb/device/state
+# echo 1 >/sys/block/sdbb/device/delete
+# echo offline > /sys/block/sdbd/device/state
+# echo 1 >/sys/block/sdbd/device/delete
+multipath -ll
+====================================================================================================================================
+

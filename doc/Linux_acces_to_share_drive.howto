@@ -1,0 +1,71 @@
+Ex. IM0018044812
+
+Access to shared drives \\infra1-pk\docs and \\infra1-pk\050_Database
+
+Hello Helpdesk,
+
+Please log a call to the system administrators to grant me ‘fermaml’ access to the below drives required for maintaining the keepass.
+
+\\infra1-pk\docs
+
+\\infra1-pk\050_Database
+
+Thanks and regards,
+
+Mamloo Fernandes
+
+Connect to infra1-pk
+
+Get the samba config:
+
+[claeyje@infra1-pk samba]# grep include  /etc/samba/smb.conf
+    include = /etc/samba/smb.conf.local
+[claeyje@infra1-pk samba]# cat /etc/samba/smb.conf.local
+
+<snip>
+[docs]
+  comment = Halian TEAM 10101 Lot3  documents
+  browseable = no
+  path = /applications/portal/docs
+  guest ok = no
+  read only = yes 
+  read list = @PUBLICATIONS+A4-Exploitation-INT-Prod @PUBLICATIONS+A4-Exploitation-Systems @PUBLICATIONS+A4-Exploitation-Databases @PUBLICATIONS+A4-Exploitati
+on-AdminTech @PUBLICATIONS+A4-Exploitation-ITProd bailvin
+  force user = portal
+  force group = portal_grp
+  inherit owner = yes
+  inherit permissions = yes
+<snip>
+
+[050_Database]
+  comment = Halian TEAM 10101 Lot3 Database
+  browseable = yes
+  path = /applications/portal/docs/050_Database
+  guest ok = no
+  #read only = yes 
+  write list = @PUBLICATIONS+A4-Exploitation-Databases @PUBLICATIONS+A4-Exploitation-AdminTech @PUBLICATIONS+A4-Exploitation-ITProd
+  force user = portal
+  force group = portal_grp
+  inherit owner = yes
+  inherit permissions = yes
+  veto files = .htaccess
+<snip>
+
+
+Userfermaml is part of the DBA team
+--> identify AD group: A4-Exploitation-Databases 
+
+
+On windows, open an Explorer
+
+Select Network in the left pane
+
+Then select the "Search Active Directory" button in the top bar
+
+Enter the DA group name: A4-Exploitation-Databases
+Click on the Find Now button
+Double click on the founf group
+--> the DBA users are listed
+
+Open a ticket to WIN-OPOCE to add the user fermaml to the AD group
+

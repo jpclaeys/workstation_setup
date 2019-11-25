@@ -1,0 +1,25 @@
+Before Solaris 11.3 dynamically adding resources to zone does not work so we will reboot the zone. When the zone booted we will observe the change:
+
+Currently S11.3 LZR (live zone reconfiguration) doesn't support dataset, as stated in "man -s 5 solaris":
+
+"The following zoneadm(1M) resources and properties are not supported by
+the live zone reconfiguration for solaris brand:
+
+anet:allowed-address
+anet:configure-allowed-address
+anet:defrouter
+dataset
+file-mac-profile
+fs-allowed
+hostid
+limitpriv
+global-time
+net:allowed-address
+net:configure-allowed-address
+net:defrouter
+npiv
+tenant
+zpool"
+
+That feature will be available in a future release of Solaris 11.
+

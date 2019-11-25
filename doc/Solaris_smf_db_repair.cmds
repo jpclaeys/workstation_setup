@@ -1,0 +1,137 @@
+# How to Repair a Corrupt Repository 
+#------------------------------------
+
+# Note: this happens only on Solaris 110 branded zones
+
+Ref. https://docs.oracle.com/cd/E19253-01/817-1985/ecduh/index.html
+
+Note:
+Before running the script, check the size of the backup reposirories in /etc/svc
+ex.
+[root@metaconv-dz etc]# ll /etc/svc
+total 46360
+lrwxrwxrwx   1 root     root          31 sept 23 13:36 repository-boot -> repository-boot-20190923_133638
+-rw-------   1 root     root         34K sept 23 10:05 repository-boot-20190923_100500
+-rw-------   1 root     root         34K sept 23 10:10 repository-boot-20190923_101021
+-rw-------   1 root     root        3,7M sept 23 13:33 repository-boot-20190923_133303
+-rw-------   1 root     root        3,7M sept 23 13:36 repository-boot-20190923_133638
+lrwxrwxrwx   1 root     root          42 sept 19 08:16 repository-manifest_import -> repository-manifest_import-20190919_081627
+-rw-------   1 root     root        3,7M avr  25 08:06 repository-manifest_import-20190425_080649
+-rw-------   1 root     root        3,7M sept 19 07:04 repository-manifest_import-20190919_070441
+-rw-------   1 root     root        3,7M sept 19 08:12 repository-manifest_import-20190919_081255
+-rw-------   1 root     root           0 sept 19 08:16 repository-manifest_import-20190919_081627
+-rw-------   1 root     root        3,7M sept 23 13:36 repository.db
+-rw-------   1 root     root         34K sept 23 10:30 repository.db_old_20190923_133233
+drwxr-xr-x   8 root     sys         1,8K oct   1 11:07 volatile
+
+
+
+
+
+This procedure shows how to replace a corrupt repository with a default copy of the repository. When the repository daemon, svc.configd, is started, it does an integrity check of the configuration repository. This repository is stored in /etc/svc/repository.db. The repository can become corrupted due to one of the following reasons:
+
+Disk failure
+
+Hardware bug
+
+Software bug
+
+Accidental overwrite of the file
+
+If the integrity check fails, the svc.configd daemon writes a message to the console similar to the following:
+
+
+svc.configd: smf(5) database integrity check of:
+
+    /etc/svc/repository.db
+
+  failed.  The database might be damaged or a media error might have
+  prevented it from being verified.  Additional information useful to
+  your service provider is in:
+
+    /etc/svc/volatile/db_errors
+
+  The system will not be able to boot until you have restored a working
+  database.  svc.startd(1M) will provide a sulogin(1M) prompt for recovery
+  purposes.  The command:
+
+    /lib/svc/bin/restore_repository
+
+  can be run to restore a backup version of your repository. See
+  http://sun.com/msg/SMF-8000-MY for more information.
+The svc.startd daemon then exits and starts sulogin to enable you to perform maintenance.
+
+Enter the root password at the sulogin prompt. sulogin enables the root user to enter system maintenance mode to repair the system.
+
+Run the following command:
+
+
+# /lib/svc/bin/restore_repository
+Running this command takes you through the necessary steps to restore a non-corrupt backup. SMF automatically takes backups of the repository at key system moments. For more information see SMF Repository Backups.
+
+When started, the /lib/svc/bin/restore_repository command displays a message similar to the following:
+
+
+Repository Restore utility
+See http://sun.com/msg/SMF-8000-MY for more information on the use of
+this script to restore backup copies of the smf(5) repository.
+
+If there are any problems which need human intervention, this script
+will give instructions and then exit back to your shell.
+
+Note that upon full completion of this script, the system will be
+rebooted using reboot(1M), which will interrupt any active services.
+If the system that you are recovering is not a local zone, the script explains how to remount the / and /usr file systems with read and write permissions to recover the databases. The script exits after printing these instructions. Follow the instructions, paying special attention to any errors that might occur.
+
+After the root ( /) file system is mounted with write permissions, or if the system is a local zone, you are prompted to select the repository backup to restore:
+
+
+The following backups of /etc/svc/repository.db exists, from
+oldest to newest:
+
+... list of backups ...
+Backups are given names, based on type and the time the backup was taken. Backups beginning with boot are completed before the first change is made to the repository after system boot. Backups beginning with manifest_import are completed after svc:/system/manifest-import:default finishes its process. The time of the backup is given in YYYYMMDD_HHMMSS format.
+
+Enter the appropriate response.
+
+Typically, the most recent backup option is selected.
+
+Please enter one of:
+
+
+        1) boot, for the most recent post-boot backup
+        2) manifest_import, for the most recent manifest_import backup.
+        3) a specific backup repository from the above list
+        4) -seed-, the initial starting repository. (All customizations
+           will be lost.)
+        5) -quit-, to cancel.
+
+Enter response [boot]:
+If you press Enter without specifying a backup to restore, the default response, enclosed in [] is selected. Selecting -quit- exits the restore_repository script, returning you to your shell prompt.
+
+Note –
+Selecting -seed- restores the seed repository. This repository is designed for use during initial installation and upgrades. Using the seed repository for recovery purposes should be a last resort.
+
+After the backup to restore has been selected, it is validated and its integrity is checked. If there are any problems, the restore_repository command prints error messages and prompts you for another selection. Once a valid backup is selected, the following information is printed, and you are prompted for final confirmation.
+
+After confirmation, the following steps will be taken:
+
+svc.startd(1M) and svc.configd(1M) will be quiesced, if running.
+/etc/svc/repository.db
+    -- renamed --> /etc/svc/repository.db_old_YYYYMMDD_HHMMSS
+/etc/svc/volatile/db_errors
+    -- copied --> /etc/svc/repository.db_old_YYYYMMDD_HHMMSS_errors
+repository_to_restore
+    -- copied --> /etc/svc/repository.db
+and the system will be rebooted with reboot(1M).
+
+Proceed [yes/no]?
+Type yes to remedy the fault.
+
+The system reboots after the restore_repository command executes all of the listed actions.
+
+Previous: Debugging a Service That Is Not Starting
+Next: How to Boot Without Starting Any Services
+© 2010, Oracle Corporation and/or its affiliates
+
+

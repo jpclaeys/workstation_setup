@@ -1,0 +1,14 @@
+How to add Desktop shortcuts on Centos
+---------------------------------------
+
+
+Click on "Home" directory on desktop. The nautilus (file browser) window will open.
+
+Click the "Computer" tab in the left navigation panel, go to "/usr/share/applications". All the applications icons will appear in the right browser window.
+
+Right click desired icon (Firefox, Contacts etc)
+
+After right clicking the icon, select "Copy To" in the context menu. A Select Destination will open up, pick "Desktop" folder in the left navigation panel (via left-click)
+
+Left-click the "Select" button on the bottom right of the window.
+

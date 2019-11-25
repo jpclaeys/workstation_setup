@@ -1,0 +1,77 @@
+[claeyje@muscadet ~]$ sr sapacntbx2prf dmidecode | grep -i vmware | grep Product
+
+	Manufacturer: VMware, Inc.
+	Product Name: VMware Virtual Platform
+	Serial Number: VMware-42 0b c8 c9 06 39 49 b0-f4 5f ae a4 72 c6 79 e7
+	Description: VMware SVGA II
+
+[claeyje@muscadet ~]$ sr sapacntbx2prf dmidecode | grep -i vmware| grep Product
+	Product Name: VMware Virtual Platform
+
+
+[claeyje@muscadet ~]$ sr sapacntbx2prf cat /proc/scsi/scsi
+Attached devices:
+Host: scsi0 Channel: 00 Id: 00 Lun: 00
+  Vendor: NECVMWar Model: VMware IDE CDR00 Rev: 1.00
+  Type:   CD-ROM                           ANSI  SCSI revision: 05
+Host: scsi2 Channel: 00 Id: 00 Lun: 00
+  Vendor: VMware   Model: Virtual disk     Rev: 1.0 
+  Type:   Direct-Access                    ANSI  SCSI revision: 02
+Host: scsi2 Channel: 00 Id: 01 Lun: 00
+  Vendor: VMware   Model: Virtual disk     Rev: 1.0 
+  Type:   Direct-Access                    ANSI  SCSI revision: 02
+Host: scsi2 Channel: 00 Id: 02 Lun: 00
+  Vendor: VMware   Model: Virtual disk     Rev: 1.0 
+  Type:   Direct-Access                    ANSI  SCSI revision: 02
+
+---------------------------------------------------------------------------------------------------
+
+Use standard Linux tools to inspect the hardware on the system.
+
+cat /proc/scsi/scsi
+or
+
+ethtool -i eth0
+or
+
+dmidecode | grep -i vmware
+If the output of these commands shows hardware with a manufacturer name of "VMWare", you're on a VMWare VM. Multiple commands are provided here because system configurations and tools differ.
+
+
+claeyje@muscadet ~]$ dmesg |grep DMI
+[    0.000000] DMI: Dell Inc. OptiPlex 790/0J3C2F, BIOS A11 12/30/2011
+[   14.724015] input: HDA Intel PCH HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:1b.0/sound/card0/input13
+
+[claeyje@muscadet ~]$ sr sapacntbx2prf dmesg |grep DMI
+DMI: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 09/17/2015
+
+----------------------------------------------------------------------------------------------------
+
+For Linux you type dmesg |grep DMI:
+
+
+VIRTUAL HOST OUTPUT
+
+
+[root@myhost ~]# dmesg |grep DMI
+DMI 2.3 present.
+DMI: Microsoft Corporation Virtual Machine/Virtual Machine, BIOS 090006  05/23/2012
+
+[root@myhost ~]# dmesg |grep -i virtual
+DMI: Microsoft Corporation Virtual Machine/Virtual Machine, BIOS 090006  05/23/2012
+Booting paravirtualized kernel on bare hardware
+input: Macintosh mouse button emulation as /devices/virtual/input/input1
+scsi 0:0:0:0: Direct-Access     Msft     Virtual Disk     1.0  PQ: 0 ANSI: 4
+input: Microsoft Vmbus HID-compliant Mouse as /devices/virtual/input/input4
+FOR PHYSICAL HOST EXAMPLE
+
+[root@backdev1 ~]# dmesg |grep DMI
+DMI 2.5 present.
+DMI: IBM System x3650 M3 -[7945AC1]-/90Y4784, BIOS -[D6E153AUS-1.12]- 06/30/2011
+
+----------------------------------------------------------------------------------------------------
+
+
+
+
+

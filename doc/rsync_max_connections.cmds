@@ -1,0 +1,16 @@
+rsync daemon max connections setup:
+-----------------------------------
+
+ex. eurlexbo-pz
+ set the max connections to 8 for eurlex_src_fallbackoj job 
+
+Config file location: 
+/applications/eurlex/users/system/rsync/etc/rsyncd.conf
+
+
+[root@eurlexbo-pz /]# awk '/eurlex_src_fallbackoj/,/max/' /applications/eurlex/users/system/rsync/etc/rsyncd.conf| egrep 'eurlex_src_fallbackoj|max'
+[eurlex_src_fallbackoj]
+             max connections = 8
+
+log file:
+/applications/eurlex/users/system/rsync/var/log/rsyncd.log

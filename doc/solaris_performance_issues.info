@@ -1,0 +1,121 @@
+
+# Show memory usage (on the global zone)
+echo ::memstat | mdb -k
+
+
+vmstat is not that useful to measure memory usage. It doesn't give any metric quantifying how much virtual and physical memory is used and what is using it. It is however a very good tool to measure RAM shortage. You just need to monitor the sr column (scan rate). As long as it stays equal to zero, you shouldn't worry about RAM. If it is not equal to zero, you should investigate what is demanding RAM.
+
+To have a detailed idea about what is using your system memory, in addition to the already suggested echo ::memstat | mdb -k command, you can run prstat -n 1 -a which will give you the memory usage per user, prstat -n 1 -Z for zone usage and prstat -s rss for per process usage sorted by RAM.
+
+In prstat output, the SWAP column shows the virtual memory used and the RSS column, the RAM used.
+
+About kernel usage, you can run kstat -n system_pages and have a look to the pp_kernel value.
+
+To precisely answer to your question:
+
+how can I see how much OS uses and how much is used by app is it vmstat(Sunos) and /proc/meminfo (Linux) OK for that?
+No vmstat is not OK for that on Solaris. You might run echo ::memstat | mdb -k and parse its output.
+
+The sum of the lines "Anon" and "Exec and libs" is the RAM used by applications, The line "Kernel" reports the RAM used by the kernel, the lines "ZFS ...", "Page cache" and "Free (cachelist)" show RAM used to cache data and the line "Free (freelist)" reports unused, i.e. wasted RAM.
+
+
+
+DTrace Troubleshooting
+
+
+DTrace Troubleshooting
+http://www.brendangregg.com/DTrace/dtracevstruss.html
+
+Show memory usage per user
+ps -eo pid,rss,vsz,pcpu,user,args | { read h; echo $h; sort -nk2; }
+
+Sum per user
+ps -e -o rss= -o user= | awk '{s[$2]+=$1} END {for (i in s)print i,s[i]}'
+
+
+prstat -t -n 5 1 1
+
+
+41 root@sapabahp:->perl swapinfo.pl 
+RAM  _____Total 262144.0 Mb
+RAM    Unusable  4700.1 Mb
+RAM      Kernel 105077.2 Mb
+RAM      Locked 72432.3 Mb
+RAM        Used 26682.4 Mb
+RAM       Avail 53252.0 Mb
+
+Disk _____Total 226312.2 Mb
+Disk      Alloc 133871.8 Mb
+Disk       Free 92440.4 Mb
+ 
+Swap _____Total 351174.2 Mb
+Swap      Alloc 101783.7 Mb
+Swap    Unalloc 34930.0 Mb
+Swap      Avail 214460.5 Mb
+Swap  (MinFree) 32201.8 Mb
+
+
+
+
+http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html
+
+64 root@sapabahp:->perl zonestat.pl
+        |--Pool--|Pset|-------Memory-----|
+Zonename| IT|Size|Used| RAM| Shm| Lkd| VM|
+------------------------------------------
+sapabahp  0D   64  0.0  0.0  85G  81G 138G
+==TOTAL= ---   64  0.0  0.0  85G  81G 276G
+65 root@sapabahp:->exit
+[claeyje@muscadet log]$ sr sapabahp
+# exec bash
+1 root@sapabahp:->cd /var/tmp
+2 root@sapabahp:->perl zonestat.pl -l
+        |----Pool-----|---CPU-----|----------------Memory----------------|
+        |---|--Size---|Pset-------|---RAM---|---Shm---|---Lkd---|---VM---|
+Zonename| IT| Max| Cur|Used|Shr|S%| Cap|Used| Cap|Used| Cap|Used| Cap|Used
+--------------------------------------------------------------------------
+sapabahp  0D   64   64  0.0  10 HH       0.0  18E  85G  18E  81G 352G 138G
+==TOTAL= --- ----   64  0.0 --- -- 176G  0.0  0.0  85G  0.0  81G 344G 276G
+
+
+
+http://oraclefusionfacts.blogspot.be/2014/09/commands-to-find-out-allocated.html
+
+Commands to find out Allocated CPU/Memory on a Solaris Zone
+With times changing servers have changed. With the advent of virtualization we have see bigger servers being virtualized into smaller servers and provided to admins for use. Have you heard about Solaris T2/T3/T4 or the newer ones like T4-4 machines. All of those machines have found out acceptance these days in organizations these days. These are mostly CMT servers which offer huge resources in terms of Memory and CPU. The UNIX Admins generally slice and dice these servers into smaller servers known as Zones and allocate certain amount of Memory.CPU to each such zone created out of the master box.
+
+For Admins it might get a bit tricky to find out the Memory/CPU allocated on such zones. I am providing below commands which might help find out the resources assigned to Solaris zones!
+
+For Finding CPU Shares Assigned use below command:
+
+bash-3.00$ prctl -n zone.cpu-shares $$
+process: 4352: bash
+NAME    PRIVILEGE       VALUE    FLAG   ACTION                       RECIPIENT
+zone.cpu-shares
+        privileged         20       -   none                                 -
+        system          65.5K     max   none                                 -
+
+
+For Finding Memory Assigned to the Solaris Zone use below:
+
+bash-3.00$
+bash-3.00$ prctl -n zone.max-shm-memory $$
+process: 4352: bash
+NAME    PRIVILEGE       VALUE    FLAG   ACTION                       RECIPIENT
+zone.max-shm-memory
+        privileged      2.73GB      -   deny                                 -
+        system          16.0EB    max   deny                                 -
+
+In case you want to be more descriptive with resources assigned to your zone use below command:
+
+prctl $$
+
+
+22 root@sapabahp:->df -h| sed 's/%//' | awk '$5>80'
+Filesystem             size   used  avail capacity  Mounted on
+sapabahp-data/sapdata1  1000G   974G    26G    98    /oracle/P01/sapdata1
+nas-dclux-xprd.cc.cec.eu.int:/intdata/files    75G    68G   6.9G    91    /ec/sw/sap
+nas-dclux-xprd.cc.cec.eu.int:/homeusr/files   2.0T   2.0T    29G    99    /home/user
+
+
+

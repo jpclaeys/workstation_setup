@@ -1,0 +1,12 @@
+How do I make a keyboard shortcut in CentOS 7
+----------------------------------------------
+
+Appplications/System Tools/Settings/Devices/Keyboard/Keyboard Shortcuts
+Scroll down the v-scroll bar until “Custom Shortcuts” section appears
+Then, click “+” icon
+Fill in the "Name" text box:  Terminator
+Fill in the "Command" text box: terminator --geometry=1280x800
+Shortcut: click on the "set shorcut button" and hit "Super + T" keys
+Click “Add” button
+Close window by pressing “X” mark on top right
+

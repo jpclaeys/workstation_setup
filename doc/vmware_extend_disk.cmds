@@ -1,0 +1,10 @@
+ls /sys/class/scsi_device/
+puis
+echo 1 > /sys/class/scsi_device/scsi_id/device/rescan
+
+puis 
+partprobe. (RHEL 6)
+Ou
+Partx ….  (RHEL 7)
+
+

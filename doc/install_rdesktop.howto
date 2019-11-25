@@ -1,0 +1,55 @@
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+
+# cd Packages 
+# Download the tarball by means of a browser: https://github.com/rdesktop/rdesktop/releases/download/v1.8.6/rdesktop-1.8.6.tar.gz
+# tar xvzf rdesktop-1.8.6.tar.gz
+
+cd rdesktop-1.8.6
+yum install gcc libX11-devel openssl-devel
+./configure --disable-credssp --disable-smartcard
+make
+make install
+which rdesktop
+ll /usr/local/bin/rdesktop
+
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+
+https://www.tecmint.com/rdesktop-connect-windows-desktop-from-linux/
+
+rdesktop – A RDP Client to Connect Windows Desktop from Linux
+
+rdesktop is an open source software that enables you to connect and manage your remote Windows desktop from your Linux computer using RDP – Remote Desktop Protocol. In other words, while you are sitting in front of your Linux system at home or office, and access your Windows desktop as if you’re sitting in front of the Windows machine.
+
+Read Also: 11 Best Tools to Access Remote Linux Desktop
+
+In this article, we will explain how to install rdesktop in Linux system to access the remote desktop of Windows computer using the Hostname and IP Address.
+
+Windows Settings
+
+To enable rdesktop to connect to any given Windows machine, you need to make few following changes on the Windows box itself.
+
+Enable RDP port no. 3389 in Firewall.
+Enable remote desktop under Windows Operating System.
+Require at least one user with a password.
+Once you make all of the above Windows configuration settings, you can now move further to install rdesktop on your Linux system to access your Windows desktop.
+
+Install rdesktop (Remote Desktop) in Linux
+It is always preferable to use a default package manager such as yum, dnf or apt to install software to handle dependencies automatically during installation.
+
+# yum install rdesktop   [On CentOS/RHEL 7]
+# dnf install rdesktop   [On CentOS/RHEL 8 and Fedora]
+# apt install rdesktop   [On Debian/Ubuntu]
+
+If rdesktop is not available to install from the default repositories, you can download the tarball from Github here or use the following wget command to download and install it as shown.
+
+# wget https://github.com/rdesktop/rdesktop/releases/download/v1.8.6/rdesktop-1.8.6.tar.gz
+# tar xvzf rdesktop-1.8.6.tar.gz
+# cd rdesktop-1.8.6/
+# ./configure --disable-credssp --disable-smartcard
+# make 
+# make install
+
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------

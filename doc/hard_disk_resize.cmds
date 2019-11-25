@@ -1,0 +1,242 @@
+Hard disk resize and sync without rebooting
+--------------------------------------------
+
+Description:
+Sometimes I need to resize a virtual disk for a virtual machine without having to reboot the machine. For the kernel to recognize that a virtual disk has changed size. Here are the step to do that:
+
+Unmount the concerned partition: Eg. /dev/sdb1
+umount /dev/sdb1
+
+Find out which SCSI devices are involved:
+ls /sys/class/scsi_device/
+
+Result example:
+0:0:0:0  2:0:0:0  2:0:1:0
+
+Provoke a re-sync of the kernel for all the SCSI devices
+(unless you know exactly which one is concerned).
+That also finds new disks if it’s the case.
+echo 1 > /sys/class/scsi_device/0\:0\:0\:0/device/rescan
+
+echo 1 > /sys/class/scsi_device/2\:0\:0\:0/device/rescan
+
+echo 1 > /sys/class/scsi_device/2\:0\:1\:0/device/rescan 
+
+In case that doesn’t work you can tell the kernel to re-scan the already known disks only:
+Find out how many ‘hostX’ there are:
+ls /sys/class/scsi_host/
+
+Result example:
+host0  host1  host2
+
+Now rescan every host listed above:
+echo "- - -" > /sys/class/scsi_host/host0/scan
+
+echo "- - -" > /sys/class/scsi_host/host1/scan
+
+echo "- - -" > /sys/class/scsi_host/host2/scan
+
+This should display a bigger size of the hard disk:
+fdisk -l
+
+Now the file system should be resized appropriately:
+Steps to rezize the file system: eg. for /dev/sdb
+fdisk /dev/sdb
+
+– Delete the existing partition and create a new one with the needed size and quit.
+– Check the partition integrity. eg. for /dev/sdb1
+fsck.ext3 -f /dev/sdb1
+
+– Resize the file system for that partition.
+resize2fs /dev/sdb1
+
+Result example:
+resize2fs 1.41.12 (17-May-2010)
+
+Resizing the filesystem on /dev/sdb1 to 47184905 (4k) blocks.
+
+The filesystem on /dev/sdb1 is now 47184905 blocks long.
+
+Everything is ok.
+You can now remount the partition to the original mount point.
+mount -a
+
+Example with a VMWARE VM and LVM involved
+
+STEPS
+– In VMWare: Resize the HDD3 to 150GB
+– Take a security snapshot (in cse things go wrong)
+– Then executed the following commands:
+
+
+df -h
+
+    Filesystem            Size  Used Avail Use% Mounted on
+
+    /dev/sda1              20G  2.6G   17G  14% /
+
+    /dev/mapper/DBDATA-mysql
+
+			  197G  158G   30G  85% /data2
+
+ls /sys/class/scsi_device/
+
+    0:0:0:0  2:0:0:0  2:0:1:0  2:0:3:0
+
+
+# Ran the re-sense of the partitons at the kernel level
+
+dbm-ace-live-m.jamba.net:~ # echo 1 > /sys/class/scsi_device/0\:0\:0\:0/device/rescan
+
+dbm-ace-live-m.jamba.net:~ # echo 1 > /sys/class/scsi_device/2\:0\:0\:0/device/rescan
+
+dbm-ace-live-m.jamba.net:~ # echo 1 > /sys/class/scsi_device/2\:0\:1\:0/device/rescan
+
+dbm-ace-live-m.jamba.net:~ # echo 1 > /sys/class/scsi_device/2\:0\:3\:0/device/rescan
+
+
+# Let have a look at which HDD we ween to work on.
+
+fdisk -l | grep /dev
+
+    Disk /dev/dm-0 doesn't contain a valid partition table
+
+    Disk /dev/sda: 25.8 GB, 25769803776 bytes
+
+    /dev/sda1   *           1        2650    21286093+  83  Linux
+
+    /dev/sda2            2651        3133     3879697+  82  Linux swap / Solaris
+
+    Disk /dev/sdb: 107.4 GB, 107374182400 bytes
+
+    /dev/sdb1               1       13054   104856223+  8e  Linux LVM
+
+    Disk /dev/sdc: 161.1 GB, 161061273600 bytes
+
+    /dev/sdc1               1        6527    52428096   8e  Linux LVM
+
+    /dev/sdc2            6528       13054    52428127+   5  Extended
+
+    /dev/sdc5            6528       13054    52428096   8e  Linux LVM
+
+    Disk /dev/dm-0: 214.7 GB, 214719004672 bytes
+
+
+# We work on /dev/sdc then we create a new partition in it.
+
+cfdisk /dev/sdc
+
+    Create a new Logical partition with the free space (/dev/sdc6)
+
+    Created new Partition /dev/sdc6 Size: 53686.41 MB
+
+Result:
+
+fdisk -l
+
+       Device Boot      Start         End      Blocks   Id  System
+
+    /dev/sdc1               1        6527    52428096   8e  Linux LVM
+
+    /dev/sdc2            6528       19581   104856255    5  Extended
+
+    /dev/sdc5            6528       13054    52428096   8e  Linux LVM
+
+    /dev/sdc6           13055       19581    52428096   8e  Linux LVM
+
+
+# Install parted package to get the partprobe tool
+
+apt-get install parted
+
+
+# Provoke a new sync of partitions
+
+partprobe
+
+
+# Get the name of the Volume group name.
+
+vgdisplay
+
+  --- Volume group ---
+
+  VG Name               DBDATA
+
+
+# Extend the Volume group with the /dev/sdc6
+
+vgextend DBDATA /dev/sdc6
+
+  No physical volume label read from /dev/sdc6
+
+  Physical volume "/dev/sdc6" successfully created
+
+  Volume group "DBDATA" successfully extended
+
+
+# Get the device name of logical partition
+
+lvdisplay
+
+  --- Logical volume ---
+
+  LV Name                /dev/DBDATA/mysql
+
+  VG Name                DBDATA
+
+
+# Extend the logical partition of 50GB
+
+lvextend -L+50G /dev/DBDATA/mysql
+
+    Extending logical volume mysql to 249.97 GiB
+
+    Logical volume mysql successfully resized
+
+
+# Finally Resize the files system of the partiton
+
+resize2fs /dev/DBDATA/mysql
+
+    resize2fs 1.41.12 (17-May-2010)
+
+    Filesystem at /dev/DBDATA/mysql is mounted on /data2; on-line resizing required
+
+    old desc_blocks = 13, new_desc_blocks = 16
+
+    Performing an on-line resize of /dev/DBDATA/mysql to 65528832 (4k) blocks.
+
+    The filesystem on /dev/DBDATA/mysql is now 65528832 blocks long.
+
+
+# Lets check out the result
+
+lvdisplay
+
+    --- Logical volume ---
+
+    LV Name                /dev/DBDATA/mysql
+
+    VG Name                DBDATA
+
+    LV Size                249.97 GiB
+
+
+df -h
+
+    Filesystem            Size  Used Avail Use% Mounted on
+
+    /dev/sda1              20G  2.6G   17G  14% /
+
+    /dev/mapper/DBDATA-mysql
+
+ 	                  247G  160G   74G  69% /data2
+
+
+Result:
+The /dev/mapper/DBDATA-mysql got extended from 197G to 247G
+
+Note: All went fine, then deleted the VMWare snapshot of the VM
+
+

@@ -1,0 +1,71 @@
+# show dev info
+[root@cepheus ~]# dmsetup info -c -o name,blkdevname,blkdevs_used,uuid   /dev/dm-18
+Name                     BlkDevName       BlkDevNamesUsed  UUID                                   
+mer_vmax3_idol1-rk_data1 dm-18            sdv,sdr,sdn,sdj  mpath-360000970000296700060533030374638
+
+
+
+# remove orphan lun
+--------------------
+
+dmsetup remove -f mpathf
+multipath -f mpathf
+
+====================================================================================================================================
+# map in use issue
+-------------------
+
+[root@chakotay ~]# /sbin/multipath -f fedorafs4-pk_t1_data10 # 360000970000296700069533030333046
+Nov 05 09:12:42 | fedorafs4-pk_t1_data10: map in use
+
+
+[root@chakotay ~]# multipath -ll fedorafs4-pk_t1_data10
+fedorafs4-pk_t1_data10 (360000970000296700069533030333046) dm-209 ,
+size=1.5T features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=0 status=active
+  |- #:#:#:#   -    #:#     active undef unknown
+  |- #:#:#:#   -    #:#     active undef unknown
+  |- #:#:#:#   -    #:#     active undef unknown
+  `- #:#:#:#   -    #:#     active undef unknown
+
+[root@chakotay ~]# ll /dev/mapper/fedora*
+lrwxrwxrwx 1 root root      9 24 oct 08:03 fedorafs4-pk_t1_data10 -> ../dm-209
+lrwxrwxrwx 1 root root      9 24 oct 08:03 fedorafs4-pk_t1_data10p1 -> ../dm-217
+lrwxrwxrwx 1 root root      9 16 jan  2019 fedorafs4-pk_t1_data10p1p1 -> ../dm-252
+[root@chakotay ~]# dmsetup remove -f fedorafs4-pk_t1_data10
+
+device-mapper: remove ioctl on fedorafs4-pk_t1_data10 failed: Device or resource busy
+Command failed
+
+[root@chakotay ~]# dmsetup remove -f fedorafs4-pk_t1_data10p1p1
+[root@chakotay ~]# dmsetup remove -f fedorafs4-pk_t1_data10p1
+[root@chakotay ~]# dmsetup remove -f fedorafs4-pk_t1_data10
+
+[root@chakotay ~]# ll /dev/mapper/fedora*
+
+===> OK, the device is gone
+
+==============================================================================================================
+====================================================================================================================================
+
+Ex. on tuvok
+-------------
+
+[root@tuvok ~]# multipath -ll
+[root@tuvok ~]# ll /dev/mapper| egrep -v 'root|control'
+total 0
+lrwxrwxrwx 1 root root      9 17 oct 12:51 ppubli-pk_t2_system1 -> ../dm-138
+lrwxrwxrwx 1 root root      9 17 oct 12:51 ppubli-pk_t2_system1p1 -> ../dm-144
+lrwxrwxrwx 1 root root      9 16 jan  2019 ppubli-pk_t2_system1p1p1 -> ../dm-195
+lrwxrwxrwx 1 root root      9 16 jan  2019 ppubli-pk_t2_system1p1p2 -> ../dm-196
+[root@tuvok ~]# ll /dev/mapper| egrep -v 'root|control'
+total 0
+[root@tuvok ~]# dmsetup remove -f ppubli-pk_t2_system1p1p2
+[root@tuvok ~]# dmsetup remove -f ppubli-pk_t2_system1p1p1
+[root@tuvok ~]# dmsetup remove -f ppubli-pk_t2_system1p1
+[root@tuvok ~]# dmsetup remove -f ppubli-pk_t2_system1
+[root@tuvok ~]# ll /dev/mapper| egrep -v 'root|control'
+total 0
+[root@tuvok ~]# 
+====================================================================================================================================
+

@@ -1,0 +1,57 @@
+Finding the PID of the process using a specific port?
+su - # (need to be root)
+lsof -i :<port> 
+
+---------------------------------------------------------------------------------------------------
+
+20 root@sasetlcorda:->netstat -nlp| grep 43323
+tcp        0      0 158.167.220.113:43323       0.0.0.0:*           LISTEN      25584/java          
+
+[root@tedmonitor-tk ~]# netstat -anp | grep 8006
+tcp        0      0 0.0.0.0:8006            0.0.0.0:*               LISTEN      1588/nsrexecd       
+
+---------------------------------------------------------------------------------------------------
+
+21 root@sasetlcorda:->ss -lptn 'sport = :43323'
+State      Recv-Q Send-Q	Local Address:Port	Peer Address:Port 
+LISTEN     0      50		158.167.220.113:43323	*:*      		users:(("java",25584,434))
+
+22 root@sasetlcorda:->lsof -i :43323
+COMMAND   PID   USER   FD   TYPE    DEVICE SIZE/OFF NODE NAME
+java    21896 sasprd   21u  IPv4 600389878      0t0  TCP sasetlcorda.cc.cec.eu.int:45500->sasetlcorda.cc.cec.eu.int:43323 (ESTABLISHED)
+java    25584 sasprd  121u  IPv4 600389879      0t0  TCP sasetlcorda.cc.cec.eu.int:43323->sasetlcorda.cc.cec.eu.int:45500 (ESTABLISHED)
+java    25584 sasprd  434u  IPv4 511244460      0t0  TCP sasetlcorda.cc.cec.eu.int:43323 (LISTEN)
+
+23 root@sasetlcorda:->lsof -n -i :43323
+COMMAND   PID   USER   FD   TYPE    DEVICE SIZE/OFF NODE NAME
+java    21896 sasprd   21u  IPv4 600389878      0t0  TCP 158.167.220.113:45500->158.167.220.113:43323 (ESTABLISHED)
+java    25584 sasprd  121u  IPv4 600389879      0t0  TCP 158.167.220.113:43323->158.167.220.113:45500 (ESTABLISHED)
+java    25584 sasprd  434u  IPv4 511244460      0t0  TCP 158.167.220.113:43323 (LISTEN)
+
+---------------------------------------------------------------------------------------------------
+
+root@sasetlcorda:->ss -lptn 'sport = :8562'
+State      Recv-Q Send-Q	Local Address:Port	Peer Address:Port 
+LISTEN     0 128		*8562			*:*      users:(("sas",22861,58))
+
+
+root@sasetlcorda:->netstat -nlp | grep 8562 
+tcp        0      0 0.0.0.0:8562                0.0.0.0:*  LISTEN      22861/sas
+
+
+root@sasetlcorda:->lsof -i :8562 | grep LISTEN
+sas      22861 sasprd   58u  IPv4 205905      0t0  TCP *:8562 (LISTEN)
+
+# view the executable
+
+root@sasetlcorda:->ls -l /proc/22861/exe
+lrwxrwxrwx 1 sasprd sasp 0 Apr  3 14:29 /proc/22861/exe -> /sas/software/prd/sashome/SASFoundation/9.4/sasexe/sas
+
+[claeyje@muscadet doc]$ telnet sasetlcorda 8562
+Trying 158.167.220.113...
+Connected to sasetlcorda.
+Escape character is '^]'.
+
+Connection closed by foreign host.
+
+---------------------------------------------------------------------------------------------------

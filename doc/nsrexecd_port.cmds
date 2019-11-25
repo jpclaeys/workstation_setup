@@ -1,0 +1,45 @@
+
+Procedure to change the nsrexecd port range:
+
+1. View the current port range.
+For example:
+#nsrports -s myclient.emc.com
+Service ports: 7937-7940
+Connection ports: 0-0
+
+2. Update the service port range. Separate multiple port ranges with a space.
+For example:
+#nsrports -s myclient.emc.com -S 7937-7938 7978-7979
+
+3. Confirm the service port attribute updated successfully.
+For example:
+#nsrports -s myclient.emc.com
+Service ports: 7937-7938 7978-7979
+Connection ports: 0-0
+
+4. Stop and start the NetWorker services or daemons on myclient.emc.com.
+
+It was decided to fix the following service port range (see mail in attached):
+57770-58000 
+
+---------------------------------------------------------------------------------
+Example:
+
+[root@tedmonitor-tk nsr]# nsrports -s tedmonitor-tk
+Service ports: 7937-9936 
+Connection ports: 0-0 
+[root@tedmonitor-tk nsr]# nsrports -s tedmonitor-tk -S 57770-58000
+[root@tedmonitor-tk nsr]# nsrports -s tedmonitor-tk 
+Service ports: 57770-58000 
+Connection ports: 0-0 
+[root@tedmonitor-tk nsr]# systemctl stop networker.service 
+[root@tedmonitor-tk nsr]# systemctl start networker.service 
+[root@tedmonitor-tk nsr]# netstat -anp | grep nsr
+tcp        0      0 0.0.0.0:58000           0.0.0.0:*               LISTEN      29290/nsrexecd      
+tcp        0      0 0.0.0.0:57791           0.0.0.0:*               LISTEN      29290/nsrexecd      
+tcp        0      0 0.0.0.0:7937            0.0.0.0:*               LISTEN      29290/nsrexecd      
+tcp        0      0 0.0.0.0:7938            0.0.0.0:*               LISTEN      29290/nsrexecd      
+tcp        0      0 0.0.0.0:57989           0.0.0.0:*               LISTEN      29290/nsrexecd      
+udp        0      0 0.0.0.0:7938            0.0.0.0:*                           29290/nsrexecd      
+unix  3      [ ]         STREAM     CONNECTED     3779764  29290/nsrexecd       
+

@@ -1,0 +1,84 @@
+--------------------------------------------------------------------------------------------------
+# Change cfengine config
+--------------------------------------------------------------------------------------------------
+cfmain && git pull >/dev/null
+# update cfengine files
+git rm <file>
+vi <file>
+git diff
+# If nok, cancel all modifications before the commit: 
+git reset --hard origin/master
+# If ok, commit the modifications
+git commit -am "<ticketnumber> JPC"
+# The comment can be modified before pushing
+git --amend -m "New message"
+git pull && git push
+--------------------------------------------------------------------------------------------------
+git [ref]log            # view modofications
+git [ref]log -1         # view only the last modofication
+git [ref]log -1 --stat  # view only the last modofication + files changed
+git [ref]log -1 -p      # view only the last modofication + diff
+git revert <commit id>
+# Find who modifed a file
+git blame <full path of file>
+git show  <modification id>   # Note: specify only the first few characters of the modification id
+--------------------------------------------------------------------------------------------------
+Recover file:
+-------------
+git lg -p <file spec>
+git co <branch ref> <file spec>
+git diff --staged   # (--staged is a synonym for --cached)
+git status
+git commit
+gitpp
+
+--------------------------------------------------------------------------------------------------
+git reset repo (if you are stuck):
+----------------------------------
+Use these 3 simple commands
+
+Step 1 : git checkout <branch_name>
+Step 2 : git pull -s recursive -X theirs
+force synchronisation with the remote master branch:
+Step 3 : git fetch && git reset --hard origin/master
+Note:
+git checkout master  # put branch back to the master
+
+More details : http://stackoverflow.com/a/39698570/2439715
+---------------------------------------------------------------------------------------------------
+How to remove local (untracked) files from the current Git working tree?
+Step 1 is to show what will be deleted by using the -n option:
+
+git clean -n
+Clean Step - beware: this will delete files:
+
+git clean -f
+To remove directories, run git clean -f -d or git clean -fd
+To remove ignored files, run git clean -f -X or git clean -fX
+To remove ignored and non-ignored files, run git clean -f -x or git clean -fx
+---------------------------------------------------------------------------------------------------
+Simple Way to remove untracked files
+
+To remove all untracked files, The simple way is to add all of them first and reset the repo as below
+
+git add --all
+git reset --hard HEAD
+---------------------------------------------------------------------------------------------------
+Adding a new repo:
+------------------
+cd ~/git && git clone ssh://claeyje@gitserv.cc.cec.eu.int:29418/firmware_upgrades
+--> this will create the firmware_upgrade directory
+
+---------------------------------------------------------------------------------------------------
+If one needs to learn when some line was committed in or out of GIT and, for instance, the ticket and the date are unknown, so we cannot rely on the commit messages, there is a quick way to find it.
+
+For instance, I wanted to find out in which commit a NAS share was added or removed on any server: nas-dclux-xprd.cc.cec.eu.int:/oibarchismod1share021/files
+
+[pinmigu@mojito data]$ git log -G oibarchismod1share021
+
+But if one only needs to find the commit affecting one particular server, GIT can be instructed to follow the corresponding file alone:
+
+[pinmigu@mojito data]$ git log -G oibarchismod1share021 -p system/vfstab/cfftp
+
+---------------------------------------------------------------------------------------------------
+

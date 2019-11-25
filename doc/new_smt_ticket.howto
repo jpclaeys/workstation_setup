@@ -1,0 +1,23 @@
+SMT
+Create New Incident
+
+User
+Fill in the User info (in order to allow Configuration Item to be filled in)
+Affected User
+Reporting User
+
+Support
+Call code/time
+OTHER
+
+Classification
+Configuration Item: SERVER / hit enter
+--> System & Component are filled in
+	System:		Hardware and Operating Systems
+	Component:	SERVERS
+
+Prioritization:
+Urgency:	Medium
+Impact:		Medium
+
+

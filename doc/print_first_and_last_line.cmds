@@ -1,0 +1,5 @@
+# print first and last line of a file
+cat file | sed -n '1p;$p'
+
+# print first 2 lines and last line of a file
+cat file | sed -n '1,2p;$p'

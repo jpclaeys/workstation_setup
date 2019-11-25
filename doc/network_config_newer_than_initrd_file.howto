@@ -1,0 +1,8 @@
+125 root@vostok:->/usr/nagios/plugins/check_os_setup 
+check_os_setup CRITICAL (1 critical error)IBM x3850M4; Linux; redhat-6-default64-7.0.cfg: network config files are newer than initrd file, 4 additional packages
+
+126 root@vostok:->touch /boot/initrd-2.6.32-696.6.3.el6.x86_64kdump.img
+
+127 root@vostok:->/usr/nagios/plugins/check_os_setup 
+check_os_setup OK IBM x3850M4; Linux; redhat-6-default64-7.0.cfg: 4 additional packages
+

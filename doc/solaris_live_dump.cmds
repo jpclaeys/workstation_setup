@@ -1,0 +1,20 @@
+Solaris Live Dump
+------------------
+savecore -L
+
+
+Example:
+
+[root@trinity /]# savecore -L
+dumping to /dev/zvol/dsk/rpool/dump, offset 65536, content: kernel sections: zfs
+ 2:00  90% done (kernel)
+ 2:11 100% done (zfs)
+100% done: 8615190 (kernel) + 872234 (zfs) pages dumped, dump succeeded
+savecore: System dump time: Wed Jul  3 07:14:59 2019
+
+savecore: Dump found on /dev/zvol/dsk/rpool/dump
+savecore: Saving compressed system crash dump files in directory /var/crash/trinity/data/c03b743e-9a64-4501-8c9d-b939decc5b25
+
+
+savecore: Decompress all crash dump files with '(cd /var/crash/trinity/data/c03b743e-9a64-4501-8c9d-b939decc5b25 && savecore -v 2)' or individual files with 'savecore -vf /var/crash/trinity/data/c03b743e-9a64-4501-8c9d-b939decc5b25/vmdump{,-<secname>}.2'
+

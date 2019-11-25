@@ -1,0 +1,27 @@
+vi /etc/yum.conf
+
+# add following lines:
+
+[9] 13:05:56 [SUCCESS] banta
+proxy=http://158.169.131.13:8012   # dig -x 158.169.131.13 +short | grep -v dig:   psbru.ec.europa.eu.
+proxy_username=xopl262
+proxy_password=hueRDv7
+
+Note:
+It's advised to use the following proxy instead: ps-bxl-usr.cec.eu.int   (147.67.138.13)
+Also, one should use one's personal id/passwd
+
+
+Ex: brutus
+[claeyje@banta doc]# dig pslux.ec.europa.eu +short
+158.169.9.13
+[claeyje@banta doc]# dig ps-lux-usr.cec.eu.int +short
+147.67.117.13
+[claeyje@banta doc]# dig ps-bxl-usr.cec.eu.int +short
+147.67.138.13
+
+#proxy=http://158.169.131.13:8012
+proxy=http://ps-bxl-usr.cec.eu.int:8012
+proxy_username=xopl262
+proxy_password=hueRDv7
+

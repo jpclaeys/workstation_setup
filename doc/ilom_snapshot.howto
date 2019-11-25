@@ -1,0 +1,32 @@
+
+https://support.oracle.com/epmos/faces/DocumentDisplay?_afrLoop=543806329344645&id=2077387.1&_afrWindowMode=0&_adf.ctrl-state=rq4ugs1t4_4
+
+- Collect ILOM Snapshot via BUI
+  - ILOM 3.2.x, 3.1.x
+    - Connect to the ip-address of the SP from any web browser: https://[sp ip-address] as user root
+    - ILOM Administration -> Maintenance -> Snapshot
+    - Select data set "normal or fruid", DO NOT select "Collect Only Log Files From Data Set" or only logfiles will be captured
+    - Select transfer method "Browser" or "tftp, ftp, ftps, sftp, http, https", available protocols depends on the installed system firmware
+    - Select run
+    - Save ilom snapshot
+
+  - ILOM 3.0.x
+    - Connect to the ip-address of the SP from any web browser: https://[sp ip-address]
+    - Maintenance -> Snapshot
+    - Select data set "normal or fruid", DO NOT select "Collect Only Log Files From Data Set" or only logfiles will be captured
+    - Select transfer method "tftp, ftp, ftps, sftp, http, https", available protocols depends on the installed system firmware
+    - Select run
+
+
+
+- Collect ILOM Snapshot via CLI
+  - ILOM 3.2.x, 3.1.x, 3.0.x
+  - Connect to the ip-address of the SP from any telnet/ssh session: ssh|telnet [sp ip-address] as user root
+  - Set data set "normal or fruid", DO NOT select "Collect Only Log Files From Data Set" or only logfiles will be captured
+    -> set /SP/diag/snapshot dataset=[normal|fruid]
+  - Set transfer method "tftp, ftp, ftps, sftp, http, https", available protocols depends on the installed system firmware, run ilom snapshot and save it
+    -> set /SP/diag/snapshot dump_uri=[tftp|ftp|sftp|scp|http|https]://[username:password@server_ip_or_server_hostname]/[file-path]
+  - To confirm snapshot running/completed:
+    -> show /SP/diag/snapshot
+
+

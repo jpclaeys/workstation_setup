@@ -1,0 +1,21 @@
+Reset the Service Processor to the factory settings
+Connect to the web gui (Firefox)
+Navigation
+ILOM Administration
+Configuration Management
+Reset Defaults
+Factory
+
+The configuration change will be applied the next time the Service Processor is reset
+
+on the console
+-> reset /SP
+
+
+Reset Defaults Settings Descriptions
+-------------------------------------
+Property    Description
+All         Oracle ILOM properties are returned to their default settings at the next SP reset. The Oracle ILOM log files are not erased.
+Factory     Oracle ILOM properties and OpenBoot properties are returned to their default settings at the next SP reset. The Oracle ILOM log files are erased.
+None (default)  Oracle ILOM continues normal operation using the current configuration.
+Note: You can cancel a pending (All or Factory) Reset Defaults operation if you select None and click Reset Defaults before the next SP reset. 

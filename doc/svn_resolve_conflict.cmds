@@ -1,0 +1,104 @@
+[claeyje@muscadet dns]$ svn ci -m "IM0015930648 - JPC"
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+svn: E160039: Commit failed (details follow):
+svn: E160039: User 'claeyje' does not own lock on path '/zones/cf/cc.cec.eu.int' (currently locked by 'staiapa')
+[claeyje@muscadet dns]$ svn ci -m "IM0015930648 - JPC"
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+svn: E160039: Commit failed (details follow):
+svn: E160039: User 'claeyje' does not own lock on path '/zones/cf/cc.cec.eu.int' (currently locked by 'staiapa')
+[claeyje@muscadet dns]$ svn ci -m "IM0015930648 - JPC"
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+svn: E160028: Commit failed (details follow):
+svn: E160028: File '/zones/cf/cc.cec.eu.int' is out of date
+[claeyje@muscadet dns]$ svn up
+Updating '.':
+C    cc.cec.eu.int
+Updated to revision 16559.
+Summary of conflicts:
+  Text conflicts: 1
+Conflict discovered in file 'cc.cec.eu.int'.
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (mc) my side of conflict, (tc) their side of conflict,
+        (s) show all options: m
+Merging 'cc.cec.eu.int'.
+Conflicting section found during merge:
+(1) their version (at line 11872)                                                                                    |(2) your version (at line 11868)                                                                                     
+---------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------
+H(clieucrshs3a, 158.167.153.84)                                                                                      |H(sgarchac2, 158.168.1.178)                                                                                          
+H(clieucrshs4a, 158.167.153.139)                                                                                     |                                                                                                                     
+H(clieutlshs3a, 158.167.153.138)                                                                                     |                                                                                                                     
+H(clieutlshs4a, 158.167.153.215)                                                                                     |                                                                                                                     
+H(sgarchp2, 158.167.153.124)                                                                                         |                                                                                                                     
+---------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------
+Select: (1) use their version, (2) use your version,
+        (12) their version first, then yours,
+        (21) your version first, then theirs,
+        (e1) edit their version and use the result,
+        (e2) edit your version and use the result,
+        (eb) edit both versions and use the result,
+        (p) postpone this conflicting section leaving conflict markers,
+        (a) abort file merge and return to main menu: 12
+Merge of 'cc.cec.eu.int' completed.
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (r) mark resolved, (mc) my side of conflict,
+        (tc) their side of conflict, (s) show all options: m
+Merging 'cc.cec.eu.int'.
+Conflicting section found during merge:
+(1) their version (at line 11872)                                                                                    |(2) your version (at line 11868)                                                                                     
+---------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------
+H(clieucrshs3a, 158.167.153.84)                                                                                      |H(sgarchac2, 158.168.1.178)                                                                                          
+H(clieucrshs4a, 158.167.153.139)                                                                                     |                                                                                                                     
+H(clieutlshs3a, 158.167.153.138)                                                                                     |                                                                                                                     
+H(clieutlshs4a, 158.167.153.215)                                                                                     |                                                                                                                     
+H(sgarchp2, 158.167.153.124)                                                                                         |                                                                                                                     
+---------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------
+Select: (1) use their version, (2) use your version,
+        (12) their version first, then yours,
+        (21) your version first, then theirs,
+        (e1) edit their version and use the result,
+        (e2) edit your version and use the result,
+        (eb) edit both versions and use the result,
+        (p) postpone this conflicting section leaving conflict markers,
+        (a) abort file merge and return to main menu: 12
+Merge of 'cc.cec.eu.int' completed.
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (r) mark resolved, (mc) my side of conflict,
+        (tc) their side of conflict, (s) show all options: df
+--- cc.cec.eu.int.r16559	- THEIRS
++++ cc.cec.eu.int	- MERGED
+@@ -11870,3 +11870,4 @@
+ H(clieutlshs3a, 158.167.153.138)
+ H(clieutlshs4a, 158.167.153.215)
+ H(sgarchp2, 158.167.153.124)
++H(sgarchac2, 158.168.1.178)
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (r) mark resolved, (mc) my side of conflict,
+        (tc) their side of conflict, (s) show all options: r
+Resolved conflicted state of 'cc.cec.eu.int'
+Summary of conflicts:
+  Text conflicts: 0 remaining (and 1 already resolved)
+[claeyje@muscadet dns]$ svn ci -m "IM0015930648 - JPC"
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+Committed revision 16560.
+[claeyje@muscadet dns]$ egrep 'clieucrshs3a|clieucrshs4a|clieutlshs3a|clieutlshs4a|sgarchp2|sgarchac2' cc.cec.eu.int 
+H(clieucrshs3a, 158.167.153.84)
+H(clieucrshs4a, 158.167.153.139)
+H(clieutlshs3a, 158.167.153.138)
+H(clieutlshs4a, 158.167.153.215)
+H(sgarchp2, 158.167.153.124)
+H(sgarchac2, 158.168.1.178)
+[claeyje@muscadet dns]$ svn up
+Updating '.':
+At revision 16560.
+[claeyje@muscadet dns]$ check_dns_entries sgarchac2
+sgarchac2.cc.cec.eu.int has address 158.168.1.178
+178.1.168.158.IN-ADDR.ARPA domain name pointer sgarchac2.cc.cec.eu.int.
+

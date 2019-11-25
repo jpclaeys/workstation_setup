@@ -1,0 +1,4 @@
+# VMAX: VMAX_2560|Vmax3_0069
+symaccess -sid 2560 list  | grep Storage | grep opgt
+symaccess -sid 2560 show view opgtw
+symaccess -sid 2560 show view esendtool-pz

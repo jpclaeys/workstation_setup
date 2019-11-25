@@ -1,0 +1,53 @@
+
+To clean all the cached packages from the enabled repository cache directory, log in as root and execute the following:
+yum clean packages.
+yum clean headers.
+yum clean metadata.
+yum clean all.
+
+Example:
+--------
+
+
+[root@brutus yum.repos.d]# id
+uid=0(root) gid=0(root) groups=0(root)
+[root@brutus yum.repos.d]# yum clean packages
+Loaded plugins: fastestmirror
+Cleaning repos: centos7 centos7-extras centos7-updates epel nux-dextop
+653 package files removed
+[root@brutus yum.repos.d]# yum clean headers
+Loaded plugins: fastestmirror
+Cleaning repos: centos7 centos7-extras centos7-updates epel nux-dextop
+0 header files removed
+[root@brutus yum.repos.d]# yum clean metadata
+Loaded plugins: fastestmirror
+Cleaning repos: centos7 centos7-extras centos7-updates epel nux-dextop
+47 metadata files removed
+13 sqlite files removed
+0 metadata files removed
+[root@brutus yum.repos.d]# yum clean all
+Loaded plugins: fastestmirror
+Cleaning repos: centos7 centos7-extras centos7-updates epel nux-dextop
+Cleaning up everything
+Maybe you want: rm -rf /var/cache/yum, to also free up space taken by orphaned data from disabled or removed repos
+Cleaning up list of fastest mirrors
+
+
+[root@brutus yum.repos.d]# ll
+total 12
+-rw-r--r--. 1 root root 624 Jun  4  2018 centos.repo
+-rw-r--r--. 1 root root 214 Jun  4  2018 epel.repo
+-rw-r--r--  1 root root 221 Oct 10  2018 google-chrome.repo
+drwxr-xr-x  2 root root 284 Jul 11 13:20 obsolete
+[root@brutus yum.repos.d]# yum repolist
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+repo id                                                                                  repo name                                                                                                       status
+centos7                                                                                  CentOS-7 - Base                                                                                                 10,019
+centos7-extras                                                                           CentOS-7 - Extras                                                                                                  419
+centos7-updates                                                                          CentOS-7 - Updates                                                                                               2,232
+epel                                                                                     Extra Packages for Enterprise Linux 7                                                                           13,283
+repolist: 25,953
+
+
+

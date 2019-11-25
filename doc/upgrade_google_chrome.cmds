@@ -1,0 +1,5 @@
+- add proxy info to /etc/yum.conf
+
+[root@spider:/etc/yum.repos.d]# 
+
+yum update --enablerepo=google-chrome  google-chrome-stable.x86_64

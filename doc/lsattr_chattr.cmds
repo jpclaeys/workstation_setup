@@ -1,0 +1,6 @@
+# lsattr - list file attributes on a Linux second extended file system
+
+[root@banta ~]# lsattr /usr/bin/ping
+---------------- /usr/bin/ping
+
+# chattr - change file attributes on a Linux file system

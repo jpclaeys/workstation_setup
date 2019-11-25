@@ -1,0 +1,28 @@
+# getcap - examine file capabilities
+
+[root@banta ~]# getcap /usr/bin/ping
+/usr/bin/ping = cap_net_admin,cap_net_raw+p
+
+ex.
+
+# Saving files capabilities
+----------------------------
+[root@eurlexbo-rk ~]# find / -maxdepth 1 -type d | egrep -v '^/(dev|proc|sys|tmp|run|boot|applications|home|net|)$' | xargs getcap -r | gzip > /root/fs.cap.gz
+
+[root@eurlexbo-rk ~]# zcat /root/fs.cap.gz
+/usr/bin/ping = cap_net_admin,cap_net_raw+p
+/usr/sbin/arping = cap_net_raw+p
+/usr/sbin/clockdiff = cap_net_raw+p
+/usr/sbin/suexec = cap_setgid,cap_setuid+ep
+
+# Setting back the file capabilities
+-------------------------------------
+# show the commands
+[root@eurlexbo-rk ~]# zcat /root/fs.cap.gz | awk -F= '{print $2 " " $1}' | xargs -n 2 echo setcap
+setcap cap_net_admin,cap_net_raw+p /usr/bin/ping
+setcap cap_net_raw+p /usr/sbin/arping
+setcap cap_net_raw+p /usr/sbin/clockdiff
+setcap cap_setgid,cap_setuid+ep /usr/sbin/suexec
+# Effective set the file capabilities
+[root@eurlexbo-rk ~]# zcat /root/fs.cap.gz | awk -F= '{print $2 " " $1}' | xargs -n 2 setcap
+

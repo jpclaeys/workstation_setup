@@ -1,0 +1,79 @@
+
+Table 11.4 Common yum Tasks
+---------------------------
+Task 			Explanation
+search                  Search for the exact name of a package
+[what]provides */name   Perform a deep search in the package to look for specific files within the package
+info                    Provide more information about the package
+install                 Install the package
+remove                  Remove the package
+list [all | installed]  List all or installed packages
+group list              List pacakge groups
+group install           Install all packages from a group
+update                  Update packages specified
+clean all               Remove all stored metadata
+repolist [-v]           Produces a list of configured repositories
+repolist all
+history                 view what has happened in past transactions
+yum history list [ID]
+
+
+# How to know from which yum repository a package has been installed?
+
+With yum-utils installed, repoquery will provide the information you seek (here 'epel' being the repository).
+
+repoquery -i <package>
+ex.
+
+[root@banta ~]# for p in terminator pssh vlc gkrellm expect rdesktop; do repoquery -i $p|egrep -i "^Name|repo" | xargs;done
+Name : terminator Repository : epel-net
+Name : pssh Repository : epel-net
+Name : vlc Repository : rpmfusion-free-updates
+Name : gkrellm Repository : epel-net
+Name : expect Repository : base
+
+------------------------------------------------------------------------------------------------------------------------------------
+# one can use yumdb for similar queries:
+
+yumdb info <package>
+
+------------------------------------------------------------------------------------------------------------------------------------
+ex.
+
+[root@banta ~]# for p in terminator pssh vlc gkrellm expect rdesktop; do yumdb info $p|egrep -i "^$p|repo " | xargs;done
+terminator-0.98-3.el7.noarch from_repo = epel
+pssh-2.3.1-5.el7.noarch from_repo = epel
+from_repo = rpmfusion-free-updates
+gkrellm-2.3.5-20.el7.x86_64 from_repo = epel-net
+expect-5.45-14.el7_1.x86_64 from_repo = base
+rdesktop-1.8.3-1.el7.nux.x86_64 from_repo = nux-dextop
+
+[root@banta ~]# for p in terminator pssh vlc gkrellm expect rdesktop; do yumdb info $p|egrep -i "^$p|repo |command" | xargs;done
+terminator-0.98-3.el7.noarch from_repo = epel
+pssh-2.3.1-5.el7.noarch command_line = install pssh from_repo = epel
+command_line = install vlc from_repo = rpmfusion-free-updates
+gkrellm-2.3.5-20.el7.x86_64 command_line = install gkrellm from_repo = epel-net
+expect-5.45-14.el7_1.x86_64 command_line = install expect from_repo = base
+rdesktop-1.8.3-1.el7.nux.x86_64 command_line = install rdesktop from_repo = nux-dextop
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+List packages from given repo(s):
+
+yumdb search from_repo 'my-*-repo'
+
+------------------------------------------------------------------------------------------------------------------------------------
+yum undo downgrade
+
+
+PRE :
+
+yum downgrade lvm2-libs-2.02.180-10.el7_6.2.x86_64 lvm2-2.02.180-10.el7_6.2.x86_64 device-mapper-event-libs-1.02.149-10.el7_6.2.x86_64 device-mapper-1.02.149-10.el7_6.2.x86_64 device-mapper-libs-1.02.149-10.el7_6.2.x86_64 device-mapper-event-1.02.149-10.el7_6.2.x86_64
+
+POST :
+
+yum history undo `yum history list | grep Downgrade | awk '{print $1}'` | head -1
+OR
+yum history undo `yum history list | awk '/Downgrade/ {print $1;exit}'`
+
+------------------------------------------------------------------------------------------------------------------------------------

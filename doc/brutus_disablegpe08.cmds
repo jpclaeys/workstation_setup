@@ -1,0 +1,136 @@
+Arch Linux run script a minute after boot
+------------------------------------------
+You can use systemd timers to execute script a minute after boot.
+
+0. Create the script myscript
+
+1. First, create service file (/etc/systemd/system/myscript.service):
+
+[Unit]
+Description=MyScript
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/myscript
+
+2. Then create timer (/etc/systemd/system/myscript.timer):
+
+[Unit]
+Description=Runs myscript one minute after boot
+
+[Timer]
+# Time to wait after booting before activation
+OnBootSec=1min
+Unit=myscript.service
+
+[Install]
+WantedBy=multi-user.target
+Now enable and run it:
+
+3. enable & start the service
+# systemctl status myscript.timer
+# systemctl enable myscript.timer
+# systemctl start myscript.timer
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+- create the script
+--------------------
+
+vi /usr/local/bin/disablegpe08
+chmod +x /usr/local/bin/disablegpe08
+
+[claeyje@brutus ~]# ll /usr/local/bin/disablegpe08 
+-rwxr-xr-x 1 root root 573 18 juil. 14:13 /usr/local/bin/disablegpe08
+
+[root@brutus ~]# cat /usr/local/bin/disablegpe08 
+#!/bin/bash
+# disable spurious gpe08 
+# Note: the echo command need to be executed 3 times !
+logger disable gpe08 - before run - `cat /sys/firmware/acpi/interrupts/gpe08`
+echo "disable" > /sys/firmware/acpi/interrupts/gpe08
+logger disable gpe08 - after 1st run - `cat /sys/firmware/acpi/interrupts/gpe08`
+echo "disable" > /sys/firmware/acpi/interrupts/gpe08
+logger disable gpe08 - after 2nd run - `cat /sys/firmware/acpi/interrupts/gpe08`
+echo "disable" > /sys/firmware/acpi/interrupts/gpe08
+logger disable gpe08 - after 3rd run - `cat /sys/firmware/acpi/interrupts/gpe08`
+
+- create the service
+---------------------
+
+vi /etc/systemd/system/disablegpe08.service
+
+[root@brutus ~]# cat /etc/systemd/system/disablegpe08.service
+[Unit]
+Description=Disable GPE 08
+
+[Service]
+Type=simple
+ExecStart= /usr/local/bin/disablegpe08
+
+
+- create the timer
+-------------------
+
+vi /etc/systemd/system/disablegpe08.timer
+
+[root@brutus ~]# cat /etc/systemd/system/disablegpe08.timer 
+[Unit]
+Description=Runs disablegpe08 script 1 minute after boot
+
+[Timer]
+# Time to wait after booting before activation
+OnBootSec=1 min
+Unit=disablegpe08.service
+
+[Install]
+WantedBy=graphical.target
+
+[root@brutus ~]# ll /etc/systemd/system/disablegpe08*
+-rw-r--r-- 1 root root  96 18 juil. 13:57 /etc/systemd/system/disablegpe08.service
+-rw-r--r-- 1 root root 199 18 juil. 09:39 /etc/systemd/system/disablegpe08.timer
+
+- enable and start the timer service
+-------------------------------------
+
+[root@brutus brutus]# systemctl status disablegpe08.timer
+● disablegpe08.timer - Runs disablegpe08 script one minute after boot
+   Loaded: loaded (/etc/systemd/system/disablegpe08.timer; disabled; vendor preset: disabled)
+   Active: inactive (dead)
+
+[root@brutus brutus]# systemctl enable disablegpe08.timer
+Created symlink from /etc/systemd/system/multi-user.target.wants/disablegpe08.timer to /etc/systemd/system/disablegpe08.timer.
+[root@brutus brutus]# systemctl start disablegpe08.timer
+
+reboot the system
+
+
+- after reboot check that the disablegpe08.timer elapses and then activates the disablegpe08.service
+-----------------------------------------------------------------------------------------------------
+
+[root@brutus ~]# systemctl list-timers --all
+NEXT                           LEFT     LAST                           PASSED       UNIT                         ACTIVATES
+n/a                            n/a      jeu. 2019-07-18 14:16:52 CEST  18min ago    disablegpe08.timer           disablegpe08.service
+n/a                            n/a      jeu. 2019-07-18 14:17:33 CEST  17min ago    systemd-readahead-done.timer systemd-readahead-done.service
+ven. 2019-07-19 14:30:52 CEST  23h left jeu. 2019-07-18 14:30:52 CEST  4min 32s ago systemd-tmpfiles-clean.timer systemd-tmpfiles-clean.service
+
+3 timers listed.
+
+- check the journal file
+-------------------------
+
+[claeyje@brutus ~]# journalctl | grep gpe08
+juil. 18 14:16:05 brutus.opoce.cec.eu.int systemd[1]: Started Runs disablegpe08 script 1 minute after boot.
+juil. 18 14:16:52 brutus.opoce.cec.eu.int root[9881]: disable gpe08 - before run - 2324525 enabled
+juil. 18 14:16:52 brutus.opoce.cec.eu.int root[9884]: disable gpe08 - after 1st run - 2325912 enabled
+juil. 18 14:16:52 brutus.opoce.cec.eu.int root[9886]: disable gpe08 - after 2nd run - 2326180 disabled
+juil. 18 14:16:52 brutus.opoce.cec.eu.int root[9888]: disable gpe08 - after 3rd run - 0 disabled
+
+[root@brutus ~]# grep . -r /sys/firmware/acpi/interrupts/gpe08
+       0   disabled
+
+[root@brutus ~]# grep . -r /sys/firmware/acpi/interrupts | sed 's/:/ /' | awk '$2 > 10'
+/sys/firmware/acpi/interrupts/sci  2326183
+/sys/firmware/acpi/interrupts/gpe_all  2326184
+
+------------------------------------------------------------------------------------------------------------------------------------

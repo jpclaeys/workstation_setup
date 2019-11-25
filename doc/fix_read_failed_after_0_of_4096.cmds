@@ -1,0 +1,89 @@
+lvm command line shows filesystem IO errors
+--------------------------------------------
+
+Physically removed a disk before deactivating volume group and can't get LVM to stop printing errors about it
+--------------------------------------------------------------------------------------------------------------
+
+
+Issue
+------
+Physically removed the lone physical volume backing a volume group. The device nodes for this disk (/dev/sdb & /dev/sdb1) have not disappeared and now we can't get rid of the volume group or the LVs (with vgremove or vgreduce --removemissing). Additionally, every single lvm command returns errors like the following:
+
+
+
+[root@tuvok ~]# pvs
+  /dev/sduo: read failed after 0 of 4096 at 0: Input/output error
+  /dev/sduo: read failed after 0 of 4096 at 375810228224: Input/output error
+  /dev/sduo: read failed after 0 of 4096 at 375810285568: Input/output error
+  /dev/sduo: read failed after 0 of 4096 at 4096: Input/output error
+  /dev/sduq: read failed after 0 of 4096 at 0: Input/output error
+  /dev/sduq: read failed after 0 of 4096 at 375810228224: Input/output error
+  /dev/sduq: read failed after 0 of 4096 at 375810285568: Input/output error
+  /dev/sduq: read failed after 0 of 4096 at 4096: Input/output error
+  /dev/sdur: read failed after 0 of 4096 at 0: Input/output error
+  /dev/sdur: read failed after 0 of 4096 at 42950918144: Input/output error
+  /dev/sdur: read failed after 0 of 4096 at 42950975488: Input/output error
+  /dev/sdur: read failed after 0 of 4096 at 4096: Input/output error
+  /dev/sduy: read failed after 0 of 4096 at 0: Input/output error
+  /dev/sduy: read failed after 0 of 4096 at 32212189184: Input/output error
+  /dev/sduy: read failed after 0 of 4096 at 32212246528: Input/output error
+  /dev/sduy: read failed after 0 of 4096 at 4096: Input/output error
+  PV         VG    Fmt  Attr PSize   PFree  
+  /dev/sda2  rootp lvm2 a--u 556,72g 525,03g
+
+[root@tuvok ~]# ll /dev/sd* | grep -v sda
+brw-rw---- 1 root disk 67, 512  7 nov 09:32 /dev/sduo
+brw-rw---- 1 root disk 67, 544  7 nov 09:40 /dev/sduq
+brw-rw---- 1 root disk 67, 560  7 nov 09:45 /dev/sdur
+brw-rw---- 1 root disk 67, 672  7 nov 09:04 /dev/sduy
+
+Resolution
+-----------
+Remove the stale /dev/sdX device node and clean up the stale device-mapper nodes. In the above example, this would be accomplished by either a simple reboot, or by running the following.
+
+
+# dmsetup remove /dev/myvg/*
+# echo 1 > /sys/block/sdb/device/delete
+
+Note: It could be possible that the delete procedure can't be applied due to the no such file or directory message, in that case, you'll have to schedule a maintenance windows to reboot the host to clear the I/O failure messages.
+
+Root Cause
+-----------
+When the disk was physically removed, the /dev/sdb and /dev/sdb1 device nodes weren't automatically removed. The above errors are clearly indicating that /dev/sdb, /dev/sdb1, and /dev/myvg/mylv can no longer be read due to the removal of the disk. In this particular case, the fact that the removed disk's first partition (/dev/sdb1) was the lone PV backing the myvg volume group means that myvg can no longer function.
+
+====================================================================================================================================
+
+Cleanup
+--------
+Identify the devices to remove
+-------------------------------
+pvs 2>&1| awk '/read failed after/ {print $1}' | sort -u| sed 's/://'| awk -F"/" '{print $NF}'
+
+[root@tuvok ~]# pvs 2>&1| awk '/read failed after/ {print $1}' | sort -u| sed 's/://'| awk -F"/" '{print $NF}'
+sduo
+sduq
+sdur
+
+Remove the devices
+-------------------
+Show the cpmmands
+------------------
+for DEV in  `pvs 2>&1| awk '/read failed after/ {print $1}' | sort -u| sed 's/://'| awk -F"/" '{print $NF}'`; do echo "echo 1> /sys/block/$DEV/device/delete";done
+
+[root@tuvok ~]# for DEV in  `pvs 2>&1| awk '/read failed after/ {print $1}' | sort -u| sed 's/://'| awk -F"/" '{print $NF}'`; do echo "echo 1> /sys/block/$DEV/device/delete";done
+echo 1> /sys/block/sduo/device/delete
+echo 1> /sys/block/sduq/device/delete
+echo 1> /sys/block/sdur/device/delete
+
+Remove the devices
+-------------------
+for DEV in  `pvs 2>&1| awk '/read failed after/ {print $1}' | sort -u| sed 's/://'| awk -F"/" '{print $NF}'`; do echo "echo 1> /sys/block/$DEV/device/delete";done | bash ; pvs
+ 
+
+[root@tuvok ~]# for DEV in  `pvs 2>&1| awk '/read failed after/ {print $1}' | sort -u| sed 's/://'| awk -F"/" '{print $NF}'`; do echo "echo 1> /sys/block/$DEV/device/delete";done | bash
+
+[root@tuvok ~]# pvs
+  PV         VG    Fmt  Attr PSize   PFree  
+  /dev/sda2  rootp lvm2 a--u 556,72g 525,03g
+====================================================================================================================================
+

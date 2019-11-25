@@ -1,0 +1,19 @@
+# kworker high cpu issue
+-------------------------
+# Increase log level
+
+type the following command a few times
+echo 1 > /proc/sysrq-trigger
+... and watch the log using dmesg command
+
+
+# workaround
+
+[root@brutus ~]# cat /proc/sys/vm/dirty_writeback_centisecs
+500
+
+echo 10000 > /proc/sys/vm/dirty_writeback_centisecs
+...which overwrites the default value of 500.
+Why does this (hopefully) fix my issue? No clue.
+
+

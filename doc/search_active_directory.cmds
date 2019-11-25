@@ -1,0 +1,19 @@
+# On windows
+-------------
+open a windows explorer
+Network
+Search Active Directory
+Enter the group name
+Find Now
+Double click on the group in the search results
+
+If the user doesn't show up in the group, then forward the ticket to the windows team, and ask to add the user in the AD group.
+
+Dears,
+Can you please add the user "<username>" to the AD group "<AD group name>" ?
+
+
+# How to check which AD groups a user belongs to
+# Open DOS command prompt
+
+net user /domain <username>

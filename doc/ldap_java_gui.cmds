@@ -1,0 +1,18 @@
+Howto use the ldap java gui
+----------------------------
+
+launch: 
+/home/admin/tools/ldapbrowser/lbe.sh
+
+Adding a user to the staff (wheel) group
+
+in the group section
+right click on cn=staff entry
+select edit in the drop down menu
+select Edit Entry
+Goto the last (for example) memberUid entry
+right click on it, and 
+select Add Value in the drop down menu
+A new empty memberUid shows up
+Enter the user login name
+click on Apply

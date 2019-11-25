@@ -1,0 +1,35 @@
+sed: joining lines depending on the second one
+
+ have a file that, occasionally, has split lines. The split is signaled by the fact that the line starts with '+' (possibly preceeded by spaces).
+
+line 1
+line 2
+  + continue 2
+line 3
+...
+I'd like join the split line back:
+
+line 1
+line 2 continue 2
+line 3
+...
+
+This might work for you:
+
+sed 'N;s/\n\s*+//;P;D' file
+These are actually four commands:
+
+N
+Append line from the input file to the pattern space
+s/\n\s*+//
+Remove newline, following whitespace and the plus
+P
+print line from the pattern space until the first newline
+D
+delete line from the pattern space until the first newline, e.g. the part which was just printed
+The relevant manual page parts are
+
+Selecting lines by numbers
+Addresses overview
+Multiline techniques - using D,G,H,N,P to process multiple lines
+

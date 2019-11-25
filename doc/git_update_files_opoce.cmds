@@ -1,0 +1,162 @@
+====================================================================================================================================
+====================================================================================================================================
+Git: HowTo update files @ OPOCE
+------------------------------------------------------------------------------------------------------------------------------------
+##### from local repository, get the last version
+cd ~/git/{Linux|Solaris}/development && git branch
+git pull
+
+##### edit/write/change file
+vi <path/to/file.foo>
+
+##### from local repository, push configuration to puppet server in developement branch
+git add <path/to/file.foo>
+git commit       
+git push                              
+
+##### test on the puppet client, checking out from the DEVELOPMENT branch
+puppet agent -t --noop -o --environment  development
+
+##### if all looks good, commit from DEVELOPMENT into PRODUCTION branch
+cd ../production && git branch
+git pull origin production && git pull --no-ff
+{
+pwd | grep Solaris >/dev/null
+if [[ $? == 0 ]]; then git push && cd -; fi
+pwd | grep Linux >/dev/null
+if [[ $? == 0 ]]; then git push origin production && cd -; fi
+}
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+function git_commit_dev_to_prod ()
+{
+[ `pwd| egrep -c 'git/(Solaris|Linux)/development'` -eq 0 ] && echo "Not in git development dir: '$(pwd)'" && return 1
+cmd="pwd && cd ../production && pwd && git branch"
+msg "Executing: $cmd"
+confirmexecution || return 1
+eval $cmd
+
+# Pull dev in prod
+cmd="git pull origin production && git pull --no-ff"
+msg "Executing: $cmd"
+confirmexecution || return 1
+eval $cmd
+
+# Push dev into prod
+cmd=
+[ `pwd | grep -c Solaris 2>/dev/null` -eq 1 ] && cmd="git push && cd -"
+[ `pwd | grep -c Linux   2>/dev/null` -eq 1 ] && cmd="git push origin production && cd -"
+msg "Executing: $cmd"
+confirmexecution || return 1
+eval $cmd
+cd - > /dev/null
+}
+
+====================================================================================================================================
+
+Example:
+
+[claeyje@opvmwstsx11 development]# git status
+# On branch development
+nothing to commit, working directory clean
+
+claeyje@opvmwstsx11 development]# git diff
+[claeyje@opvmwstsx11 development]# cmd="git pull origin production && git pull --no-ff"
+[claeyje@opvmwstsx11 development]# msg "Executing: $cmd"
+===> Executing: git pull origin production && git pull --no-ff              <===
+[claeyje@opvmwstsx11 development]# git pull origin production && git pull --no-ff
+From puppet-pk:/puppet
+ * branch            production -> FETCH_HEAD
+First, rewinding head to replay your work on top of it...
+Applying: testing
+First, rewinding head to replay your work on top of it...
+
+
+[claeyje@opvmwstsx11 development]# cd ../production
+[claeyje@opvmwstsx11 production]# git status
+# On branch production
+nothing to commit, working directory clean
+
+[claeyje@opvmwstsx11 production]# git pull origin production && git pull --no-ff
+From puppet-pk:/puppet
+ * branch            production -> FETCH_HEAD
+First, rewinding head to replay your work on top of it...
+Applying: testing
+First, rewinding head to replay your work on top of it...
+
+[claeyje@opvmwstsx11 production]# git status
+# On branch production
+nothing to commit, working directory clean
+
+[claeyje@opvmwstsx11 production]# git diff
+[claeyje@opvmwstsx11 production]# git pull
+Current branch production is up to date.
+
+[claeyje@opvmwstsx11 production]# git br
+* production
+[claeyje@opvmwstsx11 production]# git push
+warning: push.default is unset; its implicit value is changing in
+Git 2.0 from 'matching' to 'simple'. To squelch this message
+and maintain the current behavior after the default changes, use:
+
+  git config --global push.default matching
+
+To squelch this message and adopt the new behavior now, use:
+
+  git config --global push.default simple
+
+See 'git help config' and search for 'push.default' for further information.
+(the 'simple' mode was introduced in Git 1.7.11. Use the similar mode
+'current' instead of 'simple' if you sometimes use older versions of Git)
+
+Everything up-to-date
+
+====================================================================================================================================
+
+[claeyje@opvmwstsx11 production]# cd ../development/
+[claeyje@opvmwstsx11 development]# git pull
+Already up-to-date.
+[claeyje@opvmwstsx11 development]# cd ../production/
+[claeyje@opvmwstsx11 production]# git pull origin production && git pull --no-ff
+From puppet-pk:/puppet
+ * branch            production -> FETCH_HEAD
+Already up-to-date!
+Merge made by the 'recursive' strategy.
+Already up-to-date.
+[claeyje@opvmwstsx11 production]# git push
+warning: push.default is unset; its implicit value is changing in
+Git 2.0 from 'matching' to 'simple'. To squelch this message
+and maintain the current behavior after the default changes, use:
+
+  git config --global push.default matching
+
+To squelch this message and adopt the new behavior now, use:
+
+  git config --global push.default simple
+
+See 'git help config' and search for 'push.default' for further information.
+(the 'simple' mode was introduced in Git 1.7.11. Use the similar mode
+'current' instead of 'simple' if you sometimes use older versions of Git)
+
+Counting objects: 1, done.
+Writing objects: 100% (1/1), 269 bytes | 0 bytes/s, done.
+Total 1 (delta 0), reused 0 (delta 0)
+remote: From puppet-pk:/puppet
+remote:    55d0970..a7ebee8  development -> origin/development
+remote:    0516caf..9563a57  production -> origin/production
+remote: chmod: changing permissions of `./modules/applications/files/RedHat/etc/security/limits.d/50-cportal.cportaldiff2-rk': Operation not permitted
+remote: chmod: changing permissions of `./.git/COMMIT_EDITMSG': Operation not permitted
+remote: chmod: changing permissions of `./.git/objects/5d/f36a9cdea8e278d9d769d2a99e86b06464c8d9': Operation not permitted
+remote: chmod: changing permissions of `./.git/objects/e6/483fd81c9195e253a2dacdbafd4a87f7c3be52': Operation not permitted
+remote: chmod: changing permissions of `./.git/objects/20/29ae7818e367360a4c9ac7d7c2d2525fb17815': Operation not permitted
+remote: chmod: changing permissions of `./.git/objects/bc/157fb0e1174a57d8ea16c599db43072589fcbe': Operation not permitted
+remote: chmod: changing permissions of `./.git/objects/c2/f55c6c26a259b6803aca4880325e4820dd037a': Operation not permitted
+remote: chmod: changing permissions of `./.git/objects/c5/97bd6c98a4b32a995882b5ae8ee216d39d4360': Operation not permitted
+remote: chmod: changing permissions of `./.git/objects/04/13c154476911cdbb3dec67e2a49dcbcfa6a55a': Operation not permitted
+remote: sourece repo: /applications/puppet/users/git/repositories/puppet.git
+remote:  branch :production
+remote: Updating existing environment production
+remote: envpath: /etc/puppet/environments/production
+To gitolite3@puppet-pk:/puppet
+   0516caf..9563a57  production -> production
+

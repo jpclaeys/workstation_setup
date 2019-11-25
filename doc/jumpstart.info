@@ -1,0 +1,71 @@
+http://thegeekdiary.com/the-ultimate-solaris-jumpstart-troubleshooting-guide/http://thegeekdiary.com/the-ultimate-solaris-jumpstart-troubleshooting-guide/
+
+
+civet-sc> console -f
+Warning: User <auto> currently has write permission to this console and forcibly removing them will terminate any current write actions and all work will be lost.  Would you like to continue? [y/n]y
+Enter #. to return to ALOM.
+Requesting Internet Address for 0:14:4f:a2:3:96
+Requesting Internet Address for 0:14:4f:a2:3:96
+Requesting Internet Address for 0:14:4f:a2:3:96
+Requesting Internet Address for 0:14:4f:a2:3:96
+Requesting Internet Address for 0:14:4f:a2:3:96
+civet-sc> break -y
+civet-sc>
+SC Alert: SC Request to send Break to host.
+
+civet-sc>
+civet-sc> console -f
+Warning: User <auto> currently has write permission to this console and forcibly removing them will terminate any current write actions and all work will be lost.  Would you like to continue? [y/n]
+Warning: User <auto> currently has write permission to this console and forcibly removing them will terminate any current write actions and all work will be lost.  Would you like to continue? [y/n]y
+Enter #. to return to ALOM.
+
+{1} ok 
+{1} ok 
+{1} ok 
+{1} ok watch-net-all
+/pci@1e,600000/pci@0/pci@a/pci@0/network@4,1
+Timed out waiting for Autonegotiation to complete
+Check cable and try again
+Link Down
+
+/pci@1e,600000/pci@0/pci@a/pci@0/network@4
+Timed out waiting for Autonegotiation to complete
+Check cable and try again
+Link Down
+
+/pci@1e,600000/pci@0/pci@9/pci@0/network@4,1
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+....................
+/pci@1e,600000/pci@0/pci@9/pci@0/network@4{1} ok printenv nvramrc
+nvramrc =               devalias c0t0d0s0 /pci@1e,600000/pci@0/pci@a/pci@0/pci@8/scsi@1/disk@0,0:a
+                        devalias c0t1d0s0 /pci@1e,600000/pci@0/pci@a/pci@0/pci@8/scsi@1/disk@1,0:a
+                        devalias c0t0d0s1 /pci@1e,600000/pci@0/pci@a/pci@0/pci@8/scsi@1/disk@0,0:b
+                        {1} ok devalias gige0
+gige0                    /pci@1e,600000/pci@0/pci@9/pci@0/network@4
+{1} ok cd  /pci@1e,600000/pci@0/pci@9/pci@0/network@4
+{1} ok .properties
+mac-address              00 14 4f a2 03 96
+local-mac-address        00 14 4f a2 03 96
+devalias c0t1d0s1 /pci@1e,600000/pci@0/pci@a/pci@0/pci@8/scsi@1/disk@1,0:b
+                        devalias gige0 /pci@1e,600000/pci@0/pci@9/pci@0/network@4
+                        devalias gige1 /pci@1e,600000/pci@0/pci@9/pci@0/network@4,1
+                        ." ChassisSerialNumber 0730TL21F4 " cr
+
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.{1} ok cd /pci@1e,600000/pci@0/pci@9/pci@0/network@4
+{1} ok .properties
+mac-address              00 14 4f a2 03 96
+local-mac-address        00 14 4f a2 03 96
+assigned-addresses       82092010 00000000 04200000 00000000 00200000
+
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+...... 
+{1} ok cd /pci@1e,600000/pci@0/pci@9/pci@0/network@4,1
+{1} ok .properties
+local-mac-address        00 14 4f a2 03 97
+assigned-addresses       82092110 00000000 04400000 00000000 00200000
+

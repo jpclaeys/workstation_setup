@@ -1,0 +1,105 @@
+
+gretel
+
+{0} ok boot net -s
+Boot device: /pci@400/pci@2/pci@0/pci@4/network@0,1  File and args: -s
+
+Can't open boot device
+
+--> find the correct network interface
+watch-net-all
+and try to boot on the working network connections
+
+{0} ok boot /pci@400/pci@2/pci@0/pci@0/network@0,1 -s
+Boot device: /pci@400/pci@2/pci@0/pci@0/network@0,1  File and args: -s
+/pci@400/pci@2/pci@0/pci@0/network@0,1: 1000 Mbps link up
+<time unavailable> wanboot info: WAN boot messages->console
+<time unavailable> wanboot crit: 'net'=/pci@400/pci@2/pci@0/pci@4/network@0,1
+
+<time unavailable> wanboot crit: wanboot requires that the 'net' alias refers to
+<time unavailable> wanboot crit: the network device path from which it loaded
+Type  'go' to resume
+
+
+
+Note:
+If the net alias is not set to the network device you want to use, you must reset the alias. 
+
+To set the net device alias for this installation only, use the devalias command.
+To permanently set the net device alias, use the nvalias command.
+
+{0} ok devalias net /pci@400/pci@2/pci@0/pci@0/network@0,1
+{0} ok nvalias net /pci@400/pci@2/pci@0/pci@0/network@0,1
+{0} ok boot net -s
+NOTICE: Entering OpenBoot.
+NOTICE: Fetching Guest MD from HV.
+NOTICE: Starting additional cpus.
+NOTICE: Initializing LDC services.
+ChassisSerialNumber 1244BDYF90
+NOTICE: Probing PCI devices.
+NOTICE: Finished PCI probing.
+
+
+SPARC T4-2, No Keyboard
+Copyright (c) 1998, 2014, Oracle and/or its affiliates. All rights reserved.
+OpenBoot 4.36.1, 256.0000 GB memory available, Serial #102786996.
+Ethernet address 0:10:e0:20:67:b4, Host ID: 862067b4.
+
+
+
+Boot device: /pci@400/pci@2/pci@0/pci@0/network@0,1  File and args: -s
+/pci@400/pci@2/pci@0/pci@0/network@0,1: 1000 Mbps link up
+<time unavailable> wanboot info: WAN boot messages->console
+<time unavailable> wanboot info: configuring /pci@400/pci@2/pci@0/pci@0/network@0,1
+
+/pci@400/pci@2/pci@0/pci@0/network@0,1: 1000 Mbps link up
+
+Requesting Ethernet address for: 10.199.99.254
+<time unavailable> wanboot info: WAN boot messages->console
+<time unavailable> wanboot info: configuring /pci@400/pci@2/pci@0/pci@0/network@0,1
+
+/pci@400/pci@2/pci@0/pci@0/network@0,1: 1000 Mbps link up
+
+Requesting Ethernet address for: 10.199.99.254
+<time unavailable> wanboot progress: wanbootfs: Read 368 of 368 kB (100%)
+<time unavailable> wanboot info: wanbootfs: Download complete
+SunOS Release 5.11 Version 11.2 64-bit
+Copyright (c) 1983, 2014, Oracle and/or its affiliates. All rights reserved.
+Booting to milestone "milestone/single-user:default".
+Remounting root read/write
+Probing for device nodes ...
+Preparing network image for use
+Downloading solaris.zlib
+curl arguments --insecure for http://aiserver-pz:5555//applications/ai/images/sol_11_2_2_7_0-sparc/solaris.zlib
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  227M  100  227M    0     0  84.8M      0  0:00:02  0:00:02 --:--:-- 84.9M^[[A^[[A^[[A
+Downloading solarismisc.zlib
+curl arguments --insecure for http://aiserver-pz:5555//applications/ai/images/sol_11_2_2_7_0-sparc/solarismisc.zlib
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 17.1M  100 17.1M    0     0  42.4M      0 --:--:-- --:--:-- --:--:-- 42.7M
+Downloading .image_info
+curl arguments --insecure for http://aiserver-pz:5555//applications/ai/images/sol_11_2_2_7_0-sparc/.image_info
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    88  100    88    0     0   3779      0 --:--:-- --:--:-- --:--:--  4400
+Done mounting image
+Configuring devices.
+Hostname: gretel
+Requesting System Maintenance Mode
+SINGLE USER MODE
+
+Enter user name for system maintenance (control-d to bypass): root
+Enter root password (control-d to bypass):       # pwd is "solaris"
+single-user privilege assigned to root on /dev/console.
+Entering System Maintenance Mode
+
+Dec  7 08:23:56 su: 'su root' succeeded for root on /dev/console
+Oracle Corporation  SunOS 5.11  11.2    August 2014
+root@gretel:~#
+
+
+
+<snip>
+

@@ -1,0 +1,15 @@
+# How to run an explorer at opoce
+
+# get the explorer cmd
+[root@tank /]# crontab -l | grep explorer
+30 4 * * * /usr/lib/explorer/bin/explorer -w default,localzones -q -SR PO -transport ftp://infra2-pk/applications/explo/data/explorer/upload > /dev/null 2>&1
+
+# Launch the explorer
+[root@tank /]# /usr/lib/explorer/bin/explorer -w default,localzones -SR PO
+
+# Alternative suggested by MOS:
+Run command "explorer -w default,localzones,ldom,smfextended" to collect the explorer output. Or "explorer -w !ipaddr" (if you wish to mask IP addresses) 
+
+
+# copy the explorer to the xchange directory
+[root@tank /]# scp /var/explorer/output/explorer.84fb71d0.tank-2019.02.06.09.19.tar.gz /net/vdm-unix/xchange/

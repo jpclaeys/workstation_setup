@@ -1,0 +1,22 @@
+multipathd show maps format "%n %S %w %d wp=%r"
+
+%n: name
+%S: size
+%w: wwn (uuid)
+%d: sysfs (dm-*)
+%r: write_prot (rw/ro)
+
+ex.
+[root@iodine ~]# multipathd show maps format "%n size=%S %w %d wp=%r"| egrep "name|fedorafs3-recover-pk"
+name                                     size=size  uuid                              sysfs  wp=write_prot
+fedorafs3-recover-pk_t1_data12           size=1.5T  360000970000296700069533030333936 dm-14  wp=rw        
+
+multipath example:
+[root@abel ~]# D1=mer_vmax3453_t1_rdfng_data1;D2=mer_vmax3453_t1_rdfng_data2
+[root@abel ~]# for D in $D1 $D2; do multipath -ll | grep -A1 `echo $D | sed 's:/dev/mapper/::'` | xargs| awk '{print $1,$5,$2,$3}' ;done
+mer_vmax3453_t1_rdfng_data1 size=102G (360000970000292603453533033334543) dm-2
+mer_vmax3453_t1_rdfng_data2 size=509G (360000970000292603453533031313032) dm-3
+
+# Editing /etc/multipath.conf
+# Validating:
+multipath -d -v 2

@@ -1,0 +1,9 @@
+[root@fornax ~]# service  autofs status
+automount (pid  2094) is running...
+[root@fornax ~]# service  autofs restart
+Stopping automount:                                        [  OK  ]
+Starting automount:                                        [  OK  ]
+
+[root@fornax ~]# ps -ef | grep automount| grep -v grep
+root      3256     1  0 10:35 ?        00:00:00 automount --pid-file /var/run/autofs.pid
+

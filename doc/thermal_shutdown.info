@@ -1,0 +1,9 @@
+Howto Disable thermal shutdown
+-------------------------------
+
+ILO
+<F9>
+Server Availability
+Thermal Shutdown
+Disabled
+<F10>

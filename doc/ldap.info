@@ -1,0 +1,47 @@
+Ldap access:
+------------
+
+
+http://ldapa-pk
+
+login with your personal credentials (i.e. login with uid)
+
+
+http://ldapb-pk
+
+login with the ldam admin accont (directory manager)
+
+login field: CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int
+password: Cfr keepassx
+
+
+
+Pour revenir avec le login UID :
+
+Dans :  /var/www/html/phpldapadmin-1.2.3/config
+
+Faire un CP de config.php.login.by.user vers config.php
+
+pour revenir au login directory manager:
+
+Faire un CP de config.php.login.by.dn vers config.php
+
+
+[root@ldapb-pk config]# diff config.php.login.by.user config.php.login.by.dn
+318c318
+< $servers->setValue('login','auth_type','session');
+---
+> // $servers->setValue('login','auth_type','session');
+344c344
+< //$servers->setValue('login','auth_type','sasl');
+---
+> // $servers->setValue('login','auth_type','sasl');
+347c347
+< //$servers->setValue('sasl','mech','GSSAPI');
+---
+> // $servers->setValue('sasl','mech','GSSAPI');
+392d391
+< $servers->setValue('login','attr','uid');
+
+
+

@@ -1,0 +1,13 @@
+This will delete all the files in the current directory (and below) that are size zero.
+
+find . -size 0 -print0 | xargs -0 rm --
+
+find . -type f -empty -delete
+
+
+
+
+On Linux, the stat(1) command is useful when you don't need find(1):
+
+(( $(stat -c %s "$filename") )) || rm "$filename"
+The stat command here allows us just to get the file size, that's the -c %s (see the man pages for other formats). I am running the stat program and capturing its output, that's the $(  ). This output is seen numerically, that's the outer ((  )). If zero is given for the size, that is FALSE, so the second part of the OR is executed. Non-zero (non-empty file) will be TRUE, so the rm will not be executed.

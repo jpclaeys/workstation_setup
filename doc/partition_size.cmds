@@ -1,0 +1,47 @@
+[root@eurlexbo-rk ~]# fdisk -l /dev/sdb
+
+Disk /dev/sdb: 29.0 GB, 28955377664 bytes, 56553472 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x53d8274d
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1             128    56549503    28274688   8e  Linux LVM
+
+[root@eurlexbo-rk ~]# fdisk -l /dev/sdc
+
+Disk /dev/sdc: 214.7 GB, 214748364800 bytes, 419430400 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x669454a7
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1             128   419430399   209715136   8e  Linux LVM
+
+
+                                              
+[root@eurlexbo-rk ~]# pvs
+  PV         VG     Fmt  Attr PSize    PFree 
+  /dev/sdb1  root   lvm2 a--    26,96g     0 
+  /dev/sdc1  eurlex lvm2 a--  <200,00g 14,80g
+
+
+Verify that in-memory kernel partition table has been updated with the new size:
+
+
+[root@eurlexbo-rk ~]# cat /proc/partitions | grep [a-z]1$
+   8        1     512000 sda1
+   8       17   28274688 sdb1
+   8       33  209715136 sdc1
+
+[root@eurlexbo-rk ~]# echo "scale=2;512000/1024" | bc
+500.00
+[root@eurlexbo-rk ~]# echo "scale=2;28274688/1024/1024" | bc
+26.96
+[root@eurlexbo-rk ~]# echo "scale=2;209715136/1024/1024" | bc
+199.99
+

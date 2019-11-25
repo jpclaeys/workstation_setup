@@ -1,0 +1,54 @@
+Application launchers on local workstation Iceman:
+--------------------------------------------------
+Terminator on iceman:
+
+name: Terminator
+Command: terminator --geometry=1280x768
+Commanet: Local terminator 
+Icon: /usr/share/icons/hicolor/48x48/apps/terminator.png
+
+Gedit:
+Name: gedit Text Editor
+Command: gedit %U
+Comment: Edit text or source files, with syntax highlighting
+Icon: /usr/share/icons/nimbus/48x48/apps/accessories-text-editor.png
+
+
+Application launchers on opvmwstsx11:
+--------------------------------------
+
+Terminator:
+
+name: terminator opvmwstsx11
+Command: ssh opvmwstsx11 terminator --geometry=1280x768
+Commanet: terminator on linux vm
+Icon: /usr/share/icons/hicolor/48x48/apps/terminator.png
+
+
+Xpra client launcher
+Name: xpra
+Command: xpra_launcher /export/home/claeyje/Desktop/opvmwstsx11.xpra
+Comment: xpra session on opvmwstsx11
+Icon: /opt/xpra/users/system/xpra-2.3/icons/xpra.png
+
+Firefox
+Name: firefox opvmwstsx11
+Command: ssh opvmwstsx11 firefox
+Comment: firefox on linux vm
+Icon: /usr/share/icons/nimbus/48x48/apps/firefox-icon.png
+
+Opdt small
+Name: opdt199 small
+Command: /usr/bin/rdesktop -x 0x80 -g 1268x996 -k fr-be -a 24 -u "publications\claeyje" opdt199
+Comment: 
+Icon: $HOME/Pictures/Windows.png
+
+
+Opdt large
+Name: opdt199 large
+Command: /usr/bin/rdesktop -x 0x80 -g 1900x1040 -k fr-be -a 24 -u "publications\claeyje" opdt199
+Comment: 
+Icon: $HOME/Pictures/Windows.png
+
+
+

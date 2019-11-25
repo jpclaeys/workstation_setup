@@ -1,0 +1,27 @@
+# HowTo add a Solaris role in ldap
+-----------------------------------
+ex. 
+# Add oracle role to "liberdo"
+# Get role info from crochph
+--> 
+Key: SolarisAttrKeyValue
+Value: type=normal;roles=orastor,rootdba,oracle
+
+# Find the ldap servers
+/usr/lib/ldap/ldap_cachemgr -g | grep -i server
+
+connect to ldapa-pk web gui
+
+Add "SolarisUserAttr" ObjectClass  (# RBAC User attributes objectclass)
+In the objectClass, click on (add value)
+select the value you want to add  "SolarisUserAttr"
+Press "Add new ObjectClass"
+
+Once the SolarisUserAttr ObjectClass, has been added, 
+Click on "Add new Attribute" in the top areea
+Select from dropdown list: SolarisAttrKeyValue
+enter the value: type=normal;roles=orastor,rootdba,oracle
+
+Click on Update Object
+
+Click on Update Object a second time to confirm the change

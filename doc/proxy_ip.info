@@ -1,0 +1,38 @@
+http://pac/pac/pfroxy.pac
+http://pac.opoce.cec.eu.int/pac/proxy.pac
+
+http://autoproxy.cec.eu.int/proxy.pac
+
+http://ps-lux-usr.cec.eu.int:8012/
+
+
+[claeyje@banta doc]# nslookup autoproxy.cec.eu.int
+Server:		158.167.97.161
+Address:	158.167.97.161#53
+
+Non-authoritative answer:
+autoproxy.cec.eu.int	canonical name = autoproxy.proxy.cec.eu.int.
+autoproxy.proxy.cec.eu.int	canonical name = ec.autoproxy.cec.eu.int.
+Name:	ec.autoproxy.cec.eu.int
+Address: 147.67.138.13
+Name:	ec.autoproxy.cec.eu.int
+Address: 147.67.117.13
+
+[claeyje@banta doc]# dig autoproxy.cec.eu.int +short
+autoproxy.proxy.cec.eu.int.
+ec.autoproxy.cec.eu.int.
+147.67.117.13
+147.67.138.13
+
+[claeyje@banta doc]# dig pac.opoce.cec.eu.int +short
+lbsrv198.opoce.cec.eu.int.
+158.167.226.198
+
+[claeyje@banta doc]# dig pslux.cec.eu.int +short
+pslux.ec.europa.eu.
+158.169.9.13
+[claeyje@banta doc]# dig ps-lux-usr.cec.eu.int +short
+147.67.117.13
+[claeyje@banta doc]# dig ps-bxl-usr.cec.eu.int +short
+147.67.138.13
+

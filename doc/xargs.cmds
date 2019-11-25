@@ -1,0 +1,27 @@
+# How to execute one arg by one
+--------------------------------
+# use the option "-n1"
+ex.
+[claeyje@opvmwstsx11 doc]# echo "a b c" | xargs -n1 echo echo
+echo a
+echo b
+echo c
+[claeyje@opvmwstsx11 doc]# echo "a b c" | xargs echo echo
+echo a b c
+
+Join every two lines
+---------------------
+xargs -L2
+
+{
+echo "The quick
+brown fox
+jumps over
+the lazy
+dog" | xargs -L2
+}
+Output:
+The quick brown fox
+jumps over the lazy
+dog
+

@@ -1,0 +1,5 @@
+Opvmwsconsl :
+
+rsync -avzP /applications/conslife/data/archive/* appgateway@woodgwp.cc.cec.eu.int:/ec/prod/app/conslife/int/data/archive/
+                pass : slHQlUyT
+

@@ -1,0 +1,77 @@
+kvm cluster commands summary
+-----------------------------
+# Get cluster members 
+corosync-quorumtool -l
+
+# Get the current quorum votes
+corosync-quorumtool
+
+# Displays the status of the current rings on this node.
+corosync-cfgtool -s
+
+# Find where a vm is running
+pcs constraint show location <vm>
+Note: vm starts on the higest score value
+
+# power on the vm
+pcs status | grep <vm>
+pcs resource manage <vm> 
+pcs status | grep <vm>
+pcs resource enable <vm>
+pcs status | grep <vm>
+# Cleans up the resource in the lrmd (useful to reset the resource  status  and  failcount).
+# This  tells  the  cluster  to forget the operation history of a resource and re-detect its
+# current state. This can be useful to purge knowledge of past failures that have since been
+# resolved.  If  resource  id  is  not  specified then all resources/stonith devices will be
+# cleaned up.
+
+pcs resource cleanup <vm>
+pcs status | grep <vm>
+
+
+CLUSTER RESOURCES CLEANUP
+--------------------------
+If a resource has failed, a failure message appears when you display the cluster status. 
+If you resolve that resource, you can clear that failure status with the pcs resource cleanup command. 
+This command resets the resource status and failcount, telling the cluster to forget the operation history of a resource and re-detect its current state.
+The following command cleans up the resource specified by resource_id.
+
+pcs resource cleanup resource_id
+
+If you do not specify a resource_id, this command resets the resource status and failcountfor all resources.
+As of Red Hat Enterprise Linux 7.5, the pcs resource cleanup command probes only the resources 
+that display as a failed action. To probe all resources on all nodes you can enter the following command:
+
+pcs resource refresh
+
+By default, the pcs resource refresh command probes only the nodes where a resource's state is known. 
+To probe all resources even if the state is not known, enter the following command:
+
+pcs resource refresh --full
+
+
+
+# Get disk info before removing a vm
+
+multipath -ll | grep <vm> -A6
+symdg show <vm> | egrep 'Group (Name:|Type)|(RDF|Pair) State|LdevName|DEV0|Cap '
+
+# Removing a VM
+# Goto the host managing the VM
+pcs resource disable <vm>
+# wait until the vm is stopped
+pcs status | grep <vm>
+# Unmanage the vm
+pcs resource unmanage <vm>
+# delete the vm
+pcs resource delete <vm>
+# Check the the vm no longer shows up
+pcs status | grep <vm>
+
+
+# Retrieve storage
+# Note: vmax3 
+Vmax3
+MER:  storage_id=000296700060  Vmax3_0060
+EUFO: storage_id=000296700069  Vmax3_0069
+

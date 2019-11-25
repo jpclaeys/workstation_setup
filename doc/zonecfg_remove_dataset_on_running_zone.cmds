@@ -1,0 +1,46 @@
+How to Remove a dataset Resource From a Running Zone
+----------------------------------------------------
+
+Perform this procedure to remove ZFS datasets from a running zone.
+
+Become an administrator.
+
+View the dataset information of the live zone configuration.
+zonecfg -z zonename -r info dataset
+…
+dataset:
+        name: rpool/export/dataset1
+        alias: dataset1
+dataset:
+        name: rpool/export/dataset2
+        alias: dataset2
+…
+Remove the dataset from the running zone, verify the change, and commit the change to the live zone configuration.
+Note: 
+-r Enables the live edit mode. Instructs zonecfg to edit the live configuration of a running zone instead of a persistent  configuration
+   from  a  stable storage. When used, zonecfg retrieves a snapshot of the current live zone configuration. 
+   The full set of zonecfg sub-commands is supported in this mode. 
+   The live configuration takes effect immediately after it is commited and  remains  active  until the next zone reboot. 
+   The live mode is only allowed for a running zone and requires the authorization solaris.zone.liveconfig/zonename.
+
+zonecfg -z zonename -r
+zonecfg:zonename> remove dataset name=rpool/export/dataset1
+zonecfg:zonename> info dataset
+dataset 0:
+        name: rpool/export/dataset2
+        alias: dataset2
+…
+zonecfg:zonename> commit
+zone 'zonename': Checking: Removing dataset name=rpool/export/dataset1
+zone 'zonename': Applying the changes
+zonecfg:zonename> exit
+Display the dataset information of the live zone configuration.
+Verify that the dataset is removed from the live zone configuration.
+
+zonecfg -z zonename -r info dataset
+dataset:
+        name: rpool/export/dataset2
+        alias: dataset2
+(Optional) Change the persistent zone configuration to match the live zone configuration.
+zoneadm -z zonename apply
+

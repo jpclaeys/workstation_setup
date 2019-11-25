@@ -1,0 +1,6 @@
+cat /etc/mdadm.conf
+mdadm -D --scan | grep '/dev/md2'   >> /etc/mdadm.conf
+
+
+mdadm --detail /dev/md3
+

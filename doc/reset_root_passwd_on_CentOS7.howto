@@ -1,0 +1,43 @@
+How To Reset Your Forgotten Root Password On CentOS 7 Servers
+
+https://www.tecmint.com/install-gui-in-rhel-centos-7/
+
+Sometimes you forget stuff. I do. I forget important passwords for important websites sometimes. Retrieving your forgotten passwords for most websites is easy, all one has to do remember few details that were used when signing up for the service to get a password reset for an account.
+
+The difference is forgetting a password to a system or device with no easy way to reset it while locked out. CentOS 7 is one such system. If you forget the root password to your CentOS 7 machine, it’s almost virtually impossible to reset it while you’re locked out.
+
+This brief tutorial is going to show you a simple trick that you can use to reset your forgotten root password for CentOS 7 servers. This will definitely come in handy for webmasters who are locked out of your CentOS machine and can’t sign on.
+
+This tutorial will only work if you have direct access to the machine or serial terminal access with boot menu options. You can’t reset the root password if you’re remotely connected since you need boot menu access.
+
+To get started, turn on the machine that you’ve forgotten the root password on. 
+For CentOS 7 devices, you’ll be given 5 seconds at the boot menu to select the operating system kernel to boot into.
+
+That 5 seconds is important, because allows for admins to select different kernels or edit existing kernel parameters before booting.
+
+At the boot menu, press e to edit the existing kernel (Core) as shown below.
+
+Next, scroll down to the list until you see the line underlined below ( ro ) . What we need to do is change that ro to rw and start into a bash shell. It should look like this rw init=/sysroot/bin/sh.
+
+Change the ro line to rw and add init=/sysroot/bin/sh
+
+rw init=/sysroot/bin/sh
+
+After changing that, press Ctrl + X  on your keyboard to start into single user mode using the bash shell specified above. 
+In this mode, we’re going to change the root password.
+In the single user mode, run the command as shown below
+
+chroot /sysroot
+
+Finally, run the commands below to change the root password.
+
+You’ll be prompted to create and confirm a new password.  After creating the password, run the commands below to update SELinux parameters
+
+touch /.autorelabel
+
+Exit and reboot your system. 
+You should be able to sign on and use the system with the new password you created. 
+That’s how you change the root password on CentOS 7.
+
+Enjoy
+

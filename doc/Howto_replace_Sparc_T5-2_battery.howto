@@ -1,0 +1,129 @@
+
+How to Replace a SPARC T5-2 Battery (Doc ID 1525974.1)  To BottomTo Bottom  
+
+In this Document
+Goal
+Solution
+APPLIES TO:
+SPARC T5-2 - Version All Versions to All Versions [Release All Releases]
+Information in this document applies to any platform.
+GOAL
+Replace T5-2 battery.
+
+**********************************************************************
+To report errors or request improvements on this procedure,
+please Add a comment on Doc ID: 1525974.1
+**********************************************************************
+
+SOLUTION
+DISPATCH INSTRUCTIONS
+
+WHAT SKILLS ARE REQUIRED?: No special skills required, Customer Replaceable Unit (CRU) procedure
+
+Time Estimate: 60 minutes
+
+Task Complexity: 0
+
+REMOVAL/REPLACEMENT INSTRUCTIONS:
+
+PROBLEM OVERVIEW: failed battery
+
+WHAT STATE SHOULD THE SYSTEM BE IN TO BE READY TO PERFORM THE RESOLUTION ACTIVITY? :
+
+ESD Caution:
+
+Circuit boards and drives contain electronic components that are extremely sensitive to static electricity. Ordinary amounts of static electricity from clothing or the work environment can destroy the components located on these boards. Do not touch the components along their connector edges.
+Use a Antistatic Wrist strap. Attach one end of the strap to your wrist and the other end to the chassis, depending on what type of strap you use, with the adhesive end or the metal plug.
+Use an Antistatic Mat. Place ESD-sensitive components such as motherboards, memory, and other PCBs on an antistatic mat
+ 
+
+ 
+
+DAMAGE ALERT: Perform a visual inspection of the replacement part to make sure that there are no damaged components, connectors, bent pins, damaged packages during shipping, etc. If the part is damaged, don't install it into the system, order a new part. Handle with caution and package carefully the return part to avoid any damages during shipping.
+
+The customer should conduct an orderly software system shutdown. Then power down system and disconnect the power cords. A data backup is not a pre-requisite but is a wise precaution.
+
+WHAT ACTIONS ARE REQUIRED:
+
+A) Remove the System Battery
+
+1. Prepare for servicing:
+    a. Attach an antistatic wrist strap.
+    b. Power off the server and unplug power cords from the power supplies.
+    c. Extend the server to maintenance position.
+    d. Remove the top cover.
+
+2. Remove the battery from the battery holder by pulling back on the metal tab holding it in place and sliding the battery up and out of the battery holder. (PCIe 0 must be removed first on the Netra)
+
+ 
+
+B) Install the System Battery
+
+1. Attach an antistatic wrist wrap and unpack the replacement battery.
+2. Press the new battery into the battery holder with the positive side (+) facing away from the metal tab that holds it in place.  (Replace PCIe 0 if a Netra)
+
+NOTE: If the SP is configured to synchronize with a network time server using NTP, the Oracle ILOM clock will be reset as soon as the server is powered on and connected to the network. Otherwise, proceed to the next step.
+
+3. Return the server to operation:
+    a. Return the server to the normal rack position.
+    b. Reinstall the power cords to the power supplies and power on the server.
+4. If the service processor is configured to synchronize with a network time server using the Network Time Protocol (NTP), the ILOM clock will be reset as soon as the server is powered on and connected to the network. Otherwise, proceed to the next step.
+5. If the service processor is not configured to use NTP, you must reset the ILOM clock using the ILOM CLI or the web interface.
+
+Using the Ilom CLI to set the date and time:
+
+The following example sets the date to June 17, 2010, the time to 16:19:56, and the timezone to GMT.
+
+-> set /SP/clock datetime=061716192010
+
+-> show /SP/clock
+
+/SP/clock
+Targets:
+
+Properties:
+datetime = Wed JUN 17 16:19:56 2010
+timezone = GMT (GMT)
+usentpserver = disabled
+Commands:
+cd
+set
+show
+
+
+C) Verify the System Battery
+
+1. Run show /SYS/MB/BAT to check the status of the system battery. In the output, the /SYS/MB/BAT status should be “OK”, as in the following example.
+
+-> show /SYS/MB/BAT
+/SYS/MB/BAT
+
+Targets:
+
+Properties:
+type = Battery
+ipmi_name = MB/BAT
+fault_state = OK
+clear_fault_action = (none)
+
+Commands:
+cd
+set
+show
+
+->
+
+OBTAIN CUSTOMER ACCEPTANCE
+
+WHAT ACTIONS ARE REQUIRED TO RETURN THE SYSTEM TO AN OPERATIONAL STATE?:
+Verify functionality, no service LEDs or messages.
+
+PARTS NOTE:
+
+https://support.oracle.com/handbook_private/Systems/SPARC_T5_2/components.html#Batteries
+
+
+REFERENCE INFORMATION:
+
+SPARC T5-2 Service Manual
+http://docs.oracle.com/cd/E28853_01/html/E28856/index.html

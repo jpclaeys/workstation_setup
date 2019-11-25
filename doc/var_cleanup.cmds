@@ -1,0 +1,112 @@
+du -kx | sort -n   # Linux
+du -kx / |awk '$1 > 100000' | sort -n 
+du -kd | sort -n   # Solaris
+du -hs /var/* | grep G
+HL=
+for H in $HL; do msg $H; sr $H '(du -hs /var/* | grep G)';done
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+Cleanup Accounting Linux
+-------------------------
+HL=
+mypssH "$HL" '(du -hs /var/account)'
+for H in $HL; do remotecleanupvaraccount $H;done
+mypssH "$HL" '(du -hs /var/account)'
+---------------------------------------------------------------------------------------------------
+# Manual commands
+# Info: http://www.tecmint.com/how-to-monitor-user-activity-with-psacct-or-acct-tools/
+if [ `uname -s` == "Linux" -a  `du -hs /var/account | grep -c G` -gt 0 ]; then
+echo "Cleanup accounting directory on `hostname`"
+du -hs /var/account
+/etc/init.d/psacct stop
+cd /var/account/
+# remove the big pacct file 
+PACCTFILE=pacct-`date "+%Y%m%d"`; echo $PACCTFILE
+rm $PACCTFILE
+/etc/init.d/psacct start
+find /var/account/ -name "*.gz" -ctime +3 -exec rm {} \;
+du -hs /var/account
+fi
+---------------------------------------------------------------------------------------------------
+# check /var/spool/mail
+-----------------------
+truncate the files > 1 G 
+ex. :> sansemgp
+---------------------------------------------------------------------------------------------------
+# cleanup the messages files
+-----------------------------
+cd /var/log
+rotate -D /var/log/messages
+find /var/log -name "*.gz" -ctime +3 -exec rm {} \;
+:>/var/log/messages
+---------------------------------------------------------------------------------------------------
+# Solaris - Cleanup wtmpx file
+-------------------------------
+ll -h /var/adm/wtmpx
+# Instead of deleting wtmpx file, wipe the file contents
+svcs utmp
+svcadm disable utmp
+cat /dev/null > /var/adm/wtmpx
+svcadm enable utmp
+svcs utmp
+ll -h /var/adm/wtmpx
+---------------------------------------------------------------------------------------------------
+# Cleanup /tmp
+--------------
+HL=
+mypssH "$HL" '(df -h /tmp)'
+mypssH "$HL" '([ -f /tmp/odbc.log ] && :> /tmp/odbc.log && df -h /tmp;:)'
+mypssH "$HL" '(find /tmp -type f -daystart -mtime +1 -exec rm {} \; && df -h /tmp)'
+mypssH "$HL" '(find /tmp -type f -daystart -mtime +0 -exec rm {} \; && df -h /tmp)'
+mypssH "$HL" '(ls -l /tmp | awk '\$5>10000000')'
+# if still nok, then look for deleted files
+find /proc/*/fd -ls | grep  '(deleted)'
+---------------------------------------------------------------------------------------------------
+# Cleanup var 
+--------------
+HL=
+mypssH "$HL" df -h /var
+mypssH "$HL" '(find /var -type f -size +200M -exec ls -alh {} \; 2>/dev/null ;:)'
+mypssH "$HL" '(find /var/adm /var/log /var/spool /var/account /var/core -type f -size +200M -exec ls -alh {} \; 2>/dev/null ;:)'
+
+mypssH "$HL" '(du -hs /var/* | grep G)'
+mypssH "$HL" '(du -hs /var/adm/* /var/log/* /var/spool/mail /var/account /var/core 2>/dev/null | egrep G ;:)'
+mypssH "$HL" '(du -hs /var/adm/* /var/log/* /var/spool/mail /var/account /var/core 2>/dev/null | egrep "M"|sed "s/M//"|awk "\$1>100" ;:)'
+
+mypssH "$HL" '(find /var/adm -type f -name "*.gz" -mtime +3 -exec rm {} \; 2>/dev/null && du -hs /var/adm;:)'
+mypssH "$HL" '(find /var/adm/sa -type f -name "sa*" -mtime +3 -exec rm {} \;  2>/dev/null && du -hs /var/adm/sa;:)'
+
+mypssH "$HL" '(FILE=/var/log/messages && [ -f $FILE ] && [ `stat -c%s $FILE` -gt 500000000 ] && echo "$FILE > 500M";:)'
+# if audit file too big; then truncate this file:    :> /var/log/messages
+mypssH "$HL" '(FILE=/var/log/audit/audit.log && [ -f $FILE ] && [ `stat -c%s $FILE` -gt 200000000 ] && echo "$FILE > 200M";:)'
+# if audit file too big; then truncate this file:    :> /var/log/audit/audit.log
+mypssH "$HL" '(find /var/log/audit -type f -name "audit.log.*" -daystart -mtime +3 -exec rm {} \;  2>/dev/null && du -hs /var/log;:)'
+mypssH "$HL" '(find /var/log -type f -name "*.gz" -daystart -mtime +3 -exec rm {} \;  2>/dev/null && du -hs /var/log;:)'
+mypssH "$HL" '(find /var/account/ -type f -name "*.gz" -mtime +3 -exec rm {} \;  2>/dev/null && du -hs /var/account;:)'
+mypssH "$HL" '(find /var/core -type f -name "core*" -ctime +1 -exec rm {} \; 2>/dev/null && du -hs /var/core;:)'
+
+# if still nok, then look for deleted files
+find /proc/*/fd -ls 2> /dev/null | grep  '(deleted)'
+find /proc/*/fd -ls 2> /dev/null | awk   '/(deleted)/ {print $1, $11, $13, $NF}' | grep -v find| tail -2
+PROC=`find /proc/*/fd -ls 2>/dev/null | awk   '/(deleted)/ {print $11}' | grep -v find| tail -1` && echo $PROC && :> $PROC 
+# And then truncate the file
+: > "/proc/$pid/fd/$fd"
+Where $pid is the process id of the process that has the file opened, and $fd one file descriptor it has it opened under (which you can check with lsof -p "$pid".
+---------------------------------------------------------------------------------------------------
+# Icinga service not running:
+HL=
+mypssH "$HL" '(systemctl restart icinga2)'
+mypssH "$HL" '(systemctl status icinga2 | grep Active)'
+---------------------------------------------------------------------------------------------------
+NB:
+jususerd:
+1 root@jususerd:->du -hs /ec/dev/server/oracle/user-files/rapex_p/dbin/exp171017_rapex_gras_prod.dmp
+1.8G	/ec/dev/server/oracle/user-files/rapex_p/dbin/exp171017_rapex_gras_prod.dmp
+10 root@jususerd:->:>/ec/dev/server/oracle/user-files/rapex_p/dbin/exp171017_rapex_gras_prod.dmp
+root@jususerd:->df -h /ec
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/vgroot-ec
+                      2.0G  3.3M  1.9G   1% /ec
+find /ec/dev/server/oracle  -type f  -name "*.dmp" -exec ls -hl {} \;
+---------------------------------------------------------------------------------------------------
+

@@ -1,0 +1,21 @@
+ps-bxl-usr.cec.eu.int
+
+[claeyje@checkov doc]# nslookup ps-bxl-usr.cec.eu.int
+Server:		158.167.97.164
+Address:	158.167.97.164#53
+
+Non-authoritative answer:
+Name:	ps-bxl-usr.cec.eu.int
+Address: 147.67.138.13
+
+[claeyje@checkov doc]# dig ps-bxl-usr.cec.eu.int +short
+147.67.138.13
+
+
+[claeyje@checkov doc]# dig -x 147.67.138.13 +short
+psbru-vip-user.snmc.cec.eu.int.
+
+
+[claeyje@checkov doc]# dig -x 158.169.131.13 +short
+psbru.ec.europa.eu.
+

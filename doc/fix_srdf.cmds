@@ -1,0 +1,18 @@
+function fixsrdf ()
+{
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <disk group> " && return 1
+DG=$1
+echo symdg_personality_info $DG
+#echo symrdf -g $DG query
+echo "symrdf -g $DG swap -nop && symdg_personality_info $DG"
+echo symrdf -g $DG establish -nop
+echo symdg_personality_info $DG
+}
+
+
+for DG in `cldg list`; do symrdf -g $DG verify;done
+
+for DG in `cldg list`; do symrdf -g $DG verify| grep -i none;done
+
+for DG in `cldg list`; do symdg_personality_info $DG ;done
+

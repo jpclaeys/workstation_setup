@@ -1,0 +1,18 @@
+Howto upgrade a Vmware disk:
+-----------------------------
+
+1. Ask to VMware team to extend the disk (mail to: DIGIT-OASIS-VMWARE@ec.europa.eu)
+
+2. On the VM
+
+ls /sys/class/scsi_device/
+puis
+echo 1 > /sys/class/scsi_device/scsi_id/device/rescan
+
+puis
+RHEL6 
+partprobe /dev/sdxx
+Ou
+RHEL7
+partx -u  /dev/sdxx
+

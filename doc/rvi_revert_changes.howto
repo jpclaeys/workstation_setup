@@ -1,0 +1,25 @@
+1 root@waldrapp:->rvi /ec/prod/server/jumpstart/ECSI/Versions/versions.list
+===================================================================
+RCS file: /ec/prod/server/jumpstart/ECSI/Versions/RCS/versions.list,v
+retrieving revision 1.1239
+diff -r1.1239 /ec/prod/server/jumpstart/ECSI/Versions/versions.list
+158,159d157
+< seedeater.cc.cec.eu.int               solaris-10-default-11.5.0.cfg   cluster 0:10:e0:21:47:f0        sun4u
+< noddy.cc.cec.eu.int           solaris-10-default-11.5.0.cfg   cluster 0:10:e0:21:48:f8        sun4u
+/ec/prod/server/jumpstart/ECSI/Versions/versions.list differs from file in RCS.
+Maybe someone forgot to use rvi?
+
+
+Solution:  
+
+
+23 root@waldrapp:->co /ec/prod/server/jumpstart/ECSI/Files/etc/dc-meta-base
+/ec/prod/server/jumpstart/ECSI/Files/etc/RCS/dc-meta-base,v --> /ec/prod/server/jumpstart/ECSI/Files/etc/dc-meta-base
+revision 1.67
+done
+24 root@waldrapp:->egrep "noddy|seedeater" /ec/prod/server/jumpstart/ECSI/Files/etc/dc-meta-base
+seedeater.cc.cec.eu.int:d1
+noddy.cc.cec.eu.int:d2
+
+co <filename> reverts the file to the last logged change, then rvi to do the changes again properly
+

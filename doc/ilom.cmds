@@ -1,0 +1,75 @@
+Service-Related Oracle ILOM Commands
+The following table describes the Oracle ILOM shell commands most frequently used when performing service related tasks.
+
+Oracle ILOM Command
+Description
+help [command]	Displays a list of all available commands with syntax and descriptions. Specifying a command name as an option displays help for that command.
+
+start [-script] /SP/console	    	Connects you to the host system.
+show /SP/sessions                   List users with open sessions to the system console (who is using the console?):str
+stop /SP/console                    Terminate another user's connection to the host console.
+
+set /HOST send_break_action=break	Takes the host server from the OS to either kmdb or break menu, depending on the mode Solaris software was booted.
+Reaching the ok prompt
+start -script /HOST/console
+-> start /HOST/console           
+Serial console started.  To stop, type #.
+
+If a debugger is not present, the c)continue, s)ync, r)eset? prompt occurs:
+
+c - returns to the Solaris OS
+s - forces synchronization (sync) of the filesystem, resulting in a core dump
+r - resets the domain and reboots to the Solaris OS if the auto-boot? option is
+set to true, or stops at the ok prompt if the auto-boot? option is set to false.
+
+c)ontinue, s)ync, r)eset? r
+Resetting...
+NOTICE: Entering OpenBoot.
+NOTICE: Fetching Guest MD from HV.
+...
+
+
+set fru|component clear_fault_action=true	Clears the fault state for the FRU or the component.
+show /HOST/console/history		Displays the contents of the system's console buffer.
+set /HOST/bootmode property=value	[where property is state, config, or script] Controls the host server OpenBoot PROM firmware method of booting.
+
+stop /SYS	                Powers off the host server.
+start /SYS	                Powers on the host server.
+reset /SYS	                Generates a hardware reset on the host server.
+reset /SP	                Reboots the service processor.
+set /SYS keyswitch_state=value	(normal | standby | diag | locked)	Sets the virtual keyswitch.
+set /SYS/LOCATE value=value [Fast_blink | Off]	Turns the Locator LED on the server on or off.
+show faulty	                Displays current system faults. See Check for Faults (show faulty Command).
+show /SYS keyswitch_state       Displays the status of the virtual keyswitch.
+show /SYS/LOCATED               Displays the current state of the Locator LED as either fast blink or off.
+show /SP/logs/event/list        Displays the history of all events logged in the service processor event log.
+show /HOST	                Displays firmware versions and HOST status.
+show /SYS                       Displays product information, including the part number and serial number.
+show -d properties /SYS
+show /SYS power_state
+show /SP -d properties
+
+
+# set auto-boot variable
+CLI Syntax for Host Domain Auto-Run:
+For single-domain server SP, type:
+set /HOST/domain/control auto-boot=enabled|disabled
+For multi-domain server SP, type:
+set /Servers/PDomains/PDomain_n/HOST/domain/control auto-boot=enabled|disabled
+
+# Set ILOM date
+
+->  set /SP/clock datetime=MMDDhhmmYYYY.ss
+
+If an NTP server is  enabled, disable the server first then update the date and time using this command.
+
+You can disable NTP server synchronisation by running following command, which disables the NTP service:
+
+-> set /SP/clock/usentpserver=disabled
+
+-> show /SP/clock -d properties
+
+# Verify the System Battery 
+# Run show /SYS/MB/BAT to check the status of the system battery. In the output, the /SYS/MB/BAT status should be “OK”
+-> show /SYS/MB/BAT -d properties
+

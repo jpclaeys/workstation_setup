@@ -1,0 +1,32 @@
+
+The neo/trinity iscsi uns are coming from linux platforms:
+
+
+[root@trinity /]# iscsiadm list static-config
+Static Configuration Target: iqn.1986-03.com.sun:neo-trinity,10.134.124.98:3260
+Static Configuration Target: iqn.1986-03.com.sun:e-neo-trinity,158.167.99.224:3260
+Static Configuration Target: iqn.1986-03.com.sun:m-neo-trinity,158.167.99.225:3260
+
+
+IP address (Peer): 10.134.124.98:3260 (d12)
+
+[root@opquorsp ~]#  grep `hostname` /etc/hosts && uname -a
+10.134.124.98   opquorsp
+Linux opquorsp 3.10.0-693.el7.x86_64 #1 SMP Thu Jul 6 19:56:57 EDT 2017 x86_64 x86_64 x86_64 GNU/Linux
+
+IP address (Peer): 158.167.99.224:3260 (d13)
+
+[claeyje@infra1-pk ~]# grep `hostname` /etc/hosts && uname -a
+158.167.99.224  infra1-pk.opoce.cec.eu.int      infra1-pk
+Linux infra1-pk 3.10.0-693.17.1.el7.x86_64 #1 SMP Sun Jan 14 10:36:03 EST 2018 x86_64 x86_64 x86_64 GNU/Linux
+
+
+IP address (Peer): 158.167.99.225:3260 (d16)
+
+[claeyje@infra2-pk ~]# grep `hostname` /etc/hosts && uname -a
+158.167.99.225  infra2-pk.opoce.cec.eu.int      infra2-pk
+Linux infra2-pk 3.10.0-693.17.1.el7.x86_64 #1 SMP Sun Jan 14 10:36:03 EST 2018 x86_64 x86_64 x86_64 GNU/Linux
+
+
+Note:
+connection to opquorsp is only possible as root from opvmwstsx11 (passwd rule: linxvm rule)

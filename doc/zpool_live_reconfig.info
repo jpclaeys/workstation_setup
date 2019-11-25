@@ -1,0 +1,380 @@
+Solaris Cluster 4.x Handling of zpool and ZFS File System, filesystem, Differences Between Zone Cluster Zones and non-clustered Solaris 11 Zones (Doc ID 2065025.1) To BottomTo Bottom  
+
+APPLIES TO:
+Solaris Operating System - Version 11.1 and later
+Solaris Cluster - Version 4.1 and later
+Oracle Solaris on SPARC (64-bit)
+Oracle Solaris on x86-64 (64-bit)
+GOAL
+The goal of this document to show the difference between Zone Cluster zone and non-clustered Solaris 11 zones in terms of zpool delegation and handling of zpools and zfs filesystems.
+
+SOLUTION
+ There are some fundamental differences in terms of handling of zpools and zfs file system in a Solaris Cluster, Zone Cluster zone and on a zone that lives in a non-clustered Solaris global zone. In order to illustrate those differences we will show how to set up each in order to better understand their administration.
+
+First let's take a look at a plain Solaris 11 zone that is on a non clustered Solaris server. Documentation can be found here:
+https://docs.oracle.com/cd/E36784_01/html/E36835/gbbst.html#scrolltoc
+
+
+
+1) Delegating ZFS Datasets to a Non-Global Zone where the global zone Solaris instance is not part of any cluster.
+
+We will add a zpool named "simple-pool" to a zone named "simple". Within the zone named simple the file system is not accessible as simple-pool/zone/simple, but as a virtual pool named simple-pool. The delegated file system alias provides a view of the original pool to the zone as a virtual pool. The alias property specifies the name of the virtual pool. If no alias is specified, a default alias matching the last component of the file system name is used which you may not like.
+
+Within delegated datasets, root or the zone administrator can set file system properties, as well as create descendent file systems. In addition, the zone administrator can create snapshots and clones, and otherwise control the entire file system hierarchy.  You will see that this is going to be different on a Zone Cluster zone.
+
+In this example we have a stand alone Solaris server with a zone named "simple" suggesting that it is not clustered. We will delegate a ZFS zpool called simple-pool to zone "simple".
+
+global # zpool create simple-pool /dev/dsk/c1d21
+global # zfs create simple-pool/zone
+global # zfs create simple-pool/zone/simple 
+global # zpool list simple-pool
+NAME          SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+simple-pool  23.9G   166K  23.9G   0%  1.00x  ONLINE  -
+
+The zone "simple" is already installed and running. We are going to add "simple-pool" as a dataset to the zone. We are also setting an alias name for the dataset. While the alias name can be anything I chose the zpool name to be the alias name so we can refer to the pool inside of the zone by that name.
+
+global # zonecfg -z simple
+zonecfg:simple> add dataset
+zonecfg:simple:dataset> set name=simple-pool/zone/simple
+zonecfg:simple:dataset> set alias=simple-pool
+zonecfg:simple:dataset> end
+zonecfg:simple> verify
+zonecfg:simple> commit
+
+Before Solaris 11.3 dynamically adding resources to zone does not work so we will reboot the zone. When the zone booted we will observe the change:
+
+Currently S11.3 LZR (live zone reconfiguration) doesn't support dataset, as stated in "man -s 5 solaris":
+
+"The following zoneadm(1M) resources and properties are not supported by
+the live zone reconfiguration for solaris brand:
+
+anet:allowed-address
+anet:configure-allowed-address
+anet:defrouter
+dataset
+file-mac-profile
+fs-allowed
+hostid
+limitpriv
+global-time
+net:allowed-address
+net:configure-allowed-address
+net:defrouter
+npiv
+tenant
+zpool"
+
+That feature will be available in a future release of Solaris 11.
+
+global # zoneadm -z simple reboot
+
+global # zlogin simple
+
+(we are now in the zone)
+root@simple:~# df -h
+Filesystem             Size   Used  Available Capacity  Mounted on
+rpool/ROOT/solaris      26G   640M        25G     3%    /
+
+<snip>
+rpool                   26G    31K        25G     1%    /rpool
+simple-pool             24G    31K        24G     1%    /simple-pool
+<snip>
+
+root@simple:~# zpool list simple-pool
+NAME          SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+simple-pool  23.9G   293K  23.9G   0%  1.00x  ONLINE  -
+
+ 
+
+Now you have control of the zpool inside of the zone. Let's do some basic zfs administration tasks. Not all operations will work though for example export and import do not. First let's have a look at what works for example creating some zfs filesystems:
+
+root@simple:/simple-pool# zfs create simple-pool/data
+root@simple:/simple-pool# zfs create simple-pool/bin
+root@simple:/simple-pool# zfs create simple-pool/app
+root@simple:/simple-pool# ls /simple-pool/
+app   bin   data
+root@simple:/simple-pool#
+
+ Create a snapshot:
+
+root@simple:/simple-pool# zfs list -t snapshot -r simple-pool
+NAME                              USED  AVAIL  REFER  MOUNTPOINT
+simple-pool/data@data-10-09-2015     0      -    31K  -
+root@simple:/simple-pool#
+
+Not all zfs/zpool command will work. You have to remember that you are working on a "virtual pool" inside of a zone:
+
+root@simple:~# zpool scrub simple-pool
+cannot scrub simple-pool: permission denied
+Scrub will work from the global zone:
+
+global # zpool scrub simple-pool
+global #
+
+zpool export and import is not straight forward:
+
+root@simple:~# zpool export simple-pool
+cannot export pools: Permission denied
+ 
+Because the zpool is used in a zone it will not work from the global zone either:
+
+global # zpool export simple-pool
+cannot export 'simple-pool': pool is busy
+ 
+If you halt the zone the zpool can be certainly imported without any issues or errors. When trying to boot a zone that has a dataset that is not available the boot will fail validation and the zone will not boot:
+
+# zoneadm -z simple boot
+could not verify zfs dataset simple-pool/zone/simple: filesystem does not exist
+zoneadm: zone simple failed to verify
+After importing the pool there will be no issues booting the zone.
+
+Note that every parent of simple-pool/zone/simple is invisible and all descendants are writable. The zone administrator cannot change the zoned property because doing so would expose a security risk. The property is set from the global zone when the pool is added as dataset:
+
+root@simple:~# zfs get zoned simple-pool
+NAME         PROPERTY  VALUE  SOURCE
+simple-pool  zoned     on     local
+
+root@simple:~#  zfs list -o name,zoned,mountpoint -r simple-pool
+NAME              ZONED  MOUNTPOINT
+simple-pool          on  /simple-pool
+simple-pool/app      on  /simple-pool/app
+simple-pool/bin      on  /simple-pool/bin
+simple-pool/data     on  /simple-pool/data
+
+ 
+
+
+
+
+2) How to add a zpool to a Solaris Cluster Zone Cluster zone
+
+Reference Solaris Cluster manual:  https://docs.oracle.com/cd/E39579_01/html/E39580/gmfka.html#CLISTgmzbz
+
+In the example we will use a Solaris Cluster 4.2 running on Solaris 11.2. The Zone Cluster already installed and running; it is named zc2. We will delegate zc2-pool to the Zone Cluster zc2. Right here you can note one of the main differences from a non clustered set up. You are not delegating the zpool to one zone rather to a Zone Cluster that consists of multiple zones. Therefor you must use Solaris Cluster resource management to manage the zpool on the multiple zones. We will create resource group and a HAStoragePlus resource that will manage the zpool.
+
+The Zone Cluster zc2 as it is seen from the global zone:
+
+global # clzc status zc2
+
+=== Zone Clusters ===
+
+--- Zone Cluster Status ---
+
+Name   Brand     Node Name                   Zone Host Name   Status   Zone Status
+----   -----     ---------                   --------------   ------   -----------
+zc2    solaris   <Node1>                     zc2-zna          Online   Running
+                 <Node2>                     zc2-znd          Online   Running
+
+ Let's create a pool for this setup:
+
+global # zpool create zc2-pool /dev/dsk/c1d20
+
+global # zpool list zc2-pool
+NAME       SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+zc2-pool  23.9G  86.5K  23.9G   0%  1.00x  ONLINE  -
+ First we configure this pool as a dataset in the zone cluster zones. You will have to use the Solaris Cluster "clzonecluster" or with short name "clzc" utility that will look similar to the zonecfg utility of Solaris 11.
+
+global # clzc configure zc2
+clzc:zc2> add dataset
+clzc:zc2:dataset> set name=zc2-pool
+clzc:zc2:dataset> end
+clzc:zc2> verify
+clzc:zc2> commit
+clzc:zc2> exit
+global #
+ 
+At this point you can see that the dataset is already showing up in the Zone Cluster configuration:
+
+# clzc show -v zc2
+
+=== Zone Clusters ===
+
+Zone Cluster Name:                              zc2
+  zonename:                                        zc2
+  zonepath:                                        /zones/zc2
+  autoboot:                                        TRUE
+  brand:                                           solaris
+  hostid:                                          <NULL>
+  bootargs:                                        <NULL>
+  pool:                                            <NULL>
+  limitpriv:                                       <NULL>
+  scheduling-class:                                <NULL>
+  ip-type:                                         shared
+  enable_priv_net:                                 TRUE
+  resource_security:                               SECURE
+
+  --- Solaris Resources for zc2 ---
+
+  Resource Name:                                dataset
+    name:                                          zc2-pool      <<<<<<  here it is
+<snip>
+ 
+When adding the dataset to the Zone Cluster you will not see the zpool appearing in any of the Zone Cluster zones.
+
+root@zc2-d:~# zpool list
+NAME    SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+rpool  47.8G  17.4G  30.4G  36%  1.00x  ONLINE  -
+ 
+
+To complete the set up you have to configure an HAStoragePlus resource. Reference documentation:  https://docs.oracle.com/cd/E39579_01/html/E39648/cdcegbeg.html#CLDAGcdcegbeg
+In global zone of Solaris Cluster on either node create a failover resource group for the Zone Cluster. This resource group will have the HAStoragePlus resource that controls the zpool.
+
+You can create the resource group and resource for the Zone Cluster zones in either the global zone or in the Zone Cluster zone. Here we will create the resource group in the global zone and then zlogin to the Zone Cluster and will do the resource configuration in there.
+
+First create the resource group:
+
+global # clrg create -Z zc2 zfs-rg
+global # clrg manage -Z zc2 zfs-rg
+global # clrg online -Z zc2 zfs-rg
+global # clrg list -Z zc2
+zc2:zfs-rg
+
+ 
+Create the HAStoragePlus resource for the zpool:
+
+global # zlogin zc2
+
+root@zc2-a # clrs create -g zfs-rg -t SUNW.HAStoragePlus -p Zpools=zc2-pool hasp1-rs
+
+root@zc2-a:~# clrs list -v hasp1-rs
+Resource Name       Resource Type           Resource Group
+-------------       -------------           --------------
+hasp1-rs            SUNW.HAStoragePlus:11   zfs-rg
+
+root@zc2-a:~# clrs enable hasp1-rs
+
+ 
+
+Notice that when you operate on a Zone Cluster from the global zone you always use the -Z <zone cluster name> flag to tell RGM resource group manager which Zone Cluster you are changing. However when running cluster commands inside of the Zone Cluster you do not use the -Z flag, it will always target the Zone Cluster you are running it on.
+ 
+Now you can check status and you will see that the resource is online on one of the Zone Cluster nodes:
+
+root@zc2-a:~# clrs status
+
+=== Cluster Resources ===
+
+Resource Name       Node Name      State        Status Message
+-------------       ---------      -----        --------------
+hasp1-rs            zc2-zna        Online       Online
+                    zc2-znd        Offline      Offline
+ 
+It is important to note that once you brought zfs-rg and hasp1-rs that holds your zpool online then zfs mounts will show up and will be accessible on the node where the resource is online. However when you try to run some zpool commands they will not work. For example a "zpool list" will not show the pool. This is very different from the setup we showed in section 1) where we had a non-clustered global zone and local zone.
+
+root@zc2-a:~# zpool list
+NAME    SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+rpool  47.8G  22.2G  25.6G  46%  1.00x  ONLINE  -
+
+<no zc2-pool listed>
+
+root@zc2-a:~# zfs list
+NAME                              USED  AVAIL  REFER  MOUNTPOINT
+rpool                            1.11G  24.7G    31K  /rpool
+rpool/ROOT                       1.11G  24.7G    31K  legacy
+rpool/ROOT/solaris               1.11G  24.7G   927M  /
+rpool/ROOT/solaris/var            203M  24.7G   201M  /var
+rpool/VARSHARE                   1.09M  24.7G  1.03M  /var/share
+rpool/VARSHARE/pkg                 63K  24.7G    32K  /var/share/pkg
+rpool/VARSHARE/pkg/repositories    31K  24.7G    31K  /var/share/pkg/repositories
+rpool/export                       63K  24.7G    32K  /export
+rpool/export/home                  31K  24.7G    31K  /export/home
+
+< no zfs filesystems of zc2-pool listed>
+
+ 
+However if you check what is mounted the zc2-pool zfs filesystems will show up:
+
+root@zc2-a:~# df -h
+Filesystem             Size   Used  Available Capacity  Mounted on
+rpool/ROOT/solaris      26G   927M        25G     4%    /
+/dev                     0K     0K         0K     0%    /dev
+rpool/ROOT/solaris/var
+                        26G   201M        25G     1%    /var
+proc                     0K     0K         0K     0%    /proc
+ctfs                     0K     0K         0K     0%    /system/contract
+mnttab                   0K     0K         0K     0%    /etc/mnttab
+objfs                    0K     0K         0K     0%    /system/object
+swap                   1.7G   560K       1.7G     1%    /system/volatile
+sharefs                  0K     0K         0K     0%    /etc/dfs/sharetab
+fd                       0K     0K         0K     0%    /dev/fd
+swap                   1.7G     0K       1.7G     0%    /tmp
+rpool/VARSHARE          26G   1.0M        25G     1%    /var/share
+/sbin                   26G   927M        25G     4%    /var/cluster/sbin.org
+/usr/cluster/lib/sc/ifconfig_client_proxy
+                        26G   927M        25G     4%    /usr/sbin/ifconfig
+rpool/export            26G    32K        25G     1%    /export
+rpool/export/home       26G    31K        25G     1%    /export/home
+rpool                   26G    31K        25G     1%    /rpool
+rpool/VARSHARE/pkg      26G    32K        25G     1%    /var/share/pkg
+rpool/VARSHARE/pkg/repositories
+                        26G    31K        25G     1%    /var/share/pkg/repositories
+/zc2-pool               24G    32K        24G     1%    /zc2-pool                         <<<<<<  zc2-pool
+/zc2-pool/data          24G    31K        24G     1%    /zc2-pool/data                    <<<<<<  zc2-pool/data zfs filesystem
+ 
+When you switch the resource group zfs-rg to the other Zone Cluster node zc2-pool will be moved to the global zone of that zone and you will find the same behavior there:
+
+root@zc2-a:~# clrg switch -n zc2-znd zfs-rg
+root@zc2-a:~# clrg status
+
+=== Cluster Resource Groups ===
+
+Group Name       Node Name       Suspended      Status
+----------       ---------       ---------      ------
+zfs-rg           zc2-zna         No             Offline
+                 zc2-znd         No             Online
+
+root@zc2-a:~# clrs status
+
+=== Cluster Resources ===
+
+Resource Name       Node Name      State        Status Message
+-------------       ---------      -----        --------------
+hasp1-rs            zc2-zna        Offline      Offline
+                    zc2-znd        Online       Online
+
+global (node2) # zpool list
+NAME       SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+rpool     47.8G  17.4G  30.3G  36%  1.00x  ONLINE  -
+zc2-pool  23.9G   126K  23.9G   0%  1.00x  ONLINE  /zones/zc2/root                   <<<< here it is
+
+global (node2) # zlogin zc2
+[Connected to zone 'zc2' pts/2]
+Last login: Thu Oct 15 18:38:36 2015 on pts/2
+Oracle Corporation      SunOS 5.11      11.3    August 2015
+
+root@zc2-d:~# zpool list
+NAME    SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+rpool  47.8G  17.4G  30.3G  36%  1.00x  ONLINE  -
+
+<none listed but rpool>
+
+root@zc2-d:~# df -h
+Filesystem             Size   Used  Available Capacity  Mounted on
+rpool/ROOT/solaris      31G   929M        30G     3%    /
+/dev                     0K     0K         0K     0%    /dev
+rpool/ROOT/solaris/var
+                        31G   201M        30G     1%    /var
+proc                     0K     0K         0K     0%    /proc
+ctfs                     0K     0K         0K     0%    /system/contract
+mnttab                   0K     0K         0K     0%    /etc/mnttab
+objfs                    0K     0K         0K     0%    /system/object
+swap                   2.0G   568K       2.0G     1%    /system/volatile
+sharefs                  0K     0K         0K     0%    /etc/dfs/sharetab
+fd                       0K     0K         0K     0%    /dev/fd
+swap                   2.0G     0K       2.0G     0%    /tmp
+rpool/VARSHARE          31G   1.0M        30G     1%    /var/share
+/sbin                   30G   929M        30G     3%    /var/cluster/sbin.org
+/usr/cluster/lib/sc/ifconfig_client_proxy
+                        30G   929M        30G     3%    /usr/sbin/ifconfig
+rpool/export            31G    32K        30G     1%    /export
+rpool/export/home       31G    31K        30G     1%    /export/home
+rpool                   31G    31K        30G     1%    /rpool
+rpool/VARSHARE/pkg      31G    32K        30G     1%    /var/share/pkg
+rpool/VARSHARE/pkg/repositories
+                        31G    31K        30G     1%    /var/share/pkg/repositories
+/zc2-pool               24G    32K        24G     1%    /zc2-pool                         <<<<<<  zc2-pool
+/zc2-pool/data          24G    31K        24G     1%    /zc2-pool/data                    <<<<<<  zc2-pool/data zfs filesystem
+
+ 
+
+NOTE Because you do not technically "see" the zpools you certainly can not export them or import them by using zpool command. Neither can you take a snapshot. It is actually a good thing. When you have a storage pool under cluster control you will always want to do all operations like export import using cluster clrg and clrs commands. If you want to take a snapshot and other operations you do that in the global zone.
+ 

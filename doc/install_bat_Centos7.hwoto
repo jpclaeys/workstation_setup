@@ -1,0 +1,16 @@
+How To install bat on Centos 7
+-------------------------------
+
+Download latest openfusion-release rpm from
+http://repo.openfusion.net/centos7-x86_64/
+
+rpm -Uvh /home/claeyje/Downloads/bat-0.7.0-1.of.el7.x86_64.rpm
+
+
+
+[root@banta banta]# rpm -Uvh /home/claeyje/Downloads/bat-0.7.0-1.of.el7.x86_64.rpm
+warning: /home/claeyje/Downloads/bat-0.7.0-1.of.el7.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 2a6b914a: NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:bat-0.7.0-1.of.el7               ################################# [100%]
+

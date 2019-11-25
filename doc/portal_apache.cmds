@@ -1,0 +1,16 @@
+
+Dear all,
+
+Problem has been fixed.
+
+We had to kill all httpdWeb processes and after that we are able to start a service like usually:
+
+Useful commands for this:
+
+ps -fu cportal | grep httpdWeb | gawk -F' ' '{print $2}'   #     show all PIDS for httpdWeb processes
+
+ps -fu cportal | grep httpdWeb | gawk -F' ' '{print $2}' | xargs -n 1 kill -9 # kill all existing httpdWeb processes
+
+./cportal_apache start
+Starting httpd:                                            [  OK  ]
+

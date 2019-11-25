@@ -1,0 +1,22 @@
+Cannot boot with XFS_WANT_CORRUPTED_GOTO error
+
+Ref. https://alexanderfrei.wordpress.com/2018/05/24/cannot-boot-with-xfs_want_corrupted_goto-error/
+
+Environment
+CentOS, Red Hat Enterprise Linux 7
+Issue
+System halts during boot after showing:
+XFS: Internal error XFS_WANT_CORRUPTED_GOTO at line 1596 of file fs/xfs/xfs_alloc.c. Caller xfs_free_extent+0h4n/0xyuU [xfs]
+XFS (dm-2): Corruption of in-memory data detected. Shutting down filesystem
+XFS (dm-2): Please umount the filesystem and rectify the problem(s)
+System cannot boot due to corrupted XFS root filesystem
+Resolution
+The system boot fails and go to emergency mode
+Check the list of folder /dev/mapper/
+Repair xfs with command:
+
+# xfs_repair -L /dev/mapper/centos-root       or
+# xfs_repair -L /dev/mapper/rhel-root
+
+Exit the emergency mode and boot the system normally.
+Reference: https://access.redhat.com/solutions/2018903

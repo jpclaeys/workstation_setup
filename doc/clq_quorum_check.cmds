@@ -1,0 +1,1 @@
+for H in `thosts`; do msg $H && s $H clq status -t shared_disk;done | tee clq_quorum_check.log

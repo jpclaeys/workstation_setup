@@ -1,0 +1,129 @@
+http://opitwiki/doku.php?id=op:cfgmgt:puppet:manage_manifest&s[]=git&s[]=clone
+
+!!!!!!!!!! The git clone only works from within the OPOCES workstations  !!!!!!!!!!!!!
+
+Add the public ssh key to the gitolite3 user on puppet-pk (for Solaris) & satellite-pk (for Linux)
+---------------------------------------------------------------------------------------------------
+The following string must be added in front of the dsa plublic key (same line): 
+"command="/usr/share/gitolite3/gitolite-shell <userid>",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty "
+
+# Setup Solaris git environment
+--------------------------------
+cd && mkdir git 
+cd git
+mkdir Solaris
+mkdir Linux
+cd Solaris
+git clone -b development gitolite3@puppet-pk:/puppet development
+git clone -b production gitolite3@puppet-pk:/puppet production
+# Inside the production folder, we configure git to fetch development code.
+cd production
+git branch -u origin/development production
+
+# Setup the Linux git environment
+----------------------------------
+cd git
+mkdir Linux
+cd Linux
+git clone -b development gitolite3@satellite-pk:/puppet development
+git clone -b production gitolite3@satellite-pk:/puppet production
+# Inside the production folder, we configure git to fetch development code.
+cd production
+git branch -u origin/development production
+
+
+git branch (--set-upstream-to=<upstream> | -u <upstream>) [<branchname>]
+
+       -u <upstream>, --set-upstream-to=<upstream>
+           Set up <branchname>'s tracking information so <upstream> is considered <branchname>'s upstream branch. 
+           If no <branchname> is specified, then it defaults to the current branch.
+
+git branch --set-upstream-to=origin/development production 
+# or
+git branch -u origin/development production
+
+# for git older than 1.8
+git branch production --set-upstream-to origin/origin/development
+
+[claeyje@opvmwstsx11 production]# s puppet-pk git --version
+git version 1.7.1
+[claeyje@opvmwstsx11 production]# s satellite-pk git --version
+git version 1.8.3.1
+[claeyje@opvmwstsx11 production]# git --version
+git version 1.8.3.1
+
+====================================================================================================================================
+====================================================================================================================================
+
+# Mandatory git client settings
+# Set up user details (case matters for gerrit access further below):
+git config --global user.name "First LAST"  # first letter of first name + whole surname in UPPERCASE
+git config --global user.email first.last@ext.ec.europa.eu  # all lowercase
+!!!!!!!!!!!!!!  do not do that  !!!!!!!!!!!!!!!!!!
+# Force pull --rebase by default to avoid unnecessary merge commits when updating local repository:
+git config --global pull.rebase true
+# Only push the current branch to a remote:
+git config --global push.default simple
+
+[claeyje@opvmwstsx11 development]# git config --global user.email jean-pierre.claeys@ext.publications.europa.eu
+[claeyje@opvmwstsx11 development]# git config user.email
+jean-pierre.claeys@ext.publications.europa.eu
+[claeyje@opvmwstsx11 development]# git config --global user.name "Jean-Pierre Claeys"
+[claeyje@opvmwstsx11 development]# git config user.name
+Jean-Pierre Claeys
+!!!!!!!!!!!!!!  do not do that  !!!!!!!!!!!!!!!!!!
+[claeyje@opvmwstsx11 development]# git config --global pull.rebase true
+[claeyje@opvmwstsx11 development]# 
+[claeyje@opvmwstsx11 development]# git config --global push.default simple
+[claeyje@opvmwstsx11 development]# 
+
+====================================================================================================================================
+====================================================================================================================================
+[claeyje@opvmwstsx11 development]# git config --global -l
+alias.br=branch
+alias.co=checkout
+alias.ci=commit
+alias.st=status
+alias.lg=log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
+color.ui=true
+user.email=jean-pierre.claeys@ext.publications.europa.eu
+user.name=Jean-Pierre Claeys
+!!!!!!!!!!!!!!  do not do that  !!!!!!!!!!!!!!!!!!
+pull.rebase=true
+push.default=simple
+====================================================================================================================================
+
+git gonfig -l
+
+git config --global -l
+
+
+[claeyje@opvmwstsx11 production]# git config -l
+alias.br=branch
+alias.co=checkout
+alias.ci=commit
+alias.st=status
+alias.lg=log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
+color.ui=true
+user.email=jean-pierre.claeys@ext.publications.europa.eu
+user.name=Jean-Pierre Claeys
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+remote.origin.url=gitolite3@puppet-pk:/puppet
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+branch.production.remote=origin
+branch.production.merge=refs/heads/development
+
+
+[claeyje@opvmwstsx11 production]# git config --global -l
+alias.br=branch
+alias.co=checkout
+alias.ci=commit
+alias.st=status
+alias.lg=log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
+color.ui=true
+user.email=jean-pierre.claeys@ext.publications.europa.eu
+user.name=Jean-Pierre Claeys
+

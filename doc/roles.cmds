@@ -1,0 +1,28 @@
+
+Listing Roles
+roles – Lists the current user's roles
+
+roles username – Lists the roles for username
+
+logins -r – Lists all available roles
+
+Example 6-11  Listing Your Assigned Roles
+The root role is assigned to the initial user by default. No roles indicates that you are not assigned a role.
+
+$ roles
+root
+
+[claeyje@iceman ~]# id && roles
+uid=30234(claeyje) gid=47110(opunix)
+opsys_ux
+
+iceman:
+
+opsys_ux@iceman:~$ roles claeyje                                                                                                                           
+opsys_ux
+opsys_ux@iceman:~$ logins -r                                                                                                                               
+opsys_ux        30023   staff           10      opsys_ux
+root-int        30044   staff           10      root-int
+adastor         30379   staff           10      ADAbase Account for adastor
+orastor         30380   staff           10      Oracle Account for orastor
+

@@ -1,0 +1,79 @@
+
+free -mh
+vmstat 2 2
+top -n 1 | head -15
+top -n 1 -c -b | grep -v "0.0  0.0" | sed 's/        //g'
+
+top -n 1 -c -b | grep -v "0.0" | sed 's/        //g'
+
+# Display CPU usage for the current day that was collected until that point.
+sar
+# Display CPU usage for the 15th day of the month from the sa15 file.
+sar -f /var/log/sa/<sarfile>
+# Report memory details
+sar -r -f /var/log/sa/<sarfile>
+# Report load average
+sar -q -f /var/log/sa/<sarfile>
+# Display all the statistics
+sar -A -f /var/log/sa/<sarfile>
+# Specifying start and end time:  
+ -s [ hh:mm:ss ]  -e [ hh:mm:ss ]
+sar -ruqB -n DEV -f $SARFILE -s 04:00:00 -e 05:00:00
+
+network : -n DEV
+paging: -B
+queue lenght: -q
+memory: -r
+cpu utilization: -u
+swap: -w
+
+# Check available entropy in Linux
+Sometimes servers just have the weirdest SSL problems ever. In some of these situations, the entropy has been drained. Entropy is the measure of the random numbers available from /dev/urandom, and if you run out, you can’t make SSL connections. To check the status of your server’s entropy, just run the following
+
+cat /proc/sys/kernel/random/entropy_avail
+
+# If it returns anything less than 100-200, you have a problem.
+-----------------------------------------------------------------------------------------------------------------------------------
+
+tail -1000 /var/log/messages| egrep -B1 "Out of memory|nrpe|killer"
+top -n1 -c -b | grep -v "0.0" | sed 's/        //g'
+
+SARFILE=`ll -rt /var/log/sa/* | tail -1| awk '{print $NF}'`; echo $SARFILE
+INTERVAL=" -s 04:00:00 -e 05:00:00"
+
+sar -f $SARFILE $INTERVAL | awk '$NF < 60'
+sar -f $SARFILE $INTERVAL | awk '$5 > 40'
+sar -f $SARFILE $INTERVAL
+sar -r -f $SARFILE $INTERVAL
+sar -q -f $SARFILE $INTERVAL 
+sar -ruqBw -n DEV -f $SARFILE $INTERVAL
+
+cat /proc/sys/kernel/random/entropy_avail
+
+ps -A -o pcpu,pmem,rss,vsz,comm| grep -v '^ 0.0'
+
+free -mh
+vmstat 2 2
+# Sanity checks:
+/usr/nagios/plugins/check_all
+
+-----------------------------------------------------------------------------------------------------------------------------------
+# free -m[h]
+             total       used       free     shared    buffers     cached
+Mem:          3753       3455        298          0        144        664
+-/+ buffers/cache:       2645       1107 <<--  Actual Free RAM
+Swap:         4095         75       4020
+
+In the above example, the total memory is 3753 MB, out of which 3455 MB is in use and 298 MB is free.
+cache and buffers is considered as used memory, but they can be dropped in favour of applications.
+Out of 3455 MB of used RAM, some amount of RAM is used for cache and buffers. 
+As discussed earlier memory from cache and buffers can be reclaimed whenever there is no free RAM available for new processes. 
+So cache and buffer can be considered as free RAM. 
+Therefore the actual size of free RAM can be calculated by the below formula:
+
+Raw
+Actual Free RAM = "free" + "buffers" + "cached"
+                =   298  +    144    +  664
+                =   1106  which is approximately equal to the 1107 in second row under "free" column in "free -m" output.
+
+-----------------------------------------------------------------------------------------------------------------------------------

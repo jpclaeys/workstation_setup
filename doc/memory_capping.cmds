@@ -1,0 +1,87 @@
+Resource management in solaris zones : Capped memory
+-----------------------------------------------------
+Capped memory
+--------------
+The rcapd daemon takes care of the memory caps and its administration. add capped-memory in zone configuration sets the capped memory for a particular zone. For the capped memory to take effect you need to reboot the zone. The parameters physical, swap and locked are all optional but atleast one parameter should be used. After adding a capped memory zone01 will use a physical memory of 50 MB from global zone and use a swap space of 100 MB. The locked (30m) parameter specifies the minimum amount of physical memory always available to zone01 from global zone. Before assigning memory caps to a zone, make sure the rcapd daemon is working and if not start it :
+
+global # svcadm enable rcap
+global # rcapadm -E -n
+
+Enter the zone configuration mode to add the memory caps to zone01 :
+
+global # zonecfg -z zone01
+zonecfg:zone01> add capped-memory
+zonecfg:zone01:capped-memory> set physical=50m
+zonecfg:zone01:capped-memory> set swap=100m
+zonecfg:zone01:capped-memory> set locked=30m
+zonecfg:zone01:capped-memory> end
+This requires a reboot to take effect. After reboot to check the allocation of capped memory :
+
+global # zoneadm -z zone01 reboot
+global # zonecfg -z zone01 info
+root@zone01:~# swap -l
+swapfile             dev    swaplo   blocks     free
+/dev/swap             -          8   204800   104600
+204800 in blocks comes out to be 100 MB. To check physical memory assigned to the zone
+
+root@zone01:~# prtconf -vp | grep Mem
+prtconf: openprom facility not available
+Memory size: 50 Megabytes
+
+OR
+
+zonestat -r physical-memory  -z <zonename> 2
+
+
+Modifying capped-memory and swap without rebooting zone
+--------------------------------------------------------
+
+Starting solaris 10 u4 We can modify the capped-memory and swap assigned to a zone , without rebooting it. To change the capped memory to a zone :
+
+global # rcapadm -z myzone -m 12G
+
+   -m maxvalue
+
+           Used in conjunction with the  -z  option.  Specifies  a  value  for
+           rcap.max-rss, a dynamically-set cap on the usage of physical memory
+           for the zone specified by -z. You can apply a scale (K, M, G, T) to
+           the  value you specify. K means kilobyte; M, megabyte; G, gigabyte;
+           and T, terabyte. For example, 100M is 100 megabytes.
+
+           To remove an existing cap, specify 0M.
+
+To modify the swap space allocated to a zone :
+
+global # prctl -n zone.max-swap -v 2g -t privileged -r -e deny -i zone myzone
+
+Check swap space allocation:
+----------------------------
+prctl -n zone.max-swap -i zone ceresng-tz 
+
+opsys_ux@karadoc:~$ prctl -n zone.max-swap -i zone ceresng-tz                                                                                                
+zone: 14: ceresng-tz
+NAME    PRIVILEGE       VALUE    FLAG   ACTION                       RECIPIENT
+zone.max-swap
+        usage           51.6GB   
+        privileged       160GB      -   deny                                 -
+        system          16.0EB    max   deny                                 -
+
+OR
+prctl -n zone.max-swap `pgrep -z ceresng-tz init`
+
+opsys_ux@karadoc:~$ prctl -n zone.max-swap `pgrep -z ceresng-tz init`                                                                                        
+process: 25972: /usr/sbin/init -m verbose
+NAME    PRIVILEGE       VALUE    FLAG   ACTION                       RECIPIENT
+zone.max-swap
+        usage           44.8GB   
+        privileged       160GB      -   deny                                 -
+        system          16.0EB    max   deny                                 -
+
+Check capping:
+--------------- 
+
+global # rcapstat -z
+opsys_ux@karadoc:~$ rcapstat -z                                                                                                                              
+    id zone            cappd nproc    vm   rss   cap    at avgat    pg avgpg
+    14 ceresng-tz        Yes     -   66G   20G  192G    0K    0K    0K    0K
+

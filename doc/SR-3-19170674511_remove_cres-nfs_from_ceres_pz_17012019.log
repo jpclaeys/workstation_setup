@@ -1,0 +1,41 @@
+
+    
+-------------------- ACTION PLAN DETAILS BELOW--------------------- 
+
+Who : INFRA-SYSTEMS (Customer) 
+
+------------------------------------------------------ 
+
+What : 
+
+1. Bring the RG offline (ceres_pz-rg) 
+# clrg offline ceres_pz-rg 
+
+2. clrg status to check if the rg is offline 
+# clrg status 
+
+3. remove cerez-nfs from the zone configuration - do this on both nodes and check on /etc/zones/ceres_pz.xml 
+....... 
+<dataset name="ceres-nfs" alias="ceres-nfs_applications"/> <<<--- should not be there 
+....... 
+
+# zonecfg -z ceres_pz 
+zonecfg:ceres_pz> remove dataset name=ceres-nfs 
+zonecfg:ceres_pz>info dataset 
+zonecfg:ceres_pz> commit 
+zonecfg:ceres_pz> exit 
+
+4. Check in ceres_pz.xml if the dataset is removed (both nodes) 
+# cat /etc/zones/ceres_pz.xml 
+...... 
+<dataset name="ceres-nfs" alias="ceres-nfs_applications"/> <<<--- should not be there 
+....... 
+
+4. remove the cerez-nfs from the HAS+ configuration 
+# clrs set -p Zpools="ceres-cc,ceres-archive,ceres_pz-db,ceres_pz-data ceres_pz-zfs" ceres_pz-zfs (zpool ceres_pz-zfs has been excluded from the list) 
+
+5. try to destroy zpool or export zpool from OS 
+# zpool destroy ceres-nfs 
+
+6. Bring online the RG ceres_pz-rg 
+#clrg offline ceres_pz-rg 

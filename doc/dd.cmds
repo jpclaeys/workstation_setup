@@ -1,0 +1,10 @@
+# How to find an unavailable  emcpower device
+# Read the first block of all emcpower disks, and grep the zpool name
+
+mkdir /tmp/dd
+cd /dev/rdsk
+for i in `ls emcpower*a`; do echo $i && dd if=$i of=/tmp/dd/$i bs=512k count=1;done
+cd /tmp/dd
+ZPOOL=
+for i in `ls`; do echo $i && strings $i| grep  $ZPOOL ;done | ggrep  -B1 $ZPOOL | grep -v '\-\-'
+

@@ -1,0 +1,25 @@
+Open ticket to application owner:
+
+un_inventory <hostname>
+
+Incident; new;
+
+Template: DCTSC UNIX HOUSING
+
+Incident type: Incident
+Configuration item: <inventory number> + press F9
+
+Example: un_inventory zamia
+Machine : INV 02DI20133400676 - SN CZJ326042K - IDT IDT008044 - OBP <undef> - SC <undef>
+
+
+subject: example: DCTSC UNIX HOUSING - Server <hostname> is out of memory
+
+
+@CT: Please assign this ticket to the application owner
+
+
+excerpt for messages file
+top info
+
+Link this ticket to the main incident.

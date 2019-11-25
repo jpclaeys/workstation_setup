@@ -1,0 +1,23 @@
+[claeyje@muscadet log]$ dns
+
+[claeyje@muscadet dns]$ grep 10.200.18.32 *
+32-47.18.200.10:SOA(REV(10.200.18.32-47))
+domains:; SHS_COMP_eRFI_WL_Oracle / (10.200.18.32/28) / VLAN 1150
+domains:REVERSE(10.200.18.32-47, cc.cec.eu.int)
+
+
+[claeyje@muscadet dns]$ dig -x 10.200.18.32-47 @dnsmaster.cc.cec.eu.int +norec | egrep '(SOA|NS)'
+;; flags: qr aa; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1
+; EDNS: version: 0, flags:; udp: 4096
+32-47.18.200.10.in-addr.arpa. 300 IN	SOA	dnsmaster.cc.cec.eu.int. digit-dcim-unix.cec.eu.int. 2017112914 300 600 1209600 300
+[claeyje@muscadet dns]$ 
+
+
+[claeyje@muscadet log]$  checkreverse  10.200.18.32-47
+######## SNET ########
+32-47.18.200.10.in-addr.arpa. 3600 IN	NS	dnssrv1.cc.cec.eu.int.
+32-47.18.200.10.in-addr.arpa. 3600 IN	NS	dnssrv3.cc.cec.eu.int.
+32-47.18.200.10.in-addr.arpa. 3600 IN	NS	dnssrv2.cc.cec.eu.int.
+######## MASTER ########
+32-47.18.200.10.in-addr.arpa. 300 IN	SOA	dnsmaster.cc.cec.eu.int. digit-dcim-unix.cec.eu.int. 2017112914 300 600 1209600 300
+

@@ -1,0 +1,36 @@
+mkfile 100m file1
+mkfile 100m file2
+mkfile 100m file3
+zpool create -n jpc mirror /var/disk/file1 /var/disk/file2
+zpool create  jpc mirror /var/disk/file1 /var/disk/file2
+zpool attach jpc /var/disk/file1 /var/disk/file3
+zpool status jpc
+zpool split jpc jpc1 /var/disk/file1
+zpool import -d /var/disk
+zpool import jpc1 -d /var/disk
+zpool import  -d /var/disk  jpc1
+zpool list
+zpool status jpc
+zpool detach jpc /var/disk/file2
+zpool status jpc
+zpool status jpc1
+zpool attach jpc1 /var/disk/file1 /var/disk/file2
+zpool status jpc1
+zpool status jpc
+
+mkfile 100m file4
+mkfile 100m file5
+
+
+zpool detach jpc1 /var/disk/file2
+zpool status jpc1
+zpool attach jpc1 /var/disk/file1 /var/disk/file2
+zpool status jpc1
+
+mkfile 100m file4
+mkfile 100m file5
+zpool add jpc1 mirror /var/disk/file4 /var/disk/file5
+zpool status jpc1
+zpool split -n jpc1 jpc1-split /var/disk/file1 /var/disk/file4
+
+

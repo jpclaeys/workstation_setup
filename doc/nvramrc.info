@@ -1,0 +1,60 @@
+13 root@tinamou:->eeprom nvramrc| perl -pe 's/(devalias)/\n\1/g'
+nvramrc=
+devalias c0t5000cca03c150e48d0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:b 
+devalias c0t5000cca03c16a0b4d0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:b 
+devalias c0t5000cca03c150e48d0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:a 
+devalias c0t5000cca03c16a0b4d0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:a 
+devalias gige0 /pci@400/pci@1/pci@0/pci@4/network@0 
+devalias gige1 /pci@500/pci@1/pci@0/pci@5/network@0 
+devalias gige2 /pci@400/pci@1/pci@0/pci@b/pci@0/usb@0,2/hub@2/hub@3/communications@3
+
+
+[claeyje@muscadet log]$ sr tinamou eeprom nvramrc| perl -pe 's/(devalias)/\n\1/g'
+nvramrc=
+devalias c0t5000cca03c150e48d0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:b 
+devalias c0t5000cca03c16a0b4d0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:b 
+devalias c0t5000cca03c150e48d0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:a 
+devalias c0t5000cca03c16a0b4d0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:a 
+devalias gige0 /pci@400/pci@1/pci@0/pci@4/network@0 
+devalias gige1 /pci@500/pci@1/pci@0/pci@5/network@0 
+devalias gige2 /pci@400/pci@1/pci@0/pci@b/pci@0/usb@0,2/hub@2/hub@3/communications@3
+
+
+[claeyje@muscadet log]$ sr lammergeier eeprom nvramrc| perl -pe 's/(devalias)/\n\1/g' 
+nvramrc=
+devalias c0t5000cca03c4172b8d0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:a
+
+devalias c0t5000cca03c437a8cd0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:a
+
+devalias c0t5000cca03c4172b8d0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:b
+
+devalias c0t5000cca03c437a8cd0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:b
+
+devalias gige0 /pci@400/pci@1/pci@0/pci@4/network@0
+
+devalias gige1 /pci@500/pci@1/pci@0/pci@5/network@0
+." ChassisSerialNumber 1244BDYE45 " 
+
+
+[claeyje@muscadet log]$ sr lammergeier eeprom nvramrc| perl -pe 's/[ =](devalias)/\n\1/g' 
+nvramrc
+devalias c0t5000cca03c4172b8d0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:a
+devalias c0t5000cca03c437a8cd0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:a
+devalias c0t5000cca03c4172b8d0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:b
+devalias c0t5000cca03c437a8cd0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:b
+devalias gige0 /pci@400/pci@1/pci@0/pci@4/network@0
+devalias gige1 /pci@500/pci@1/pci@0/pci@5/network@0
+." ChassisSerialNumber 1244BDYE45 " cr
+
+
+[claeyje@muscadet log]$ sr tinamou eeprom nvramrc| perl -pe 's/[ =](devalias)/\n\1/g' 
+nvramrc
+devalias c0t5000cca03c150e48d0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:b
+devalias c0t5000cca03c16a0b4d0s1 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:b
+devalias c0t5000cca03c150e48d0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p1,0:a
+devalias c0t5000cca03c16a0b4d0s0 /pci@400/pci@2/pci@0/pci@e/scsi@0/disk@p0,0:a
+devalias gige0 /pci@400/pci@1/pci@0/pci@4/network@0
+devalias gige1 /pci@500/pci@1/pci@0/pci@5/network@0
+devalias gige2 /pci@400/pci@1/pci@0/pci@b/pci@0/usb@0,2/hub@2/hub@3/communications@3
+
+

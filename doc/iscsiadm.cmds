@@ -1,0 +1,73 @@
+-----------------------------------------------------------------------------------------------------------------------------------Subject: iSCSI connection error on RACcluster024 (olrmcprod1)
+
+Please Check connectivity for Oracle RAC node for voting LUN:
+We faced a connection timemout on Oct 21 09:23:39
+
+
+Class: SR
+Oracle RAC cluster name: RACcluster024 (olrmcprod1)
+Status: 
+Nodes to check, name:  nasa, korolev
+Node to check, iqn: iqn.1992-08.com.netapp:sn.fbbf60738ab011e48cca123478563412:vs.6
+Comments: 
+
+
+
+root@nasa:->iscsiadm --mode session
+tcp: [1] [nas-dchos-iprd]:3260,1035 iqn.1992-08.com.netapp:sn
+
+Excerpt of the logs on nasa:
+-----------------------------
+Oct 21 09:23:39 nasa kernel: connection1:0: ping timeout of 5 secs expired, recv timeout 5, last rx 11370400773, last ping 11370405773, now 11370410773
+Oct 21 09:23:39 nasa kernel: connection1:0: detected conn error (1011)
+Oct 21 09:23:39 nasa iscsid: Kernel reported iSCSI connection 1:0 error (1011 - ISCSI_ERR_CONN_FAILED: iSCSI connection failed) state (3)
+Oct 21 09:23:42 nasa iscsid: connection1:0 is operational after recovery (1 attempts)
+
+Excerpt of the logs on korolev:
+-------------------------------
+Oct 21 09:23:39 korolev kernel: connection1:0: ping timeout of 5 secs expired, recv timeout 5, last rx 11286751617, last ping 11286756617, now 11286761617
+Oct 21 09:23:39 korolev kernel: connection1:0: detected conn error (1011)
+Oct 21 09:23:40 korolev iscsid: Kernel reported iSCSI connection 1:0 error (1011 - ISCSI_ERR_CONN_FAILED: iSCSI connection failed) state (3)
+
+--> ticket to Storage
+23/10/2017 08:14:25:  Incident IM0016078609 has been opened by CLAEYJE
+Related to ticket: IM0016078451
+
+--> same ticket to CT --> SNET23/10/2017 09:37:16:  Incident IM0016079156 has been opened by CLAEYJE
+23/10/2017 09:37:16:  Incident IM0016079156 has been opened by CLAEYJE
+
+-----------------------------------------------------------------------------------------------------------------------------------
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/ISCSIProcedures
+-----------------------------------------------------------------------------------------------------------------------------------
+
+run rac_report:
+
+[claeyje@muscadet Oracle_RAC]$ alias rac_report
+alias rac_report='perl /home/claeyje/git/tools/Oracle_RAC/rac_report.pl'
+[claeyje@muscadet Oracle_RAC]$ time rac_report nasa | tee /var/tmp/nasa_report_23102017_1.log
+<snip>
+real	9m35.986s
+user	6m27.044s
+sys	1m46.830s
+-----------------------------------------------------------------------------------------------------------------------------------
+
+10 root@nasa:->iscsiadm --mode session
+tcp: [1] [nas-dchos-iprd]:3260,1035 iqn.1992-08.com.netapp:sn.fbbf60738ab011e48cca123478563412:vs.6 (non-flash)
+
+-----------------------------------------------------------------------------------------------------------------------------------
+7 root@nasa:->iscsiadm -m node -o show | grep node.name
+node.name = iqn.1992-08.com.netapp:sn.fbbf60738ab011e48cca123478563412:vs.6
+
+-----------------------------------------------------------------------------------------------------------------------------------
+8 root@nasa:-> cat /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:nasa.cc.cec.eu.int
+
+9 root@nasa:->ll /var/lib/iscsi/nodes/*
+total 4
+-rw------- 1 root root 2033 Jul  5  2016 nas-dchos-iprd,3260
+
+10 root@nasa:->iscsiadm --mode session
+tcp: [1] [nas-dchos-iprd]:3260,1035 iqn.1992-08.com.netapp:sn.fbbf60738ab011e48cca123478563412:vs.6 (non-flash)
+
+-----------------------------------------------------------------------------------------------------------------------------------
+

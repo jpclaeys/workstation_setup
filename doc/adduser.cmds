@@ -1,0 +1,105 @@
+{
+FULLNAME=""
+USERNAME=
+USERID=
+GROUPID=10
+HOMEDIR=/export/home/$USERNAME && SHELL=/usr/bin/bash
+# for samba accounts, uncomment the next line
+#HOMEDIR=/var/empty && SHELL=/bin/false
+echo "/usr/sbin/useradd -g $GROUPID -u $USERID -s $SHELL -c \"$FULLNAME\" -d $HOMEDIR  $USERNAME"
+}
+
+# Create the home dir
+echo "[ ! -d $HOMEDIR ] && mkdir $HOMEDIR && chown $USERID:$GROUPID $HOMEDIR && ls -ld $HOMEDIR"
+
+# Change the password
+DATE=`date "+%Y%m%d"`
+PASSWORD=$USERID$DATE && echo $PASSWORD 
+passwd $USERID
+New Password: $PASSWORD
+
+# Check that we can connect with the userid
+ssh 0 -l $USERID
+
+# Force user to change his password at first login
+passwd -x0 $USERID
+
+
+
+====================================================================================================================================
+
+# Test:
+-------
+[root@ceresng-tz samba]# grep lakiggy /etc/passwd
+lakiggy:x:81966:10:LAKI Gyorgy:/export/home/lakiggy:/usr/bin/bash
+[root@ceresng-tz samba]# grep lakiggy /etc/shadow
+lakiggy:UP:::::::
+
+lakiggy:x:81966:10:LAKI Gyorgy:/export/home/lakiggy:/usr/bin/bash
+{
+FULLNAME="LAKI Gyorgy"
+USERNAME=lakiggy
+USERID=81966
+GROUPID=10
+HOMEDIR=/export/home/$USERNAME
+SHELL=/usr/bin/bash
+echo "/usr/sbin/useradd -g $GROUPID -u $USERID -s $SHELL -c \"$FULLNAME\" -d $HOMEDIR  $USERNAME"
+}
+
+/usr/sbin/useradd -g 10 -u 81966 -s /usr/bin/bash -c "LAKI Gyorgy" -d /export/home/lakiggy  lakiggy
+
+
+root@iceman:~# /usr/sbin/useradd -g 10 -u 81966 -s /usr/bin/bash -c "LAKI Gyorgy" -d /export/home/lakiggy  lakiggy
+root@iceman:~# grep laki /etc/passwd
+lakiggy:x:81966:10:LAKI Gyorgy:/export/home/lakiggy:/usr/bin/bash
+root@iceman:~# grep laki /etc/shadow
+lakiggy:UP:::::::
+root@iceman:~# userdel lakiggy
+
+# use the "-m" option to create the homedir
+root@iceman:~# /usr/sbin/useradd -g 10 -u 81966 -s /usr/bin/bash -c "LAKI Gyorgy" -d /export/home/lakiggy  -m lakiggy
+80 blocks
+root@iceman:~# ll /export/home/lakiggy
+total 79
+drwxr-xr-x   2 lakiggy  staff          7 Mar  7 08:04 .
+drwxr-xr-x   4 root     sys            4 Mar  7 08:04 ..
+-r--r--r--   1 lakiggy  staff        159 Mar  7 08:04 .bashrc
+-rw-r--r--   1 lakiggy  staff        568 Mar  7 08:04 .profile
+-rw-r--r--   1 lakiggy  staff        166 Mar  7 08:04 local.cshrc
+-rw-r--r--   1 lakiggy  staff        170 Mar  7 08:04 local.login
+-rw-r--r--   1 lakiggy  staff        131 Mar  7 08:04 local.profile
+root@iceman:~# ll /export/home
+total 68
+drwxr-xr-x   4 root     sys            4 Mar  7 08:04 .
+drwxr-xr-x   3 root     sys            3 Jan 15  2016 ..
+drwxr-xr-x  43 claeyje  staff         67 Feb 20 09:46 claeyje
+drwxr-xr-x   2 lakiggy  staff          7 Mar  7 08:04 lakiggy
+root@iceman:~# userdel -r lakiggy
+root@iceman:~# ll /export/home
+total 51
+drwxr-xr-x   3 root     sys            3 Mar  7 08:05 .
+drwxr-xr-x   3 root     sys            3 Jan 15  2016 ..
+drwxr-xr-x  43 claeyje  staff         67 Feb 20 09:46 claeyje
+
+
+====================================================================================================================================
+
+/usr/sbin/useradd -g 10 -u 30235 -s /usr/bin/bash -c "JPC" -d /export/home/jpc  -m jpc
+ll /export/home
+ll /export/home/jpc
+passwd -r files jpc
+eureka1
+
+[root@iceman ~]# /usr/sbin/useradd -g 10 -u 30235 -s /usr/bin/bash -c "JPC" -d /export/home/jpc  -m jpc
+80 blocks
+[root@iceman ~]# ll /export/home
+total 51
+drwxr-xr-x  46 claeyje  staff         73 May 14 10:11 claeyje
+drwxr-xr-x   2 ettelma  staff          3 May 14 10:35 ettelma
+drwxr-xr-x   2 jpc      staff          7 May 14 10:36 jpc
+[root@iceman ~]# ll /export/home/jpc
+total 27
+-rw-r--r--   1 jpc      staff        166 May 14 10:36 local.cshrc
+-rw-r--r--   1 jpc      staff        170 May 14 10:36 local.login
+-rw-r--r--   1 jpc      staff        131 May 14 10:36 local.profile
+

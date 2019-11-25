@@ -1,0 +1,18 @@
+lultipath -ll
+
+mpathe (360000970000292603453533030334146) dm-2 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 0:0:0:0 sda 8:0    active ready running
+  `- 1:0:0:0 sdf 8:80   active ready running
+
+
+[root@cepheus etc]# $removeluns mpathe
+/sbin/multipath -f mpathe # 360000970000292603453533030334146
+# SCSI 0:0:0:0
+echo offline > /sys/block/sda/device/state
+echo 1 >/sys/block/sda/device/delete
+# SCSI 1:0:0:0
+echo offline > /sys/block/sdf/device/state
+echo 1 >/sys/block/sdf/device/delete
+

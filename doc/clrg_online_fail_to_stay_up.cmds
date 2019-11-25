@@ -1,0 +1,51 @@
+
+clrg suspend <rg> # suspend the automatic recovery actions of the resource group.
+
+clrg online <rg>
+
+zlogin -z <zonename>
+
+# Check if FS is full
+
+Identify biggest files in /var
+
+du -hs /var/adm/* /var/log/* /var/spool/mail /var/account /var/core 2>/dev/null | egrep G
+
+/var/log/daemon : 16 GB !!!
+rm /var/log/daemon
+touch /var/log/daemon
+svcadm restart svc:/system/system-log:default
+OR 
+cat /dev/null > /var/log/daemon
+
+# Check if there are zfs mount issues:
+
+[root@aiserver-pz /]# egrep 'cannot mount|failed' /var/svc/log/system-filesystem-local:default.log| sort -u
+
+cannot mount 'rpool/u01' on '/u01': directory is not empty
+WARNING: /usr/sbin/zfs mount -a failed: one or more file systems failed to mount
+
+root@aiserver-pz:~# zfs mount -a
+cannot mount 'rpool/u01' on '/u01': directory is not empty
+root@aiserver-pz:~# ll /u01
+total 11
+drwxr-xr-x   3 root     root           3 Jun 14 07:45 .
+drwxr-xr-x  27 root     root          36 Jun 14 08:49 ..
+drwxr-xr-x   5 root     root           5 Jun 14 07:45 home
+root@aiserver-pz:~# mv /u01/home /var/tmp
+root@aiserver-pz:~# ll /u01
+total 8
+drwxr-xr-x   2 root     root           2 Jun 14 08:57 .
+drwxr-xr-x  27 root     root          36 Jun 14 08:49 ..
+root@aiserver-pz:~# zfs mount -a
+root@aiserver-pz:~# ll /u01 
+total 14
+drwxr-xr-x   4 root     root           4 Nov 24  2015 .
+drwxr-xr-x  27 root     root          36 Jun 14 08:49 ..
+drwxr-xr-x   3 root     root           3 Nov 24  2015 admin
+drwxr-xr-x   5 root     root           5 Nov 24  2015 home
+
+# Clear services in maintenance (or reboot)
+
+# When the rg status is ok, resume the rg
+clrg resume <rg>

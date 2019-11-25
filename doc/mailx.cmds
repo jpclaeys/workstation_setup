@@ -1,0 +1,11 @@
+# Sending a file by mail
+-------------------------
+who=`who am i | awk '{print $1}'`
+FILE=
+
+# Send a file as attachment
+echo "see atachment" | mailx -s "$FILE" -a $FILE $who
+
+# Send a file as mail content
+mailx -s "$FILE" $who < $FILE
+

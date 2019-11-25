@@ -1,0 +1,50 @@
+
+Find and remove large files that are open but have been deleted
+
+https://unix.stackexchange.com/questions/68523/find-and-remove-large-files-that-are-open-but-have-been-deleted
+
+If you can't kill your application, you can truncate instead of deleting the log file to reclaim the space. If the file was not open in append mode (with O_APPEND), then the file will appear as big as before the next time the application writes to it (though with the leading part sparse and looking as if it contained NUL bytes), but the space will have been reclaimed (that does not apply to HFS+ file systems on Apple OS/X that don't support sparse files though).
+
+To truncate it:
+
+: > /path/to/the/file.log
+If it was already deleted, on Linux, you can still truncate it by doing:
+
+: > "/proc/$pid/fd/$fd"
+Where $pid is the process id of the process that has the file opened, and $fd one file descriptor it has it opened under (which you can check with lsof -p "$pid".
+
+If you don't know the pid, and are looking for deleted files, you can do:
+
+lsof -nP | grep '(deleted)'
+lsof -nP +L1, as mentioned by @user75021 is an even better (more reliable and more portable) option (list files that have fewer than 1 link).
+
+Or (on Linux):
+
+find /proc/*/fd -ls | grep  '(deleted)'
+
+
+
+  119  2017-10-11 10:28:13 : lsof /var| grep deleted
+  120  2017-10-11 10:30:46 : lsof -nP | grep '(deleted)'
+  121  2017-10-11 10:31:06 : : > /var/spool/at/spool/a0008a017f5dc1
+  122  2017-10-11 10:31:08 : lsof -nP | grep '(deleted)'
+  123  2017-10-11 10:31:19 : df -h /var
+  124  2017-10-11 10:31:39 : lsof -nP +L1
+  125  2017-10-11 10:32:13 : find /proc/*/fd -ls | grep  '(deleted)'
+  126  2017-10-11 10:33:11 : lsof -nP +L1 /var
+
+  127  2017-10-11 10:33:44 : find /proc/*/fd -ls | grep  '(deleted)'
+  128  2017-10-11 10:34:21 : : > /proc/51788/fd/2
+
+  129  2017-10-11 10:34:26 : find /proc/*/fd -ls | grep  '(deleted)'
+  130  2017-10-11 10:34:34 : df -h /var
+  131  2017-10-11 10:35:44 : find /proc/*/fd -ls | grep  '(deleted)'
+
+As others have said lsof can be used to list all the deleted files which are still on disk due to open file descriptors. However, this may be a very long list. Here is a command which lists these files sorted by ascending size in bytes:
+
+4 root@cmdb9as1t:->
+
+lsof -F sn0 /var | tr -d '\000' | grep deleted | sed 's/^[a-z]*\([0-9]*\)n/\1 /' | sort -n
+
+
+

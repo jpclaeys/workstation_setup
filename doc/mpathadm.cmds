@@ -1,0 +1,7 @@
+# Display a list of multipathed LUNs.
+mpathadm list lu
+
+# Display configuration information about a specific LUN.
+mpathadm show lu /dev/rdsk/c4t60060E8016525A000001525A000042D3d0s2
+
+luxadm disp  /dev/rdsk/c4t60060E8016525A000001525A000042D3d0s2

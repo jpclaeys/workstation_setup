@@ -1,0 +1,62 @@
+# executes commands at a specified time.
+at
+
+# lists the user's pending jobs
+atq
+
+# deletes jobs, identified by their job number.
+atrm
+
+At allows fairly complex time specifications, extending the POSIX.2 standard. It accepts times of the form HH:MM to run a job at a specific time of day. (If that time is already past, the next day is assumed.) You may also specify midnight, noon, or teatime (4pm) and you can have a time-of-day suffixed with AM or PM for running in the morning or the evening. You can also say what day the job will be run, by giving a date in the form month-name day with an optional year, or giving a date of the form MMDDYY or MM/DD/YY or DD.MM.YY or YYYY-MM-DD. The specification of a date must follow the specification of the time of day. You can also give times like now + count time-units, where the time-units can be minutes, hours, days, or weeks and you can tell at to run the job today by suffixing the time with today and to run the job tomorrow by suffixing the time with tomorrow.
+For example, to run a job at 4pm three days from now, you would do at 4pm + 3 days, to run a job at 10:00am on July 31, you would do at 10am Jul 31 and to run a job at 1am tomorrow, you would do at 1am tomorrow.
+
+
+# examples
+
+echo "shutdown -h now" | at 1pm Feb 08
+
+echo "touch /tmp/jp" | at 08:55amm Feb 02
+
+echo "touch /tmp/jp" | at 09am Feb 02
+
+Time format : HH:MM YY-MM-DD
+echo "touch /tmp/jp" | at 10:10 18-02-02  && atq
+
+
+
+[claeyje@muscadet log]$ atq
+24	Fri Feb  2 09:00:00 2018 a claeyje
+
+[claeyje@muscadet log]$ echo "touch /tmp/jp" | at 09:05am Feb 02
+job 25 at Fri Feb  2 09:05:00 2018
+
+[claeyje@muscadet log]$ atq
+25	Fri Feb  2 09:05:00 2018 a claeyje
+
+[claeyje@muscadet log]$ atrm 25
+[claeyje@muscadet log]$ atq
+
+ex.
+
+# ATSCHEDULED="HH:MM YY-MM-DD"
+sr taxudl21 '(echo "shutdown -h now" | at 17:00 18-07-11)'
+
+View the job content
+
+at -c $(atq | cut -f 1)|grep -v marcin | tail  -2
+
+
+[claeyje@muscadet log]$ mypssH "$HL" '(at -c $(atq | cut -f 1)|grep -v marcin | tail  -2)'
+[1] 15:04:06 [SUCCESS] taxudt21
+shutdown -h now
+
+[2] 15:04:06 [SUCCESS] taxudd21
+shutdown -h now
+
+[3] 15:04:06 [SUCCESS] taxudl21
+shutdown -h now
+
+
+
+
+

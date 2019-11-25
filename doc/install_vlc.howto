@@ -1,0 +1,66 @@
+How To Install VLC Media Player on Fedora 30/29/28 and CentOS/RHEL 7/6
+----------------------------------------------------------------------
+https://tecadmin.net/install-vlc-on-fedora/
+
+
+Step 1 – Setup Required Repository
+First of all, You need to add the required yum repositories on your system. You can add repositories using the following commands as per your operating system.
+
+For CentOS/RHEL 7
+
+Download the following files:
+
+http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-12.noarch.rpm
+http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
+
+Install the repositories
+
+rpm -Uvh epel-release-7-11.noarch.rpm
+rpm -Uvh nux-dextop-release-0-5.el7.nux.noarch.rpm
+
+
+Step 2 – Install VLC using Yum
+As you have enabled all the required repositories on your system. let’s install VLC media player using the following command on your system with required dependencies.
+
+yum install vlc      ## On CentOS/RHEL 7/6 systems
+
+Step 3 – Enjoy Videos on VLC
+It’s time to play your videos on the VLC media player and enjoy it. You can start VLC media player, go to Applications Menu >> Sound & Video >> VLC Media Player or search in the menu bar.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+https://www.tecmint.com/install-vlc-media-player-in-fedora/
+
+
+How to Install VLC Media Player in Fedora 30
+by Aaron Kili | Published: February 28, 2019 | Last Updated: June 17, 2019
+
+ Download Your Free eBooks NOW - 10 Free Linux eBooks for Administrators | 4 Free Shell Scripting eBooks
+VLC is a free and open source, popular and cross-platform multimedia player and framework that plays files, discs, webcams, devices as well as streams. It plays most multimedia files and DVDs, Audio CDs, VCDs, and supports various streaming protocols. It is simply the best free multi-format media player.
+
+VLC is a packet-based media player for Linux that plays almost all video content. It plays all formats you can think of; offers advanced controls (complete feature-set over the video, subtitle synchronization, video, and audio filters) and supports advanced formats.
+
+In this article, we will explain how to install latest version of VLC Media Player in Fedora 30 Linux distribution.
+
+Installing VLC Media Player in Fedora 30
+VLC is not available in the Fedora repositories. Therefore to install it, you must enable a third-party repository from RPM Fusion – a community-maintained software repository providing additional packages that cannot be distributed in Fedora for legal reasons.
+
+To install and enable RPM Fusion repository use the following dnf command.
+
+$ sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+$ sudo dnf install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+After installing the RPM Fusion repository configurations, install VLC media player using following command.
+
+$ sudo dnf install vlc
+Optionally, you can install the following useful packages: python-vlc (Python bindings) and npapi-vlc (plugin-specific code to run VLC in web browsers, currently NPAPI and ActiveX) with the following command.
+
+$ sudo dnf install python-vlc npapi-vlc 
+To run the VLC media player using GUI, open the launcher by pressing the Super key and type vlc to start it.
+
+Once it has opened, accept the Privacy and Network Access Policy, then click continue to start using VLC on your system.
+
+Alternatively, you can also run vlc from the command-line as shown (where the source can be a path to the file to be played, URL, or other data source):
+
+$ vlc source
+
+==============================================================================================================================================================

@@ -1,0 +1,48 @@
+Starting and stopping RedHat Satellite
+---------------------------------------
+
+https://access.redhat.com/documentation/en-us/red_hat_satellite/6.1/html/user_guide/chap-red_hat_satellite-user_guide-starting_and_stopping_red_hat_satellite
+
+CHAPTER 3. STARTING AND STOPPING RED HAT SATELLITE
+
+Satellite provides the katello-service command to manage Satellite services from the command line. This is useful when upgrading Satellite or when creating a backup, see the Red Hat Satellite Installation Guide for details on these use cases.
+
+After installing Satellite with the katello-installer command, all Satellite services are started and enabled automatically. 
+
+View the list of these services by executing:
+# katello-service list
+
+To see the status of running services, execute:
+# katello-service status
+
+To stop all Satellite services, execute:
+# katello-service stop
+
+To start all Satellite services, execute:
+# katello-service start
+
+To restart all Satellite services, execute:
+# katello-service restart
+
+
+Example:
+---------
+
+[root@satellite-pk ~]# katello-service list
+
+foreman-proxy.service                         enabled 
+foreman-tasks.service                         enabled 
+goferd.service                                enabled 
+httpd.service                                 enabled 
+mongod.service                                enabled 
+postgresql.service                            enabled 
+pulp_celerybeat.service                       enabled 
+pulp_resource_manager.service                 enabled 
+pulp_streamer.service                         enabled 
+pulp_workers.service                          enabled 
+qdrouterd.service                             enabled 
+qpidd.service                                 enabled 
+smart_proxy_dynflow_core.service              enabled 
+squid.service                                 enabled 
+tomcat.service                                enabled
+

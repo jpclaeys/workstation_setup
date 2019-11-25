@@ -1,0 +1,43 @@
+
+53 root@bateleur:->ifconfig -a
+<snip>
+igb281000: flags=219040843<UP,BROADCAST,RUNNING,MULTICAST,DEPRECATED,IPv4,NOFAILOVER,FAILED,CoS> mtu 1500 index 6
+        inet 158.168.31.170 netmask ffffff00 broadcast 158.168.31.255
+        groupname ipmp281
+        ether 0:10:e0:20:ac:e2 
+igb281002: flags=219040843<UP,BROADCAST,RUNNING,MULTICAST,DEPRECATED,IPv4,NOFAILOVER,FAILED,CoS> mtu 1500 index 7
+        inet 158.168.31.171 netmask ffffff00 broadcast 158.168.31.255
+        groupname ipmp281
+        ether 0:10:e0:20:ac:e4 
+
+root@bateleur:->cd /etc
+root@bateleur:->cat hostname.igb281002
+158.168.31.171 netmask + broadcast + group ipmp281 deprecated -failover up
+ifconfig igb281002 unplumb
+ifconfig igb281002 plumb
+ifconfig igb281002 158.168.31.171 netmask + broadcast + group ipmp281 deprecated -failover up
+
+Setting netmask of igb281002 to 255.255.255.0
+root@bateleur:->ifconfig -a
+igb281000: flags=219040843<UP,BROADCAST,RUNNING,MULTICAST,DEPRECATED,IPv4,NOFAILOVER,FAILED,CoS> mtu 1500 index 6
+        inet 158.168.31.170 netmask ffffff00 broadcast 158.168.31.255
+        groupname ipmp281
+        ether 0:10:e0:20:ac:e2 
+
+root@bateleur:->cd /etc
+root@bateleur:->cat hostname.igb281000
+158.168.31.170 netmask + broadcast + group ipmp281 deprecated -failover up
+root@bateleur:->ifconfig igb281000 unplumb
+root@bateleur:->ifconfig igb281000 plumb
+root@bateleur:->ifconfig igb281000 `cat hostname.igb281000`
+Setting netmask of igb281000 to 255.255.255.0
+
+
+
+/usr/nagios/plugins/check_if
+check_if OK (cfg: 6/8; dns: 7; netm: 7; cdp: 6; interc: 0; mac: 2; if: 8)
+
+
+
+
+

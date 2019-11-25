@@ -1,0 +1,45 @@
+Solaris 11: Identifying Ethernet MAC addresses
+Posted on March 1, 2015 by Sandeep Shenoy
+
+Solaris 11 introduced very useful command that you can use for checking and to set all data links –dladm.
+Let’s assume you need to find out ethernet (MAC) addresses of all network interfaces on your Solaris box.
+Issuing the dladm command with option -m you will get the list of factory MAC addresses, their slot identifiers and their availability.
+
+$ dladm show-phys -m
+LINK SLOT ADDRESS INUSE CLIENT
+net0 primary 8:0:27:4:7c:5e yes net0
+
+Solaris 10 and older:This command however does not work on older releases of Solaris. In order to see ethernet address of the network interface even though it is not plumed you can use the following:
+
+$ prtpicl -c network -v
+
+This should include driver-name and instance to associate an block to a specific network interface and the local-mac-address to get the mac address of that entry.
+Other option valid for all versions of Solaris is to use the netstat command:
+
+$ netstat -pn
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+[root@neo anninter_pz]# dladm show-phys -m | egrep 'LINK|aggr'
+LINK                SLOT     ADDRESS            INUSE CLIENT
+pub1                primary  90:e2:ba:84:cc:48  yes   aggr1-pub1
+pub2                primary  90:e2:ba:84:cc:48  yes   aggr1-pub2
+pub4                primary  90:e2:ba:84:cc:48  yes   aggr1-pub4
+pub3                primary  90:e2:ba:84:cc:48  yes   aggr1-pub3
+
+
+[root@neo anninter_pz]# dladm show-linkprop -p mac-address| grep aggr1
+aggr1    mac-address     rw   90:e2:ba:84:cc:48 90:e2:ba:84:cc:48 90:e2:ba:84:cc:48 -- 
+
+[root@neo anninter_pz]# dladm show-linkprop -p mac-address | grep -v LINK | awk '{ print $1 " " $6 }' | sort | grep aggr
+aggr1 90:e2:ba:84:cc:48
+
+
+[root@neo anninter_pz]# /usr/sbin/prtpicl -c network -v| grep local-mac-address  
+  :local-mac-address     90  e2  ba  84  cc  48 
+  :local-mac-address     90  e2  ba  84  cc  49 
+  :local-mac-address     90  e2  ba  84  c3  64 
+  :local-mac-address     90  e2  ba  84  c3  65 
+  :local-mac-address     00  10  e0  71  26  fc 
+  :local-mac-address     00  10  e0  71  26  fd 
+

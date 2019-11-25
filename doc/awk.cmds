@@ -1,0 +1,61 @@
+How to print 5 lines after a pattern in file using awk
+-------------------------------------------------------
+awk '/PATTERN/ {for(i=1; i<=5; i++) {getline; print}}' inputfile
+
+AWK: the substr command to select a substring
+set every good
+awk '{print substr($1,1,1)}' temp   #returns e
+awk '{print substr($1,3)   }' temp   #returns ery
+awk '{print substr($2,3)   }' temp   #returns od
+awk '{print substr($0,7,2) }' temp  #returns go
+
+# search for pattern in specific field
+---------------------------------------
+awk '$1 ~ /mypattern/'
+
+The pattern-matching operator ~ evaluates as true if an expression ($1) matches a regular expression.
+Its opposite, !~, evaluates true if the expression does not match the regular expression.
+
+# multiple conditions:
+# lines=(`s infra2-pk egrep . /applications/explo/data/opappexplo/latest/*/host/etc/passwd| awk -F":" '$5 ~ /10/ {print $4,$5,$2}'| awk -v base=$baseuid '($2=10) && ($1>base) {print $1}'| sort -u`) && echo -e "\n#==> All uids above $baseuid:\n${lines[@]}"
+
+[claeyje@opvmwstsx11 bin]# cmdb host | awk -F";" '($(NF-3) ~ "T[45]") && (substr($5,0,3) ~ "MER") {print $1}' | xargs
+morpheus neo perceval tank
+
+# Join each pair of lines
+--------------------------
+awk '{printf "%s%s",$0,(NR%2?FS:RS)}'
+awk 'NR%2{printf "%s ",$0;next;}1'
+awk 'NR%2{printf "%s,",$0;next}{print;}'
+
+echo "The quick
+brown fox
+jumps over
+the lazy 
+dog" | awk '{printf "%s%s",$0,(NR%2?FS:RS)}'
+
+Output:
+The quick brown fox
+jumps over the lazy 
+dog [claeyje@opvmwstsx11 ~]# 
+
+Matching 2 patterns
+--------------------
+
+cldev show d34| awk -F":" '/Full/&&/'`uname -n`'/ {print $NF}'
+
+
+Join a line with pattern with the next line
+--------------------------------------------
+awk '/<pattern>/ {l = $0; getline; printf "%s", l} 1' file
+
+
+http://www.theunixschool.com/2012/05/awk-join-or-merge-lines-on-finding.html
+
+Join the lines following the pattern START without any delimiter.
+------------------------------------------------------------------
+$ awk '/START/{if (NR!=1)print "";next}{printf $0}END{print "";}' file
+
+Join the lines following the pattern START with space as delimiter.
+--------------------------------------------------------------------
+$ awk '/START/{if (NR!=1)print "";next}{printf "%s ",$0}END{print "";}' file

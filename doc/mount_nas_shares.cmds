@@ -1,0 +1,25 @@
+How to mount a share to a host
+------------------------------
+
+ex. IM0018216236 
+Description:
+Please could you mount NAS isilon "nfs-app.isilon.opoce.cec.eu.int:/conversionbase/content" on RHEL server "opvmwstsx11" ?
+
+
+# On the target host, check if the share is allowed
+
+# show isilon shares:
+showmount -e nfs-app.isilon
+showmount -e nfs-app.isilon | grep conversionbase
+showmount -e nfs-infra.isilon
+
+
+[root@opvmwstsx11 ~]# showmount -e nfs-app.isilon | grep conversionbase
+/conversionbase                       otvmwscrsng1.opoce.cec.eu.int,orvmwscrsng1.opoce.cec.eu.int,opvmwscrsng1.opoce.cec.eu.int,opsrv964.opoce.cec.eu.int,opsrv963.opoce.cec.eu.int,opsrv891.opoce.cec.eu.int,opsrv890.opoce.cec.eu.int,opsrv889.opoce.cec.eu.int,opsrv888.opoce.cec.eu.int,opsrv859.opoce.cec.eu.int,opsrv239.opoce.cec.eu.int,opsrv198.opoce.cec.eu.int,opsrv146.opoce.cec.eu.int,opsrv079.opoce.cec.eu.int,opsrv078.opoce.cec.eu.int,opsrv056.opoce.cec.eu.int,opsrv005.opoce.cec.eu.int,metaconv-tz.opoce.cec.eu.int,metaconv-dz.opoce.cec.eu.int,ceresng-tz.opoce.cec.eu.int,ceresng-rz.opoce.cec.eu.int,ceresng-pz.opoce.cec.eu.int,storage-pk.opoce.cec.eu.int,opsrv763.opoce.cec.eu.int,opsrv762.opoce.cec.eu.int,opsrv761.opoce.cec.eu.int,opsrv760.opoce.cec.eu.int,metaconv-pz.opoce.cec.eu.int
+
+[root@opvmwstsx11 ~]# showmount -e nfs-app.isilon | grep conversionbase | grep -c opvmwstsx11
+0
+
+==> the target is not yet allowed to mount this share
+
+Action: ask Catherine to change the ACL for this share in order to grant access to opvmwstsx11 

@@ -1,0 +1,5 @@
+ldm list
+ldm stop   secondary && ldm list
+ldm unbind secondary && ldm list
+# Connect to a secondary domain
+telnet localhost <port>   # usually 5000

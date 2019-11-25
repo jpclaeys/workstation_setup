@@ -1,0 +1,158 @@
+# Initial state
+cat /etc/dcim/rac_cluster.desc 
+cat /proc/mdstat 
+mdadm -D --scan 
+cat /etc/mdadm.conf
+df -h | egrep -A1 "Filesystem|vgdata"
+
+# Origin disks members of vgdata
+pvs
+# And the volumes that need to be migrated:
+lvs vgdata
+lvs -o+devices vgdata
+
+
+disk-list -qd | grep -v oracleasm
+scsi-rescan 
+disk-list -qd | grep -v oracleasm
+# if new disk not found, than reset scsi
+disk-hbamap # get controllers in first column
+for i in {3..6} ; do echo "- - -" > /sys/class/scsi_host/host${i}/scan ; done
+disk-list -qd | grep -v oracleasm
+
+# --> new disk is HOST50C40D68
+
+#NEWDISK=<newdisk>
+NEWDISK=`disk-list -qd | grep -v oracleasm | awk '/free/ {print $1}'` && echo "# New disk is: $NEWDISK" 
+ll /dev/san/$NEWDISK
+
+# Create the new physical volume
+pvs
+pvcreate /dev/san/$NEWDISK
+pvs
+
+# add the newly created physical volume to existing volume group vgdata
+vgextend vgdata /dev/mapper/$NEWDISK
+vgs vgdata
+
+# get the full list of information about volume group vgdata
+# --> one can see the newly added PV
+lvdisplay vgdata -v
+
+# get the old md's
+lvs -a -o+devices vgdata
+# get the md's
+MDLIST=`lvs vgdata -o +devices --noheadings | awk -F"/dev/" '{print $NF}'|sed 's/(.*//'| sort -u | tr '\012' ' '`; echo $MDLIST
+#example: md2 md3 md4
+REGEX=`echo $MDLIST|sed 's/ /|/g;s/|$//'`; echo "# $REGEX"
+# example md2|md3|md4
+egrep "$REGEX" /proc/mdstat
+REGEX1=`egrep "$REGEX" /proc/mdstat| awk -F"raid1" '{print $NF}' | sed 's/\[.\]//g' | tr '\012' ' ' |sed 's/ dm/|dm/g;s/^|//;s/ //g'` && echo "# $REGEX1"
+# example: dm-15|dm-4|dm-14|dm-3|dm-13|dm-2
+DISKS=`ls -l /dev/san/ | egrep -w "$REGEX1"| awk '{print $9}' | tr '\012' ' '` && echo $DISKS
+# example: HOST31C50DE4 HOST31C50DE5 HOST31C52D86 HOST32C50DE4 HOST32C50DE5 HOST32C52D86
+
+# Do the migration using Mirroring method, use ‘lvconvert‘ command to migrate data from old logical volume to new drive.
+# example:
+# for i in /dev/vgdata/*; do lvconvert -m 1 --corelog $i /dev/mapper/HOST50C40D26 /dev/mapper/HOST50C40D27 ; done
+# check before 
+lvs -a -o+devices vgdata
+
+echo $NEWDISK
+date && time for i in /dev/vgdata/*; do lvconvert -m 1 --corelog $i /dev/mapper/$NEWDISK; done
+# -m mirror
+# 1: adding a single mirror
+
+# Once migration process completed, verify the converted mirror.
+lvs -a -o+devices vgdata
+
+# Synchronize cached writes to persistent storage
+sync
+
+# Once you sure that the converted mirror is perfect, you can remove the old virtual disks. 
+# The option "-m 0" will remove the mirror, earlier we’ve used "-m 1" for adding the mirror.
+echo $MDLIST
+FIRSTMD=2
+LASTMD=5
+MDARG=md{$FIRSTMD..$LASTMD} && echo $MDARG
+
+echo "for i in /dev/vgdata/*; do lvconvert -m 0 \$i /dev/$MDARG; done"
+
+# Check the LVM volumes are now migrated on the destination disks:
+lvs -a -o+devices vgdata
+
+df -h | egrep -A1 "Filesystem|vgdata"
+
+# Cleaning of origin disk
+
+# After everything perfectly created, now it’s time to delete the md's from volume group and later confirm, which devices depend on our volume group.
+# Remove disk from VG:
+echo "vgs -o+devices vgdata && vgreduce vgdata /dev/$MDARG && vgs -o+devices vgdata"
+
+# Remove the old PV's from LVM:
+echo "pvs && pvremove /dev/$MDARG && pvs"
+
+
+# Write down md array members before deleting them:
+
+echo "mdadm -D /dev/$MDARG"
+
+echo "for i in $MDARG; do echo \$i ; done"
+
+# Stop and remove the md array:
+echo "for i in $MDARG; do echo \$i ; mdadm --stop /dev/\$i; done"
+
+# Check the md status of the md as it should be:
+cat /proc/mdstat
+
+---------------------------------------------------------------------------------------------------
+
+disk-list -qd | grep -v oracleasm
+
+DISKS=`ls -l /dev/san/ | egrep -w "$REGEX1"| awk '{print $9}' | tr '\012' ' '` && echo $DISKS
+# example: HOST31C50DE4 HOST31C50DE5 HOST31C52D86 HOST32C50DE4 HOST32C50DE5 HOST32C52D86
+
+# Write down the associated disk of each member of the deleted md array:
+for DISK in $DISKS; do multipath -ll $DISK;done
+SDLIST=`for DISK in $DISKS; do multipath -ll $DISK | awk '/ sd/ {print $3}' | tr '\012' ' ';done ` && echo "# $SDLIST"
+# sdm sdgi sdn sdgj sdo sdgk sdb sdfx sdc sdfy sdd sdfz 
+
+# Flush the multipath devices
+for i in $DISKS ; do echo $i ; multipath -f $i ; done 
+
+# Flush and remove each block device:
+for i in $SDLIST ; do echo "# $i; blockdev --flushbufs /dev/$i ; echo 1 > /sys/block/${i}/device/delete"; done 
+for i in $SDLIST ; do echo $i ; blockdev --flushbufs /dev/$i ; echo 1 > /sys/block/${i}/device/delete; done 
+
+# Check that the devices have been cleaned up
+disk-list -qd | grep -v oracleasm
+
+# Update the /etc/mdadm.conf file and restart the monitoring of md arrays:
+echo "MAILADDR digit-datacenter-unix@ec.europa.eu" > /etc/mdadm.conf
+mdadm -D --scan >> /etc/mdadm.conf
+cat /etc/mdadm.conf
+service mdmonitor restart
+
+# Open a ticket to the STORAGE TEAM to remove the disk(s):
+---------------------------------------------------------------------------------------------------
+Template: 
+DCTSC SAN STORAGE
+Subject: 
+[HANDMADE] 19032018 - DCTSC SAN STORAGE - Remove LUN (SR) - <hostname>
+
+Please remove LUN(s):
+Class: SR
+Cluster Name: N/A
+Server(s) Name(s): <hostname>
+Server(s) WWN :
+
+Device(s) to be removed :
+# example: 
+HOST31C50DE4 HOST31C50DE5 HOST31C52D86 HOST32C50DE4 HOST32C50DE5 HOST32C52D86
+
+Comments :
+---------------------------------------------------------------------------------------------------
+ecdc-disk-remove
+
+
+

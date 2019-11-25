@@ -1,0 +1,40 @@
+# How to sort on numeric base:
+# use the option "n"
+ex: numeric sort on the second field
+sort -k2n
+
+ex:
+[claeyje@opvmwstsx11 doc]# echo "1
+> 10
+> 11
+> 100
+> 20
+> 33
+> 05" | sort
+05
+1
+10
+100
+11
+20
+33
+[claeyje@opvmwstsx11 doc]# echo "1
+10
+11
+100
+20
+33
+05" | sort -n
+1
+05
+10
+11
+20
+33
+100
+
+# sort did's:  use "d" as delimiter, and then sort based on the second field as numeric
+----------------------------------------------------------------------------------------
+[root@trinity esendtool-pz]# cat did_list.txt | sort -t"d" -k2n | xargs
+d9 d10 d45 d46 d47 d48 d49 d50 d54 d65
+

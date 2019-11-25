@@ -1,0 +1,7 @@
+gnome-control-center
+gconftool-2 --help-all
+
+
+
+svcprop  -p keymap/layout keymap
+

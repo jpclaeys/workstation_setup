@@ -1,0 +1,73 @@
+How to configure putty:
+-----------------------
+
+1. Convert the existing ssh private key of the Unix environment
+Launch puttygen
+Menu Conversions
+Import key
+Select the Unix dsa key in the U drive:
+home$(\\nfs-infra.isilon.opoce.cec.eu.int)(U:)\.ssh\id_dsa
+
+click on the "save private key" button
+Confirm "without a passphrase"
+\\HOMESERVER\homes$\CLAEYJE\My Documents\sssh\id_dsa.ppk
+
+
+2. Configure the default settings for putty:
+
+. Session tab
+  Select "Default Settings" and click on "Load"
+
+. Terminal tab
+    . Features
+        check "Disable application keypad mode" in the goal to be able to use the numeric keypad in a vi session
+
+. Window tab
+    Columns : 132
+    Rows:     50
+    Lines of Scrollback: 2000
+    . Colours
+       Default Background: R: 42   G: 67   B: 92
+       Default Foreground: R: 238  G: 232  B: 213
+    . Selection
+        . Action of mouse buttons: 
+            . Check "xterm (Right extends, Middle pastes)"
+. Connection tab
+    . Data
+       When username is not specified, check "Use system username (claeyje)
+    . SSH
+       . Auth
+          Private key file for authetication: \\HOMESERVER\homes$\CLAEYJE\My Documents\ssh\id_dsa.ppk
+       . X11
+          Check "Enable X11 forwarding"
+          X display location   ":0.0"
+
+
+3. Checkov session:
+
+   . Default settings
+   . Session
+       . Hostname: checkov
+       . Saved session: checkov
+
+
+4. Checkov terminator
+    
+    . Default settings
+    . Session
+       . Hostname: checkov
+       . Saved session: checkov terminator
+    . Connection
+       . Remote command: "myterminator; /bin/bash"
+
+
+
+Note.
+mouse wheel scroll:
+:set mouse=a 
+Note.
+- It only works within the putty ssh session
+- it may not be put in the .vimrc !!!
+
+
+

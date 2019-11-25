@@ -1,0 +1,113 @@
+# How to find an unavailable  emcpower device 
+
+ex.
+[root@perceval dd]# zpool status -xv ceresng-tz-data
+  pool: ceresng-tz-data
+ state: DEGRADED
+Status: One or more devices is currently being resilvered.  The pool will
+<snip>
+config:
+
+        NAME                        STATE     READ WRITE CKSUM
+        ceresng-tz-data             DEGRADED 5.06K     0     0
+          mirror-0                  DEGRADED 10.1K     0     0
+            emcpower20a             ONLINE       0     0     0
+            16389510803936962669    UNAVAIL      0     0     0
+          mirror-1                  ONLINE       0     0     0
+            emcpower30a             ONLINE       0     0     0
+            emcpower34a             ONLINE       0     0     0
+          mirror-2                  ONLINE       0     0     0
+            emcpower35a             ONLINE       0     0     0
+            emcpower36a             ONLINE       0     0     0
+
+device details:
+
+        16389510803936962669      UNAVAIL         was /dev/dsk/emcpower27a
+        status: ZFS detected errors on this device.
+                The device has invalid label.
+           see: http://support.oracle.com/msg/ZFS-8000-D3 for recovery
+
+
+mkdir /tmp/dd
+cd /dev/rdsk
+for i in `ls emcpower*a`; do echo $i && dd if=$i of=/tmp/dd/$i bs=512k count=1;done
+cd /tmp/dd
+for i in `ls`; do echo $i && strings $i| grep  ceresng-tz-data ;done | ggrep  -B1 ceresng-tz-data | grep -v '\-\-'
+
+[root@perceval d]# for i in `ls`; do echo $i && strings $i| grep  ceresng-tz-data ;done | ggrep  -B1 ceresng-tz-data | grep -v '\-\-'
+emcpower20a
+ceresng-tz-data
+ceresng-tz-data
+emcpower26a
+ceresng-tz-data
+ceresng-tz-data
+emcpower30a
+ceresng-tz-data
+ceresng-tz-data
+emcpower34a
+ceresng-tz-data
+ceresng-tz-data
+emcpower35a
+ceresng-tz-data
+ceresng-tz-data
+emcpower36a
+ceresng-tz-data
+ceresng-tz-data
+
+fmadm faulty -s | grep "`date "+%b %e"`"
+fmadm faulty -s | grep "`date "+%b %e"`" | awk '{print $4}' | xargs -n1 echo fmadm repair
+fmadm faulty -s | grep "`date "+%b %e"`" | awk '/(Major|Minor|Critical)/ {print $4}' | xargs -n1 echo fmadm repair
+
+
+
+zpool replace ceresng-tz-data 16389510803936962669 emcpower26a
+
+
+[root@perceval dd]# zpool status -xv ceresng-tz-data
+  pool: ceresng-tz-data
+ state: DEGRADED
+status: One or more devices is currently being resilvered.  The pool will
+        continue to function in a degraded state.
+action: Wait for the resilver to complete.
+  scan: resilver in progress since Mon Apr 29 07:22:15 2019
+    1.07T scanned
+    156G resilvered at 275M/s, 15.10% done, 53m59s to go
+config:
+
+        NAME                        STATE     READ WRITE CKSUM
+        ceresng-tz-data             DEGRADED 5.06K     0     0
+          mirror-0                  DEGRADED 10.1K     0     0
+            emcpower20a             ONLINE       0     0     0  (resilvering)
+            replacing-1             DEGRADED     0     0     0
+              16389510803936962669  UNAVAIL      0     0     0
+              emcpower26a           DEGRADED     0     0     0  (resilvering)
+          mirror-1                  ONLINE       0     0     0
+            emcpower30a             ONLINE       0     0     0
+            emcpower34a             ONLINE       0     0     0
+          mirror-2                  ONLINE       0     0     0
+            emcpower35a             ONLINE       0     0     0
+            emcpower36a             ONLINE       0     0     0
+
+device details:
+
+        16389510803936962669      UNAVAIL         was /dev/dsk/emcpower27a
+        status: ZFS detected errors on this device.
+                The device has invalid label.
+           see: http://support.oracle.com/msg/ZFS-8000-D3 for recovery
+
+        emcpower26a               DEGRADED        scrub/resilver needed
+        status: ZFS detected errors on this device.
+                The device is missing some data that is recoverable.
+           see: http://support.oracle.com/msg/ZFS-8000-QJ for recovery
+
+
+
+
+zpool scrub ceresng-tz-data
+
+
+Note:
+The zone has to be in the 'configured' state, otherwise it will not stay up.
+If a  zone installation or uninstallation is interrupted, the zone is left in 
+the incomplete state. Use uninstall to reset such a zone back to the configured state.
+zoneadm -z <zonename> uninstall

@@ -1,0 +1,7 @@
+ppubli-tk :
+------------
+
+rsync -avP --progress --delete /applications/planpubli/storage_0* appgateway@woodgwa.cc.cec.eu.int:/ec/acc/app/planjo/documentum/ldc/
+
+meme nas et pass de planjo
+

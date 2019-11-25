@@ -1,0 +1,15 @@
+
+foreman logs:
+[root@satellite-pk foreman]# pwd
+/var/log/foreman
+
+[root@satellite-pk foreman]# ll prod*
+-rw-rw-r-- 1 foreman foreman 26595281 11 nov 07:46 production.log
+
+[root@satellite-pk foreman]# zgrep claeyje production.log.*| tail -1
+production.log.13.gz:2019-10-29 14:12:47 a4d72843 [app] [I] Current user: claeyje (administrator)
+
+
+# Managing Solaris puppet hosts
+https://foreman/hosts
+pwd: unix ldap password

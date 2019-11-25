@@ -1,0 +1,5 @@
+# filter on Month (%b) & Day (%e)
+
+egrep -i 'SunOS|panic|iscsi|quorum (status|device)' messages | grep -v owner
+
+egrep -i 'SunOS|panic|iscsi|quorum (status|device)' messages | grep -v owner | grep "`date "+%b %e"`"

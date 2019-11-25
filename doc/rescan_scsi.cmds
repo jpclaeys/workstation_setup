@@ -1,0 +1,7 @@
+# Re-configure removed_luns (not yest recovered by the storage)
+----------------------------------------------------------------
+
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+multipath -ll
+multipath -ll | grep eurlexbo-rk 
+

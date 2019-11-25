@@ -1,0 +1,128 @@
+pvs
+pvs | egrep 'PV|vgdata'
+lvs -o+devices vgdata
+vgs -o+devices vgdata
+
+ll /dev/vgdata
+ll /dev/san
+
+disk-list -qdt| grep -iv ASM
+
+cat /proc/mdstat
+ll /dev/md*
+
+dmsetup deps /dev/vgdata/*
+
+ll /dev | grep " 9, .*[2-4]$"
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------
+root@taygeta:->pvs 
+  PV         VG     Fmt  Attr PSize   PFree  
+  /dev/md1   vgroot lvm2 a--  277.34g 203.34g
+  /dev/md2   vgdata lvm2 a--   54.96g      0 
+  /dev/md3   vgdata lvm2 a--   54.96g      0 
+  /dev/md4   vgdata lvm2 a--  219.87g 115.87g
+
+root@taygeta:->lvs -o+devices vgdata
+  LV            VG     Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert Devices        
+  olrdev2_u000  vgdata -wi-ao----  99.93g                                                     /dev/md3(0)    
+  olrdev2_u000  vgdata -wi-ao----  99.93g                                                     /dev/md2(2560) 
+  olrdev2_u050  vgdata -wi-ao---- 100.00g                                                     /dev/md4(0)    
+  server_splunk vgdata -wi-ao----   4.00g                                                     /dev/md4(25600)
+  sw_oracle     vgdata -wi-ao----  10.00g                                                     /dev/md2(0)    
+root@taygeta:->vgs -o+devices vgdata
+  VG     #PV #LV #SN Attr   VSize   VFree   Devices        
+  vgdata   3   4   0 wz--n- 329.80g 115.87g /dev/md2(0)    
+  vgdata   3   4   0 wz--n- 329.80g 115.87g /dev/md3(0)    
+  vgdata   3   4   0 wz--n- 329.80g 115.87g /dev/md2(2560) 
+  vgdata   3   4   0 wz--n- 329.80g 115.87g /dev/md4(0)    
+  vgdata   3   4   0 wz--n- 329.80g 115.87g /dev/md4(25600)
+
+root@taygeta:->ll /dev/vgdata
+total 0
+lrwxrwxrwx 1 root root 8 Nov  4 10:16 olrdev2_u000 -> ../dm-95
+lrwxrwxrwx 1 root root 8 Nov  4 10:16 olrdev2_u050 -> ../dm-96
+lrwxrwxrwx 1 root root 9 Nov 22 15:14 server_splunk -> ../dm-102
+lrwxrwxrwx 1 root root 8 Nov  4 10:16 sw_oracle -> ../dm-94
+
+root@taygeta:->disk-list -qdt| grep -iv ASM
+             LUN       DM        Size                Usage           Class Type Devices
+             sda        -      278 GB    linux_raid_member      NOLUNMATCH  HDD -
+            sdmu        -      278 GB    linux_raid_member      NOLUNMATCH  HDD -
+    HOST31C50DE4    dm-13       55 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdgi,sdm
+    HOST31C50DE5    dm-14       55 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdn,sdgj
+    HOST31C52D86    dm-15      220 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdgk,sdo
+    HOST32C50DE4     dm-2       55 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdb,sdfx
+    HOST32C50DE5     dm-3       55 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdfy,sdc
+    HOST32C52D86     dm-4      220 GB    linux_raid_member DEFAULT_NOTMIRRORED  N/A sdfz,sdd
+
+
+root@taygeta:->cat /proc/mdstat
+Personalities : [raid1] 
+md4 : active raid1 dm-15[0] dm-4[1]
+      230555968 blocks super 1.2 [2/2] [UU]
+      bitmap: 1/2 pages [4KB], 65536KB chunk
+
+md2 : active raid1 dm-14[1] dm-3[0]
+      57639104 blocks super 1.2 [2/2] [UU]
+      bitmap: 1/1 pages [4KB], 65536KB chunk
+
+md3 : active raid1 dm-13[1] dm-2[0]
+      57639104 blocks super 1.2 [2/2] [UU]
+      bitmap: 1/1 pages [4KB], 65536KB chunk
+
+md0 : active raid1 sdmu2[2] sda2[1]
+      524224 blocks super 1.0 [2/2] [UU]
+      
+md1 : active raid1 sdmu3[2] sda3[1]
+      290809664 blocks super 1.1 [2/2] [UU]
+      bitmap: 1/3 pages [4KB], 65536KB chunk
+
+root@taygeta:->ll /dev/md*
+brw-rw---- 1 root disk 9, 0 Nov  4 10:16 /dev/md0
+brw-rw---- 1 root disk 9, 1 Nov  4 10:16 /dev/md1
+brw-rw---- 1 root disk 9, 2 Nov 22 15:14 /dev/md2
+brw-rw---- 1 root disk 9, 3 Nov 22 15:14 /dev/md3
+brw-rw---- 1 root disk 9, 4 Nov 22 15:14 /dev/md4
+
+root@taygeta:->dmsetup deps /dev/vgdata/*
+/dev/vgdata/olrdev2_u000: 2 dependencies	: (9, 2) (9, 3)
+/dev/vgdata/olrdev2_u050: 1 dependencies	: (9, 4)
+/dev/vgdata/server_splunk: 1 dependencies	: (9, 4)
+/dev/vgdata/sw_oracle: 1 dependencies	: (9, 2)
+
+52 root@taygeta:->ll /dev | grep " 9, .*[2-4]$"
+brw-rw----  1 root   disk      9,   2 Nov 22 15:14 md2
+brw-rw----  1 root   disk      9,   3 Nov 22 15:14 md3
+brw-rw----  1 root   disk      9,   4 Nov 22 15:14 md4
+
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+root@tejat:->pvs && lvs -o+devices vgdata
+  PV         VG     Fmt  Attr PSize   PFree  
+  /dev/md1   vgroot lvm2 a--  277.34g 203.34g
+  /dev/md2   vgdata lvm2 a--   54.96g      0 
+  /dev/md3   vgdata lvm2 a--   54.96g      0 
+  /dev/md4   vgdata lvm2 a--  219.87g      0 
+  /dev/md5   vgdata lvm2 a--   54.96g  15.77g
+  LV            VG     Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert Devices        
+  olrdev3_u000  vgdata -wi-ao---- 255.00g                                                     /dev/md3(0)    
+  olrdev3_u000  vgdata -wi-ao---- 255.00g                                                     /dev/md2(2560) 
+  olrdev3_u000  vgdata -wi-ao---- 255.00g                                                     /dev/md4(25600)
+  olrdev3_u000  vgdata -wi-ao---- 255.00g                                                     /dev/md4(39442)
+  olrdev3_u000  vgdata -wi-ao---- 255.00g                                                     /dev/md5(0)    
+  olrdev3_u050  vgdata -wi-ao---- 100.00g                                                     /dev/md4(0)    
+  server_splunk vgdata -wi-ao----   4.00g                                                     /dev/md4(38418)
+  sw_oracle     vgdata -wi-ao----  10.00g                                                     /dev/md2(0)    
+
+---------------------------------------------------------------------------------------------------

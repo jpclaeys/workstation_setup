@@ -1,0 +1,1431 @@
+Migration cluster tng to metals
+--------------------------------
+
+vm=fedorafs1-recover-tk
+
+Hosts:
+[claeyje@picard ~]# cmdb opsrv | grep $vm
+opsvc171;RedHat Logical Hosts (DNS);;Test;050-Operated;fedorafs1-recover-tk;N/A;Primary Node;picard
+opsvc171;RedHat Logical Hosts (DNS);;Test;050-Operated;fedorafs1-recover-tk;N/A;Primary Node;riker
+opsvc171;RedHat Logical Hosts (DNS);;Test;050-Operated;fedorafs1-recover-tk;N/A;Secondary Node;laforge
+opsvc171;RedHat Logical Hosts (DNS);;Test;050-Operated;fedorafs1-recover-tk;N/A;Secondary Node;worf
+[claeyje@picard ~]# cmdb opsrv | grep $vm | awk -F";" '{print $NF}'| xargs
+picard riker laforge worf
+
+TNG="picard riker laforge worf"
+
+[root@picard ~]# pcs  status
+Cluster name: tng
+Last updated: Tue Aug 20 10:22:26 2019
+Last change: Wed Aug 14 09:41:26 2019 via crmd on picard-cl
+Stack: cman
+Current DC: laforge-cl - partition with quorum
+Version: 1.1.11-97629de
+4 Nodes configured
+32 Resources configured
+
+
+Online: [ laforge-cl picard-cl riker-cl worf-cl ]
+
+Full list of resources:
+
+ riker-imm	(stonith:fence_imm):	Stopped 
+ laforge-imm	(stonith:fence_imm):	Stopped 
+ picard-imm	(stonith:fence_imm):	Stopped 
+ worf-imm	(stonith:fence_imm):	Stopped 
+ cellar2eli-euf-tk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ cellar2eli-mer-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ rdfngbo-tk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ rdfngfo-euf1-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ rdfngfo-mer1-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ fedorafs1-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ rdfngbo-dk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ rdfngbo-rk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportaldiff1-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ cellarbo-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ fedorafs1-bk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ rdfngbo-bk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ cportaldiff2-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ fedorafs2-bk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ cellarbo-bk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportaldiff1-rk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportaldiff2-rk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ cellarbo-rk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ fedorafs1-rk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ cportaldiff3-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportaldiff4-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ cportalfs-rk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cportalfs-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ tedmonitor-tk	(ocf::heartbeat:VirtualDomain):	Started picard-cl 
+ cellarbo-dk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ planjo-tk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ ppubli-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+
+
+[root@titanium ~]# pcs status
+Cluster name: metals
+Stack: corosync
+Current DC: palladium-cl (version 1.1.18-11.el7_5.3-2b07d5c5a9) - partition with quorum
+Last updated: Tue Aug 20 10:22:31 2019
+Last change: Tue Aug  6 10:34:29 2019 by hacluster via crmd on titanium-cl
+
+4 nodes configured
+10 resources configured
+
+Online: [ chromium-cl palladium-cl titanium-cl vanadium-cl ]
+
+Full list of resources:
+
+ titanium-sc	(stonith:fence_ipmilan):	Started chromium-cl
+ chromium-sc	(stonith:fence_ipmilan):	Started palladium-cl
+ vanadium-sc	(stonith:fence_ipmilan):	Started titanium-cl
+ palladium-sc	(stonith:fence_ipmilan):	Started vanadium-cl
+ cportalflex1-rk	(ocf::heartbeat:VirtualDomain):	Started vanadium-cl
+ cportalflex1-tk	(ocf::heartbeat:VirtualDomain):	Started palladium-cl
+ planjo-rk	(ocf::heartbeat:VirtualDomain):	Started titanium-cl
+ cellarbo2-dk	(ocf::heartbeat:VirtualDomain):	Started titanium-cl
+ eurlexbo-rk	(ocf::heartbeat:VirtualDomain):	Started chromium-cl
+ eurlexbo-tk	(ocf::heartbeat:VirtualDomain):	Started chromium-cl
+
+Daemon Status:
+  corosync: active/enabled
+  pacemaker: active/enabled
+  pcsd: active/enabled
+
+
+TNG="picard riker laforge worf"
+
+METALS="titanium chromium vanadium palladium"
+
+
+# Check vlans in old and new clusters
+
+
+ll /etc/sysconfig/network-scripts/ifcfg*
+
+[root@picard ~]# ll /etc/sysconfig/network-scripts/ifcfg-br*
+-rw-r--r-- 1 root root  57 20 mai  2015 /etc/sysconfig/network-scripts/ifcfg-br1
+-rw-r--r-- 1 root root  60  8 aoû  2016 /etc/sysconfig/network-scripts/ifcfg-br1000
+-rw-r--r-- 1 root root  59  8 aoû  2016 /etc/sysconfig/network-scripts/ifcfg-br220
+-rw-r--r-- 1 root root  59 24 avr  2015 /etc/sysconfig/network-scripts/ifcfg-br221
+-rw-r--r-- 1 root root  59 13 avr  2015 /etc/sysconfig/network-scripts/ifcfg-br222
+-rw-r--r-- 1 root root  59 24 avr  2015 /etc/sysconfig/network-scripts/ifcfg-br223
+-rw-r--r-- 1 root root  59  8 avr  2015 /etc/sysconfig/network-scripts/ifcfg-br227
+-rw-r--r-- 1 root root 189  9 avr  2015 /etc/sysconfig/network-scripts/ifcfg-brbkp
+
+
+[root@titanium ~]# ll /etc/sysconfig/network-scripts/ifcfg-br*
+-rw-r--r-- 1 root root  57 29 oct  2018 /etc/sysconfig/network-scripts/ifcfg-br1
+-rw-r--r-- 1 root root  59  4 avr 15:41 /etc/sysconfig/network-scripts/ifcfg-br221
+-rw-r--r-- 1 root root  59  4 avr 15:44 /etc/sysconfig/network-scripts/ifcfg-br222
+-rw-r--r-- 1 root root  59 29 oct  2018 /etc/sysconfig/network-scripts/ifcfg-br223
+-rw-r--r-- 1 root root  59  2 oct  2018 /etc/sysconfig/network-scripts/ifcfg-br227
+-rw-r--r-- 1 root root 152  2 oct  2018 /etc/sysconfig/network-scripts/ifcfg-brbkp
+
+# Check if all vlans are available on the new cluster
+
+# Check vlan usage on all of the 4 cluster hosts
+egrep 2>/dev/null  'br22[01237]|br1' /etc/libvirt/qemu/*
+
+
+--> it appears that vlans 1 & 1000 are no longer useed
+
+--> ok all required vlans are present on the new cluster
+
+
+# Check which vlans are used by the vm to be moved: fedorafs1-recover-tk
+
+[root@picard ~]# pcs status | grep fedora
+ fedorafs1-tk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+ fedorafs1-bk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+ fedorafs2-bk	(ocf::heartbeat:VirtualDomain):	Started laforge-cl 
+ fedorafs1-rk	(ocf::heartbeat:VirtualDomain):	Started riker-cl 
+
+[root@picard ~]# grep br /etc/libvirt/qemu/fedorafs1-recover-tk.xml | grep -v interface
+      <source bridge='br222'/>
+      <source bridge='brbkp'/>
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+# Copy the multipath config from the old to the new cluster ; MER to MER & EUFO to EUFO
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+vm=fedorafs1-recover-tk
+
+multipath -ll| grep $vm 
+multipath -ll| grep -c $vm 
+
+mpconfinfo=/var/tmp/mpconfinfo_`uname -n`.txt && echo $mpconfinfo
+grep -B2 -A2 $vm  /etc/multipath.conf | tee $mpconfinfo
+
+[root@picard ~]# vm=fedorafs1-recover-tk
+[root@picard ~]# 
+[root@picard ~]# multipath -ll| grep $vm
+fedorafs1-recover-tk_t2_data13 (360000970000296700060533030334146) dm-164 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data12 (360000970000296700060533030334145) dm-159 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data11 (360000970000296700060533030334144) dm-156 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data1 (360000970000296700060533030313346) dm-93 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data10 (360000970000296700060533030334143) dm-114 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_system1 (360000970000296700060533030313038) dm-91 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data9 (360000970000296700060533030334142) dm-132 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data8 (360000970000296700060533030324132) dm-117 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data7 (360000970000296700060533030333432) dm-134 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data16 (360000970000296700060533030353633) dm-72 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data6 (360000970000296700060533030324344) dm-143 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data5 (360000970000296700060533030324332) dm-101 EMC,SYMMETRIX
+fedorafs1-recover-tk_t2_data14 (360000970000296700060533030334230) dm-166 EMC,SYMMETRIX
+[root@picard ~]# multipath -ll| grep -c $vm
+13
+
+[root@picard ~]# mpconfinfo=/var/tmp/mpconfinfo_`uname -n`.txt && echo $mpconfinfo
+/var/tmp/mpconfinfo_picard.txt
+[root@picard ~]# grep -B2 -A2 $vm  /etc/multipath.conf | tee $mpconfinfo
+    multipath {
+       wwid 360000970000296700060533030313038
+       alias fedorafs1-recover-tk_t2_system1
+    }
+
+--
+    multipath {
+       wwid 360000970000296700060533030313346
+       alias fedorafs1-recover-tk_t2_data1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030324332
+       alias fedorafs1-recover-tk_t2_data5
+    }
+
+    multipath {
+       wwid 360000970000296700060533030324344
+       alias fedorafs1-recover-tk_t2_data6
+    }
+
+    multipath {
+       wwid 360000970000296700060533030333432
+       alias fedorafs1-recover-tk_t2_data7
+    }
+
+    multipath {
+       wwid 360000970000296700060533030324132
+       alias fedorafs1-recover-tk_t2_data8
+    }
+
+--
+    multipath {
+       wwid 360000970000296700060533030334142
+       alias fedorafs1-recover-tk_t2_data9
+    }
+
+    multipath {
+       wwid 360000970000296700060533030334143
+       alias fedorafs1-recover-tk_t2_data10
+    }
+
+    multipath {
+       wwid 360000970000296700060533030334144
+       alias fedorafs1-recover-tk_t2_data11
+    }
+
+    multipath {
+       wwid 360000970000296700060533030334145
+       alias fedorafs1-recover-tk_t2_data12
+    }
+
+    multipath {
+       wwid 360000970000296700060533030334146
+       alias fedorafs1-recover-tk_t2_data13
+    }
+
+    multipath {
+       wwid 360000970000296700060533030334230
+       alias fedorafs1-recover-tk_t2_data14
+    }
+
+    multipath {
+       wwid 360000970000296700060533030353633
+       alias fedorafs1-recover-tk_t2_data16
+    }
+
+[root@laforge ~]# mpconfinfo=/var/tmp/mpconfinfo_`uname -n`.txt && echo $mpconfinfo
+/var/tmp/mpconfinfo_laforge.txt
+[root@laforge ~]# grep -B2 -A2 $vm  /etc/multipath.conf | tee $mpconfinfo
+    multipath {
+       wwid 360000970000296700069533030313038
+       alias fedorafs1-recover-tk_t2_system1
+    }
+
+--
+    multipath {
+       wwid 360000970000296700069533030313346
+       alias fedorafs1-recover-tk_t2_data1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030324332
+       alias fedorafs1-recover-tk_t2_data5
+    }
+
+    multipath {
+       wwid 360000970000296700069533030324344
+       alias fedorafs1-recover-tk_t2_data6
+    }
+
+    multipath {
+       wwid 360000970000296700069533030333432
+       alias fedorafs1-recover-tk_t2_data7
+    }
+
+    multipath {
+       wwid 360000970000296700069533030324132
+       alias fedorafs1-recover-tk_t2_data8
+    }
+
+--
+    multipath {
+       wwid 360000970000296700069533030334142
+       alias fedorafs1-recover-tk_t2_data9
+    }
+
+    multipath {
+       wwid 360000970000296700069533030334143
+       alias fedorafs1-recover-tk_t2_data10
+    }
+
+    multipath {
+       wwid 360000970000296700069533030334144
+       alias fedorafs1-recover-tk_t2_data11
+    }
+
+    multipath {
+       wwid 360000970000296700069533030334145
+       alias fedorafs1-recover-tk_t2_data12
+    }
+
+    multipath {
+       wwid 360000970000296700069533030334146
+       alias fedorafs1-recover-tk_t2_data13
+    }
+
+    multipath {
+       wwid 360000970000296700069533030334230
+       alias fedorafs1-recover-tk_t2_data14
+    }
+
+    multipath {
+       wwid 360000970000296700069533030353633
+       alias fedorafs1-recover-tk_t2_data16
+    }
+
+[root@laforge ~]# 
+
+
+
+# copy the files to personale wks
+[claeyje@banta log]# cd migrate_tng_to_metals
+[claeyje@banta migrate_tng_to_metals]# #scp picard:/var/tmp/mpconfinfo*.txt .
+[claeyje@banta migrate_tng_to_metals]# for H in $TNG; do scp $H:/var/tmp/mpconfinfo_${H}.txt .;done
+mpconfinfo_picard.txt                                                                                                       100% 1470   219.8KB/s   00:00    
+mpconfinfo_riker.txt                                                                                                        100% 1470   240.1KB/s   00:00    
+mpconfinfo_laforge.txt                                                                                                      100% 1470   239.2KB/s   00:00    
+mpconfinfo_worf.txt                                                                                                         100% 1470   226.3KB/s   00:00 
+
+[claeyje@banta migrate_tng_to_metals]# diff mpconfinfo_picard.txt mpconfinfo_riker.txt
+[claeyje@banta migrate_tng_to_metals]# diff mpconfinfo_laforge.txt mpconfinfo_worf.txt
+
+
+# On the new cluster add the vm disks
+
+MER :  ...060...
+titanium
+chromium
+
+EUFO: ...069...
+vanadium
+palladium
+
+# Make a backup of the current multipath.conf file
+
+[root@titanium ~]# ll /etc/multipath.conf
+-rw-r--r-- 1 root root 5827  3 mai 14:17 /etc/multipath.conf
+[root@titanium ~]# cp /etc/multipath.conf /etc/multipath.conf.pre_20082019
+[root@titanium ~]# ll /etc/multipath.conf*
+-rw-r--r-- 1 root root  5827  3 mai 14:17 /etc/multipath.conf
+-rw-r--r-- 1 root root  5827 20 aoû 13:36 /etc/multipath.conf.pre_20082019
+
+
+ot@vanadium ~]# cp /etc/multipath.conf /etc/multipath.conf.pre_20082019
+[root@vanadium ~]# ll /etc/multipath.conf*
+-rw-r--r-- 1 root root 5827  3 mai 14:17 /etc/multipath.conf
+-rw-r--r-- 1 root root 5827 20 aoû 13:36 /etc/multipath.conf.pre_20082019
+
+[root@chromium ~]# cp /etc/multipath.conf /etc/multipath.conf.pre_20082019
+[root@chromium ~]# ll /etc/multipath.conf*
+-rw-r--r-- 1 root root  5827  3 mai 14:17 /etc/multipath.conf
+-rw-r--r-- 1 root root  5827 20 aoû 13:36 /etc/multipath.conf.pre_20082019
+
+[root@palladium ~]# cp /etc/multipath.conf /etc/multipath.conf.pre_20082019
+[root@palladium ~]# ll /etc/multipath.conf*
+-rw-r--r-- 1 root root 5826  3 mai 14:18 /etc/multipath.conf
+-rw-r--r-- 1 root root 5826 20 aoû 13:36 /etc/multipath.conf.pre_20082019
+
+
+
+
+[root@titanium etc]# grep -c 0060 /etc/multipath.conf
+41
+[root@titanium ~]# cd /etc
+
+[root@titanium etc]# vi multipath.conf
+[root@titanium etc]# grep -c 0060 /etc/multipath.conf
+54
+[root@titanium etc]# multipath -d -v 2
+
+
+[root@chromium ~]# cd /etc
+[root@chromium etc]# grep -c 0060 /etc/multipath.conf
+41
+[root@chromium etc]# vi multipath.conf
+[root@chromium etc]# grep -c 0060 /etc/multipath.conf
+54
+[root@chromium etc]# multipath -d -v 2
+
+
+
+ot@palladium etc]# grep -c 0069 /etc/multipath.conf
+41
+[root@palladium etc]# vi /etc/multipath.conf
+[root@palladium etc]# vi /etc/multipath.conf
+[root@palladium etc]# grep -c 0069 multipath.conf
+54
+[root@palladium etc]# multipath -d -v 2
+[root@palladium etc]# 
+
+
+# rescan cluster for the newly added disks
+(Cfr. wiki https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:linux:kvm:change_disk)
+
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+multipath -ll | grep -c mpath
+
+
+
+[root@titanium etc]# multipath -ll | grep mpath
+[root@titanium etc]# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done 
+[root@titanium etc]# multipath -ll | grep -c mpath
+14
+[root@titanium etc]# multipath -ll | grep  mpath
+mpathcu (360000970000296700060533030353633) dm-32 EMC     ,SYMMETRIX       
+mpathct (360000970000296700060533030334146) dm-28 EMC     ,SYMMETRIX       
+mpathcs (360000970000296700060533030334145) dm-25 EMC     ,SYMMETRIX       
+mpathcr (360000970000296700060533030334144) dm-24 EMC     ,SYMMETRIX       
+mpathcq (360000970000296700060533030334143) dm-20 EMC     ,SYMMETRIX       
+mpathcp (360000970000296700060533030334142) dm-19 EMC     ,SYMMETRIX       
+mpathco (360000970000296700060533030333432) dm-16 EMC     ,SYMMETRIX       
+mpathcn (360000970000296700060533030324344) dm-14 EMC     ,SYMMETRIX       
+mpathcm (360000970000296700060533030313346) dm-13 EMC     ,SYMMETRIX       
+mpathcl (360000970000296700060533030324132) dm-7 EMC     ,SYMMETRIX       
+mpathck (360000970000296700060533030324332) dm-6 EMC     ,SYMMETRIX       
+mpathcj (360000970000296700060533030313039) dm-5 EMC     ,SYMMETRIX       
+mpathcv (360000970000296700060533030334230) dm-35 EMC     ,SYMMETRIX       
+mpathci (360000970000296700060533030313038) dm-4 EMC     ,SYMMETRIX       
+[root@titanium etc]# 
+
+[root@chromium etc]# multipath -d -v 2
+[root@chromium etc]# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+[root@chromium etc]#  multipath -ll | grep -c mpath
+14
+[root@chromium etc]# multipath -ll | grep  mpath
+mpathcu (360000970000296700060533030334230) dm-32 EMC     ,SYMMETRIX       
+mpathct (360000970000296700060533030334146) dm-27 EMC     ,SYMMETRIX       
+mpathcs (360000970000296700060533030334145) dm-25 EMC     ,SYMMETRIX       
+mpathcr (360000970000296700060533030334144) dm-23 EMC     ,SYMMETRIX       
+mpathcq (360000970000296700060533030334143) dm-21 EMC     ,SYMMETRIX       
+mpathcp (360000970000296700060533030334142) dm-19 EMC     ,SYMMETRIX       
+mpathco (360000970000296700060533030333432) dm-16 EMC     ,SYMMETRIX       
+mpathcn (360000970000296700060533030324344) dm-15 EMC     ,SYMMETRIX       
+mpathcm (360000970000296700060533030324332) dm-13 EMC     ,SYMMETRIX       
+mpathcl (360000970000296700060533030324132) dm-10 EMC     ,SYMMETRIX       
+mpathck (360000970000296700060533030313346) dm-8 EMC     ,SYMMETRIX       
+mpathcj (360000970000296700060533030313039) dm-5 EMC     ,SYMMETRIX       
+mpathcv (360000970000296700060533030353633) dm-33 EMC     ,SYMMETRIX       
+mpathci (360000970000296700060533030313038) dm-4 EMC     ,SYMMETRIX       
+
+[root@vanadium etc]# multipath -d -v 2
+[root@vanadium etc]# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+[root@vanadium etc]#  multipath -ll | grep -c mpath
+14
+[root@vanadium etc]# multipath -ll | grep  mpath
+mpathcu (360000970000296700069533030334230) dm-44 EMC     ,SYMMETRIX       
+mpathct (360000970000296700069533030334146) dm-43 EMC     ,SYMMETRIX       
+mpathcs (360000970000296700069533030334145) dm-40 EMC     ,SYMMETRIX       
+mpathcr (360000970000296700069533030334144) dm-39 EMC     ,SYMMETRIX       
+mpathcq (360000970000296700069533030334143) dm-32 EMC     ,SYMMETRIX       
+mpathcp (360000970000296700069533030333432) dm-31 EMC     ,SYMMETRIX       
+mpathco (360000970000296700069533030334142) dm-29 EMC     ,SYMMETRIX       
+mpathcn (360000970000296700069533030324344) dm-19 EMC     ,SYMMETRIX       
+mpathcm (360000970000296700069533030313039) dm-13 EMC     ,SYMMETRIX       
+mpathcl (360000970000296700069533030313038) dm-11 EMC     ,SYMMETRIX       
+mpathck (360000970000296700069533030324332) dm-6 EMC     ,SYMMETRIX       
+mpathcj (360000970000296700069533030324132) dm-4 EMC     ,SYMMETRIX       
+mpathcv (360000970000296700069533030353633) dm-45 EMC     ,SYMMETRIX       
+mpathci (360000970000296700069533030313346) dm-3 EMC     ,SYMMETRIX       
+
+[root@palladium etc]# multipath -d -v 2
+[root@palladium etc]# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+[root@palladium etc]#  multipath -ll | grep -c mpath
+14
+[root@palladium etc]# multipath -ll | grep  mpath
+mpathcu (360000970000296700069533030334230) dm-42 EMC     ,SYMMETRIX       
+mpathct (360000970000296700069533030334146) dm-40 EMC     ,SYMMETRIX       
+mpathcs (360000970000296700069533030334145) dm-38 EMC     ,SYMMETRIX       
+mpathcr (360000970000296700069533030334144) dm-36 EMC     ,SYMMETRIX       
+mpathcq (360000970000296700069533030334143) dm-34 EMC     ,SYMMETRIX       
+mpathcp (360000970000296700069533030334142) dm-33 EMC     ,SYMMETRIX       
+mpathco (360000970000296700069533030333432) dm-30 EMC     ,SYMMETRIX       
+mpathcn (360000970000296700069533030324344) dm-29 EMC     ,SYMMETRIX       
+mpathcm (360000970000296700069533030324332) dm-18 EMC     ,SYMMETRIX       
+mpathcl (360000970000296700069533030324132) dm-13 EMC     ,SYMMETRIX       
+mpathck (360000970000296700069533030313346) dm-12 EMC     ,SYMMETRIX       
+mpathcj (360000970000296700069533030313039) dm-4 EMC     ,SYMMETRIX       
+mpathcv (360000970000296700069533030353633) dm-44 EMC     ,SYMMETRIX       
+mpathci (360000970000296700069533030313038) dm-3 EMC     ,SYMMETRIX       
+
+# Reload the multipath config in order to define the aliases, and drop the "mpathxx"
+
+[root@titanium etc]# multipath -r
+[root@titanium etc]# multipath -ll | grep  mpath
+[root@titanium etc]# multipath -ll | grep  -c mpath
+0
+[root@titanium etc]# multipath -ll | grep -c fedorafs1-recover
+13
+
+[root@vanadium etc]# multipath -r
+[root@vanadium etc]# multipath -ll | grep  -c mpath
+0
+[root@chromium etc]# multipath -ll | grep -c fedorafs1-recover
+13
+
+
+[root@chromium etc]# multipath -r
+[root@chromium etc]# multipath -ll | grep -c mpath
+0
+[root@vanadium etc]# multipath -ll | grep -c fedorafs1-recover
+13
+
+[root@palladium etc]# multipath -r
+[root@palladium etc]# multipath -ll | grep -c mpath
+0
+[root@palladium etc]# multipath -ll | grep -c fedorafs1-recover
+13
+
+
+
+
+# in case of extra LUN present, make sure it is justified.
+# if not, remove the LUN
+
+# ex. /home/admin/bin/removelun_rhel 360000970000296700069533030313039
+multipath -r
+
+[root@titanium etc]# /home/admin/bin/removelun_rhel 360000970000296700060533030313039
+/sbin/multipath -f 360000970000296700060533030313039 # 360000970000296700060533030313039
+# SCSI 1:0:0:4
+echo offline > /sys/block/sdf/device/state
+echo 1 >/sys/block/sdf/device/delete
+# SCSI 8:0:0:4
+echo offline > /sys/block/sdea/device/state
+echo 1 >/sys/block/sdea/device/delete
+# SCSI 4:0:0:4
+echo offline > /sys/block/sdbe/device/state
+echo 1 >/sys/block/sdbe/device/delete
+# SCSI 3:0:0:4
+echo offline > /sys/block/sdaq/device/state
+echo 1 >/sys/block/sdaq/device/delete
+# SCSI 2:0:0:4
+echo offline > /sys/block/sdt/device/state
+echo 1 >/sys/block/sdt/device/delete
+# SCSI 6:0:0:4
+echo offline > /sys/block/sdcp/device/state
+echo 1 >/sys/block/sdcp/device/delete
+# SCSI 5:0:0:4
+echo offline > /sys/block/sdcb/device/state
+echo 1 >/sys/block/sdcb/device/delete
+# SCSI 7:0:0:4
+echo offline > /sys/block/sddm/device/state
+echo 1 >/sys/block/sddm/device/delete
+[root@titanium etc]# /home/admin/bin/removelun_rhel 360000970000296700060533030313039 | bash
+
+[root@titanium etc]# multipath -r 
+[root@titanium etc]# multipath -ll | grep -c mpath
+0
+[root@titanium etc]# multipath -ll| grep fedora
+fedorafs1-recover-tk_t2_data13 (360000970000296700060533030334146) dm-28 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data12 (360000970000296700060533030334145) dm-25 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data11 (360000970000296700060533030334144) dm-24 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data1 (360000970000296700060533030313346) dm-13 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data10 (360000970000296700060533030334143) dm-20 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_system1 (360000970000296700060533030313038) dm-4 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data9 (360000970000296700060533030334142) dm-19 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data8 (360000970000296700060533030324132) dm-7 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data7 (360000970000296700060533030333432) dm-16 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data16 (360000970000296700060533030353633) dm-32 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data6 (360000970000296700060533030324344) dm-14 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data5 (360000970000296700060533030324332) dm-6 EMC     ,SYMMETRIX       
+fedorafs1-recover-tk_t2_data14 (360000970000296700060533030334230) dm-35 EMC     ,SYMMETRIX       
+[root@titanium etc]# multipath -ll| grep -c fedora
+13
+[root@chromium etc]# symdg list | grep fedorafs1-recover
+  fedorafs1-recover* RDF2     YN  000296700060     1     0      0     0
+  fedorafs1-recover* REGULAR  YN  000296700060    11     0      0     0
+  fedorafs1-recover* ANY      YN  000296700060    14     0      0     0
+  fedorafs1-recover* REGULAR  YN  000296700060    12     0      0     0
+[root@chromium etc]# symdg show fedorafs1-recover| grep DEV
+
+The device group does not exist
+
+[root@chromium etc]# symdg show fedorafs1-recover-tk | grep DEV
+    Number of Locally-associated VDEV's          :    0
+    Number of Remotely-associated VDEV's(STD RDF):    0
+    Number of Remotely-assoc'd VDEV's(Hop-2 VDEV):    0
+        DEV001                N/A                     00108 RDF2+TDEV          WD     30720
+        DEV002                N/A                     00109 TDEV               RW     30720
+        DEV003                N/A                     0013F TDEV               RW    1075200
+        DEV004                N/A                     002A2 TDEV               RW    1024001
+        DEV005                N/A                     002C2 TDEV               RW    1536000
+        DEV006                N/A                     002CD TDEV               RW    1024001
+        DEV007                N/A                     00342 TDEV               RW    1024001
+        DEV008                N/A                     003AB TDEV               RW    2048001
+        DEV009                N/A                     003AC TDEV               RW    2048001
+        DEV010                N/A                     003AD TDEV               RW    2048001
+        DEV011                N/A                     003AE TDEV               RW    2048001
+        DEV012                N/A                     003AF TDEV               RW    2048001
+        DEV013                N/A                     003B0 TDEV               RW    2048001
+        DEV014                N/A                     003B1 TDEV               RW     40961
+
+
+--> extra disk is DEV001 
+Answer from Catherine:
+C'est normal. C'est à cause du refresh auto. Tu as le disque système de la vm fedora-recover et le disque system de la vm fedora au cas où on devrait remplacer la recover par la fedora normale.
+Bonne journée,
+Catherine 
+	
+--> Action configure that LUN as well
+
+
+
+[root@picard ~]# grep 36000097000029670006.533030313039  /etc/multipath.conf -A2 -B2
+
+    multipath {
+       wwid 360000970000296700060533030313039
+       alias fedorafs1-tk_t2_system1_snapshot_not2use
+    }
+
+[root@riker ~]# grep 36000097000029670006.533030313039  /etc/multipath.conf -A2 -B2
+
+    multipath {
+       wwid 360000970000296700060533030313039
+       alias fedorafs1-tk_t2_system1_snapshot_not2use
+    }
+
+[root@laforge ~]# grep 36000097000029670006.533030313039  /etc/multipath.conf -A2 -B2
+
+    multipath {
+       wwid 360000970000296700069533030313039
+       alias fedorafs1-tk_t2_system1_snapshot_not2use
+    }
+
+[root@worf ~]# grep 36000097000029670006.533030313039  /etc/multipath.conf -A2 -B2
+
+    multipath {
+       wwid 360000970000296700069533030313039
+       alias fedorafs1-tk_t2_system1_snapshot_not2use
+    }
+
+# Add the extra LUN on all hosts of the cluster
+# vi /etc/multipath.conf
+multipath -d -v 2
+multipath -r
+
+
+# rescan cluster for the newly added disks
+(Cfr. wiki https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:linux:kvm:change_disk)
+
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+multipath -ll | grep -c mpath
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+# Create the vm xml file on one node on the target cluster, and check that the vm can be started
+(Cfr. wiki: https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:linux:rhel:cluster_installation_rh7  ; section migration; starting at /etc/hosts.allow
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+
+# On the target cluster, go to a MER host
+Modify /etc/hosts.allow to allow sshd for cluster nodes to migrate (tcp_wrappers)
+# grep ^sshd /etc/hosts.allow 
+
+[root@titanium etc]# grep ^sshd /etc/hosts.allow
+sshd: chromium-cl, titanium-cl, vanadium-cl, palladium-cl, castor.opoce.cec.eu.int
+
+[root@titanium etc]# cd /etc
+[root@titanium etc]# ll hosts.allow 
+-rw-r--r-- 1 root root 513 16 oct  2018 hosts.allow
+[root@titanium etc]# cp hosts.allow hosts.allow.16102018
+[root@titanium etc]# vi hosts.allow
+[root@titanium etc]# grep ^sshd /etc/hosts.allow
+sshd: chromium-cl, titanium-cl, vanadium-cl, palladium-cl, castor.opoce.cec.eu.int, picard.opoce.cec.eu.int
+
+
+Define the VM on the target node
+# On source node
+VM_NAME="fedorafs1-recover-tk"
+TARGET_NODE=titanium
+echo virsh -c qemu+ssh://${TARGET_NODE}/system define /etc/libvirt/qemu/$VM_NAME.xml
+
+[root@picard ~]# VM_NAME="fedorafs1-recover-tk"
+[root@picard ~]# TARGET_NODE=titanium
+[root@picard ~]# echo virsh -c qemu+ssh://${TARGET_NODE}/system define /etc/libvirt/qemu/$VM_NAME.xml
+virsh -c qemu+ssh://titanium/system define /etc/libvirt/qemu/fedorafs1-recover-tk.xml
+[root@picard ~]# echo virsh -c qemu+ssh://${TARGET_NODE}/system define /etc/libvirt/qemu/$VM_NAME.xml | bash
+The authenticity of host 'titanium (10.199.99.34)' can't be established.
+RSA key fingerprint is 49:54:b7:f1:af:56:2c:06:d6:a4:1a:c7:90:45:da:fd.
+Are you sure you want to continue connecting (yes/no)? yes
+root@titanium's password:      <--- linux pwd (...7in)
+Domain fedorafs1-recover-tk defined from /etc/libvirt/qemu/fedorafs1-recover-tk.xml
+
+# Check if VM is defined
+# On target node
+# virsh list --all
+# VM_NAME=
+# virsh dumpxml $VM_NAME
+
+
+[root@titanium etc]# virsh list --all
+ Id    Name                           State
+----------------------------------------------------
+ 1     planjo-rk                      running
+ 5     cellarbo2-dk                   running
+ -     cportalflex1-rk                shut off
+ -     cportalflex1-tk                shut off
+ -     eurlexbo-rk                    shut off
+ -     eurlexbo-tk                    shut off
+ -     fedorafs1-recover-tk           shut off
+
+[root@titanium etc]# VM_NAME=fedorafs1-recover-tk
+[root@titanium etc]# virsh dumpxml $VM_NAME
+<snip>
+--> ok, vm is defined
+[root@titanium etc]# virsh dumpxml $VM_NAME > /var/tmp/${VM_NAME}_bak.xml
+
+
+
+Modify cpu settings
+  <cpu mode='custom' match='exact' check='full'>
+    <model fallback='forbid'>IvyBridge-IBRS</model>
+    <feature policy='require' name='hypervisor'/>
+    <feature policy='require' name='xsaveopt'/>
+  </cpu>
+
+ 
+
+[root@titanium etc]# virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+ls: cannot access /dev/mapper/fedorafs1-recover-tk_t2_data16p1: No such file or directory
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data10p1 -> ../dm-23
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data11p1 -> ../dm-26
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data12p1 -> ../dm-27
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data13p1 -> ../dm-33
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data14p1 -> ../dm-36
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data1p1 -> ../dm-15
+lrwxrwxrwx 1 root root 7 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data5p1 -> ../dm-9
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data6p1 -> ../dm-18
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data7p1 -> ../dm-21
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data8p1 -> ../dm-10
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data9p1 -> ../dm-22
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_system1p1 -> ../dm-12
+
+NOK for data16 at MER
+
+OK for data16 at EUFO
+[root@vanadium etc]# ll /dev/mapper/fedorafs1-recover-tk_t2_data16*
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data16 -> ../dm-45
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data16p1 -> ../dm-48
+
+
+#define VM on all cluster nodes
+
+[root@titanium etc]# for node in `crm_node -p | sed "s/$(hostname -s)-cl//g"`; do echo -n "$node: " && virsh -c qemu+ssh://$node/system define /etc/libvirt/qemu/$VM_NAME.xml; done
+chromium-cl: Domain fedorafs1-recover-tk defined from /etc/libvirt/qemu/fedorafs1-recover-tk.xml
+
+vanadium-cl: Domain fedorafs1-recover-tk defined from /etc/libvirt/qemu/fedorafs1-recover-tk.xml
+
+palladium-cl: Domain fedorafs1-recover-tk defined from /etc/libvirt/qemu/fedorafs1-recover-tk.xml
+
+
+Cold migration, libvirt compatibility problem. Disable the VM
+# On source node
+# pcs resource disable $VM_NAME
+
+On old cluster
+
+
+
+[root@picard ~]# pcs constraint show location fedorafs1-recover-tk
+Location Constraints:
+  Resource: fedorafs1-recover-tk
+    Enabled on: worf-cl (score:100)
+    Enabled on: laforge-cl (score:50)
+
+
+[root@laforge ~]# VM_NAME=fedorafs1-recover-tk
+[root@laforge ~]# pcs status| grep $VM_NAME
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+
+[root@laforge ~]# VM_NAME=fedorafs1-recover-tk
+[root@laforge ~]# pcs status| grep $VM_NAME
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+[root@laforge ~]# 
+[root@laforge ~]# pcs resource disable $VM_NAME
+[root@laforge ~]# pcs status| grep $VM_NAME
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+[root@laforge ~]# pcs status| grep $VM_NAME
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Started worf-cl 
+[root@laforge ~]# pcs resource disable $VM_NAME
+[root@laforge ~]# pcs status| grep $VM_NAME
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Stopped 
+
+Cold migration, libvirt compatibility problem. Disable the VM
+# On source node
+# pcs resource disable $VM_NAME
+
+When the VM is stopped, unmanage the VM on the source cluster
+# pcs resource unmanage $VM_NAME
+
+[root@laforge ~]# pcs resource unmanage  $VM_NAME
+[root@laforge ~]# pcs status| grep $VM_NAME
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Stopped (unmanaged) 
+
+
+
+if nok 
+virsh destroy $VM_NAME
+pcs resource cleanup $VM_NAME
+
+
+On target cluster check that the disks are RW
+
+[root@vanadium etc]# VM_NAME=fedorafs1-recover-tk
+[root@vanadium etc]# symdg show $VM_NAME | egrep 'Group (Name:|Type)|(RDF|Pair) State'
+Group Name:  fedorafs1-recover-tk
+    Group Type                                   : ANY     (RDFA)
+        Device RDF State                       : Ready           (RW)
+        Remote Device RDF State                : Write Disabled  (WD)
+        RDF Pair State (  R1 <===> R2 )        : Synchronized
+[root@vanadium etc]# symdg show $VM_NAME | egrep 'Group (Name:|Type)|(RDF|Pair) State|DEV0'
+Group Name:  fedorafs1-recover-tk
+    Group Type                                   : ANY     (RDFA)
+        DEV001                N/A                     00108 RDF1+TDEV          RW     30720
+        DEV002                N/A                     00109 TDEV               RW     30720
+        DEV003                N/A                     0013F TDEV               RW    1075200
+        DEV004                N/A                     002A2 TDEV               RW    1024001
+        DEV005                N/A                     002C2 TDEV               RW    1536000
+        DEV006                N/A                     002CD TDEV               RW    1024001
+        DEV007                N/A                     00342 TDEV               RW    1024001
+        DEV008                N/A                     003AB TDEV               RW    2048001
+        DEV009                N/A                     003AC TDEV               RW    2048001
+        DEV010                N/A                     003AD TDEV               RW    2048001
+        DEV011                N/A                     003AE TDEV               RW    2048001
+        DEV012                N/A                     003AF TDEV               RW    2048001
+        DEV013                N/A                     003B0 TDEV               RW    2048001
+        DEV014                N/A                     003B1 TDEV               RW     40961
+        Device RDF State                       : Ready           (RW)
+        Remote Device RDF State                : Write Disabled  (WD)
+        RDF Pair State (  R1 <===> R2 )        : Synchronized
+
+
+
+On target node, add the resource to the cluster
+# pcs resource create ${VM_NAME} ocf:heartbeat:VirtualDomain config=/etc/libvirt/qemu/${VM_NAME}.xml migration_transport=ssh meta allow-migrate="true" --disabled
+
+
+echo pcs resource create ${VM_NAME} ocf:heartbeat:VirtualDomain config=/etc/libvirt/qemu/${VM_NAME}.xml migration_transport=ssh meta allow-migrate="true" --disabled
+
+[root@vanadium etc]# echo pcs resource create ${VM_NAME} ocf:heartbeat:VirtualDomain config=/etc/libvirt/qemu/${VM_NAME}.xml migration_transport=ssh meta allow-migrate="true" --disabled
+pcs resource create fedorafs1-recover-tk ocf:heartbeat:VirtualDomain config=/etc/libvirt/qemu/fedorafs1-recover-tk.xml migration_transport=ssh meta allow-migrate=true --disabled
+[root@vanadium etc]# echo pcs resource create ${VM_NAME} ocf:heartbeat:VirtualDomain config=/etc/libvirt/qemu/${VM_NAME}.xml migration_transport=ssh meta allow-migrate="true" --disabled | bash
+
+
+Add location constraint tell the server to contain the vm on the site where the SAN disk is in RW mode.
+# This is an example of the constraint location :
+
+# pcs constraint location ${VM_NAME} prefers vanadium-cl=100
+# pcs constraint location ${VM_NAME} prefers palladium-cl=50
+# pcs resource enable ${VM_NAME}
+
+
+[root@vanadium etc]# pcs constraint location ${VM_NAME} prefers vanadium-cl=100
+[root@vanadium etc]# pcs constraint location ${VM_NAME} prefers palladium-cl=50
+
+
+[root@vanadium etc]# pcs constraint show location $VM_NAME
+Location Constraints:
+  Resource: fedorafs1-recover-tk
+    Enabled on: vanadium-cl (score:100)
+    Enabled on: palladium-cl (score:50)
+Ordering Constraints:
+Colocation Constraints:
+Ticket Constraints:
+
+[root@vanadium etc]# virsh list --all
+ Id    Name                           State
+----------------------------------------------------
+ 42    cportalflex1-rk                running
+ -     cellarbo2-dk                   shut off
+ -     cportalflex1-tk                shut off
+ -     eurlexbo-rk                    shut off
+ -     eurlexbo-tk                    shut off
+ -     fedorafs1-recover-tk           shut off
+ -     planjo-rk                      shut off
+
+
+[root@vanadium etc]# virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data10p1 -> ../dm-37
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data11p1 -> ../dm-41
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data12p1 -> ../dm-42
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data13p1 -> ../dm-46
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data14p1 -> ../dm-47
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data16p1 -> ../dm-48
+lrwxrwxrwx 1 root root 7 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data1p1 -> ../dm-5
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data5p1 -> ../dm-14
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data6p1 -> ../dm-20
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data7p1 -> ../dm-34
+lrwxrwxrwx 1 root root 7 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data8p1 -> ../dm-7
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_data9p1 -> ../dm-30
+lrwxrwxrwx 1 root root 8 20 aoû 15:11 /dev/mapper/fedorafs1-recover-tk_t2_system1p1 -> ../dm-16
+
+
+[root@vanadium etc]# echo $VM_NAME
+fedorafs1-recover-tk
+[root@vanadium etc]# virsh start $VM_NAME
+error: Failed to start domain fedorafs1-recover-tk
+error: operation failed: guest CPU doesn't match specification: missing features: rdtscp
+
+
+--> edit the config file, and add the missing entry
+[root@vanadium etc]# virsh dumpxml  $VM_NAME | grep rdtscp
+    <feature policy='require' name='rdtscp'/>
+[root@vanadium etc]# virsh dumpxml  $VM_NAME | grep rdtscp -B3 -A3
+    <model fallback='forbid'>IvyBridge-IBRS</model>
+    <feature policy='require' name='hypervisor'/>
+    <feature policy='require' name='xsaveopt'/>
+    <feature policy='require' name='rdtscp'/>
+  </cpu>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+
+
+
+[root@vanadium etc]# virsh edit $VM_NAME
+Domain fedorafs1-recover-tk XML configuration edited.
+
+[root@vanadium etc]# virsh start $VM_NAME
+Domain fedorafs1-recover-tk started
+
+[root@vanadium etc]# virsh console  $VM_NAME
+Connected to domain fedorafs1-recover-tk
+Escape character is ^]
+Press any key to continue.
+Press any key to continue.
+Press any key to continue.
+�		Welcome to Red Hat Enterprise Linux Server
+Starting udev: [  OK  ]
+Setting hostname fedorafs1-recover-tk:  [  OK  ]
+Setting up Logical Volume Management:   Couldn't find device with uuid ZxCvoQ-QbPf-QDhi-4Zti-kXBY-2K1s-0PFP8K.
+  1 logical volume(s) in volume group "data_date" now active
+  1 logical volume(s) in volume group "data_date_1" now active
+  Couldn't find device with uuid O8hQ5r-KKvd-XEDF-FAHQ-QyKI-m7sr-plSEIs.
+  Couldn't find device with uuid ySQ3D4-1igk-87Vw-LiBs-zBAR-BAzq-JiJuDM.
+  Couldn't find device with uuid mb5siZ-1xwF-dOJL-mTHG-Q17d-BSEX-cav8a9.
+  18 logical volume(s) in volume group "data" now active
+  8 logical volume(s) in volume group "root" now active
+[  OK  ]
+Checking filesystems
+Checking all file systems.
+[/sbin/fsck.ext4 (1) -- /] fsck.ext4 -a /dev/mapper/root-slash 
+/dev/mapper/root-slash: clean, 56499/321280 files, 454180/1310720 blocks
+[/sbin/fsck.ext4 (1) -- /applications] fsck.ext4 -a /dev/mapper/root-applications 
+/dev/mapper/root-applications: Superblock last write time is in the future.
+	(by less than a day, probably due to the hardware clock being incorrectly set)
+/dev/mapper/root-applications: clean, 14/8192 files, 5535/32768 blocks
+[/sbin/fsck.ext3 (1) -- /boot] fsck.ext3 -a /dev/vda1 
+/dev/vda1: Superblock last write time is in the future.
+	(by less than a day, probably due to the hardware clock being incorrectly set)
+/dev/vda1: clean, 50/51200 files, 90099/204800 blocks
+[/sbin/fsck.ext4 (1) -- /tmp] fsck.ext4 -a /dev/mapper/root-tmp 
+/dev/mapper/root-tmp: Superblock last write time is in the future.
+	(by less than a day, probably due to the hardware clock being incorrectly set)
+/dev/mapper/root-tmp: clean, 12/131072 files, 25389/524288 blocks
+[/sbin/fsck.ext4 (1) -- /u01] fsck.ext4 -a /dev/mapper/root-u01 
+/dev/mapper/root-u01: Superblock last write time is in the future.
+	(by less than a day, probably due to the hardware clock being incorrectly set)
+/dev/mapper/root-u01: clean, 13/40960 files, 10823/163840 blocks
+[/sbin/fsck.ext4 (1) -- /var] fsck.ext4 -a /dev/mapper/root-var 
+/dev/mapper/root-var: Superblock last write time is in the future.
+	(by less than a day, probably due to the hardware clock being incorrectly set)
+/dev/mapper/root-var: clean, 2752/196608 files, 192216/786432 blocks
+[/sbin/fsck.ext4 (1) -- /var/log] fsck.ext4 -a /dev/mapper/root-var_log 
+/dev/mapper/root-var_log: Superblock last write time is in the future.
+	(by less than a day, probably due to the hardware clock being incorrectly set)
+/dev/mapper/root-var_log: clean, 2954/327680 files, 89674/1310720 blocks
+[/sbin/fsck.ext4 (1) -- /var/tmp] fsck.ext4 -a /dev/mapper/root-var_tmp 
+/dev/mapper/root-var_tmp: Superblock last write time is in the future.
+	(by less than a day, probably due to the hardware clock being incorrectly set)
+/dev/mapper/root-var_tmp: clean, 11/131072 files, 25388/524288 blocks
+[  OK  ]
+Remounting root filesystem in read-write mode:  [  OK  ]
+Mounting local filesystems:  [  OK  ]
+Enabling /etc/fstab swaps:  [  OK  ]
+Entering non-interactive startup
+Calling the system activity data collector (sadc)... 
+Starting monitoring for VG data:   Couldn't find device with uuid O8hQ5r-KKvd-XEDF-FAHQ-QyKI-m7sr-plSEIs.
+  Couldn't find device with uuid ySQ3D4-1igk-87Vw-LiBs-zBAR-BAzq-JiJuDM.
+  Couldn't find device with uuid mb5siZ-1xwF-dOJL-mTHG-Q17d-BSEX-cav8a9.
+  18 logical volume(s) in volume group "data" monitored
+[  OK  ]
+Starting monitoring for VG data_date:   Couldn't find device with uuid ZxCvoQ-QbPf-QDhi-4Zti-kXBY-2K1s-0PFP8K.
+  1 logical volume(s) in volume group "data_date" monitored
+[  OK  ]
+Starting monitoring for VG data_date_1:   1 logical volume(s) in volume group "data_date_1" monitored
+[  OK  ]
+Starting monitoring for VG root:   8 logical volume(s) in volume group "root" monitored
+[  OK  ]
+Bringing up loopback interface:  [  OK  ]
+Bringing up interface eth0:  Determining if ip address 10.222.222.68 is already in use for device eth0...
+[  OK  ]
+Bringing up interface eth1:  Determining if ip address 10.167.222.68 is already in use for device eth1...
+[  OK  ]
+Starting portreserve: [  OK  ]
+Starting system logger: [  OK  ]
+Starting irqbalance: [  OK  ]
+Starting rpcbind: [  OK  ]
+Starting sssd: [  OK  ]
+Starting NFS statd: [  OK  ]
+Starting system message bus: [  OK  ]
+Starting cups: [  OK  ]
+Mounting filesystems:  [  OK  ]
+Starting acpi daemon: [  OK  ]
+Retrigger failed udev events[  OK  ]
+Loading autofs4: [  OK  ]
+Starting automount: [  OK  ]
+Starting NFS services:  exportfs: Failed to stat /applications/cellar/fedoradata_f: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_f: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_e: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_e: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_4: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_4: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_3: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_3: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_2: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_2: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_1: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_1: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_0: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_date_0: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_d: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_d: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_c: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_c: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_b: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_b: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_a: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_a: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_9: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_9: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_8: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_8: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_7: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_7: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_6: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_6: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_5: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_5: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_4: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_4: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_3: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_3: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_2: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_2: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_1: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_1: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_0: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata_0: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/fedoradata: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/cellar_common: No such file or directory 
+
+exportfs: Failed to stat /applications/cellar/cellar_common: No such file or directory 
+
+[  OK  ]
+Starting NFS mountd: rpc.mountd: svc_tli_create: could not open connection for udp6
+rpc.mountd: svc_tli_create: could not open connection for tcp6
+rpc.mountd: svc_tli_create: could not open connection for udp6
+rpc.mountd: svc_tli_create: could not open connection for tcp6
+rpc.mountd: svc_tli_create: could not open connection for udp6
+rpc.mountd: svc_tli_create: could not open connection for tcp6
+[  OK  ]
+Starting NFS daemon: rpc.nfsd: address family inet6 not supported by protocol TCP
+[  OK  ]
+Starting RPC idmapd: [  OK  ]
+Starting snmpd: [  OK  ]
+Starting sshd: [  OK  ]
+Starting ntpd: [  OK  ]
+Starting nrpe: [  OK  ]
+Starting postfix: [  OK  ]
+Starting crond: [  OK  ]
+Starting atd: [  OK  ]
+starting NetWorker daemons:
+ nsrexecd
+Starting goferd[  OK  ]
+Starting rhsmcertd...[  OK  ]
+Starting puppet agent: [  OK  ]
+Starting collectd: [  OK  ]
+
+Red Hat Enterprise Linux Server release 6.9 (Santiago)
+Kernel 2.6.32-696.20.1.el6.x86_64 on an x86_64
+
+fedorafs1-recover-tk login: 
+[root@vanadium etc]# virsh shutdown  $VM_NAME
+Domain fedorafs1-recover-tk is being shutdown
+
+[root@vanadium etc]# virsh list --all
+ Id    Name                           State
+----------------------------------------------------
+ 42    cportalflex1-rk                running
+ -     cellarbo2-dk                   shut off
+ -     cportalflex1-tk                shut off
+ -     eurlexbo-rk                    shut off
+ -     eurlexbo-tk                    shut off
+ -     fedorafs1-recover-tk           shut off
+ -     planjo-rk                      shut off
+
+[root@vanadium etc]# pcs resource enable $VM_NAME
+[root@vanadium etc]# pcs status | grep  $VM_NAME
+ fedorafs1-recover-tk	(ocf::heartbeat:VirtualDomain):	Started vanadium-cl
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Connect to the vm
+
+[claeyje@banta ~]# s fedorafs1-recover-tk
+[claeyje@fedorafs1-recover-tk ~]# sudo -i
+[sudo] password for claeyje: 
+[root@fedorafs1-recover-tk ~]# 
+[root@fedorafs1-recover-tk ~]# 
+[root@fedorafs1-recover-tk ~]# pvs;vgs;lvs
+  Couldn't find device with uuid ZxCvoQ-QbPf-QDhi-4Zti-kXBY-2K1s-0PFP8K.
+  Couldn't find device with uuid O8hQ5r-KKvd-XEDF-FAHQ-QyKI-m7sr-plSEIs.
+  Couldn't find device with uuid ySQ3D4-1igk-87Vw-LiBs-zBAR-BAzq-JiJuDM.
+  Couldn't find device with uuid mb5siZ-1xwF-dOJL-mTHG-Q17d-BSEX-cav8a9.
+  PV             VG          Fmt  Attr PSize    PFree   
+  /dev/vda2      root        lvm2 a--u   29,78g   10,62g
+  /dev/vdb1      data        lvm2 a--u    1,03t  354,99g
+  /dev/vdc1      data        lvm2 a--u    1,95t       0 
+  /dev/vdd1      data        lvm2 a--u    1,95t       0 
+  /dev/vde1      data        lvm2 a--u    1,95t       0 
+  /dev/vdf1      data_date_1 lvm2 a--u    1,46t       0 
+  /dev/vdg1      data_date_1 lvm2 a--u 1000,00g       0 
+  /dev/vdh1      data        lvm2 a--u 1000,00g 1000,00g
+  /dev/vdi1      data        lvm2 a--u 1000,00g 1000,00g
+  /dev/vdj1      data        lvm2 a--u    1,95t       0 
+  /dev/vdk1      data        lvm2 a--u    1,95t   19,98g
+  /dev/vdl1      data_date   lvm2 a--u    1,95t    1,56t
+  unknown device data_date   lvm2 a-mu    1,95t    1,95t
+  unknown device data        lvm2 a-mu    1,03t    1,03t
+  unknown device data        lvm2 a-mu    1,03t    1,03t
+  unknown device data        lvm2 a-mu    1,03t    1,03t
+  Couldn't find device with uuid ZxCvoQ-QbPf-QDhi-4Zti-kXBY-2K1s-0PFP8K.
+  Couldn't find device with uuid O8hQ5r-KKvd-XEDF-FAHQ-QyKI-m7sr-plSEIs.
+  Couldn't find device with uuid ySQ3D4-1igk-87Vw-LiBs-zBAR-BAzq-JiJuDM.
+  Couldn't find device with uuid mb5siZ-1xwF-dOJL-mTHG-Q17d-BSEX-cav8a9.
+  VG          #PV #LV #SN Attr   VSize  VFree 
+  data         11  18   0 wz-pn- 15,82t  5,40t
+  data_date     2   1   0 wz-pn-  3,91t  3,52t
+  data_date_1   2   1   0 wz--n-  2,44t     0 
+  root          1   8   0 wz--n- 29,78g 10,62g
+  Couldn't find device with uuid ZxCvoQ-QbPf-QDhi-4Zti-kXBY-2K1s-0PFP8K.
+  Couldn't find device with uuid O8hQ5r-KKvd-XEDF-FAHQ-QyKI-m7sr-plSEIs.
+  Couldn't find device with uuid ySQ3D4-1igk-87Vw-LiBs-zBAR-BAzq-JiJuDM.
+  Couldn't find device with uuid mb5siZ-1xwF-dOJL-mTHG-Q17d-BSEX-cav8a9.
+  LV           VG          Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  0            data        -wi-a----- 665,00g                                                    
+  1            data        -wi-a----- 665,00g                                                    
+  2            data        -wi-a----- 665,00g                                                    
+  3            data        -wi-a----- 665,00g                                                    
+  4            data        -wi-a----- 665,00g                                                    
+  5            data        -wi-a----- 665,00g                                                    
+  6            data        -wi-a----- 665,00g                                                    
+  7            data        -wi-a----- 665,00g                                                    
+  8            data        -wi-a----- 665,00g                                                    
+  9            data        -wi-a----- 665,00g                                                    
+  a            data        -wi-a----- 665,00g                                                    
+  b            data        -wi-a----- 665,00g                                                    
+  c            data        -wi-a----- 665,00g                                                    
+  d            data        -wi-a----- 665,00g                                                    
+  e            data        -wi-a----- 665,00g                                                    
+  f            data        -wi-a----- 665,00g                                                    
+  main         data        -wi-a-----  30,00g                                                    
+  users        data        -wi-a-----   5,00g                                                    
+  1            data_date   -wi-a----- 400,00g                                                    
+  main         data_date_1 -wi-a-----   2,44t                                                    
+  applications root        -wi-ao----  32,00m                                                    
+  slash        root        -wi-ao----   5,00g                                                    
+  swap         root        -wi-ao----   1,97g                                                    
+  tmp          root        -wi-ao----   2,00g                                                    
+  u01          root        -wi-ao---- 160,00m                                                    
+  var          root        -wi-ao----   3,00g                                                    
+  var_log      root        -wi-ao----   5,00g                                                    
+  var_tmp      root        -wi-ao----   2,00g                                                    
+[root@fedorafs1-recover-tk ~]# 
+
+
+                                                  
+[root@fedorafs1-recover-tk ~]# cat /etc/fstab
+
+#
+# /etc/fstab
+# Created by anaconda on Wed Nov 18 08:59:18 2015
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+/dev/mapper/root-slash  /                       ext4    defaults        1 1
+/dev/mapper/root-applications /applications           ext4    defaults        1 2
+UUID=a6bdc7e8-6ca9-4b61-9e12-0f92dabffbc4 /boot                   ext3    defaults        1 2
+/dev/mapper/root-tmp    /tmp                    ext4    defaults        1 2
+/dev/mapper/root-u01    /u01                    ext4    defaults        1 2
+/dev/mapper/root-var    /var                    ext4    defaults        1 2
+/dev/mapper/root-var_log /var/log                ext4    defaults        1 2
+/dev/mapper/root-var_tmp /var/tmp                ext4    defaults        1 2
+/dev/mapper/root-swap   swap                    swap    defaults        0 0
+tmpfs                   /dev/shm                tmpfs   defaults        0 0
+devpts                  /dev/pts                devpts  gid=5,mode=620  0 0
+sysfs                   /sys                    sysfs   defaults        0 0
+proc                    /proc                   proc    defaults        0 0
+#
+#
+#
+/dev/mapper/data-fedora /applications/cellar    ext4    defaults,noauto        1 0
+/dev/mapper/data-users  /applications/cellar/users      ext4    defaults,noauto        1 0
+/dev/mapper/data_date_1-main /applications/cellar/fedoradata_date_1  ext4    defaults,noauto    1 0
+[root@fedorafs1-recover-tk ~]# 
+                                                 
+[root@fedorafs1-recover-tk ~]# df -h 
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/root-slash
+                      4,9G  1,6G  3,1G  35% /
+tmpfs                 1,9G     0  1,9G   0% /dev/shm
+/dev/mapper/root-applications
+                       27M  400K   25M   2% /applications
+/dev/vda1             194M   82M  103M  45% /boot
+/dev/mapper/root-tmp  2,0G  3,2M  1,9G   1% /tmp
+/dev/mapper/root-u01  151M  1,6M  142M   2% /u01
+/dev/mapper/root-var  3,0G  681M  2,2G  24% /var
+/dev/mapper/root-var_log
+                      4,8G  143M  4,5G   4% /var/log
+/dev/mapper/root-var_tmp
+                      2,0G  3,0M  1,9G   1% /var/tmp
+nfs-infra.isilon.opoce.cec.eu.int:/home/claeyje
+                      300G  231G   70G  77% /home/claeyje
+
+
+--> looks ok, i.e. same as on old cluster
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+VM info on old cluster tng
+------------------------------------------------------------------------------------------------------------------------------------
+[claeyje@banta ~]# s fedorafs1-recover-tk
+[claeyje@fedorafs1-recover-tk ~]# 
+[claeyje@fedorafs1-recover-tk ~]# 
+[claeyje@fedorafs1-recover-tk ~]# 
+[claeyje@fedorafs1-recover-tk ~]# 
+[claeyje@fedorafs1-recover-tk ~]# sudo -i
+[sudo] password for claeyje: 
+[root@fedorafs1-recover-tk ~]# pvs
+  Couldn't find device with uuid ZxCvoQ-QbPf-QDhi-4Zti-kXBY-2K1s-0PFP8K.
+  Couldn't find device with uuid O8hQ5r-KKvd-XEDF-FAHQ-QyKI-m7sr-plSEIs.
+  Couldn't find device with uuid ySQ3D4-1igk-87Vw-LiBs-zBAR-BAzq-JiJuDM.
+  Couldn't find device with uuid mb5siZ-1xwF-dOJL-mTHG-Q17d-BSEX-cav8a9.
+  PV             VG          Fmt  Attr PSize    PFree   
+  /dev/vda2      root        lvm2 a--u   29,78g   10,62g
+  /dev/vdb1      data        lvm2 a--u    1,03t  354,99g
+  /dev/vdc1      data        lvm2 a--u    1,95t       0 
+  /dev/vdd1      data        lvm2 a--u    1,95t       0 
+  /dev/vde1      data        lvm2 a--u    1,95t       0 
+  /dev/vdf1      data_date_1 lvm2 a--u    1,46t       0 
+  /dev/vdg1      data_date_1 lvm2 a--u 1000,00g       0 
+  /dev/vdh1      data        lvm2 a--u 1000,00g 1000,00g
+  /dev/vdi1      data        lvm2 a--u 1000,00g 1000,00g
+  /dev/vdj1      data        lvm2 a--u    1,95t       0 
+  /dev/vdk1      data        lvm2 a--u    1,95t   19,98g
+  /dev/vdl1      data_date   lvm2 a--u    1,95t    1,56t
+  unknown device data_date   lvm2 a-mu    1,95t    1,95t
+  unknown device data        lvm2 a-mu    1,03t    1,03t
+  unknown device data        lvm2 a-mu    1,03t    1,03t
+  unknown device data        lvm2 a-mu    1,03t    1,03t
+[root@fedorafs1-recover-tk ~]# vgs
+  Couldn't find device with uuid ZxCvoQ-QbPf-QDhi-4Zti-kXBY-2K1s-0PFP8K.
+  Couldn't find device with uuid O8hQ5r-KKvd-XEDF-FAHQ-QyKI-m7sr-plSEIs.
+  Couldn't find device with uuid ySQ3D4-1igk-87Vw-LiBs-zBAR-BAzq-JiJuDM.
+  Couldn't find device with uuid mb5siZ-1xwF-dOJL-mTHG-Q17d-BSEX-cav8a9.
+  VG          #PV #LV #SN Attr   VSize  VFree 
+  data         11  18   0 wz-pn- 15,82t  5,40t
+  data_date     2   1   0 wz-pn-  3,91t  3,52t
+  data_date_1   2   1   0 wz--n-  2,44t     0 
+  root          1   8   0 wz--n- 29,78g 10,62g
+[root@fedorafs1-recover-tk ~]# cat /etc/fstab
+
+#
+# /etc/fstab
+# Created by anaconda on Wed Nov 18 08:59:18 2015
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+/dev/mapper/root-slash  /                       ext4    defaults        1 1
+/dev/mapper/root-applications /applications           ext4    defaults        1 2
+UUID=a6bdc7e8-6ca9-4b61-9e12-0f92dabffbc4 /boot                   ext3    defaults        1 2
+/dev/mapper/root-tmp    /tmp                    ext4    defaults        1 2
+/dev/mapper/root-u01    /u01                    ext4    defaults        1 2
+/dev/mapper/root-var    /var                    ext4    defaults        1 2
+/dev/mapper/root-var_log /var/log                ext4    defaults        1 2
+/dev/mapper/root-var_tmp /var/tmp                ext4    defaults        1 2
+/dev/mapper/root-swap   swap                    swap    defaults        0 0
+tmpfs                   /dev/shm                tmpfs   defaults        0 0
+devpts                  /dev/pts                devpts  gid=5,mode=620  0 0
+sysfs                   /sys                    sysfs   defaults        0 0
+proc                    /proc                   proc    defaults        0 0
+#
+#
+#
+/dev/mapper/data-fedora /applications/cellar    ext4    defaults,noauto        1 0
+/dev/mapper/data-users  /applications/cellar/users      ext4    defaults,noauto        1 0
+/dev/mapper/data_date_1-main /applications/cellar/fedoradata_date_1  ext4    defaults,noauto    1 0
+[root@fedorafs1-recover-tk ~]# lvs
+  Couldn't find device with uuid ZxCvoQ-QbPf-QDhi-4Zti-kXBY-2K1s-0PFP8K.
+  Couldn't find device with uuid O8hQ5r-KKvd-XEDF-FAHQ-QyKI-m7sr-plSEIs.
+  Couldn't find device with uuid ySQ3D4-1igk-87Vw-LiBs-zBAR-BAzq-JiJuDM.
+  Couldn't find device with uuid mb5siZ-1xwF-dOJL-mTHG-Q17d-BSEX-cav8a9.
+  LV           VG          Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  0            data        -wi-a----- 665,00g                                                    
+  1            data        -wi-a----- 665,00g                                                    
+  2            data        -wi-a----- 665,00g                                                    
+  3            data        -wi-a----- 665,00g                                                    
+  4            data        -wi-a----- 665,00g                                                    
+  5            data        -wi-a----- 665,00g                                                    
+  6            data        -wi-a----- 665,00g                                                    
+  7            data        -wi-a----- 665,00g                                                    
+  8            data        -wi-a----- 665,00g                                                    
+  9            data        -wi-a----- 665,00g                                                    
+  a            data        -wi-a----- 665,00g                                                    
+  b            data        -wi-a----- 665,00g                                                    
+  c            data        -wi-a----- 665,00g                                                    
+  d            data        -wi-a----- 665,00g                                                    
+  e            data        -wi-a----- 665,00g                                                    
+  f            data        -wi-a----- 665,00g                                                    
+  main         data        -wi-a-----  30,00g                                                    
+  users        data        -wi-a-----   5,00g                                                    
+  1            data_date   -wi-a----- 400,00g                                                    
+  main         data_date_1 -wi-a-----   2,44t                                                    
+  applications root        -wi-ao----  32,00m                                                    
+  slash        root        -wi-ao----   5,00g                                                    
+  swap         root        -wi-ao----   1,97g                                                    
+  tmp          root        -wi-ao----   2,00g                                                    
+  u01          root        -wi-ao---- 160,00m                                                    
+  var          root        -wi-ao----   3,00g                                                    
+  var_log      root        -wi-ao----   5,00g                                                    
+  var_tmp      root        -wi-ao----   2,00g                                                    
+[root@fedorafs1-recover-tk ~]# df -h 
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/root-slash
+                      4,9G  1,6G  3,1G  35% /
+tmpfs                 1,9G     0  1,9G   0% /dev/shm
+/dev/mapper/root-applications
+                       27M  400K   25M   2% /applications
+/dev/vda1             194M   82M  103M  45% /boot
+/dev/mapper/root-tmp  2,0G  3,2M  1,9G   1% /tmp
+/dev/mapper/root-u01  151M  1,6M  142M   2% /u01
+/dev/mapper/root-var  3,0G  681M  2,2G  24% /var
+/dev/mapper/root-var_log
+                      4,8G  143M  4,5G   4% /var/log
+/dev/mapper/root-var_tmp
+                      2,0G  3,0M  1,9G   1% /var/tmp
+nfs-infra.isilon.opoce.cec.eu.int:/home/claeyje
+                      300G  231G   70G  77% /home/claeyje
+[root@fedorafs1-recover-tk ~]# dfh
+-bash: dfh: command not found
+[root@fedorafs1-recover-tk ~]# 
+Broadcast message from root@fedorafs1-recover-tk
+	(unknown) at 14:16 ...
+
+The system is going down for halt NOW!
+Connection to fedorafs1-recover-tk closed by remote host.
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+

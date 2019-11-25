@@ -1,0 +1,45 @@
+Please check and follow properly:
+
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Team/HandlingOnCall
+
+Reporting on an incident 
+?	Call always OnCall SDM 
+?	Raise always a P1/2 SMT ticket 
+?	When handling an incident out of office hours, create a report of it in MachineIncidents 
+?	When the incident concerns a DOWN event, analyze and create a MachineIncidents page 
+?	When you get an UP event 
+o	In both cases, document what you know in the MachineIncidents page 
+o	Check if this was due to resource starvation; uptime will indicate no reboot 
+?	send mail to DIGIT OASIS UNIX INTER & DIGIT OASIS MGMT 
+?	Open a ticket to DIGIT ISHS SERVICEDESK to check on the application; do this at the first available NWH shift. 
+o	If this was due to a crash/reboot 
+?	Verify that everything is running; check for residual problems 
+o	When done: 
+?	Send mail to DIGIT OASIS UNIX INTER & DIGIT OASIS MGMT 
+?	Send sms or call the C2 Incident manager: (+352) 621 291 628 
+
+
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Team/ProcedureForPlannedInterventions
+
+Procedure 
+Initiation 
+?	A member of the UNIX team: 
+o	Receives a request to perform an operation through an SMT ticket OR 
+o	Initiates a planned intervention following an incident or within a project. 
+?	If no SMT ticket exists, team member has to create a SMT incident himself. 
+?	This member of the UNIX team will be the intervention coordinator (IC). The IC is responsible for: 
+o	The whole planning of the intervention. 
+o	Making sure that a SMT ticket exists and create an Incident Page 
+o	Adding the intervention in the Unix WIKI UpcomingInterventions page 
+o	Communication of the intervention to ISHS/SD and the unix team and officials. 
+o	Passing all the needed information to the implementor. 
+?	The implementor (the person who will actually perform the intervention) is responsible for: 
+o	Making sure he receives all the needed information from the IC. 
+o	Performing the operation. 
+o	Changing the status in the unix WIKI page (DONE*/*CANCELLED*/*ROLLED BACK*/*FAILED) 
+o	Sending e-mail to Unix team, officials (in case of really big-impact intevention), any related other team (eg. Storage team - not mandatory) and ISHS/SD about the outcome of the intervention 
+o	Sending sms or call the C2 Incident manager: (+352) 621 291 628 
+
+
+
+

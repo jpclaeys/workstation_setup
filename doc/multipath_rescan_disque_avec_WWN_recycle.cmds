@@ -1,0 +1,53 @@
+Voila mes commandes dans l’ordre :
+
+[root@titanium ~]# grep 60000970000296700060533030374631 /etc/multipath.conf -b1
+2864-    multipath {
+2880:       wwid 360000970000296700060533030374631
+2926-       alias etenderext-tk_vmax3_t2_data1
+
+
+[root@titanium ~]# multipath -r etenderext-tk_vmax3_t2_data1
+reload: etenderext-tk_vmax3_t2_data1 (360000970000296700060533030374631) undef EMC     ,SYMMETRIX       
+size=50G features='1 queue_if_no_path' hwhandler='0' wp=undef
+`-+- policy='service-time 0' prio=1 status=undef
+  |- 1:0:0:17  sdfm 130:128 failed faulty running
+  |- 1:0:0:200 sdgl 132:16  active ready running
+  |- 2:0:0:17  sdfo 130:160 failed faulty running
+  |- 2:0:0:200 sdgn 132:48  active ready running
+  |- 3:0:0:17  sdfq 130:192 failed faulty running
+  |- 3:0:0:200 sdgp 132:80  active ready running
+  |- 4:0:0:17  sdfw 131:32  failed faulty running
+  |- 4:0:0:200 sdgr 132:112 active ready running
+  |- 5:0:0:17  sdfy 131:64  failed faulty running
+  |- 5:0:0:200 sdgt 132:144 active ready running
+  |- 6:0:0:17  sdgc 131:128 failed faulty running
+  |- 6:0:0:200 sdgv 132:176 active ready running
+  |- 7:0:0:17  sdgh 131:208 failed faulty running
+  |- 7:0:0:200 sdgx 132:208 active ready running
+  |- 8:0:0:17  sdgj 131:240 failed faulty running
+  `- 8:0:0:200 sdgz 132:240 active ready running
+
+[root@titanium ~]# /home/admin/bin/removelun_rhel etenderext-tk_vmax3_t2_data1 | bash
+[root@titanium ~]# /home/admin/bin/removelun_rhel /dev/mapper/etenderint-tk_vmax3_t2_system1 | bash
+
+[root@titanium ~]# multipath -r
+
+[root@titanium ~]# multipath -ll | grep 60000970000296700060533030374631 -A6
+etenderext-tk_vmax3_t2_data1 (360000970000296700060533030374631) dm-44 EMC     ,SYMMETRIX       
+size=50G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=enabled
+  |- 1:0:0:200 sdfm 130:128 active ready running
+  |- 2:0:0:200 sdfo 130:160 active ready running
+  |- 3:0:0:200 sdfq 130:192 active ready running
+  |- 4:0:0:200 sdfw 131:32  active ready running
+
+[root@titanium ~]# multipath -ll | grep 60000970000296700060533030374632 -A6
+etenderint-tk_vmax3_t2_system1 (360000970000296700060533030374632) dm-45 EMC     ,SYMMETRIX       
+size=300G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=enabled
+  |- 1:0:0:201 sdfn 130:144 active ready running
+  |- 2:0:0:201 sdfp 130:176 active ready running
+  |- 3:0:0:201 sdfr 130:208 active ready running
+  |- 4:0:0:201 sdfx 131:48  active ready running
+
+

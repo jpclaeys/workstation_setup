@@ -1,0 +1,45 @@
+918  2017-07-31 10:53:17 : last reboot
+
+ipmitool 
+ipmitool lan list 1
+ipmitool lan 
+ipmitool lan print 1
+ipmitool
+
+Reset the management controller
+
+ipmitool mc reset cold
+
+ipmitool user list 1
+ipmitool lan print 1
+ipmitool user list 1
+ipmitool user
+ipmitool user set password 3
+
+  648  2017-04-03 08:24:20 : ipmitool user list 1
+
+Reset the management controller
+
+  649  2017-04-03 08:27:21 : ipmitool mc reset cold
+  650  2017-04-03 08:40:49 : /opt/ibm/toolscenter/asu/asu64 
+
+  661  2017-04-03 08:43:40 : /opt/ibm/toolscenter/asu/asu64 showvalues --kcs
+  662  2017-04-03 08:43:56 : /opt/ibm/toolscenter/asu/asu64 showvalues --kcs > foo
+  668  2017-04-03 08:47:34 : grep -c ^processor /proc/cpuinfo 
+  669  2017-04-03 08:47:59 : /opt/ibm/toolscenter/asu/asu64 help 
+  670  2017-04-03 08:48:02 : /opt/ibm/toolscenter/asu/asu64 
+  671  2017-04-03 08:48:21 : /opt/ibm/toolscenter/asu/asu64 show --kcs
+  672  2017-04-03 08:48:32 : /opt/ibm/toolscenter/asu/asu64 show --kcs > foo2
+  673  2017-04-03 08:49:03 : /opt/ibm/toolscenter/asu/asu64 show 
+  674  2017-04-03 08:49:19 : grep 8 foo2 
+  676  2017-04-03 08:50:35 : /opt/ibm/toolscenter/asu/asu64 set uEFI.EnableCoresInSbsp All --kcs
+  677  2017-04-03 08:50:51 : /opt/ibm/toolscenter/asu/asu64 show | grep EnableCoresInSbsp
+  678  2017-04-03 08:51:02 : /opt/ibm/toolscenter/asu/asu64 show --kcs | grep EnableCoresInSbsp
+  679  2017-04-03 08:51:14 : grep -c ^processor /proc/cpuinfo 
+  680  2017-04-03 08:42:36 : /opt/ibm/toolscenter/asu/asu64 
+  681  2017-04-03 09:03:05 : lscpu
+  682  2017-04-03 09:04:01 : history
+
+
+ root@japetus:->/opt/ibm/toolscenter/asu/asu64 show --kcs | grep EnableCoresInSbsp
+uEFI.EnableCoresInSbsp=All

@@ -1,0 +1,35 @@
+Howto add an ftp access to Solaris
+----------------------------------
+
+Hello Jean-Pierre,
+
+it’s the same as always when ftp access to the external FTP gateways is requested.
+1)	Adding the user to the appropriate virtual host and user directive in $GIT_SOLARIS/development/modules/solaris/files/Solaris/etc/proftpd.conf.$GW
+1.1)    git pull
+2)	commit
+3)	pull into prod branch
+4)	commit
+5)	run puppet agent on $GW and restart the proftpd service
+
+
+ex on opgtwint-pz:
+
+[root@opgtwint-pz etc]# ll /etc/proftpd.conf
+-rw-r--r--   1 root     bin          24K Sep 12 07:55 /etc/proftpd.conf
+[root@opgtwint-pz etc]# ll proftp*
+-rw-r--r--   1 root     bin          24K Sep 12 07:55 proftpd.conf
+-rw-r--r--   1 root     root         21K Mar  9  2018 proftpd.conf.20180309
+-rw-r--r--   1 root     root         22K Apr 26  2018 proftpd.conf.20180425
+-rw-r--r--   1 root     root        1.3K Feb 26  2018 proftpd.conf_20180226
+
+ex for ticket IM0018099228 
+
+
+[root@opgtwint-pz etc]# egrep -i "ftp_pe|oppc421|oppc248" proftpd.conf
+<IfUser ftp_pe>
+                Allow from oppc421.publications.win
+                Allow from oppc248.publications.win
+<IfUser ftp_petest>
+                Allow from oppc421.publications.win
+                Allow from oppc248.publications.win
+

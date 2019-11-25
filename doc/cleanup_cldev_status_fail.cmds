@@ -1,0 +1,17 @@
+powermt check
+DIDLIST=`cldev status -s fail | grep rdsk|awk '{print $1}'| awk -F'/' '{print $NF}'  | xargs` && echo $DIDLIST
+for DEV in `cldev show $DIDLIST  | grep Path | awk -F":" '{print $NF}'`; do echo luxadm -e offline ${DEV}s0;done
+# If ok, then execute the commands
+for DEV in `cldev show $DIDLIST  | grep Path | awk -F":" '{print $NF}'`; do echo luxadm -e offline ${DEV}s0;done|sh
+cldev clear && cldev populate && cldev status -s fail 
+zpool status -xv
+powermt check
+powermt display
+
+# more ...
+echo | format | grep unavailable
+Then offline those luns
+cldev clear
+cldev status -s fail
+
+==> use the function "cleanup_unavailable_luns"

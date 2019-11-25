@@ -1,0 +1,47 @@
+# Steps to add a user in xpra config on opvmwstsx11
+----------------------------------------------------
+
+1. Add an entry in the config file: /etc/xpra/xpra.conf
+
+
+ex. add entry for fermaml (Mamloo Fernandes)
+fermaml=:6012
+
+2. start the service for this user:
+
+mail from marco
+------------------------------------------------------------------------------------------------------
+[root@opvmwstsx11 claeyje]# cat /etc/sudoers.d/50-xpra 
+%adminux LOCAL=(root) NOPASSWD: /usr/bin/systemctl stop xpra@*.service
+%adminux LOCAL=(root) NOPASSWD: /usr/bin/systemctl start xpra@*.service
+%adminux LOCAL=(root) NOPASSWD: /usr/bin/systemctl restart xpra@*.service
+This also make it working for all sysadmins 
+Marco
+/usr/bin/systemctl start xpra@fermaml.service
+/usr/bin/systemctl start xpra@fermaml.service
+Marco
+------------------------------------------------------------------------------------------------------
+
+[root@opvmwstsx11 claeyje]# systemctl status xpra@fermaml
+● xpra@fermaml.service - xpra display
+   Loaded: loaded (/usr/lib/systemd/system/xpra@.service; enabled; vendor preset: disabled)
+   Active: active (running) since Mon 2019-07-29 10:37:25 CEST; 53min ago
+ Main PID: 116851 (xpra)
+   CGroup: /system.slice/system-xpra.slice/xpra@fermaml.service
+           ├─116851 /usr/bin/python2 /usr/bin/xpra --pulseaudio=no --daemon=no start :6012
+           ├─117022 Xorg-nosuid /usr/bin/Xorg -noreset -novtswitch -nolisten tcp +extension GLX +extension RANDR +extension RENDER -auth /home/fermaml/.Xau...
+           └─117038 /bin/dbus-daemon --fork --print-pid 4 --print-address 6 --session
+
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,299 found 0 virtual video devices for webcam forwarding
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,303 Error: failed to query sound subsystem:
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,303  No module named sound.common
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,363 xpra X11 version 2.3.3-r19845 64-bit
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,364  uid=30336 (fermaml), gid=47110 (opunix)
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,364  running with pid 116851 on Linux RedHatEnterpriseServer 7.4 Maipo
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,364  connected to X11 display :6012 with 24 bit colors
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,516 xpra is ready.
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,520 printer forwarding enabled using postscript and pdf
+Jul 29 10:37:27 opvmwstsx11 xpra[116851]: 2019-07-29 10:37:27,524 23.4GB of system memory
+
+
+

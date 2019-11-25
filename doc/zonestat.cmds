@@ -1,0 +1,2 @@
+zonestat -q -R high,average -z $Z $INTERVAL $DURATION
+Cfr: function zonestats

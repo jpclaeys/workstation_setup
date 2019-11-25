@@ -1,0 +1,110 @@
+dladm show-phys
+dladm show-link
+kstat -p ixgbe:<interface nb>:statistics | grep _fault
+
+ex.
+
+[root@neo /]# dladm show-phys| grep -v priv
+LINK              MEDIA                STATE      SPEED  DUPLEX    DEVICE
+pub1              Ethernet             up         10000  full      ixgbe6
+int2              Ethernet             up         1000   full      ixgbe11
+int1              Ethernet             up         1000   full      ixgbe10
+pub2              Ethernet             up         10000  full      ixgbe7
+pub4              Ethernet             up         10000  full      ixgbe9
+pub3              Ethernet             up         10000  full      ixgbe8
+
+[root@neo /]# for i in {6..9}; do kstat -p ixgbe:${i}:statistics | grep fault;done
+ixgbe:6:statistics:mac_local_fault      2
+ixgbe:6:statistics:mac_remote_fault     460
+ixgbe:7:statistics:mac_local_fault      1
+ixgbe:7:statistics:mac_remote_fault     0
+ixgbe:8:statistics:mac_local_fault      0
+ixgbe:8:statistics:mac_remote_fault     310
+ixgbe:9:statistics:mac_local_fault      0
+ixgbe:9:statistics:mac_remote_fault     0
+
+[root@trinity /]#  for i in {6..9}; do kstat -p ixgbe:${i}:statistics | grep fault;done
+ixgbe:6:statistics:mac_local_fault  2
+ixgbe:6:statistics:mac_remote_fault 472
+ixgbe:7:statistics:mac_local_fault  0
+ixgbe:7:statistics:mac_remote_fault 0
+ixgbe:8:statistics:mac_local_fault  2
+ixgbe:8:statistics:mac_remote_fault 475
+ixgbe:9:statistics:mac_local_fault  1
+ixgbe:9:statistics:mac_remote_fault 17
+
+[root@morpheus /]# dladm show-phys| grep -v priv
+LINK              MEDIA                STATE      SPEED  DUPLEX    DEVICE
+pub2              Ethernet             up         10000  full      ixgbe1
+pub1              Ethernet             up         10000  full      ixgbe0
+pub4              Ethernet             up         10000  full      ixgbe7
+pub3              Ethernet             up         10000  full      ixgbe6
+int2              Ethernet             up         1000   full      ixgbe5
+int1              Ethernet             up         1000   full      ixgbe4
+net10             Ethernet             up         10     full      usbecm2
+[root@morpheus /]# for i in  0 1 6 7; do kstat -p ixgbe:${i}:statistics | grep fault;done
+ixgbe:0:statistics:mac_local_fault      2
+ixgbe:0:statistics:mac_remote_fault     169
+ixgbe:1:statistics:mac_local_fault      2
+ixgbe:1:statistics:mac_remote_fault     98
+ixgbe:6:statistics:mac_local_fault      0
+ixgbe:6:statistics:mac_remote_fault     278
+ixgbe:7:statistics:mac_local_fault      1
+ixgbe:7:statistics:mac_remote_fault     414
+
+[root@niobe /]# dladm show-phys | grep -v priv | grep pub
+pub1              Ethernet             up         10000  full      ixgbe0
+pub3              Ethernet             up         10000  full      ixgbe6
+pub2              Ethernet             up         10000  full      ixgbe1
+pub4              Ethernet             up         10000  full      ixgbe7
+[root@niobe /]#  for i in  0 1 6 7; do kstat -p ixgbe:${i}:statistics | grep fault;done
+ixgbe:0:statistics:mac_local_fault      2
+ixgbe:0:statistics:mac_remote_fault     363
+ixgbe:1:statistics:mac_local_fault      1
+ixgbe:1:statistics:mac_remote_fault     10
+ixgbe:6:statistics:mac_local_fault      0
+ixgbe:6:statistics:mac_remote_fault     310
+ixgbe:7:statistics:mac_local_fault      2
+ixgbe:7:statistics:mac_remote_fault     19
+
+[root@perceval /]# dladm show-phys| egrep -v 'priv|int'
+LINK              MEDIA                STATE      SPEED  DUPLEX    DEVICE
+pub1              Ethernet             up         10000  full      ixgbe2
+pub2              Ethernet             up         10000  full      ixgbe3
+[root@perceval /]#  for i in 2 3 ; do kstat -p ixgbe:${i}:statistics | grep fault;done  | awk '$NF>0'
+ixgbe:2:statistics:mac_local_fault      1
+ixgbe:2:statistics:mac_remote_fault     69
+
+[root@karadoc /]# dladm show-phys| egrep -v 'priv|int'
+LINK              MEDIA                STATE      SPEED  DUPLEX    DEVICE
+pub1              Ethernet             up         10000  full      ixgbe2
+pub2              Ethernet             up         10000  full      ixgbe3
+[root@karadoc /]# for i in 2 3 ; do kstat -p ixgbe:${i}:statistics | grep fault;done  | awk '$NF>0'
+ixgbe:2:statistics:mac_local_fault      1
+
+
+[root@tank /]#  dladm show-phys| egrep -v 'priv|int'
+LINK              MEDIA                STATE      SPEED  DUPLEX    DEVICE
+pub1              Ethernet             up         10000  full      ixgbe2
+pub3              Ethernet             up         10000  full      ixgbe4
+pub2              Ethernet             up         10000  full      ixgbe3
+pub4              Ethernet             up         10000  full      ixgbe5
+[root@tank /]# for i in {2..5}; do kstat -p ixgbe:${i}:statistics | grep fault;done | awk '$NF>0'  
+ixgbe:2:statistics:mac_local_fault      1
+ixgbe:2:statistics:mac_remote_fault     4
+ixgbe:4:statistics:mac_remote_fault     993
+
+
+[root@dozer /]#  dladm show-phys| egrep -v 'priv|int'
+LINK              MEDIA                STATE      SPEED  DUPLEX    DEVICE
+pub1              Ethernet             up         10000  full      ixgbe2
+pub3              Ethernet             up         10000  full      ixgbe4
+pub2              Ethernet             up         10000  full      ixgbe3
+pub4              Ethernet             up         10000  full      ixgbe5
+[root@dozer /]#  for i in {2..5}; do kstat -p ixgbe:${i}:statistics | grep fault;done | awk '$NF>0'      
+ixgbe:2:statistics:mac_local_fault      1
+ixgbe:2:statistics:mac_remote_fault     26
+ixgbe:4:statistics:mac_local_fault      1
+ixgbe:4:statistics:mac_remote_fault     43
+
+

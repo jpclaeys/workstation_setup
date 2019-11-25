@@ -1,0 +1,103 @@
+Howto fix ldap duplicates
+--------------------------
+
+# Find duplicates
+------------------
+check_ldap_duplicates
+
+# Change uid for the user
+--------------------------
+get_first_free_uid 30200
+
+# modify the uid for Andreas Kreuzinger to 30203
+-------------------------------------------------
+# launch the LDAP Brower java gui (lbe.bat on Windows)
+-------------------------------------------------------
+Goto People
+uid=kreuzan
+select uidNumber
+right click
+Edit
+Edit Attribute
+Enter the new uid value
+Apply
+
+# Change the home dir ownership
+---------------------------------
+
+become root
+
+cd /net/nfs-infra.isilon.opoce.cec.eu.int/home
+
+ll -d <user>
+chmod -R <user> <user>
+ll -d <user>
+
+# Find left over duplicates
+-----------------------------
+check_ldap_duplicates
+
+====================================================================================================================================
+Example:
+--------
+
+# Find duplicates
+[claeyje@banta ~]# check_ldap_duplicates 
+30208 kreuzan
+30208 netpasc
+30241 soareco
+30241 willphi
+
+# Change uid for Andreas Kreuzinger
+------------------------------------
+[claeyje@banta ~]# get_first_free_uid 30200
+
+#==> First free uid: 30203
+
+# modify the uid for Andreas Kreuzinger to 30203
+
+# launch the LDAP Brower java gui (lbe.bat on Windows)
+
+Goto People
+uid=kreuzan
+select uidNumber
+right click
+Edit
+Edit Attribute
+Enter the new uid value
+Apply
+
+
+# Change uid for Philippe Willig
+---------------------------------
+[claeyje@banta ~]# get_first_free_uid 30200
+
+#==> First free uid: 30204
+
+# Change the home dir ownership
+---------------------------------
+
+become root
+
+cd /net/nfs-infra.isilon.opoce.cec.eu.int/home
+
+
+[root@banta home]# ll -d kre*
+drwxr-xr-x 3 netpasc opunix 22  7 oct 10:40 kreuzan
+[root@banta home]# chown -R kreuzan kreuzan
+[root@banta home]# ll -d kre*
+drwxr-xr-x 3 kreuzan opunix 22  7 oct 10:40 kreuzan
+
+[root@banta home]# ll -d willphi
+drwxr-xr-x 4 soareco opunix 77 21 oct 11:41 willphi
+[root@banta home]# chown -R willphi willphi
+[root@banta home]# ll -d willphi
+drwxr-xr-x 4 willphi opunix 77 21 oct 11:41 willphi
+
+[claeyje@banta ~]# check_ldap_duplicates 
+
+===> OK, no duplicates found in ldap                                        <===
+
+
+====================================================================================================================================
+

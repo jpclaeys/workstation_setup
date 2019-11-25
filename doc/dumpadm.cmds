@@ -1,0 +1,101 @@
+How To Determine Approximate Solaris Crash Dump File Size Requirements
+-----------------------------------------------------------------------
+Ref.
+https://www.thegeekdiary.com/how-to-determine-approximate-solaris-crash-dump-file-size-requirements/
+
+The amount of disk space required by Solaris in order to capture a crash dump will depend upon a number of factors. By default, Solaris will capture just the kernel’s memory pages. But it is also possible to capture user pages which would, in most cases, result in a much larger crash dump file. This behaviour is controlled via the dumpadm “Dump Content” setting via the “-c” command line parameter. The kernel’s memory consumption will vary from system to system, so it is not possible to give a general guideline for crash dump size.
+
+Below are few of the general factors affecting the size of crash dump :
+1. Systems with larger amounts of RAM installed will typically see higher memory consumption by the kernel, as more kernel memory is needed to manage the larger overall memory space and the larger number of processes and threads that we might expect to see on such a system.
+
+2. Bugs resulting in kernel memory leaks can also result in larger space requirements for a crash dump. The worst case would be a leak that consumed all available RAM.
+
+
+ 
+3. As of starting Solaris 10 update 9 (9/10), crash dumps are compressed as they are written to the dump device, resulting in much lower space requirements. If possible, bzip2 compression is used, otherwise lzjb. Crash dump compression can be enabled and disabled via dumpadm. It is enabled by default.
+
+Estimating crash dump size
+An estimate of the space requirements is reported when an attempt is made to configure a dump device that is too small. In the example below, an attempt is made to configure a 20MB zvol as a dedicated dump device. The dumpadm command reports that the estimated dump size, assuming a compression ratio of 2x, would be 438501376 bytes (418MB). In the event that dumpadm is configured to dump all memory pages, rather than just kernel pages, the size estimate is simply half the amount of installed memory.
+
+# dumpadm
+      Dump content: kernel pages
+       Dump device: /dev/zvol/dsk/rpool/dump (dedicated)
+Savecore directory: /var/crash
+  Savecore enabled: yes
+   Save compressed: on
+# zfs create -V 20m rpool/smalldump
+# dumpadm -d /dev/zvol/dsk/rpool/smalldump 
+dumpadm: dump device /dev/zvol/dsk/rpool/smalldump is too small to hold a system dump
+dump size 438501376 bytes, device size 20971520 bytes
+Creating a live crash dump via “savecore -L”, we see that a much higher compression ratio was achieved in this case and the actual crash dump size was 74MB. Such a high compression ratio will not always be possible so space should be allocated based the assumption of a lower ratio, e.g. 2x.
+
+# ls -lh /var/crash/vmdump.0
+-rw-r--r--   1 root     root         74M Jan 17 09:28 /var/crash/vmdump.0
+The same method works with UFS dump devices, although this would require assigning a small disk slice to be the dedicated dump device.The following mdb command replicates the calculation used by dumpadm to obtain its estimate and can therefore be used to quickly obtain an approximate figure.
+
+On Solaris 10 without 150400-26 (SPARC) / 150401-26 (x86) and Solaris 11.0:
+
+# echo "physinstalled::print -d |>f; obp_pages::print -d |>g; availrmem::print -d |>h; anon_segkp_pages_locked::print -d |>i; k_anoninfo::print -d ani_mem_resv |>j; pages_locked::print -d |>k; pages_claimed::print -d |>l; pages_useclaim::print -d | >n ; _pagesize::print -d |>p ; ((<f-<g-<h-<i-<j-<k-<l-<n)*<p)%2=E" | /usr/bin/mdb -k
+                443269120
+On Solaris 11.1 without SRU 19:
+
+# echo "physinstalled::print -d |>f; obp_pages::print -d |>g; availrmem::print -d |>h; anon_segkp_pages_locked::print -d |>i; k_anoninfo::print -d ani_mem_resv |>j; pages_locked::print -d |>k; _pagesize::print -d |>p ; ((<f-<g-<h-<i-<j-<k)*<p)%2=E" | /usr/bin/mdb -k
+                1089818624
+On Solaris 10 with 150400-26 (SPARC) / 150401-26 (x86) or later and Solaris 11.1 with SRU 19 or later:
+
+# echo "kpages_locked::print -d |>l; _pagesize::print -d |>p; (<l*<p)%2=E" | /usr/bin/mdb -k
+                3918499840
+Starting with Solaris 11u2, we have new ‘-e’ flag to dumpadm, which prints an estimate of the dump space requirements, e.g.
+
+# dumpadm -e
+Estimated space required for dump: 335.52 M
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+How to reduce the core dump size in Solaris 11
+-----------------------------------------------
+
+
+In this guide, we are about to see how to reduce the core dump size in Solaris.
+
+dumpadm will show the disk used for core dump.
+
+# dumpadm
+
+root@solaris_prod01:~# dumpadm
+Dump content : kernel with ZFS metadata
+Dump device : /dev/zvol/dsk/rpool/dump (dedicated)
+Savecore directory: /var/crash
+Savecore enabled : yes
+Save compressed : on
+Check for the current volume size.
+
+# zfs get volsize rpool/dump
+
+root@solaris_prod01:~# zfs get volsize rpool/dump
+NAME PROPERTY VALUE SOURCE
+rpool/dump volsize 64G local
+Reduce/resize the volume size, and print new volume size.
+
+
+ 
+# zfs set volsize=20G rpool/dump
+
+# zfs get volsize rpool/dump
+
+root@solaris_prod01:~# zfs set volsize=20G rpool/dump
+
+root@solaris_prod01:~# zfs get volsize rpool/dump
+NAME PROPERTY VALUE SOURCE
+rpool/dump volsize 20G local
+After reducing we have a lot of spaces.
+
+root@solaris_prod01:~# df -h /
+Filesystem Size Used Available Capacity Mounted on
+rpool/ROOT/solaris-11.2.2.2.8
+274G 4.9G 48G 10% /
+root@solaris_prod01:~#
+That’s it, we are done with reducing core dump volume in Solaris 11.
+
+------------------------------------------------------------------------------------------------------------------------------------

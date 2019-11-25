@@ -1,0 +1,328 @@
+As mentioned:
+Never really tested with our current environment (srdf, powerpath), but this is generally the way to do it.
+
+
+##############################################################################################################################################
+# shrink with zfs send/receive from an old to a new zpool
+##############################################################################################################################################
+#
+# Ask for LUNs, create a new pool
+
+root@bart # zpool status ceres_tz_NEW
+  pool: ceres_tz_NEW
+state: ONLINE
+scrub: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        ceres_tz_NEW                             ONLINE       0     0     0
+          c4t600A0B800026676A000017E44CB76009d0  ONLINE       0     0     0
+          c4t600A0B800026676A000017E54CB76141d0  ONLINE       0     0     0
+          c4t600A0B800026677200001A2A4CB7696Ad0  ONLINE       0     0     0
+
+errors: No known data errors
+
+
+root@bart # zpool list               
+NAME           SIZE   USED  AVAIL    CAP  HEALTH  ALTROOT
+ceres_tz       436G   310G   126G    71%  ONLINE  -
+ceres_tz_NEW   357G  79.5K   357G     0%  ONLINE  -
+rpool         33.8G  11.3G  22.5G    33%  ONLINE  -
+
+
+
+root@bart # zpool status ceres_tz    
+  pool: ceres_tz
+state: ONLINE
+scrub: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        ceres_tz                                 ONLINE       0     0     0
+          c4t600A0B800048F43A000016894BC5A4C6d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+
+##### variables
+NEWPOOL=ceres_tz_NEW
+POOLTOBACKUP=ceres_tz
+CURDATE=20161015_0630
+NEWDATE=_09h00
+export NEWPOOL POOLTOBACKUP CURDATE
+echo "$NEWPOOL $POOLTOBACKUP $CURDATE $NEWDATE"
+ceres_tz_NEW ceres_tz 20161015_0630 _09h00
+
+
+
+##### snapshot de POOLTOBACKUP
+zfs snapshot -r ${POOLTOBACKUP}@${CURDATE}
+zfs list -r $POOLTOBACKUP
+
+NAME                                                   USED  AVAIL  REFER  MOUNTPOINT
+ceres_tz                                               310G   119G    20K  /zpool/ceres_tz
+ceres_tz@20161015_0630                                    0      -    20K  -
+ceres_tz/applications                                  246G   119G  24.5K  none
+ceres_tz/applications@20161015_0630                       0      -  24.5K  -
+ceres_tz/applications/cdl                              717M   119G  25.5K  none
+ceres_tz/applications/cdl@20161015_0630                   0      -  25.5K  -
+ceres_tz/applications/cdl/users                        717M   119G   717M  /applications/cdl/users
+ceres_tz/applications/cdl/users@20161015_0630             0      -   717M  -
+ceres_tz/applications/ceres                            242G   119G  24.5K  none
+ceres_tz/applications/ceres@20161015_0630                 0      -  24.5K  -
+ceres_tz/applications/ceres/orabin                    3.57G   119G  3.57G  /applications/ceres/orabin
+ceres_tz/applications/ceres/orabin@20161015_0630          0      -  3.57G  -
+ceres_tz/applications/ceres/oradata                   95.9G   119G  95.9G  /applications/ceres/oradata
+ceres_tz/applications/ceres/oradata@20161015_0630      309K      -  95.9G  -
+ceres_tz/applications/ceres/oralog                    23.8M   119G  23.8M  /applications/ceres/oralog
+ceres_tz/applications/ceres/oralog@20161015_0630          0      -  23.8M  -
+ceres_tz/applications/ceres/users                      142G   119G   142G  /applications/ceres/users
+ceres_tz/applications/ceres/users@20161015_0630           0      -   142G  -
+ceres_tz/applications/ceres/xchange                   31.1M   119G  31.1M  /applications/ceres/xchange
+ceres_tz/applications/ceres/xchange@20161015_0630         0      -  31.1M  -
+ceres_tz/applications/legiswrite                      1.08G   119G  25.5K  none
+ceres_tz/applications/legiswrite@20161015_0630            0      -  25.5K  -
+ceres_tz/applications/legiswrite/users                1.08G   119G  1.08G  /applications/legiswrite/users
+ceres_tz/applications/legiswrite/users@20161015_0630      0      -  1.08G  -
+ceres_tz/applications/lgw                              733M   119G  25.5K  none
+ceres_tz/applications/lgw@20161015_0630                   0      -  25.5K  -
+ceres_tz/applications/lgw/users                        733M   119G   733M  /applications/lgw/users
+ceres_tz/applications/lgw/users@20161015_0630             0      -   733M  -
+ceres_tz/applications/oraagent                        1.38G   639M  1.38G  /u01/oraagent
+ceres_tz/applications/oraagent@20161015_0630              0      -  1.38G  -
+ceres_tz/zone                                         64.3G   119G  64.3G  /zones/ceres_tz
+ceres_tz/zone@20161015_0630                               0      -  64.3G  -
+
+
+##### send|recieve de POOLTOBACKUP vers NEWPOOL
+LAUNCH="06:38"
+export LAUNCH
+{
+TAG="ZFS"
+export TAG
+-
+for Filesystem in $(zfs list -Hr ${POOLTOBACKUP} | grep  $CURDATE | grep -v adadata | awk '{print $1}') 
+do 
+ echo "logger -p daemon.notice -t $TAG \"FS: $Filesystem\""
+echo "zfs send $Filesystem | zfs receive -dF ${NEWPOOL}"
+done
+echo "logger -p daemon.notice -t $TAG \"SEND RECEIVE END\""
+} | at -q n $LAUNCH
+
+
+
+##### disable applications
+root@ceres_tz # /applications/ceres/users/system/init.d/ceres disable
+root@ceres_tz # /applications/cdl/users/system/init.d/cdl disable
+root@ceres_tz # /applications/lgw/users/system/init.d/lgw disable
+
+
+root@ceres_tz # svcs ceres cdl lgw 
+STATE          STIME    FMRI
+disabled       11:04:42 svc:/applications/ceres:app
+disabled       13:23:15 svc:/applications/ceres:ewopweb
+disabled       13:23:15 svc:/applications/ceres:ewop
+disabled       13:23:15 svc:/applications/ceres:ewopconslegweb
+disabled       13:23:16 svc:/applications/ceres:samba
+disabled       13:23:16 svc:/applications/ceres:woodweb
+disabled       13:23:20 svc:/applications/ceres:vm2
+disabled       13:23:21 svc:/applications/ceres:cdromjo
+disabled       13:23:21 svc:/applications/ceres:cl2sf
+disabled       13:23:21 svc:/applications/ceres:wood
+disabled       13:23:22 svc:/applications/ceres:ceresjur
+disabled       13:23:44 svc:/applications/cdl:woodweb
+disabled       13:23:47 svc:/applications/cdl:wood
+disabled       13:23:50 svc:/applications/cdl:app
+disabled       13:24:02 svc:/applications/ceres:ora
+disabled       13:24:07 svc:/applications/lgw:woodweb
+disabled       13:24:10 svc:/applications/lgw:wood
+disabled       13:24:13 svc:/applications/lgw:app
+
+zfs get -r -s received all $POOLTOBACKUP
+
+##### save ZFS parameters of POOLTOBACKUP so they can be re-applied later to NEWPOOL
+{
+for PARAM in mountpoint quota reservation recordsize compression  aclmode aclinherit zoned 
+do
+  for Filesystem in ` zfs list -Hr $POOLTOBACKUP | grep -v $CURDATE   | awk '{print $1}'`
+  do
+#    zfs get -H $PARAM $Filesystem | perl -p -e 's:$ENV{POOLTOBACKUP}:$ENV{NEWPOOL}:'| awk '{print "zfs set "$2"="$3" "$1}'
+    zfs get -H $PARAM $Filesystem | perl -pe "s:${POOLTOBACKUP}:${NEWPOOL}:"| awk '{print "zfs set "$2"="$3" "$1}'
+  done
+done
+} | tee  /net/vdm-unix/xchange/zpool_shrink/PARAM_ZFS_$POOLTOBACKUP.txt
+
+
+################ stop zone
+
+root@ceres_tz # init 0
+root@bart # zoneadm list -ivc
+  ID NAME             STATUS     PATH                           BRAND    IP    
+   0 global           running    /                              native   shared
+   - ceres_tz         installed  /zones/ceres_tz                native   shared
+
+root@bart # umount /zones/ceres_tz 
+
+
+############### PUT CLUSTER RESOURCES OFFLINE
+
+
+
+
+###############  LAST SNAP
+
+NEWPOOL=ceres_tz_NEW
+POOLTOBACKUP=ceres_tz
+CURDATE=20161015_0630
+NEWDATE=_14h00
+export NEWPOOL POOLTOBACKUP CURDATE
+echo "$NEWPOOL $POOLTOBACKUP $CURDATE $NEWDATE"
+
+ceres_tz_NEW ceres_tz 20161015_0630 _14h00
+
+
+
+zfs snapshot -r ${POOLTOBACKUP}@${CURDATE}${NEWDATE}
+zfs list -r $POOLTOBACKUP
+NAME                                                         USED  AVAIL  REFER  MOUNTPOINT
+ceres_tz                                                     310G   119G    20K  /zpool/ceres_tz
+ceres_tz@20161015_0630                                          0      -    20K  -
+ceres_tz@20161015_0630_14h00                                    0      -    20K  -
+ceres_tz/applications                                        246G   119G  24.5K  none
+ceres_tz/applications@20161015_0630                             0      -  24.5K  -
+ceres_tz/applications@20161015_0630_14h00                       0      -  24.5K  -
+ceres_tz/applications/cdl                                    719M   119G  25.5K  none
+ceres_tz/applications/cdl@20161015_0630                         0      -  25.5K  -
+ceres_tz/applications/cdl@20161015_0630_14h00                   0      -  25.5K  -
+ceres_tz/applications/cdl/users                              719M   119G   717M  /applications/cdl/users
+ceres_tz/applications/cdl/users@20161015_0630               1.59M      -   717M  -
+ceres_tz/applications/cdl/users@20161015_0630_14h00             0      -   717M  -
+ceres_tz/applications/ceres                                  242G   119G  24.5K  none
+ceres_tz/applications/ceres@20161015_0630                       0      -  24.5K  -
+ceres_tz/applications/ceres@20161015_0630_14h00                 0      -  24.5K  -
+ceres_tz/applications/ceres/orabin                          3.59G   119G  3.57G  /applications/ceres/orabin
+ceres_tz/applications/ceres/orabin@20161015_0630            23.3M      -  3.57G  -
+ceres_tz/applications/ceres/orabin@20161015_0630_14h00          0      -  3.57G  -
+ceres_tz/applications/ceres/oradata                         96.0G   119G  95.9G  /applications/ceres/oradata
+ceres_tz/applications/ceres/oradata@20161015_0630            123M      -  95.9G  -
+ceres_tz/applications/ceres/oradata@20161015_0630_14h00         0      -  95.9G  -
+ceres_tz/applications/ceres/oralog                          35.8M   119G  35.8M  /applications/ceres/oralog
+ceres_tz/applications/ceres/oralog@20161015_0630              22K      -  23.8M  -
+ceres_tz/applications/ceres/oralog@20161015_0630_14h00          0      -  35.8M  -
+ceres_tz/applications/ceres/users                            142G   119G   142G  /applications/ceres/users
+ceres_tz/applications/ceres/users@20161015_0630             33.9M      -   142G  -
+ceres_tz/applications/ceres/users@20161015_0630_14h00           0      -   142G  -
+ceres_tz/applications/ceres/xchange                         31.1M   119G  31.1M  /applications/ceres/xchange
+ceres_tz/applications/ceres/xchange@20161015_0630             82K      -  31.1M  -
+ceres_tz/applications/ceres/xchange@20161015_0630_14h00         0      -  31.1M  -
+ceres_tz/applications/legiswrite                            1.08G   119G  25.5K  none
+ceres_tz/applications/legiswrite@20161015_0630                  0      -  25.5K  -
+ceres_tz/applications/legiswrite@20161015_0630_14h00            0      -  25.5K  -
+ceres_tz/applications/legiswrite/users                      1.08G   119G  1.08G  /applications/legiswrite/users
+ceres_tz/applications/legiswrite/users@20161015_0630          48K      -  1.08G  -
+ceres_tz/applications/legiswrite/users@20161015_0630_14h00      0      -  1.08G  -
+ceres_tz/applications/lgw                                    734M   119G  25.5K  none
+ceres_tz/applications/lgw@20161015_0630                         0      -  25.5K  -
+ceres_tz/applications/lgw@20161015_0630_14h00                   0      -  25.5K  -
+ceres_tz/applications/lgw/users                              734M   119G   733M  /applications/lgw/users
+ceres_tz/applications/lgw/users@20161015_0630               1.09M      -   733M  -
+ceres_tz/applications/lgw/users@20161015_0630_14h00             0      -   733M  -
+ceres_tz/applications/oraagent                              1.38G   634M  1.37G  /u01/oraagent
+ceres_tz/applications/oraagent@20161015_0630                8.45M      -  1.38G  -
+ceres_tz/applications/oraagent@20161015_0630_14h00              0      -  1.37G  -
+ceres_tz/zone                                               64.3G   119G  64.3G  /zones/ceres_tz
+ceres_tz/zone@20161015_0630                                 20.5M      -  64.3G  -
+ceres_tz/zone@20161015_0630_14h00                               0      -  64.3G  -
+
+
+
+
+LAUNCH="13:35"
+export LAUNCH
+{
+TAG="ZFS"
+export TAG
+for Filesystem in $(zfs list -Hr ${POOLTOBACKUP} | grep  $CURDATE | awk '{print $1}') 
+do 
+ echo "logger -p daemon.notice -t $TAG \"FS: $Filesystem\""
+echo "zfs send -i $Filesystem ${Filesystem}${NEWDATE}| zfs receive -Fd ${NEWPOOL}"
+done
+echo "logger -p daemon.notice -t $TAG \"SEND RECEIVE END\""
+} | at -q n $LAUNCH
+
+
+########### CHECK SIZE
+zfs list -r $POOLTOBACKUP | grep -v ${CURDATE}
+zfs list -r $NEWPOOL | grep -v ${CURDATE}
+
+
+##### change of zpool + zone
+zpool export $POOLTOBACKUP
+
+#### change zfs parameters
+sh /net/vdm-unix/xchange/zpool_shrink/PARAM_ZFS_$POOLTOBACKUP.txt
+
+zfs destroy -r ${NEWPOOL}@${CURDATE}${NEWDATE}
+zfs destroy -r ${NEWPOOL}@${CURDATE}
+zfs list -r ${NEWPOOL}
+NAME                                         USED  AVAIL  REFER  MOUNTPOINT
+ceres_tz_NEW                                 310G  41.4G    20K  /zpool/ceres_tz
+ceres_tz_NEW/applications                    246G  41.4G    26K  none
+ceres_tz_NEW/applications/cdl                717M  41.4G    21K  none
+ceres_tz_NEW/applications/cdl/users          717M  41.4G   717M  /applications/cdl/users
+ceres_tz_NEW/applications/ceres              242G  41.4G    26K  none
+ceres_tz_NEW/applications/ceres/orabin      3.57G  41.4G  3.57G  /applications/ceres/orabin
+ceres_tz_NEW/applications/ceres/oradata     95.9G  41.4G  95.9G  /applications/ceres/oradata
+ceres_tz_NEW/applications/ceres/oralog      35.8M  41.4G  35.8M  /applications/ceres/oralog
+ceres_tz_NEW/applications/ceres/users        142G  41.4G   142G  /applications/ceres/users
+ceres_tz_NEW/applications/ceres/xchange     31.0M  41.4G  31.0M  /applications/ceres/xchange
+ceres_tz_NEW/applications/legiswrite        1.08G  41.4G    21K  none
+ceres_tz_NEW/applications/legiswrite/users  1.08G  41.4G  1.08G  /applications/legiswrite/users
+ceres_tz_NEW/applications/lgw                733M  41.4G    21K  none
+ceres_tz_NEW/applications/lgw/users          733M  41.4G   733M  /applications/lgw/users
+ceres_tz_NEW/applications/oraagent          1.37G   642M  1.37G  /u01/oraagent
+ceres_tz_NEW/zone                           64.3G  41.4G  64.3G  /zones/ceres_tz
+
+zpool export $NEWPOOL 
+zpool import $NEWPOOL  $POOLTOBACKUP
+
+zfs list -r $POOLTOBACKUP 
+root@bart # zfs list -r $POOLTOBACKUP 
+NAME                                     USED  AVAIL  REFER  MOUNTPOINT
+ceres_tz                                 310G  41.4G    20K  /zpool/ceres_tz
+ceres_tz/applications                    246G  41.4G    26K  none
+ceres_tz/applications/cdl                717M  41.4G    21K  none
+ceres_tz/applications/cdl/users          717M  41.4G   717M  /applications/cdl/users
+ceres_tz/applications/ceres              242G  41.4G    26K  none
+ceres_tz/applications/ceres/orabin      3.57G  41.4G  3.57G  /applications/ceres/orabin
+ceres_tz/applications/ceres/oradata     95.9G  41.4G  95.9G  /applications/ceres/oradata
+ceres_tz/applications/ceres/oralog      35.8M  41.4G  35.8M  /applications/ceres/oralog
+ceres_tz/applications/ceres/users        142G  41.4G   142G  /applications/ceres/users
+ceres_tz/applications/ceres/xchange     31.0M  41.4G  31.0M  /applications/ceres/xchange
+ceres_tz/applications/legiswrite        1.08G  41.4G    21K  none
+ceres_tz/applications/legiswrite/users  1.08G  41.4G  1.08G  /applications/legiswrite/users
+ceres_tz/applications/lgw                733M  41.4G    21K  none
+ceres_tz/applications/lgw/users          733M  41.4G   733M  /applications/lgw/users
+ceres_tz/applications/oraagent          1.37G   642M  1.37G  /u01/oraagent
+ceres_tz/zone                           64.3G  41.4G  64.3G  /zones/ceres_tz
+
+###### export pool, Change DG resource to use the NEW LUNs.
+
+
+
+###### set SDRF and ZFS cluster resources online, keep RS resource offline.
+Check if pools are importing fine, test failover/failback.
+If everything is okay, set RS online
+
+
+
+
+##### restart applications
+
+
+
+
+
+
+##### recover old LUNs
+

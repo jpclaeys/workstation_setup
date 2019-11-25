@@ -1,0 +1,1 @@
+/usr/bin/rdesktop -d publications -z -x 0x80 -P -B -b -a 32 -g 1920x984 -k fr-be -u claeyje opvmwstss03

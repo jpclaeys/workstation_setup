@@ -1,0 +1,59 @@
+For samba shares we have a set of utilities that come with the samba Install samba suite:
+
+smbtree
+smbtree is a smb browser program in text mode. It is similar to the "Network Neighborhood" found on Windows computers. It prints a tree with all the known domains, the servers in those domains and the shares on the servers. Manpage
+smbstatus
+
+smbstatus is a very simple program to list the current Samba connections. Manpage
+By invoking the following a list of shares will be displayed:
+smbstatus --shares
+
+smbd -b|--build-options : Prints info about how Samba was built.
+
+smbd -b| grep CONFIGFILE
+   CONFIGFILE: /etc/samba/smb.conf
+
+smbd -b | grep smb.conf
+testparm /etc/samba/smb.conf
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+OPOCE:
+------
+
+config file location:
+
+/opt/OPsamba3/users/system/samba-instance/etc/smb.conf
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+====================================================================================================================================
+Samba Drive Access issue on ceresng-pz (ex. IM0017771377: Problem accès - drive »» \\opsrv239\etrustex)
+------------------------------------------------------------------------------------------------------------------------------------
+[claeyje@opvmwstsx11 ~]# s opsrv239 uname -a
+SunOS ceresng-pz 5.11 11.3 sun4v sparc sun4v
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+root@ceresng-pz [/var/samba/locks]: tail -100 /var/svc/log/network-winbind:default.log
+[…]
+failed to call wbcPingDc: WBC_ERR_DOMAIN_NOT_FOUND
+Could not ping our DC
+checking the NETLOGON dc connection failed
+
+svcadm disable winbind
+svcadm clear winbind
+svcadm disable samba
+mv /var/samba/locks/*tdb /var/samba/locks/old
+net ads leave  -U SambaWriter (maybe 2x)
+net ads join createcomputer="OU=UNIX,OU=Computers,OU=Publications,DC=publications,DC=win" -U SambaWriter #sambawriter password in attached mail
+Password prompted: Cfr mail or Keepass
+net ads testjoin  -U SambaWriter
+svcadm enable samba
+svcadm enable winbind
+tail -100 /var/svc/log/network-winbind:default.log
+[ May 13 08:17:46 Enabled. ]
+[ May 13 08:17:46 Executing start method ("/lib/svc/method/samba start /usr/sbin/winbindd -D"). ]
+[ May 13 08:17:48 Method "start" exited with status 0. ]
+(add yourself to the share / valid users, to test if it’s working)
+
+====================================================================================================================================
+

@@ -1,0 +1,36 @@
+alias opdt_brutus='/usr/bin/rdesktop -d publications -z -x l -P -B -b -a 32 -g 1280x984 -k fr-be -u claeyje opdt199 &'
+
+
+rdesktop: Connect to Windows 7 and Vista with ClearType font smoothing enabled
+-------------------------------------------------------------------------------
+
+rdesktop allows to specify the RDP5 experience via the -x experience switch.
+One can either define one of three default experiences (modem, broadband, lan) or one can specify a raw hex value that is send to the server.
+
+NOTE: You can skip over this rather technical part, if you’re not interested in the details. You’ll find the workaround below.
+
+This hex value is actually a combination of defined bit flags. After some tinkering I found that the hex value 0x80 will enable font smoothing for the connection.
+The file constants.h of the rdesktop sources contains these flags:
+
+    #define RDP5_DISABLE_NOTHING    0x00  
+    #define RDP5_NO_WALLPAPER   0x01  
+    #define RDP5_NO_FULLWINDOWDRAG  0x02  
+    #define RDP5_NO_MENUANIMATIONS  0x04  
+    #define RDP5_NO_THEMING     0x08  
+    #define RDP5_NO_CURSOR_SHADOW   0x20  
+    #define RDP5_NO_CURSORSETTINGS  0x40    /* disables cursor blinking */  
+
+So, naturally an additional flag constant can be defined like this:
+
+    #define RDP5_ENABLE_FONT_SMOOTHING 0x80  
+
+The file rdesktop.c would have to be extended preferably with an additional argument that controls the font smoothing.
+If you want to use font smoothing with rdesktop now you have to combine the flags (bitwise OR, addition will do too) and specify the result via the -x switch.
+
+Here is the workaround for the three defaults mentioned above:
+
+rdesktop -x 0x8F mywinserver   # equals the modem default + font smoothing
+rdesktop -x 0x81 mywinserver   # equals the broadband default + font smoothing
+rdesktop -x 0x80 mywinserver   # equals the LAN default + font smoothing
+
+

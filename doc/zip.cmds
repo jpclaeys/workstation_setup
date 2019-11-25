@@ -1,0 +1,12 @@
+zip exclude file
+-----------------
+The correct expression is -x *.git*, so the full command should be:
+zip -r bitvolution.zip bitvolution -x *.git*
+
+An explanation from http://selfsolved.com/problems/zip-command-exclude-svn-director:
+The correct incantation is
+zip -9 -r --exclude=*.svn*  foo.zip [directory-to-compress]
+You can also add a
+--exclude=*.DS_Store* to exclude the annoying Mac OS X directory display metadata files.
+Notice that the expression passed to --exclude is using the entire original relative directory path as the original string to match against. So .svn/* by itself doesn't work; the wildcard character in front ensures that it matches .svn directories anywhere in the directory tree.
+

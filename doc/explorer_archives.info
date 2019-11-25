@@ -1,0 +1,15 @@
+Explorer archives locations
+----------------------------
+GoTo infra2-pk
+cd /applications/explo/data/explorer/latest/
+
+
+View the zfs list
+------------------
+
+
+cd explorer.8676c416.morpheus-2019.06.19.02.30
+cd disks
+cd zfs
+ls
+less zfs_list.out

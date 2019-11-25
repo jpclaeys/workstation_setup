@@ -1,0 +1,138 @@
+how to split zpool with multiple mirrored vdevs?
+
+Have a zpool with multiple mirrored vdevs, and intend to perform host-based storage migration with mirroring.
+
+What are the steps to add vdevs to the orapool below and split the old vdevs from the orapool?
+
+ 
+
+Where c0d20 c0d22 c0d24 c0d26 are new vdevs.
+
+ 
+
+?? zpool attach orapool mirror-0 c0d20 c0d21 mirror-1 c0d22 c0d23 mirror-2 c0d24 c0d25 mirror-3 c0d26 c0d27 ??
+
+ 
+
+OR
+
+ 
+
+zpool attach orapool c0d10 c0d20
+
+zpool attach orapool c0d11 c0d22
+
+zpool attach orapool c0d14 c0d24
+
+zpool attach orapool c0d16 c0d26
+
+ 
+
+
+??  zpool split orapool orapool-rm c0d10 c0d11 c0d14 c0d16 ??
+
+ 
+
+ 
+
+orapool
+
+  pool: orapool
+
+state: ONLINE
+
+scan: none requested
+
+config:
+
+ 
+
+ 
+
+        NAME         STATE     READ WRITE CKSUM
+
+        orapool     ONLINE       0     0     0
+
+          mirror-0   ONLINE       0     0     0
+
+            c0d10     ONLINE       0     0     0
+
+            c0d12     ONLINE       0     0     0
+
+          mirror-1   ONLINE       0     0     0
+
+            c0d11     ONLINE       0     0     0
+
+            c0d13     ONLINE       0     0     0
+
+          mirror-2   ONLINE       0     0     0
+
+            c0d14     ONLINE       0     0     0
+
+            c0d15     ONLINE       0     0     0
+
+          mirror-3   ONLINE       0     0     0
+
+            c0d16     ONLINE       0     0     0
+
+            c0d17     ONLINE       0     0     0
+
+I have the same question Show 0 Likes(0)
+44 Views Tags: REPLY
+Average User Rating: No ratings (0 ratings)Average User RatingNo ratings(0 ratings)
+Your Rating: Rate Poor(1 of 5)Rate Below Average(2 of 5)Rate Average(3 of 5)Rate Above Average(4 of 5)Rate Exceptional(5 of 5)
+1. Re: how to split zpool with multiple mirrored vdevs?
+ KernelSteve-Oracle
+Grand Master
+KernelSteve-Oracle Sep 28, 2016 9:11 PM (in response to Amit P)
+This is the correct syntax:
+
+zpool attach orapool c0d10 c0d20
+
+zpool attach orapool c0d11 c0d22
+
+zpool attach orapool c0d14 c0d24
+
+zpool attach orapool c0d16 c0d26
+
+One the attach commands complete, you can monitor the resilver progress using:
+
+ 
+
+$ zpool status orapool
+
+ 
+
+'zpool split' is used if you want to create a new zpool using the data on the current pool.  If you're decomissioning the storage, 'zpool detach' is the better option.
+
+If you go the split route, the disks you specify will be used to create the new zpool.  The ones you gave are using existing storage so you'll end up with the new and old storage in the 'orapool' and the orapool-rm pool containing the original storage. 
+
+ 
+
+zpool split orapool orapool-rm c0d10 c0d11 c0d14 c0d16
+
+ 
+
+Since you're migrating to new storage is this your intention, or should the new pool be using the new storage?  In which case this might be better:
+
+ 
+
+$ zpool split orapool new-orapool c0d20 c0d22 c0d24 c0d26
+
+ 
+
+If you want to rename the pool, you first have to export both, then import new-orapool with a new name, ie:
+
+ 
+
+$ zpool import new-orapool orapool
+
+ 
+
+If you're trying to do this with zero downtime, then your approach will work.  You'll just have to 'zpool detach' the old LUNs from 'orapool' to ensure you're using just the new LUNs.
+
+ 
+
+'zpool split -n <pool> <device> ...' shows you waht zpool would do, but doesn't actually do anything.  This is a dry run option.
+
+

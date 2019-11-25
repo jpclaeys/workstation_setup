@@ -1,0 +1,27 @@
+sush is a alias that adds a login shel in the sudo command for the userids that don't have a login shell.
+This is the case for the applications:
+for each application, 2 userids are defined
+1st userid=<applications name>
+2nd userid=i_<<applications name>
+
+As this userids don't have a loging shell, the system will not allow them to sudo to those userids.
+The sush alias, provides a loging shell.
+
+Tha aliases are defined in /etc/profile.d
+All the files present in this directory are executed when a user logs into the system.
+
+------------------------------------------------------------------------------------------------------------------------------------
+[root@eurlexbo-rk profile.d]# cat /etc/profile.d/50_opoce_sush.sh
+sush() {
+      shell=$(getent passwd $1 | awk -F: '{print $7}' )
+      if [ "x${shell}" = "x/usr/sbin/nologin" -o "x${shell}" = "x/sbin/nologin" ]; then
+        sudo -u $@ -s /bin/bash 
+      else
+        sudo -i -u $@
+      fi
+}
+
+if [ -d /opt/emc/SYMCLI/bin ]; then
+    export PATH="${PATH}:/opt/emc/SYMCLI/bin"
+fi
+------------------------------------------------------------------------------------------------------------------------------------

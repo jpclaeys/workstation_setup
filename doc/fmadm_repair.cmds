@@ -1,0 +1,5 @@
+fmadm faulty| grep Major | awk '{print $4}' | xargs -n1 echo fmadm repair| sh
+fmadm faulty| grep Major | awk '/(Major|Minor|Critical)/ {print $4}' | xargs -n1 echo fmadm repair| sh
+# Repair errors for the current day
+fmadm faulty -s | grep "`date "+%b %e"`" | awk '{print $4}' | xargs -n1 echo fmadm repair
+fmadm faulty -s | grep "`date "+%b %e"`" | awk '/(Major|Minor|Critical)/ {print $4}' | xargs -n1 echo fmadm repair

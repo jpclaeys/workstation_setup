@@ -1,0 +1,8 @@
+# How to see the UID of all files or folders
+---------------------------------------------
+
+ls -n
+
+-n, --numeric-uid-gid like -l, but list numeric user and group IDs.
+
+

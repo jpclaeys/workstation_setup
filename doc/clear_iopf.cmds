@@ -1,0 +1,13 @@
+# Check if there are iopf issues on PowerPath
+
+powermt display dev=all|grep iopf
+
+# if there are devices in "iopf" state, then try to cleanup:
+
+for DEV in `powermt display dev=all|awk '/iopf/ {print $3}'`; do powermt set mode=active class=symm dev=$DEV force;done; powermt display dev=all|grep iopf
+
+# wait a while, and check again to ensure the error doesn't come back
+# if ok, save the configuration:
+
+powermt save
+

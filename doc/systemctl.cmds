@@ -1,0 +1,46 @@
+URL: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/sect-managing_services_with_systemd-services
+
+Table 9.3. Comparison of the service Utility with systemctl
+-----------------------------------------------------------
+service          		systemctl					Description
+service name start		systemctl start name.service			Starts a service.
+service name stop		systemctl stop name.service			Stops a service.
+service name restart		systemctl restart name.service			Restarts a service.
+service name condrestart	systemctl try-restart name.service		Restarts a service only if it is running.
+service name reload		systemctl reload name.service			Reloads configuration.
+service name status		systemctl status name.service			Checks if a service is running.
+				systemctl is-active name.service		Checks if a service is running.	
+service --status-all		systemctl list-units --type service --all	Displays the status of all services.
+-----------------------------------------------------------------------------------------------------------------------------------
+Table 9.4. Comparison of the chkconfig Utility with systemctl
+--------------------------------------------------------------
+chkconfig			systemctl					Description
+chkconfig name on		systemctl enable name.service			Enables a service.
+chkconfig name off		systemctl disable name.service			Disables a service.
+chkconfig --list name		systemctl status name.service			systemctl is-enabled name.service
+				Checks if a service is enabled.
+chkconfig --list		systemctl list-unit-files --type service	Lists all services and checks if they are enabled.
+chkconfig --list		systemctl list-dependencies --after		Lists services that are ordered to start before the specified unit.
+chkconfig --list		systemctl list-dependencies --before		Lists services that are ordered to start after the specified unit.
+-----------------------------------------------------------------------------------------------------------------------------------
+systemctl --failed
+systemctl --failed --type=service
+-----------------------------------------------------------------------------------------------------------------------------------
+targets:
+
+systemctl --type=target
+systemctl --type=target --all
+grep Isolate  /usr/lib/systemd/system   shows a list of all targets that allow isolation
+systemctl isolate <target>              switch the current state to <target>
+systemctl isolate reboot.target         This restarts your computer
+systemctl get-default                   see the current default target 
+systemctl set-default                   set the desired default target
+
+To set the graphical target as the default target, you need to make sure that the
+required packages are installed. If this is not the case, you can use the yum group
+list command to show a list of all RPM package groups. The “server with gui”
+and “GNOME Desktop” package groups both apply. Use yum group install
+“server with gui” to install all GUI packages on a server where they have not been
+installed yet
+-----------------------------------------------------------------------------------------------------------------------------------
+

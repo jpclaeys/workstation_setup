@@ -1,0 +1,21 @@
+shrinking ...something like this:
+df -hPT
+umount /ec/test/server/weblogic/u900
+umount /ec/local/weblogic/u950
+resize2fs /dev/mapper/vgdata-weblogic_u950 5G
+e2fsck -f /dev/mapper/vgdata-weblogic_u950
+resize2fs /dev/mapper/vgdata-weblogic_u950 5G
+e2fsck -f /dev/mapper/vgdata-weblogic_u950
+e2fsck -f /ec/test/server/weblogic/u900
+e2fsck -f /dev/mapper/vgdata-weblogic_u900
+resize2fs /dev/mapper/vgdata-weblogic_u900 7G
+sync
+e2fsck -f /dev/mapper/vgdata-weblogic_u900
+mount -a
+df -hPT /ec/test/server/weblogic/u900 /ec/local/weblogic/u000
+df -hPT /ec/test/server/weblogic/u900 /ec/local/weblogic/u950
+
+and (for example) for finding the processes which block un-mounting:
+
+lsof /ec/local/weblogic/u950 /ec/test/server/weblogic/u900 | awk '{OFS="\t" ; print $2,$1,$3}' | sort -un
+

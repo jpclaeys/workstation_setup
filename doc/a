@@ -1,0 +1,7 @@
+if &cp | set nocp | endif
+set paste
+set backspace=indent,eol,start
+set fileencodings=ucs-bom,utf-8,default,latin1
+set history=50
+set updatecount=10000
+" vim: set ft=vim :

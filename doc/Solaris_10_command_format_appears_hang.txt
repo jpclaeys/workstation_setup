@@ -1,0 +1,37 @@
+
+Solaris 10 command "format" appears hang
+
+Situation
+
+"format" command appears hang.
+
+Unable to do anything with format, for example, printing the partition table, modifying the partition table of the device, la belling the disk, etc.
+Error
+
+No errors produced, as it hangs.
+
+Cause
+
+The 'format' utility has a new feature beginning in Solaris 10 6/06 Operating System called 'in use checking'.
+
+This feature is enabled by default.
+Solution
+
+Any time the 'format' utility is run on the disk, it performs many verification/checks on the disk itself (does it contain a slice that is mounted, is it part of SVM metadevice, is it being used by ZFS filesystem, is it being used by swap etc...)
+
+
+So, if there are lots of devices, or if there were some kind of issue on the device itself (for example, differences on what the label says and what the actual device stated), 'format' command may appears hang as it does all sort of checking in the background.
+
+So, to avoid this kind of situation, there is an environment variable 'NOINUSE_CHECK' which can be set / turned on, prior of running the 'format' command:
+
+# NOINUSE_CHECK=1
+# export NOINUSE_CHECK
+# format
+
+Once that is set, the 'format' command will proceed with no time by passing all of the verifications and checking.
+
+
+Applies To
+
+Solaris 10 6/06 and above or if patch ID: 118833-36 (or higher) has been applied
+

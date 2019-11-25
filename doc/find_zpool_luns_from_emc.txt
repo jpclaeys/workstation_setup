@@ -1,0 +1,58 @@
+[root@neo ccontrol-pz]# zpool=ccontrol-pz-data
+# Get the zpool LUN
+zpool status $zpool | grep ONLINE | egrep -v "state|mirror|${zpool}" | awk '{print $1}'
+c11t500009740835F56Cd9s0
+
+# get the device ID
+/etc/powermt display dev=c11t500009740835F56Cd9s0| grep 'Logical device ID' | awk -F'=' '{print $2}'
+2E2A
+
+grep 2E2A storage_info_neo.txt | head -1
+neo # c8t500009740835F554d9 # 4 # 500009740835f554 VMAX_3453_FA-6F_port_0 0x9 9 | 500009740835f568 VMAX_3453_FA-11F_port_0 0x9 9 | 500009740835f558 VMAX_3453_FA-7F_port_0 0x9 9 | 500009740835f56c VMAX_3453_FA-12F_port_0 0x9 9 # emcpower163a 2E2A # ??? # d13 # ??? #
+
+# Find the storage array
+grep 2E2A storage_info_neo.txt | awk '{print $8}' | awk -F'_' '{print $1}'
+VMAX
+storage_array=VMAX
+site=$(/home/admin/bin/getcmdb.sh host | grep `uname -n` | awk -F';' '{print $5}' | awk '{print $1}'); echo $site
+MER
+
+# Define the storage ID depending on the storage array (VMAX, Vmax3 or VNX) and the site (MER/EUFO)
+
+{
+case $storage_array  in
+    VMAX)
+        [[ $site == 'EUFO' ]] && export storage_id=000292602560
+        [[ $site == 'MER' ]]  && export storage_id=000292603453
+    ;;
+    Vmax3)
+        [[ $site == 'EUFO' ]] && export storage_id=000296700069
+        [[ $site == 'MER' ]]  && export storage_id=000296700060
+    ;;
+esac
+echo $storage_id
+} 
+
+000292603453
+
+ex: VMAX
+
+# Find the WWN
+echo $id
+2E2A
+
+if [ -x /opt/emc/SYMCLI/bin/symdev ]; then
+   symdev show -sid $storage_id $id | grep 'Device WWN' | awk '{print $4}'
+else
+   /etc/powermt display dev=all | perl -pe 'chomp' | perl -ne 'if(/Logical device ID=($ENV{id})Device WWN=(.{32}?)state=/) {print "$2\n"}'
+fi|sort -u
+
+60000970000292603453533032453241
+
+3.6 on primary target nodes, inform to STORAGE team about the planned change
+
+[root@neo ccontrol-pz]# tmp_folder=/net/vdm-unix/systemstore/temp/ccontrol-pz
+[root@neo ccontrol-pz]# for id in `cat ${tmp_folder}/device_ids.txt`; do echo "$(symdev show -sid `cat ${tmp_folder}/primary_source_storage_id.txt` $id | grep 'Device WWN' | awk '{print $4}');$id" | grep ';'; done | sort -u
+60000970000292602560533032453241;2E2A
+60000970000292602560533032453243;2E2C
+

@@ -1,0 +1,27 @@
+snmp issues: 
+------------
+restart the service sma
+svcs [-l] sma
+svcadm restart sma
+
+# logfile: 
+-----------
+svcs -l sma # shows the logfile location
+tail -f /var/svc/log/application-management-sma:default.log
+
+
+(Solaris and Linux ) Configuring Net-SNMP/SMA:
+-----------------------------------------------
+Depending on which operating system the Hardware Management Agent has been installed on, you can find the snmpd.conf file at the path shown in the following table.
+
+Operating System                    Path to snmpd.conf              Service name
+Linux                               /etc/snmp/snmpd.conf    
+Oracle Solaris 10 Operating System  /etc/sma/snmp/snmpd.conf        sma
+Oracle Solaris 11 Operating System  /etc/net-snmp/snmp/snmpd.conf   net-snmp
+
+After update, restart the service:
+-----------------------------------
+systemctl reload snmpd.service    # Linux
+svcadm restart sma                # Solaris 10
+svcadm restart net-snmp           # Solaris 11
+

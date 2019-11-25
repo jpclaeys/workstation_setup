@@ -1,0 +1,58 @@
+Identify the HBA WWN's (ports)
+------------------------------
+
+Ref. https://www.2daygeek.com/how-to-find-wwn-wwnn-and-wwpn-number-of-hba-card-in-linux/
+
+
+cat /sys/class/fc_host/host?/port_name
+
+ex.
+[root@cauchy ~]# cat /sys/class/fc_host/host?/port_name
+0x50060b0000c26220
+0x50060b0000c26222
+
+
+OR using systool (part of package sysutils)
+-------------------------------------------
+systool -c fc_host -v | grep port_name
+
+ex.
+[root@cauchy ~]# systool -c fc_host -v | grep port_name
+    port_name           = "0x50060b0000c26220"
+    port_name           = "0x50060b0000c26222"
+
+
+f you would like to check the particular fc host wwn number, use the following format.
+
+# systool -c fc_host -v -d host1 | grep port_name
+
+
+ex.
+[root@cauchy ~]# systool -c fc_host -v -d host1 | grep port_name
+    port_name           = "0x50060b0000c26220"
+[root@cauchy ~]# systool -c fc_host -v -d host2 | grep port_name
+    port_name           = "0x50060b0000c26222"
+
+
+# Get the ports status
+more /sys/class/fc_host/host?/port_state
+
+ex.
+[root@cauchy ~]# more /sys/class/fc_host/host?/port_state
+::::::::::::::
+/sys/class/fc_host/host1/port_state
+::::::::::::::
+Online
+::::::::::::::
+/sys/class/fc_host/host2/port_state
+::::::::::::::
+Online
+
+ OR
+
+systool -c fc_host -v | grep port_state
+
+[root@cauchy ~]# systool -c fc_host -v | grep port_state
+    port_state          = "Online"
+    port_state          = "Online"
+

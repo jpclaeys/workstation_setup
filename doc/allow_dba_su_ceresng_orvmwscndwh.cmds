@@ -1,0 +1,19 @@
+
+Howto allow dba's to su to ceresng and i_ceresng on orvmwscndwh.
+-----------------------------------------------------------------
+
+Do not change the /etc/sudoers whhic is managed by puppet and will be overwritten.
+
+List files managed by puppet
+[root@orvmwscndwh etc]# /home/admin/bin/puppet-ls /etc | grep sudo
+/etc/sudoers
+
+
+Instead, create a file in /etc/sudoers.d 
+
+ex. 
+[root@orvmwscndwh sudoers.d]# cat /etc/sudoers.d/60-ceresng-dba 
+
+ROOTDBA LOCAL=(ceresng) NOPASSWD: ALL
+ROOTDBA LOCAL=(i_ceresng) NOPASSWD: ALL
+

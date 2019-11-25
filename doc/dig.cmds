@@ -1,0 +1,44 @@
+dig examples:
+--------------
+By default dig runs with full long output, which displays a lot of verbose information. 
+While useful, there may be times where we simply want our result returned. 
+This can be achieved with the +short option, as shown below when we query google.com we 
+only see the IP address result without any further information.
+
+# get host IP
+[claeyje@opvmwstsx11 ~]# dig bari.opoce.cec.eu.int  +short
+158.169.97.120
+
+# reverse lookup
+[claeyje@opvmwstsx11 ~]# dig -x 158.169.97.120 +short
+bari.opoce.cec.eu.int.
+
+# validate host : check the "ANSWER" field
+[claeyje@opvmwstsx11 ~]# [ `dig bari.opoce.cec.eu.int| awk -F","  '/ANSWER/ {print $2}'| cut -d":" -f2|xargs` -eq 1 ] && echo ok
+ok
+
+Note on the status:
+NXDOMAIN (RCODE 3 above) is pretty straight forward. When this code is present the record being requested doesn’t exist in any shape or form.
+NOERROR: ok, record has been found.
+
+Ex.
+
+[claeyje@opvmwstsx11 ~]# dig bla.publications.win +answer | awk -F"," '/status/ {print $2}' | awk '{print $NF}'
+NXDOMAIN
+[claeyje@opvmwstsx11 ~]# dig d170021857.publications.win +answer | awk -F"," '/status/ {print $2}' | awk '{print $NF}'
+NOERROR
+
+
+DNS Return Message  DNS Response Code   Function
+        
+ NOERROR            RCODE:0             DNS Query completed successfully
+ FORMERR            RCODE:1             DNS Query Format Error
+ SERVFAIL           RCODE:2             Server failed to complete the DNS request
+ NXDOMAIN           RCODE:3             Domain name does not exist.  
+ NOTIMP             RCODE:4             Function not implemented
+ REFUSED            RCODE:5             The server refused to answer for the query
+ YXDOMAIN           RCODE:6             Name that should not exist, does exist
+ XRRSET             RCODE:7             RRset that should not exist, does exist
+ NOTAUTH            RCODE:8             Server not authoritative for the zone
+ NOTZONE            RCODE:9             Name not in zone
+

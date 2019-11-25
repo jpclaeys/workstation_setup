@@ -1,0 +1,28 @@
+# Get hardware info
+-------------------
+Ref. https://www.linuxtechi.com/dmidecode-command-examples-linux/
+
+
+dmidecode -t system
+
+ex.
+
+[root@cauchy ~]# dmidecode -t system
+# dmidecode 2.12
+SMBIOS 2.7 present.
+
+Handle 0x0100, DMI type 1, 27 bytes
+System Information
+	Manufacturer: HP
+	Product Name: ProLiant BL460c G7
+	Version: Not Specified
+	Serial Number: VCX0000004      
+	UUID: B13E34DA-8739-4B19-8CEA-2EECFC128E01
+	Wake-up Type: Power Switch
+	SKU Number: 603718-B21      
+	Family: ProLiant
+
+Handle 0x2000, DMI type 32, 11 bytes
+System Boot Information
+	Status: No errors detected
+

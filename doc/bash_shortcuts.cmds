@@ -1,0 +1,52 @@
+==================================================== BASH SHORTCUTS ===================================================
+
+        Ctrl + r        --> Search and reverse.
+        Ctrl + l        --> Clear the screen.
+        Ctrl + p        --> Repeat last command.
+        Ctrl + x + Ctrl + e     --> Edit the current command on a external editor.
+
+        Ctrl + a        --> Move to the begin of the line.
+        Ctrl + e        --> Move to the end of the line.
+        Ctrl + xx       --> Move to the opposite end of the line.
+        Ctrl + left     --> Move to left one word.
+        Ctrl + right    --> Move to right one word.
+
+        Ctrl + u        --> Cut from cursor to begin of line.
+        Ctrl + k        --> Cut from cursor to end of line.
+        Ctrl + w        --> Cut from cursor to start of word (delete backwards 1 word).
+        Alt + d         --> Cut from cursor to end of word.
+        Ctrl + y        --> Paste text cut using previous commands.
+        Ctrl + _        --> Undo.
+
+        Alt + t         --> Transposes the 2 words before or under the cursor.
+        Alt + u         --> UPPERCASE from cursor to end of word.
+        Alt + l         --> Lowercase from cursor to end of word.
+        Alt + .         --> Last word of the previous command.
+
+        Ctrl + s        --> Stop the output (for long verbosing commands).
+        Ctrl + q        --> Allow the output (if previously stopped).
+        Ctrl + c        --> Terminate the command.
+        Ctrl + z        --> Suspend/stop the command.
+
+Bang (!) commands
+        !!              --> Repeat last command.
+        !blah:p		--> print out the command that !blah would run (also adds it as the latest command in the command history)
+        !-n             --> Repeat the command triggered "n" lines back.
+        !str            --> Repeat last command starting with "str".
+        !?str?          --> Repeat last command containing "str".
+        !*              --> All arguments of the previous command.
+        !*:p		--> print out what !* would substitute
+        !^              --> First argument of the previous command.
+        !$              --> Last argument of the previous command.
+        !$:p		--> print out the word that !$ would substitute
+        !:x-y           --> Argument from 'x' until 'y' of the previous command.
+        !:r             --> Remove the suffix leaving the basename.
+        !:e             --> Remove all but the trailing suffix.
+        !:h             --> Remove a trailing pathname component, leaving only the head. Can be used twice or more.
+        !:t             --> Remove all leading pathname components, leaving the tail (the name of the file).
+
+        !$:h            --> Take the head of the last argument of the last command.
+
+        ^<str1>^<str2>  --> On the last command replace 'string1' by 'string2'.
+
+=======================================================================================================================

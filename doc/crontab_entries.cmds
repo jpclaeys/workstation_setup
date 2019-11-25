@@ -1,0 +1,32 @@
+Syntax of crontab File Entries
+A crontab file consists of commands, one command per line, that execute automatically at the time specified by the first five fields of each command line. These five fields, described in the following table, are separated by spaces.
+
+Table 14-3 Acceptable Values for crontab Time Fields
+
+Time Field Values
+------------------
+1. Minute           0-59
+2. Hour             0-23
+3. Day of month     1-31
+4. Month            1-12
+5. Day of week      0-6 (0 = Sunday)
+
+Follow these guidelines for using special characters in crontab time fields:
+
+Use a space to separate each field.
+
+Use a comma to separate multiple values.
+
+Use a hyphen to designate a range of values.
+
+Use an asterisk as a wildcard to include all possible values.
+
+Use a comment mark (#) at the beginning of a line to indicate a comment or a blank line.
+
+Each of these patterns can be either an  asterisk  (meaning  all  legal values) or a list of elements separated by commas. 
+An element is either a number or two numbers separated by a minus sign (meaning an inclusive range).  
+
+
+For example, the following crontab command entry displays a reminder in the user's console window at 4 p.m. on the first and fifteenth days of every month.
+0 16 1,15 * * echo Timesheets Due > /dev/console
+

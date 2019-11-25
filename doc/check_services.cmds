@@ -1,0 +1,23 @@
+systemctl -t service --state=active --no-pager
+systemctl -t service --state=failed --no-pager
+systemctl --no-pager
+systemctl list-unit-files  --no-pager  # show all installed unit files
+
+
+{
+echo "Active active services: `systemctl status -t service -a 2>/dev/null | grep -c "Active: active"`"
+echo "Active failed services: `systemctl status -t service -a 2>/dev/null | grep -c "Active: failed"`"
+echo "Failed services: " `systemctl status -t service -a 2>/dev/null | grep -c  "^Condition: start condition failed"`
+}
+
+{
+echo "Services in Active: active state :  " `systemctl status -a -t service 2>/dev/null | grep  "Active: active" -B2| egrep -v 'Loaded:|Active:|--|systemctl status' | grep "\.service -" | wc -l`
+echo "Services in start condition failed: " `systemctl status -a -t service 2>/dev/null | grep -B3  "^Condition: start condition failed" | egrep -v "Loaded:|Active:|--|^Condition" | grep "\.service -" | wc -l`
+}
+
+{
+echo -e "\nServices in Active: active state :  \n" 
+systemctl status -a -t service 2>/dev/null | grep  "Active: active" -B2| egrep -v 'Loaded:|Active:|--|systemctl status' | grep "\.service -"
+echo -e "\nServices in start condition failed: \n" 
+systemctl status -a -t service 2>/dev/null | grep -B3  "^Condition: start condition failed" | egrep -v "Loaded:|Active:|--|^Condition" | grep "\.service -"
+}

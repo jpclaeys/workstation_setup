@@ -1,0 +1,8 @@
+[root@picard ~]# pcs constraint show location fedorafs1-recover-tk
+Location Constraints:
+  Resource: fedorafs1-recover-tk
+    Enabled on: worf-cl (score:100)
+    Enabled on: laforge-cl (score:50)
+Ordering Constraints:
+Colocation Constraints:
+

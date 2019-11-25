@@ -1,0 +1,154 @@
+
+did d14/15 issue:
+
+Hello Erdogan,
+
+Sep 20 08:17:55 trinity Cluster.scdpmd: [ID 489913 daemon.notice] The state of the path to device: /dev/did/rdsk/d15s0 has changed to OK
+Sep 20 08:17:55 trinity Cluster.scdpmd: [ID 489913 daemon.notice] The state of the path to device: /dev/did/rdsk/d14s0 has changed to OK
+
+What I did? I killed these:
+root@trinity [/]: ptree 20506
+20506 /usr/cluster/bin/scgdevs -S
+  20533 sh -c /usr/cluster/bin/scdidadm -X -uij 2>&1 | { while read xx;do echo $xx; ech
+    20534 /usr/cluster/bin/scdidadm -X -uij
+      20536 /usr/sbin/update_drv -f did
+        20537 devfsadm -i did
+root@trinity [/]: kill 20537 20536 20534 20533 20506
+
+Then I tried to run the devfsadm manually, but it again froze and complained about not being able to unload the did driver.
+Then I waited a few minutes to let things settle down, did another devfsadm, which again complained but it didn’t freeze
+anymore and it also did a forced update of did.conf.
+Then I was able to run update_drv, scdidadm and scgdevs and after some cldev voodoo, d14/d15 went into OK state.
+
+
+Attention: Trinity still complains about these:
+Sep 20 08:16:35 trinity did: [ID 990604 kern.warning] WARNING: did_ioctl: cannot update driver data for did instance d148, because it is currently held open
+Sep 20 08:16:35 trinity last message repeated 2 times
+Sep 20 08:16:35 trinity did: [ID 990604 kern.warning] WARNING: did_ioctl: cannot update driver data for did instance d152, because it is currently held open
+Sep 20 08:16:35 trinity last message repeated 2 times
+Sep 20 08:16:35 trinity did: [ID 990604 kern.warning] WARNING: did_ioctl: cannot update driver data for did instance d153, because it is currently held open
+Sep 20 08:16:35 trinity last message repeated 2 times
+Sep 20 08:16:35 trinity did: [ID 990604 kern.warning] WARNING: did_ioctl: cannot update driver data for did instance d154, because it is currently held open
+Sep 20 08:16:35 trinity last message repeated 2 times
+
+And cldev will complain about “device busy” for the corresponding disk, but that shouldn’t be a blocking factor for the zone move.
+
+Please see if the move can be finished now, and then we can stop cellarbodb1-pz and reboot trinity when it’s a bit more 
+convenient.
+
+Kind regards,
+-- 
+Martin ETTELDORF
+
+Root cause:
+-----------
+storage didn't allow host "neo" to access the disks!
+
+Excerpt from the messages log on neo:
+-------------------------------------
+
+Sep 20 09:02:40 neo Cluster.CCR: [ID 173201 daemon.notice] Removing node neo from device service dsk/d13
+Sep 20 09:02:40 neo Cluster.CCR: [ID 473361 daemon.notice] Removing Device service dsk/d13
+Sep 20 09:02:41 neo Cluster.scdpmd: [ID 922726 daemon.notice] The status of device: /dev/did/rdsk/d15s0 is set to MONITORED
+Sep 20 09:02:41 neo Cluster.scdpmd: [ID 489913 daemon.notice] The state of the path to device: /dev/did/rdsk/d15s0 has changed to OK
+Sep 20 09:03:14 neo Cluster.CCR: [ID 173201 daemon.notice] Removing node neo from device service dsk/d12
+Sep 20 09:03:14 neo Cluster.CCR: [ID 473361 daemon.notice] Removing Device service dsk/d12
+Sep 20 09:03:27 neo Cluster.scdpmd: [ID 922726 daemon.notice] The status of device: /dev/did/rdsk/d14s0 is set to MONITORED
+Sep 20 09:03:27 neo Cluster.scdpmd: [ID 489913 daemon.notice] The state of the path to device: /dev/did/rdsk/d14s0 has changed to OK
+Sep 20 09:06:25 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: becoming primary for ccontrol-pz
+Sep 20 09:06:31 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Sep 20 09:06:31 neo None of the devices in the group 'ccontrol-pz' are in 'SyncInProg' state.
+Sep 20 09:06:32 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Sep 20 09:06:32 neo All devices in the group 'ccontrol-pz' are in 'Synchronized' state.
+Sep 20 09:06:32 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 09:06:32 neo An RDF 'Failover' operation execution is
+Sep 20 09:06:32 neo in progress for device group 'ccontrol-pz'. Please wait...
+Sep 20 09:06:34 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 09:06:34 neo Symmetrix access control denied the request
+Sep 20 09:06:34 neo EMCsymapi[7345]: [ID 702911 user.error] symrdf : 'Failover' for device group ccontrol-pz - Symmetrix access control denied the request
+Sep 20 09:06:34 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: symrdf -g ccontrol-pz failover returned 1, check device group status.
+Sep 20 09:06:34 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: /usr/cluster/lib/sc/run_reserve: Replication takeover failure for ccontrol-pz, replicated device groups may be unavailable and may require manual recovery
+Sep 20 09:06:35 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: becoming primary for ccontrol-pz
+Sep 20 09:06:39 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Sep 20 09:06:39 neo None of the devices in the group 'ccontrol-pz' are in 'SyncInProg' state.
+Sep 20 09:06:40 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Sep 20 09:06:40 neo All devices in the group 'ccontrol-pz' are in 'Synchronized' state.
+Sep 20 09:06:40 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 09:06:40 neo An RDF 'Failover' operation execution is
+Sep 20 09:06:40 neo in progress for device group 'ccontrol-pz'. Please wait...
+Sep 20 09:06:40 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 09:06:41 neo last message repeated 1 time
+Sep 20 09:06:41 neo Symmetrix access control denied the request
+Sep 20 09:06:41 neo EMCsymapi[7398]: [ID 702911 user.error] symrdf : 'Failover' for device group ccontrol-pz - Symmetrix access control denied the request
+Sep 20 09:06:41 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: symrdf -g ccontrol-pz failover returned 1, check device group status.
+Sep 20 09:06:41 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: /usr/cluster/lib/sc/run_reserve: Replication takeover failure for ccontrol-pz, replicated device groups may be unavailable and may require manual recovery
+Sep 20 09:09:28 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_validate> for resource <ccontrol-pz-srdf>, resource group <ccontrol-pz-rg>, node <neo>, timeout <1800> seconds
+Sep 20 09:09:28 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_init> for resource <ccontrol-pz-srdf>, resource group <ccontrol-pz-rg>, node <neo>, timeout <1800> seconds
+Sep 20 09:09:39 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_validate> for resource <ccontrol-pz-zfs>, resource group <ccontrol-pz-rg>, node <neo>, timeout <1800> seconds
+Sep 20 09:09:53 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_init> for resource <ccontrol-pz-zfs>, resource group <ccontrol-pz-rg>, node <neo>, timeout <1800> seconds
+Sep 20 09:10:29 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <../../SUNWsczone/sczbt/bin/validate_ha-zone_sczbt> for resource <ccontrol-pz-rs>, resource group <ccontrol-pz-rg>, node <neo>, timeout <300> seconds
+
+
+
+Sep 20 10:30:40 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_prenet_start> for resource <ccontrol-pz-srdf>, resource group <ccontrol-pz-rg>, node <neo>, timeout <1800> seconds
+Sep 20 10:30:40 neo Cluster.RGM.global.rgmd: [ID 316625 daemon.notice] Timeout monitoring on method tag <ccontrol-pz-rg.ccontrol-pz-srdf.10> has been suspended.
+Sep 20 10:30:41 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: becoming primary for ccontrol-pz
+Sep 20 10:30:47 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Sep 20 10:30:47 neo None of the devices in the group 'ccontrol-pz' are in 'SyncInProg' state.
+Sep 20 10:30:48 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Sep 20 10:30:48 neo All devices in the group 'ccontrol-pz' are in 'Synchronized' state.
+Sep 20 10:30:48 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 10:30:48 neo An RDF 'Failover' operation execution is
+Sep 20 10:30:48 neo in progress for device group 'ccontrol-pz'. Please wait...
+Sep 20 10:30:49 neo Cluster.Framework: [ID 801593 daemon.notice] stdout:     Write Disable device(s) on SA at source (R1)..............
+Sep 20 10:30:50 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Sep 20 10:30:50 neo Cluster.Framework: [ID 801593 daemon.notice] stdout:     Suspend RDF link(s).......................................
+Sep 20 10:30:50 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Sep 20 10:30:50 neo Cluster.Framework: [ID 801593 daemon.notice] stdout:     Read/Write Enable device(s) on RA at target (R2)..........
+Sep 20 10:30:50 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Sep 20 10:30:50 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 10:30:50 neo The RDF 'Failover' operation successfully executed for
+Sep 20 10:30:50 neo device group 'ccontrol-pz
+Sep 20 10:30:50 neo Cluster.Framework: [ID 801593 daemon.error] stderr: '.
+Sep 20 10:30:51 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 10:30:51 neo An RDF 'Swap Personality' operation execution is
+Sep 20 10:30:51 neo in progress for device group 'ccontrol-pz'. Please wait...
+Sep 20 10:30:51 neo Cluster.Framework: [ID 801593 daemon.notice] stdout:     Swap RDF Personality......................................
+Sep 20 10:30:51 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: Started.
+Sep 20 10:30:54 neo Cluster.Framework: [ID 801593 daemon.notice] stdout:     Swap RDF Personality......................................
+Sep 20 10:30:54 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Sep 20 10:30:54 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 10:30:54 neo The RDF 'Swap Personality' operation successfully executed for
+Sep 20 10:30:54 neo Cluster.Framework: [ID 801593 daemon.error] stderr: device group 'ccontrol-pz'.
+Sep 20 10:30:54 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 10:30:54 neo An RDF 'Incremental Establish' operation execution is
+Sep 20 10:30:54 neo in progress for device group 'ccontrol-pz'. Please wait...
+Sep 20 10:30:54 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 10:30:55 neo Cluster.Framework: [ID 801593 daemon.notice] stdout:     Suspend RDF link(s).......................................
+Sep 20 10:30:55 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Sep 20 10:30:55 neo Cluster.Framework: [ID 801593 daemon.notice] stdout:     Resume RDF link(s)........................................
+Sep 20 10:30:55 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: Started.
+Sep 20 10:30:55 neo Cluster.Framework: [ID 801593 daemon.notice] stdout:     Resume RDF link(s)........................................
+Sep 20 10:30:55 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Sep 20 10:30:55 neo Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Sep 20 10:30:55 neo The RDF 'Incremental Establish' operation successfully initiated for
+Sep 20 10:30:55 neo device group 'ccontrol-pz
+Sep 20 10:30:55 neo Cluster.Framework: [ID 801593 daemon.error] stderr: '.
+Sep 20 10:30:56 neo Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Sep 20 10:30:56 neo All devices in the group 'ccontrol-pz' are in 'Synchronized' state.
+Sep 20 10:30:56 neo Cluster.RGM.global.rgmd: [ID 316625 daemon.notice] Timeout monitoring on method tag <ccontrol-pz-rg.ccontrol-pz-srdf.10> has been resumed.
+Sep 20 10:30:56 neo Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_prenet_start> completed successfully for resource <ccontrol-pz-srdf>, resource group <ccontrol-pz-rg>, node <neo>, time used: 0% of timeout <1800 seconds>
+Sep 20 10:30:56 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_monitor_start> for resource <ccontrol-pz-srdf>, resource group <ccontrol-pz-rg>, node <neo>, timeout <90> seconds
+Sep 20 10:30:56 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_prenet_start> for resource <ccontrol-pz-zfs>, resource group <ccontrol-pz-rg>, node <neo>, timeout <1800> seconds
+Sep 20 10:30:57 neo Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_start> completed successfully for resource <ccontrol-pz-srdf>, resource group <ccontrol-pz-rg>, node <neo>, time used: 0% of timeout <90 seconds>
+Sep 20 10:31:01 neo zfs: [ID 249136 kern.info] imported version 37 pool ccontrol-pz-db using 37
+Sep 20 10:31:05 neo zfs: [ID 249136 kern.info] imported version 37 pool ccontrol-pz-data using 37
+Sep 20 10:31:05 neo Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_prenet_start> completed successfully for resource <ccontrol-pz-zfs>, resource group <ccontrol-pz-rg>, node <neo>, time used: 0% of timeout <1800 seconds>
+Sep 20 10:30:57 neo Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_start> completed successfully for resource <ccontrol-pz-srdf>, resource group <ccontrol-pz-rg>, node <neo>, time used: 0% of timeout <90 seconds>
+Sep 20 10:31:01 neo zfs: [ID 249136 kern.info] imported version 37 pool ccontrol-pz-db using 37
+Sep 20 10:31:05 neo zfs: [ID 249136 kern.info] imported version 37 pool ccontrol-pz-data using 37
+Sep 20 10:31:05 neo Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_prenet_start> completed successfully for resource <ccontrol-pz-zfs>, resource group <ccontrol-pz-rg>, node <neo>, time used: 0% of timeout <1800 seconds>
+Sep 20 10:31:05 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_monitor_start> for resource <ccontrol-pz-zfs>, resource group <ccontrol-pz-rg>, node <neo>, timeout <90> seconds
+Sep 20 10:31:05 neo Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <gds_svc_start> for resource <ccontrol-pz-rs>, resource group <ccontrol-pz-rg>, node <neo>, timeout <300> seconds
+Sep 20 10:31:05 neo Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_start> completed successfully for resource <ccontrol-pz-zfs>, resource group <ccontrol-pz-rg>, node <neo>, time used: 0% of timeout <90 seconds>
+

@@ -1,0 +1,130 @@
+
+----------------------------------------------------------------------------------------------------
+sudoers syntax:
+
+### ROOTDBA ###
+User_Alias ROOTDBA = %rootdba
+
+Note:
+A % preceding the value means it is a group   (ex. %rootdba means it's a group)
+without the % sign, the value means a username
+
+User_Alias <alias> = %<group name>
+User_Alias <alias> = <user name>
+----------------------------------------------------------------------------------------------------
+
+
+Understanding sudoers(5) syntax
+By Abhijit Menon-Sen <ams@toroid.org>
+2015-11-07
+
+This straightforward guide to configuring sudo is for anyone who didn't expect to see “Don't despair” and a “Quick guide to EBNF” in the sudoers(5) manpage.
+
+Sudo (su "do") allows a system administrator to delegate authority to give certain users (or groups of users) the ability to run some (or all) commands as root or another user while providing an audit trail of the commands and their arguments.
+This guide is intended to supplement the manpage. The various environment, security, and logging options are not covered; the explanations in the manpage are easy to follow.
+
+The first 90%
+It's possible that the only sudo explanation you will ever need is:
+
+%adm ALL=(ALL) NOPASSWD: ALL
+This means “any user in the adm group on any host may run any command as any user without a password”. The first ALL refers to hosts, the second to target users, and the last to allowed commands. A password will be required if you leave out the "NOPASSWD:".
+
+User specifications
+The /etc/sudoers file contains “user specifications” that define the commands that users may execute. When sudo is invoked, these specifications are checked in order, and the last match is used. A user specification looks like this at its most basic:
+
+User Host = (Runas) Command
+Read this as “User may run Command as the Runas user on Host”.
+
+Any or all of the above may be the special keyword ALL, which always matches.
+
+User and Runas may be usernames, group names prefixed with %, numeric UIDs prefixed with #, or numeric GIDs prefixed with %#. Host may be a hostname, IP address, or a whole network (e.g., 192.0.2.0/24), but not 127.0.0.1.
+
+Runas
+This optional clause controls the target user (and group) sudo will run the Command as, or in other words, which combinations of the -u and -g arguments it will accept.
+
+If the clause is omitted, the user will be permitted to run commands only as root. If you specify a username, e.g., (postgres), sudo will accept “-u postgres” and run commands as that user. In both cases, sudo will not accept -g.
+
+If you also specify a target group, e.g., (postgres:postgres), sudo will accept any combination of the listed users and groups (see the section on aliases below). If you specify only a target group, e.g., (:postgres), sudo will accept and act on “-g postgres” but run commands only as the invoking user.
+
+This is why you sometimes see (ALL:ALL) in the 90% example.
+
+Commands
+In the simplest case, a command is the full path to an executable, which permits it to be executed with any arguments. You may specify a list of arguments after the path to permit the command only with those exact arguments, or write "" to permit execution only without any arguments.
+
+A command may also be the full path to a directory (including a trailing /). This permits execution of all the files in that directory, but not in any subdirectories.
+
+ams ALL=/bin/ls, /bin/df -h /, /bin/date "", \
+        /usr/bin/, sudoedit /etc/hosts, \
+        OTHER_COMMANDS
+The keyword sudoedit is also recognised as a command name, and arguments can be specified as with other commands. Use this instead of allowing a particular editor to be run with sudo, because it runs the editor as the user and only installs the editor's output file into place as root (or other target user).
+
+As shown above, comma-separated lists of commands and aliases may be specified. Commands may also use shell wildcards either in the path or in the argument list (but see the warning below about the latter).
+
+Sudo is very flexible, and it's tempting to set up very fine-grained access, but it can be difficult to understand the consequences of a complex setup, and you can end up with unexpected problems. Try to keep things simple.
+
+Options
+Before the command, you can specify zero or more options to control how it will be executed. The most important options are NOPASSWD (to not require a password) and SETENV (to allow the user to set environment variables for the command).
+
+ams ALL=(ALL) NOPASSWD: SETENV: /bin/ls
+Other available options include NOEXEC, LOG_INPUT and LOG_OUTPUT, and SELinux role and type specifications. These are all documented in the manpage.
+
+Digests
+The path to a binary (i.e., not a directory or alias) may also be prefixed with a digest:
+
+ams ALL=(ALL) sha224:IkotndXGTmZtH5ZNFtRfIwkG0WuiuOs7GoZ+6g== /bin/ls
+The specified binary will then be executed only if it matches the digest. SHA-2 digests of 224, 256, 384, and 512-bits are accepted in hex or Base64 format. The values can be generated using, e.g., sha512sum or openssl.
+
+Aliases
+In addition to the things listed above, a User, Host, Runas, or Command may be an alias, which is a named list of comma-separated values of the corresponding type. An alias may be used wherever a User, Host, Runas, or Command may occur. They are always named in uppercase, and can be defined as shown in these examples:
+
+# Type_Alias NAME = a, b : NAME_2 = c, d, …
+
+User_Alias TRUSTED = %admin, !ams
+Runas_Alias LEGACYUSERS = oldapp1, oldapp2
+Runas_Alias APPUSERS = app1, app2, LEGACYUSERS
+Host_Alias PRODUCTION = www1, www2, \
+    192.0.2.1/24, !192.0.2.222
+Cmnd_Alias DBA = /usr/pgsql-9.4/bin, \
+    /usr/local/bin/pgadmin
+An alias definition can also include another alias of the same type (e.g., LEGACYUSERS above). You cannot include options like NOPASSWD: in command aliases.
+
+Any term in a list may be prefixed with ! to negate it. This can be used to include a group but exclude a certain user, or to exclude certain addresses in a network, and so on. Negation can also be used in command lists, but note the manpage's warning that trying to “subtract” commands from ALL using ! is generally not effective.
+
+Use aliases whenever you need rules involving multiple users, hosts, or commands.
+
+Default options
+Sudo has a number of options whose values may be set in the configuration file, overriding the defaults either unconditionally, or only for a given user, host, or command. The defaults are sensible, so you do not need to care about options unless you're doing something special.
+
+Option values are specified in one or more "Defaults" lines. The example below switches on env_reset, turns off insults (read !insults as "not insults"), sets password_tries to 4, and so on. All the values are set unconditionally, i.e. they apply to every user specification.
+
+Defaults env_reset, !insults, password_tries=4, \
+    lecture=always
+Defaults passprompt="Password for %p:"
+Options may also be set only for specific hosts, users, or commands, as shown below. Defaults@host sets options for a host, Defaults:user for a (requesting) user, Defaults!command for a command, and Defaults>user for a target user. You can also use aliases in these definitions.
+
+Defaults@localhost insults
+Defaults:ams insults, !lecture
+Defaults>root mail_always, mailto="foo@example.org"
+
+Cmnd_Alias FOO = /usr/bin/foo, /usr/bin/bar, \
+    /usr/local/bin/baz
+Defaults!FOO always_set_home
+Unconditional defaults are parsed first, followed by host and user defaults, then runas defaults, then command defaults.
+
+The many available options are explained well in the manpage.
+
+Complications
+In addition to the alias mechanism, a User, Host, Runas, or Command may each be a comma-separated list of things of the corresponding type. Also, a user specification may contain multiple host and command sets for a single User. Please be sparing in your use of this syntax, in case you ever have to make sense of it again.
+
+Users and hosts can also be a +netgroup or other more esoteric things, depending on plugins. Host names may also use shell wildcards (see the fqdn option).
+
+If Runas is omitted but the () are not, sudo will reject -u and -g and run commands only as the invoking user.
+
+You can use wildcards in command paths and in arguments, but their meaning is different. In a path, a * will not match a /, so /usr/bin/* will match /usr/bin/who but not /usr/bin/X11/xterm. In arguments, a * does match /; also, arguments are matched as a single string (not a list of separate words), so * can match across words. The manpage includes the following problematic example, which permits additional arguments to be passed to /bin/cat without restriction:
+
+%operator ALL = /bin/cat /var/log/messages*
+Warning: Sudo will not work if /etc/sudoers contains syntax errors, so you should only ever edit it using visudo, which performs basic sanity checks, and installs the new file only if it parses correctly.
+
+Another warning: if you take the EBNF in the manpage seriously enough, you will discover that the implementation doesn't follow it. You can avoid this sad fate by linking to this article instead of trying to write your own. Happy sudoing!
+
+Tags: sysadmin • Link: toroid.org/sudoers-syntax

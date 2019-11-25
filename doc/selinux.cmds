@@ -1,0 +1,14 @@
+# activate selinux 
+-------------------
+
+sed -i 's/SELINUX=disabled/SELINUX=permissive/g' /etc/selinux/config && touch /.autorelabel
+
+Next time when you will reboot the system, it will relabel the filesystem for SElinux automatically.
+
+This usually occurs when labeling a file system for SELinux for the first time, or when switching between different types of policy, such as changing from the targeted to the strict policy.
+
+View selinux context
+---------------------
+
+ls -lZ
+

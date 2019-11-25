@@ -1,0 +1,50 @@
+Howto remove an orphan lun
+---------------------------
+Short tip: Removing orphaned SAN multipath devices under Enterprise Linux
+--------------------------------------------------------------------------
+https://cstan.io/?p=8956&lang=en
+
+Ex. on tuvok
+
+[root@tuvok ~]# ~claeyje/Downloads/check-multipath.pl
+LUN ppubli-pk_t2_system1: less than 2 paths (0/4)!
+
+[root@tuvok ~]# multipath -ll | grep ppub
+ppubli-pk_t2_system1 (360000970000296700069533030363432) dm-138 
+
+[root@tuvok ~]# /home/admin/bin/removelun_rhel /dev/mapper/ppubli-pk_t2_system1
+/sbin/multipath -f /dev/mapper/ppubli-pk_t2_system1 # 360000970000296700069533030363432
+
+[root@tuvok ~]# /sbin/multipath -f /dev/mapper/ppubli-pk_t2_system1 # 360000970000296700069533030363432
+Oct 17 12:24:41 | /dev/mapper/ppubli-pk_t2_system1: map in use
+
+[root@tuvok ~]# ~claeyje/Downloads/check-multipath.pl
+LUN ppubli-pk_t2_system1: less than 2 paths (0/4)!
+--> problem still present !
+
+[root@tuvok ~]# multipath -ll | grep ppub -A1
+ppubli-pk_t2_system1 (360000970000296700069533030363432) dm-138 
+size=120G features='0' hwhandler='0' wp=rw
+
+
+[root@tuvok ~]# dmsetup info -c -o name,blkdevname,blkdevs_used,uuid   /dev/dm-138
+Name                 BlkDevName       BlkDevNamesUsed  UUID                                   
+ppubli-pk_t2_system1 dm-138                            mpath-360000970000296700069533030363432
+
+[root@tuvok ~]# dmsetup remove -f ppubli-pk_t2_system1
+device-mapper: remove ioctl on ppubli-pk_t2_system1 failed: Device or resource busy
+Command failed
+[root@tuvok ~]# multipath  -f ppubli-pk_t2_system1
+[root@tuvok ~]# dmsetup remove -f ppubli-pk_t2_system1
+device-mapper: remove ioctl on ppubli-pk_t2_system1 failed: Device or resource busy
+Command failed
+
+[root@tuvok ~]#  ~claeyje/Downloads/check-multipath.pl
+OK
+==> the multipath check is OK
+
+
+[root@tuvok ~]# ll /dev/mapper/ppubli-pk_t2_system1
+lrwxrwxrwx 1 root root 9 17 oct 12:51 /dev/mapper/ppubli-pk_t2_system1 -> ../dm-138
+[root@tuvok ~]# multipath -ll | grep ppub
+Device is still listed in /dev/mapper, but it doesn't show up anymore in the multipath -ll output

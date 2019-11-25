@@ -1,0 +1,61 @@
+-----------------------------------------------------------------------------------------------------------------------
+dns
+svn up cc.cec.eu.int
+svn lock cc.cec.eu.int 
+if [ $? -ne 0 ]; then
+   errmsgred "Unable to lock cc.cec.eu.int, retry in few seconds"; return 1
+fi
+...
+Note: the commit will remove the lock; if no commit is done, the  one nee to remove the lock (svn unlock cc.cec.eu.int)
+#see diff
+svn diff | colordiff
+svn ci -m "<ticketnumber> JPC" && svn up
+if [ $? -ne 0 ]; then
+  svn unlock cc.cec.eu.int
+  errmsgred "error while commiting. please check logs"
+else
+  msggreen "DNS updated"
+fi
+
+# see what the last commit did.
+svn diff -r PREV:COMMITTED| colordiff
+
+-----------------------------------------------------------------------------------------------------------------------
+Discovering Locks
+When a commit fails due to someone else's locks, it's fairly easy to learn about them. The easiest way is to run svn status -u:
+
+$ svn status -u <myfle>   # svn status --show-updates
+1st column  'M': Item has been modified.
+6th column  'K': File is locked in this working copy.
+8th column  '*': A newer revision of the item exists on the server.
+
+Breaking and Stealing Locks
+A repository lock isn't sacred—in Subversion's default configuration state, locks can be released not only by the person who created them, but by anyone. When somebody other than the original lock creator destroys a lock, we refer to this as breaking the lock.
+
+svn unlock [--force] <myfle>
+
+-----------------------------------------------------------------------------------------------------------------------
+Reverting changes:
+
+svn revert <filename>
+ex. svn revert cc.cec.eu.int
+svn status
+-----------------------------------------------------------------------------------------------------------------------
+Resolve conflicts:
+
+svn resolve
+svn diff
+svn checkout
+
+svn log -l 5
+-----------------------------------------------------------------------------------------------------------------------
+View differences between 2 versions:
+
+svn diff -r <version1>:<version2>
+# get svn diff of current and previous revision number
+svn diff -c <version>
+# see what the last commit did.
+svn diff -r PREV:COMMITTED
+# difference between your working copy and the last committed revision.
+svn diff -r HEAD <item>
+-----------------------------------------------------------------------------------------------------------------------

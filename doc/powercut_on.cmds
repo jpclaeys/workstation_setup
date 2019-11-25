@@ -1,0 +1,169 @@
+# Power cut on Mercier
+-----------------------
+Planning:
+---------
+Sunday: Power-on
+-----------------
+PROD - Critical APPs
+Solaris ceresng-pz, metaconv-pz
+
+order   start time      group                           description
+20  Dim 28/04 - 09:00   START     LIST:  PHYS-SOL       START PHYSICAL servers SOLARIS                  -   MER
+23  Dim 28/04 - 09:15   STOP/MOVE LIST:  VM-SOL-PROD    START or FAILOVER virtual servers SOLARIS  PROD -   MER
+48  Dim 28/04 - 11:31   START     LIST:  VM-SOL-TEST    START virtual servers SOLARIS TEST/DEV/RCPT     -   MER & EUFO
+
+zonesnoprodeufocount  10
+zonesnoprodmercount   10
+zonesprodmercount     9
+zonesprodeufocount    8
+
+MER hosts: morpheus neo perceval tank
+
+ALL hosts: morpheus neo perceval tank dozer karadoc niobe trinity
+
+Consoles:
+t52-01-sc  MER   Domain 0 morpheus    Domain 1 perceval
+t54-01-sc  MER   Domain 0 neo         Domain 1 tank
+t52-02-sc  EUFO  Domain 0 niobe       Domain 1 karadoc
+t54-02-sc  EUFO  Domain 0 trinity     Domain 1 dozer
+
+====================================================================================================================================
+
+
+Restart the physical servers @ MER:
+------------------------------------
+
+- Power on the chassis (T52-01 & T54-01)
+  start /SYS
+- Boot primary nodes
+  start /SP/console -script 
+  boot
+- Boot secondary nodes
+  Goto the primary node
+  telnet localhost 5000
+  boot
+
+
+====================================================================================================================================
+
+Fail-back production zones to their preferred node:
+---------------------------------------------------
+Hosts: morpheus neo perceval tank
+
+
+prod zones lists
+-----------------
+
+===> morpheus                                                               <===
+HL="esentool-pz metaconv-pz"
+--> OK
+[root@morpheus /]# zpool status -xv
+all pools are healthy
+
+
+===> neo                                                                    <===
+HL="ojmonitor-pz procatx-pz opgtwint-pz seicr_pz esendtool-pz virtua-pz"
+HL="ojmonitor-pz procatx-pz esendtool-pz"
+--> OK
+[root@neo /]# zpool status -xv
+all pools are healthy
+
+
+===> perceval                                                               <===
+
+===> tank                                                                   <===
+HL="ceresng-pz aiserver-pz"
+HL="aiserver-pz"
+--> OK
+
+
+# switch the production zones back to MER
+------------------------------------------
+
+HL=
+powercut_switch_back_prod_to_mer
+
+
+# Put the offlined LUNs back online
+------------------------------------
+
+On All hosts, run the online script to generate the commands
+
+   /home/admin/bin/op_zpool_online_device.zsh --mer --vmax
+
+
+# Check that all zpools are ok
+-------------------------------
+
+mypssH "`thosts`" '(/usr/sbin/zpool status -xv)'
+
+
+====================================================================================================================================
+
+Restart the non-production zones:
+----------------------------------
+Hosts: morpheus neo perceval tank dozer karadoc niobe trinity
+
+MER:  morpheus neo perceval tank
+EUFO: dozer karadoc niobe trinity
+
+non-prod zones lists
+---------------------
+#mer
+===> morpheus                                                               <===
+HL="eurlexbo-tz"
+--> OK
+[root@morpheus /]# zpool status -xv
+all pools are healthy
+
+
+===> neo                                                                    <===
+N/A
+
+===> perceval                                                               <===
+HL="woodgtw-rz restore_tz mdr-tz bari opgtwint-tz metaconv-tz anninter_tz ojmonitor-tz"
+--> OK
+[root@perceval /]# zpool status -xv
+all pools are healthy
+
+===> tank                                                                   <===
+HL="seicr_tz"
+--> OK
+[root@tank /]# zpool status -xv
+all pools are healthy
+
+----------------------------------------------------------------------------------
+# eufo
+===> dozer                                                                  <===
+HL="seicr-dz virtua-tz metaconv-dz sisyphe-dz"
+--> OK
+[root@dozer /]# zpool status -xv
+all pools are healthy
+
+===> karadoc                                                                <===
+HL="esentool-tz simap-tz ceresng-tz esendtool-tz"
+
+===> niobe                                                                  <===
+HL="eurlexbo-rz ceresng-rz"
+
+===> trinity                                                                <===
+N/A
+
+
+powercut_switch_back_prod_to_mer
+
+# restart the non prod zones
+-----------------------------
+Hosts: morpheus neo perceval tank dozer karadoc niobe trinity
+
+Go to each host,
+# Define the zones list
+HL=
+
+powercut_restart_unmanaged_RGs
+
+
+====================================================================================================================================
+
+
+

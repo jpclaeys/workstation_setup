@@ -1,0 +1,33 @@
+Connect to the SC vi the web gui
+
+Menu Remote Control
+Redirection
+Storage Redirection
+click on Launch Service
+A popoup window shows up asking to download Java 5.0
+Click OK
+Important note: CDROM redirection needs Java Runtime Environment (JRE) 32-bits; so do not upgrade to any Java 64 bits verion
+
+Select Use Video redirection
+
+Note: if you select the serial redirection, it will take over the console !
+Then click on Launch Remote Console
+Once we have the console, we can map the Solaris ISO image to the CDROM
+
+Click on the Devices drop down menu, and select CD-ROM Image
+
+Select image on xchange (vdm-unix) \ etteldo\sol-11-4_text-sparc.iso
+
+Once the image is loaded, the cdrom icon will switch from grey to black
+
+On the server
+
+boot rcdrom -s
+
+Select the keyboard layout: 2 (Belgian)
+Select the language: 3 (English)
+Enter user name for system maintenance (control-d to bypass): 
+root
+Enter root password (control-d to bypass): 
+solaris
+

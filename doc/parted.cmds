@@ -1,0 +1,227 @@
+parted cmds examples
+--------------------
+
+====================================================================================================================================
+
+parted -a optimal -s /dev/mapper/<devalias>  mklabel msdos unit % mkpart primary ntfs 0 100
+
+-a alignment-type, --align alignment-type
+              Set alignment for newly created partitions, valid alignment types are:
+
+              none   Use the minimum alignment allowed by the disk type.
+
+              cylinder
+                     Align partitions to cylinders.
+
+              minimal
+                     Use minimum alignment as given by the disk topology information. This and the opt value will use layout information provided  by  the
+                     disk  to  align the logical partition table addresses to actual physical blocks on the disks.  The min value is the minimum alignment
+                     needed to align the partition properly to physical blocks, which avoids performance degradation.
+
+              optimal
+                     Use optimum alignment as given by the disk topology information. This aligns to a multiple of the physical block size in a  way  that
+                     guarantees optimal performance.
+
+
+-s, --script              never prompts for user intervention
+
+
+mklabel label-type
+                     Create  a  new  disklabel  (partition table) of label-type.  label-type should be one of "aix", "amiga", "bsd", "dvh", "gpt", "loop",
+                     "mac", "msdos", "pc98", or "sun".
+
+unit unit
+                     Set unit as the unit to use when displaying locations and sizes, and for interpreting those given by the user when not suffixed  with
+                     an  explicit  unit.   unit  can be one of "s" (sectors), "B" (bytes), "kB", "MB", "MiB", "GB", "GiB", "TB", "TiB", "%" (percentage of
+                     device size), "cyl" (cylinders), "chs" (cylinders, heads, sectors), or "compact" (megabytes for input, and a human-friendly form  for
+                     output).
+mkpart part-type [fs-type] start end
+                     Make a part-type partition for filesystem fs-type (if specified), beginning at start and ending at end  (by  default  in  megabytes).
+                     fs-type  can  be one of "btrfs", "ext2", "ext3", "ext4", "fat16", "fat32", "hfs", "hfs+", "linux-swap", "ntfs", "reiserfs", or "xfs".
+                     part-type should be one of "primary", "logical", or "extended".
+
+
+====================================================================================================================================
+
+
+[root@eurlexbo-rk ~]# parted   /dev/sdc print unit % print unit s print unit GB print
+Model: VMware Virtual disk (scsi)
+Disk /dev/sdc: 215GB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags: 
+
+Number  Start   End    Size   Type     File system  Flags
+ 1      65,5kB  215GB  215GB  primary               lvm
+
+Model: VMware Virtual disk (scsi)
+Disk /dev/sdc: 100%
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags: 
+
+Number  Start  End   Size  Type     File system  Flags
+ 1      0,00%  100%  100%  primary               lvm
+
+Model: VMware Virtual disk (scsi)
+Disk /dev/sdc: 419430400s
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags: 
+
+Number  Start  End         Size        Type     File system  Flags
+ 1      128s   419430399s  419430272s  primary               lvm
+
+Model: VMware Virtual disk (scsi)
+Disk /dev/sdc: 215GB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags: 
+
+Number  Start   End    Size   Type     File system  Flags
+ 1      0,00GB  215GB  215GB  primary               lvm
+
+
+
+====================================================================================================================================
+
+[root@eurlexbo-rk ~]# parted /dev/sdc
+GNU Parted 3.1
+Using /dev/sdc
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted) unit s
+(parted) print
+Model: VMware Virtual disk (scsi)
+Disk /dev/sdc: 419430400s
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start  End         Size        Type     File system  Flags
+ 1      2048s  419430399s  419428352s  primary               lvm
+
+(parted) quit
+
+
+
+
+====================================================================================================================================
+[root@eurlexbo-rk ~]# fdisk /dev/sdc
+Welcome to fdisk (util-linux 2.23.2).
+
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+
+Command (m for help): p
+
+Disk /dev/sdc: 214.7 GB, 214748364800 bytes, 419430400 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x669454a7
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1            2048   419430399   209714176   8e  Linux LVM
+
+Command (m for help): d
+Selected partition 1
+Partition 1 is deleted
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+
+WARNING: Re-reading the partition table failed with error 16: Device or resource busy.
+The kernel still uses the old table. The new table will be used at
+the next reboot or after you run partprobe(8) or kpartx(8)
+Syncing disks.
+
+[root@eurlexbo-rk ~]# parted /dev/sdc
+GNU Parted 3.1
+Using /dev/sdc
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted) print
+Model: VMware Virtual disk (scsi)
+Disk /dev/sdc: 215GB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start  End  Size  Type  File system  Flags
+
+(parted) unit s
+(parted) mkpart
+Partition type?  primary/extended? primary
+File system type?  [ext2]? lvm
+parted: invalid token: lvm
+File system type?  [ext2]? ^C
+Error: Expecting a file system type.
+(parted) unit s
+(parted) mkpart primary 128s -1s
+Warning: The resulting partition is not properly aligned for best performance.
+Ignore/Cancel? I      
+(parted) print
+Model: VMware Virtual disk (scsi)
+Disk /dev/sdc: 419430400s
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start  End         Size        Type     File system  Flags
+ 1      128s   419430399s  419430272s  primary
+
+(parted) quit
+Information: You may need to update /etc/fstab.
+
+
+[root@eurlexbo-rk ~]# fdisk /dev/sdc
+Welcome to fdisk (util-linux 2.23.2).
+
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+
+Command (m for help): p
+
+Disk /dev/sdc: 214.7 GB, 214748364800 bytes, 419430400 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x669454a7
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1             128   419430399   209715136   83  Linux
+
+Command (m for help): t
+Selected partition 1
+Hex code (type L to list all codes): 8e
+Changed type of partition 'Linux' to 'Linux LVM'
+
+Command (m for help): p
+
+Disk /dev/sdc: 214.7 GB, 214748364800 bytes, 419430400 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x669454a7
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1             128   419430399   209715136   8e  Linux LVM
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+
+WARNING: Re-reading the partition table failed with error 16: Device or resource busy.
+The kernel still uses the old table. The new table will be used at
+the next reboot or after you run partprobe(8) or kpartx(8)
+Syncing disks.
+[root@eurlexbo-rk ~]# partprobe
+
+

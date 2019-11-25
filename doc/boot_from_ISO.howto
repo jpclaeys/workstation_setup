@@ -1,0 +1,19 @@
+Howto boot from ISO image
+--------------------------
+
+
+On Lenovo IMM II   (ex. X3850)
+Server Management / Remote Control
+Virtual Media Mounte from URL
+Click on mount
+select the ISO image
+ex. xchange\claeyje\dban-2.3.0_i586.iso
+
+Remote Control
+check "Use java console"
+Start remote control in single-user mode
+
+On the console
+Tools / Power / Power On The Server Immediately
+boot: autonuke
+

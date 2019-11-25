@@ -1,0 +1,14 @@
+Note:
+automount issue: restart autofs
+before restarting autofs, one need to double-check the /etc/auto_direct file.
+
+If there are application mounts, one may restart the service !!!
+
+One can try to refresh the sssd process (System Security Services Daemon (SSSD) )
+
+systemctl restart sssd
+
+If it doesn't work, there not other solution but restarting autofs
+
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/5/html/5.7_release_notes/sssd
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/windows_integration_guide/sssd-ad

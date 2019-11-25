@@ -1,0 +1,24 @@
+repository location:
+/etc/yum.repos.d/
+
+Table 11.5 Common RPM Query Commands
+Command     Use
+rpm -qf     Uses a filename as its argument to find the specific RPM package a file belongs to.
+rpm -ql     Uses the RPM database to provide a list of files in the RPM package.
+rpm -qi     Uses the RPM database to provide package information (equivalent to yum info).
+rpm -qd     Uses the RPM database to show all documentation that is available in the package.
+rpm -qc     Uses the RPM database to show all configuration files that are available in the package.
+rpm -q --scripts Uses the RPM database to show scripts that are used in the package.
+                Particularly useful if combined with the -p option.
+rpm -qp ... The -p option is used with all the previously listed options to query
+            individual RPM package files instead of the RPM package database.
+            Using this option before installation helps you find out what is actually
+            in the package before it is installed.
+rpm -qR     Shows dependencies for a specific package.
+rpm -V      Use on an individual package to see which parts of the package have
+            been changed since installation.
+rpm -Va     Verifies all installed packages and shows which parts of the package
+            have been changed since installation. This is an easy and convenient
+            way to do a package integrity check.
+rpm -qa     Lists all packages that are installed on this server
+rpm -q <package_name> [<package_name>[ <package_name>]] - List specific package(s)  

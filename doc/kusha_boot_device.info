@@ -1,0 +1,45 @@
+
+{0} ok printenv boot-device
+boot-device =           /pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/disk@w500601603ea42f5e,64:a /pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/disk@w500601623ea42f5e,64:a disk net
+{0} ok boot /pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/disk@w500601603ea42f5e,64:a
+
+Evaluating:
+
+Can't open boot device
+
+--> cannot boot
+
+# Use the correct disk name (info from the zpool status rpool)
+{0} ok boot /pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/disk@w50000974082801A4
+Boot device: /pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/disk@w50000974082801A4  File and args:
+
+OK, the system is booting !!!
+Conclusion the boot-device variable was not set correctly !!!
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+Info from the running system (before reboot)
+
+[root@kusha kusha]# echo | format
+Searching for disks...done
+
+
+AVAILABLE DISK SELECTIONS:
+       0. c1t50000974082801A4d0 <EMC-SYMMETRIX-5874 cyl 65533 alt 2 hd 60 sec 163>
+          /pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w50000974082801a4,0
+       1. c2t5000097408280198d0 <EMC-SYMMETRIX-5874 cyl 65533 alt 2 hd 60 sec 163>
+          /pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w5000097408280198,0
+       2. c5t0d0 <LIO-ORG-E_quorum_lava-k-4.0 cyl 98 alt 2 hd 64 sec 32>
+          /iscsi/disk@0000iqn.1986-03.com.sun%3Ae-lava-kusha0001,0
+       3. c5t1d0 <LIO-ORG-quorum_lava-kus-4.0 cyl 98 alt 2 hd 64 sec 32>
+          /iscsi/disk@0000iqn.1986-03.com.sun%3Alava-kusha0001,0
+       4. c5t2d0 <LIO-ORG-M_quorum_lava-k-4.0 cyl 98 alt 2 hd 64 sec 32>
+          /iscsi/disk@0000iqn.1986-03.com.sun%3Am-lava-kusha0001,0
+       5. emcpower36a <EMC-SYMMETRIX-5874 cyl 65533 alt 2 hd 60 sec 163>
+          /pseudo/emcp@36
+Specify disk (enter its number): Specify disk (enter its number):
+[root@kusha kusha]# symmetrix_to_lun emcpower36a
+c2t5000097408280198d0 c1t50000974082801A4d0
+       0. c1t50000974082801A4d0 <EMC-SYMMETRIX-5874 cyl 65533 alt 2 hd 60 sec 163>
+       1. c2t5000097408280198d0 <EMC-SYMMETRIX-5874 cyl 65533 alt 2 hd 60 sec 163>
+       5. emcpower36a <EMC-SYMMETRIX-5874 cyl 65533 alt 2 hd 60 sec 163>
+

@@ -1,0 +1,180 @@
+# Power cut on Mercier
+-----------------------
+Planning:
+---------
+Friday: Power-off
+------------------
+PROD - Critical APPs   
+Solaris ceresng-pz, metaconv-pz
+
+order   start time      group                           description
+40  Ven 26/04 - 16:20   STOP      LIST:  VM-SOL-TEST    STOP virtual servers SOLARIS TEST/DEV/RCPT      -   MER & EUFO
+62  Ven 26/04 - 18:15   STOP/MOVE LIST:  VM-SOL-PROD    STOP or SWITCH virtual servers SOLARIS  PROD    -   MER
+75  Ven 26/04 - 19:30   STOP      LIST:  PHYS-SOL       STOP PHYSICAL servers SOLARIS                   -   MER
+
+zonesnoprodeufocount  10
+zonesnoprodmercount   10
+zonesprodmercount     9
+zonesprodeufocount    8
+
+MER hosts: morpheus neo perceval tank
+
+ALL hosts: morpheus neo perceval tank dozer karadoc niobe trinity
+
+Consoles:
+t52-01-sc  MER   Domain 0 morpheus    Domain 1 perceval
+t54-01-sc  MER   Domain 0 neo         Domain 1 tank
+t52-02-sc  EUFO  Domain 0 niobe       Domain 1 karadoc
+t54-02-sc  EUFO  Domain 0 trinity     Domain 1 dozer
+
+====================================================================================================================================
+
+
+Friday 16:20: STOP virtual servers SOLARIS TEST/DEV/RCPT @ MER & EUFO
+----------------------------------------------------------------------
+For all non-prod, disable RS, offline RG & unmanage RG
+
+Friday 18:15: SWITCH virtual servers SOLARIS  PROD @ MER
+---------------------------------------------------------
+prod:
+-----
+- switch RG to other node
+- offline MER luns for the hostbased mirrored zones (3 zones)
+      /home/admin/bin/op_zpool_offline_device.zsh --mer --vmax
+
+Friday 19:30: STOP PHYSICAL servers SOLARIS @ MER
+--------------------------------------------------
+
+1. halt the secondary domains
+1.1 Connect on the primary domain
+    ldm list <secondary>
+    ldm stop <secondary>
+OR
+    telnet localhost 5000
+    logon as root
+    init 0
+    CTRL+SHIFT+5 (for azerty) (^] for qwerty)
+    quit
+    ldm list
+
+2. halt the primary domains
+   console t52-01 and t54-01
+   login as root
+   init 0
+
+3. power off the chassis
+-> stop /SYS
+-> show /SYS power_state
+
+-> exit
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+====================================================================================================================================
+====================================================================================================================================
+====================================================================================================================================
+
+Friday 16:20: STOP virtual servers SOLARIS TEST/DEV/RCPT @ MER & EUFO
+----------------------------------------------------------------------
+
+Hosts: morpheus neo perceval tank dozer karadoc niobe trinity
+
+
+# Stop non-prod zones, disable the resources & put the RG in unmanaged state
+-----------------------------------------------------------------------------
+
+
+[claeyje@opvmwstsx11 ~]# for H in `thostsmer && thostseufo`;do msggreen $H && s $H zonesnoprodlocal; done
+
+===> morpheus                                                               <===
+HL="eurlexbo-tz"
+
+===> neo                                                                    <===
+
+===> perceval                                                               <===
+HL="woodgtw-rz restore_tz mdr-tz bari opgtwint-tz metaconv-tz anninter_tz ojmonitor-tz"
+
+===> tank                                                                   <===
+HL="seicr_tz"
+
+===> dozer                                                                  <===
+HL="seicr-dz virtua-tz metaconv-dz sisyphe-dz"
+
+===> karadoc                                                                <===
+HL="esentool-tz simap-tz ceresng-tz esendtool-tz"
+
+===> niobe                                                                  <===
+HL="eurlexbo-rz ceresng-rz"
+
+===> trinity                                                                <===
+
+On each host, offline the non prod zones:
+-----------------------------------------
+powercut_offline_nonprod_rg
+
+
+====================================================================================================================================
+
+
+Friday 18:15: SWITCH virtual servers SOLARIS  PROD @ MER
+---------------------------------------------------------
+Hosts: morpheus neo perceval tank
+
+[claeyje@opvmwstsx11 log]#  for H in `thostsmer`;do msggreen $H && s $H zonesprodlocal; done
+
+===> morpheus                                                               <===
+HL="esentool-pz metaconv-pz"
+
+===> neo                                                                    <===
+HL="ojmonitor-pz procatx-pz opgtwint-pz seicr_pz esendtool-pz virtua-pz"
+
+===> perceval                                                               <===
+N/A
+
+===> tank                                                                   <===
+HL="ceresng-pz aiserver-pz"
+
+
+# Switch prod zones to the other node
+--------------------------------------
+
+powercut_switch_prod_RG_to_other_node
+
+
+# offline MER luns for the hostbased mirrored zones (3 zones)
+--------------------------------------------------------------
+
+/home/admin/bin/op_zpool_offline_device.zsh --mer --vmax
+
+
+====================================================================================================================================
+
+
+Friday 19:30: STOP PHYSICAL servers SOLARIS @ MER
+--------------------------------------------------
+
+1. halt the secondary domains
+1.1 Connect on the primary domain
+    ldm list <secondary>
+    ldm stop <secondary>
+OR
+    telnet localhost 5000
+    logon as root
+    init 0
+    CTRL+SHIFT+5 (for azerty) (^] for qwerty)
+    quit
+    ldm list
+
+2. halt the primary domains
+   console t52-01 and t54-01
+   login as root
+   init 0
+
+3. power off the chassis
+-> stop /SYS
+-> show /SYS power_state
+
+-> exit
+====================================================================================================================================
+====================================================================================================================================
+====================================================================================================================================

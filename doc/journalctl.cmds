@@ -1,0 +1,35 @@
+
+# view the sudo history
+------------------------
+
+journalctl _COMM=sudo 
+Options:
+-r, --reverse
+           Reverse output so that the newest entries are displayed first.
+-n, --lines <nb>
+           Show the most recent journal events and limit the number of events shown. If --follow is used, this option is implied. The argument is a
+           positive integer or "all" to disable line limiting. The default value is 10 if no argument is given.
+
+-o, --output
+           verbose
+               shows the full-structured entry items with all fields.
+-S, --since=, -U, --until=
+           Start showing entries on or newer than the specified date, or on or older than the specified date, respectively. Date specifications should be
+           of the format "2012-10-30 18:17:16". If the time part is omitted, "00:00:00" is assumed. If only the seconds component is omitted, ":00" is
+           assumed. If the date component is omitted, the current day is assumed. Alternatively the strings "yesterday", "today", "tomorrow" are
+           understood, which refer to 00:00:00 of the day before the current day, the current day, or the day after the current day, respectively.  "now"
+           refers to the current time. Finally, relative times may be specified, prefixed with "-" or "+", referring to times before or after the current
+           time, respectively.
+           Date examples: today, yesterday
+           date -d '- 3 days' "+%Y-%m-%d"
+           date -d 'last-monday - 3 days' "+%Y-%m-%d"
+           date -d '2 weeks ago' "+%Y-%m-%d"
+
+------------------------------------------------------------------------------------------------------------------------------------------
+On older distributions
+------------------------
+
+$ grep sudo /var/log/secure
+or
+$ grep sudo /var/log/auth.log
+

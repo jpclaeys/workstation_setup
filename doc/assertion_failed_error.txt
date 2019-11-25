@@ -1,0 +1,105 @@
+Assertion failed: n->len <= 32, file /on10/build-nd/F10U10B17/usr/src/common/bignum/sun4v/montmul_vt.c, line 437
+
+root cause: the application is trying to use the system encryption which is obsolete
+
+Solution: disable the system encryption:
+
+# What we should have: encrypt -l should report nothing
+example on ceres_pz:
+
+[root@ceres_pz inet]# encrypt -l
+Algorithm       Keysize:  Min   Max (bits)
+------------------------------------------
+
+[root@ceres_pz inet]# cat /etc/crypto/pkcs11.conf 
+# Start SUNWcsr
+metaslot:metaslot_status=enabled;metaslot_auto_key_migrate=enabled;metaslot_token=Sun Software PKCS#11 softtoken;metaslot_slot=Sun Crypto Softtoken
+/usr/lib/security/$ISA/pkcs11_kernel.so
+/usr/lib/security/$ISA/pkcs11_softtoken.so:enabledlist=
+# End SUNWcsr
+
+
+
+On metaconv-pz.
+----------------
+
+
+[root@metaconv-pz /]# cat /etc/crypto/pkcs11.conf 
+# Start SUNWcsr
+metaslot:metaslot_status=enabled;metaslot_auto_key_migrate=enabled;metaslot_token=Sun Software PKCS#11 softtoken;metaslot_slot=Sun Crypto Softtoken
+/usr/lib/security/$ISA/pkcs11_kernel.so
+/usr/lib/security/$ISA/pkcs11_softtoken.so
+# End SUNWcsr
+
+[root@metaconv-pz /]# encrypt -l
+Algorithm       Keysize:  Min   Max (bits)
+------------------------------------------
+aes                       128   128
+arcfour                     8   128
+des                        64    64
+3des                      128   192
+
+# this list shoul be empty
+# Solution:
+------------------------------------------------------------------------------------------------------------------------------------
+
+softtoken_extra wasn’t set up as a crypto provider at all (default setup on Solaris 10, this is why
+you couldn’t remove it).
+softtoken was set up as a crypto provider, and this one usually causes the assertion failure.
+
+Replacing the softtoken provider with softtoken_extra usually solves the problem, but in our case
+the assertion failure still happened.
+
+Solution:                                                                                                 
+1)  cryptoadm disable provider=/usr/lib/security/\$ISA/pkcs11_softtoken.so     mechanism=all
+2)  cryptoadm enable provider=/usr/lib/security/\$ISA/pkcs11_softtoken_extra.so mechanism=all
+3)  vi /etc/crypto/pkcs11.conf ; comment out the pkcs11_softtoken.so line
+4)  cryptoadm disable provider=/usr/lib/security/\$ISA/pkcs11_softtoken_extra.so mechanism=all
+                                                                                                                                                                                                                          
+“encrypt –l” doesn’t show any valid cryptographic algorithms now, but this was the only way to  make the application work again.
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+[root@metaconv-pz /]# cryptoadm disable provider=/usr/lib/security/\$ISA/pkcs11_softtoken.so     mechanism=all
+[root@metaconv-pz /]# encrypt -l
+Algorithm       Keysize:  Min   Max (bits)
+------------------------------------------
+
+[root@metaconv-pz /]# cryptoadm enable provider=/usr/lib/security/\$ISA/pkcs11_softtoken_extra.so mechanism=all
+cryptoadm: /usr/lib/security/$ISA/pkcs11_softtoken_extra.so does not exist.
+[root@metaconv-pz /]# ls -l /usr/lib/security/sparcv9/pkcs11_softtoken_extra.so
+lrwxrwxrwx   1 root     root          29 Apr  2  2015 /usr/lib/security/sparcv9/pkcs11_softtoken_extra.so -> ./pkcs11_softtoken_extra.so.1
+[root@metaconv-pz /]# ls -l /usr/lib/security/sparcv9/pkcs11_softtoken_extra.so.1
+-rwxr-xr-x   1 root     bin       456928 Jul  6  2011 /usr/lib/security/sparcv9/pkcs11_softtoken_extra.so.1
+[root@metaconv-pz /]# cryptoadm enable provider=/usr/lib/security/sparcv9/pkcs11_softtoken_extra.so.1 mechanism=all
+
+[root@metaconv-pz /]# vi  /etc/crypto/pkcs11.conf 
+"/etc/crypto/pkcs11.conf" 25 lines, 1081 characters 
+# Start SUNWcsr
+metaslot:metaslot_status=enabled;metaslot_auto_key_migrate=enabled;metaslot_token=Sun Software PKCS#11 softtoken;metaslot_slot=Sun Crypto Softtoken
+/usr/lib/security/$ISA/pkcs11_kernel.so
+#/usr/lib/security/$ISA/pkcs11_softtoken.so:enabledlist=
+# End SUNWcsr
+
+[root@metaconv-pz /]# encrypt -l
+encrypt: failed to find any cryptographic provider,please check with your system administrator: CKR_OK
+
+[root@metaconv-pz /]# vi  /etc/crypto/pkcs11.conf 
+# Start SUNWcsr
+metaslot:metaslot_status=enabled;metaslot_auto_key_migrate=enabled;metaslot_token=Sun Software PKCS#11 softtoken;metaslot_slot=Sun Crypto Softtoken
+/usr/lib/security/$ISA/pkcs11_kernel.so
+#/usr/lib/security/$ISA/pkcs11_softtoken.so:enabledlist=
+/usr/lib/security/$ISA/pkcs11_softtoken_extra.so:enabledlist=
+# End SUNWcsr
+
+
+[root@metaconv-pz /]# encrypt -l
+Algorithm       Keysize:  Min   Max (bits)
+------------------------------------------
+[root@metaconv-pz /]# echo $ISA
+
+[root@metaconv-pz /]# cat  /etc/crypto/pkcs11.conf  | grep -v ^#
+metaslot:metaslot_status=enabled;metaslot_auto_key_migrate=enabled;metaslot_token=Sun Software PKCS#11 softtoken;metaslot_slot=Sun Crypto Softtoken
+/usr/lib/security/$ISA/pkcs11_kernel.so
+/usr/lib/security/$ISA/pkcs11_softtoken_extra.so:enabledlist=
+

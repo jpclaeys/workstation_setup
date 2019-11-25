@@ -1,0 +1,60 @@
+How to clear the SSSD cache in Linux  (SSSD - System Security Services Daemon)
+-------------------------------------------------------------------------------
+
+sss_cache -E
+
+OPTIONS
+       -E,--everything
+            Invalidate all cached entries.
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+Ref. https://www.rootusers.com/how-to-clear-the-sssd-cache-in-linux/
+
+
+How To Clear The SSSD Cache In Linux
+--------------------------------------
+Posted by Jarrod on April 13, 2016Leave a comment (2)Go to comments
+The System Security Services Daemon (SSSD) provides access to identity and authentication providers. Basically rather than relying on locally configured authentication, SSSD is used to lookup its local cache. The entries within this cache may come from different remote identity providers, such as an LDAP directory, FreeIPA, or Active Directory for example.
+
+SSSD caches the results of users and credentials from these remote locations so that if the identity provider goes offline, the user credentials are still available and users can still login. This helps to improve performance and facilitates scalability with a single user that can login over many systems, rather than using local accounts everywhere.
+
+The cached results can potentially be problematic if the stored records become stale and are no longer in sync with the identity provider, so it is important to know how to flush the SSSD cache to fix various problems and update the cache.
+
+Here we’ll cover a couple of different methods to flush out the SSSD cache.
+
+
+The sss_cache Tool
+-------------------
+The cache can be cleared with the sss_cache utility which is used for performing cache cleanup by invalidating records in the SSSD cache. Invalidated records must be reloaded fresh from the identity provider server where the information actually resides, such as FreeIPA or Active Directory for example.
+
+The -E flag can be used to invalidate all cached entries, with the exception of sudo rules.
+
+sss_cache -E
+Alternatively we can also simply invalidate a specific user only from the cache with the -u flag, followed by the account username.
+
+sss_cache -u user1
+For further information, see the sss_cache manual page.
+
+Deleting Cache Files
+---------------------
+SSSD stores its cache files in the /var/lib/sss/db/ directory.
+
+While using the sss_cache command is preferable, it is also possible to clear the cache by simply deleting the corresponding cache files.
+
+Before doing this it is suggested that the SSSD service be stopped.
+
+systemctl stop sssd
+After this we want to delete all files within the /var/lib/sss/db/ directory.
+
+rm -rf /var/lib/sss/db/*
+Once complete we can start SSSD back up again.
+
+systemctl restart sssd
+SSSD should now start up correctly with an empty cache, any user login will now first go directly to the defined identity provider for authentication, and then be cached locally afterwards.
+
+It’s recommend to only clear the cache if the identity provider servers performing the authentication within the domain are available, otherwise users will not be able to log in once the cache has been flushed.
+
+Conclusion
+The SSSD cache can easily be removed by simply deleting the files where cached records are stored, or it can be done more cleanly with the sss_cache tool which will invalidate specified records from the cache.

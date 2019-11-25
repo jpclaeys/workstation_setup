@@ -1,0 +1,57 @@
+disk-hbamap
+disk-list -q
+ecdc-lsslots  | grep Fib
+
+On Solaris:
+diskinfo -a
+
+On physical Linux:
+------------------
+ecdc-lsslots
+ecdc-disk-list
+ecdc-disk-paths
+
+lsscsi -g
+lsblk [-dp]
+lsblk -o NAME,SIZE,MOUNTPOINT,FSTYPE,MODEL
+multipath    # whithout argument does a rescan
+multipath -ll
+
+ecdc-disk-list -q | grep raid
+scsi-rescan; multipath
+
+crsctl -> /ec/dev/server/oracle/olrprocunix/u000/product/GRID.../bin/crsctl stat res -t
+
+
+ls -1 /dev/san
+
+On physical Linux:
+------------------
+
+# If the scsi-rescan does not discover the new luns
+----------------------------------------------------
+use this to rescan the bus with the following command
+
+echo "- - -" > /sys/class/scsi_host/hostX/scan
+(non interuptive)
+X: hba ID
+The three values stand for channel, SCSI target ID, and LUN. The dashes act as wildcards meaning "rescan everything"
+
+example:
+root@sykes:->disk-hbamap | grep -v offli
+C#  INST   PORT WWN          MODEL    FCODE   STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----   -----    ----          -----------                                              ------  
+2   host2  10000090fab18702  42D0485  7.00a2  8Gb      0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host2  2       
+3   host3  10000090fab19f33  42D0485  7.00a2  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+
+--> X = 2 & 3
+
+echo "- - -" > /sys/class/scsi_host/host2/scan
+echo "- - -" > /sys/class/scsi_host/host3/scan
+scsi-rescan
+
+
+bus reset (interruptive) : echo "1" > /sys/class/fc_host/hostX/issue_lip
+udevadm control --reload-rules && udevadm trigger
+
+

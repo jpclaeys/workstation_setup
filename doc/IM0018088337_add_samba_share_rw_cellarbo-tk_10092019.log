@@ -1,0 +1,204 @@
+IM0018088337: Info from Martin Etteldorf
+-----------------------------------------
+
+Hi,
+
+This is apparently a misunderstanding.
+The initial request was apparently misunderstood by Jean-Pierre.
+
+I guess he assumed the user should be added to the “RO” group because of this share definition:
+[cellar]
+    path = /applications/cellar/users/cellar/
+    browseable = yes
+    read only = yes
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-ro" PUBLICATIONS+cherrol
+
+
+However, they requested access to /applications/cellar/sparql/response-templates, which is an NFS share coming from opsvc099:
+ettelma@cellarbo-tk [/applications/cellar/users/cellar/sparql/response-templates]: df -h .
+Filesystem            Size  Used Avail Use% Mounted on
+opsvc099:/applications/cellar/cellar_common
+                       99G   63M   94G   1% /applications/cellar/cellar_common
+
+Two solutions:
+1)	Either set up a new samba instance and a share with the correct permissions on opsvc099 and tell Mr. Chapelet to connect to this one
+2)	create a sub-share and re-export sparql/response-templates on cellarbo-tk allow  @"PUBLICATIONS+cellarbo-smb-test-rw” to connect and add Mr. Capelet to this AD group.
+
+
+==> new share
+
+[response-templates]
+    path = /applications/cellar/cellar_common/sparql/response-templates
+    browseable = yes
+    read only = no
+    force user = cellar
+    valid users =  PUBLICATIONS+chapexa PUBLICATIONS+claeyje
+    write users =  PUBLICATIONS+chapexa PUBLICATIONS+claeyje
+
+
+
+lrwxrwxrwx 1 cellar cellar 60 28 jun  2017 /applications/cellar/users/cellar/sparql/response-templates -> /applications/cellar/cellar_common/sparql/response-templates
+
+
+stop puppet
+
+vi samba config
+restart smbd
+try to mount the share
+
+
+[root@cellarbo-tk samba]# uname -r
+2.6.32-696.20.1.el6.x86_64
+[root@cellarbo-tk samba]# service puppet status
+puppet (pid  11269) is running...
+[root@cellarbo-tk samba]# service puppet stop
+Stopping puppet agent:                                     [  OK  ]
+[root@cellarbo-tk samba]# service puppet status
+puppet is stopped
+
+
+
+
+[root@cellarbo-tk samba]# pwd
+/etc/samba
+[root@cellarbo-tk samba]# ll -d /applications/cellar/users/cellar/sparql
+drwxr-xr-x 9 cellar cellar 4096 28 jun  2017 /applications/cellar/users/cellar/sparql
+[root@cellarbo-tk samba]# ll -d /applications/cellar/users/cellar/sparql/response-templates
+lrwxrwxrwx 1 cellar cellar 60 28 jun  2017 /applications/cellar/users/cellar/sparql/response-templates -> /applications/cellar/cellar_common/sparql/response-templates
+[root@cellarbo-tk samba]# ll -d /applications/cellar/users/cellar/sparql/response-templates/
+drwxr-xr-x 2 cellar cellar 4096 24 avr 15:44 /applications/cellar/users/cellar/sparql/response-templates/
+[root@cellarbo-tk samba]# ll -d /applications/cellar/cellar_common/sparql
+drwxrwxr-x 3 cellar cellar 4096 28 jun  2017 /applications/cellar/cellar_common/sparql
+[root@cellarbo-tk samba]# pwd
+/etc/samba
+[root@cellarbo-tk samba]# ll
+total 20
+-rw-r--r-- 1 root root   20 10 nov  2017 lmhosts
+-rw-r--r-- 1 root root  797 26 mar  2018 smb.conf
+-rw-r--r-- 1 root root 1690 10 sep 14:21 smb.conf.local
+-rw-r--r-- 1 root root 1430 10 sep 14:18 smb.conf.local.back
+-rw-r--r-- 1 root root   97 10 nov  2017 smbusers
+[root@cellarbo-tk samba]# vi smb.conf.local
+[root@cellarbo-tk samba]# service smb restart
+Shutting down SMB services:                                [  OK  ]
+Starting SMB services:                                     [  OK  ]
+[root@cellarbo-tk samba]# vi smb.conf.local
+[root@cellarbo-tk samba]# service smb restart
+Shutting down SMB services:                                [  OK  ]
+Starting SMB services:                                     [  OK  ]
+[root@cellarbo-tk samba]# ll  /applications/cellar/cellar_common/sparql/response-templates/New*
+-rwxr--r-- 1 cellar cellar 0 10 sep 14:29 /applications/cellar/cellar_common/sparql/response-templates/New Text Document.txt
+[root@cellarbo-tk samba]# vi smb.conf.local
+[root@cellarbo-tk samba]# puppet agent -t  -o --environment  development
+Info: Retrieving pluginfacts
+Info: Retrieving plugin
+Info: Loading facts
+Info: Caching catalog for cellarbo-tk.opoce.cec.eu.int
+Info: Applying configuration version '1568119023'
+Notice: /Stage[main]/Opoce::Linux::Samba/File[/etc/samba/smb.conf.local]/content: 
+--- /etc/samba/smb.conf.local	2019-09-10 14:28:52.696748311 +0200
++++ /tmp/puppet-file20190910-3691-c45em5-0	2019-09-10 14:38:06.325764619 +0200
+@@ -17,10 +17,10 @@
+ [response-templates]
+     path = /applications/cellar/cellar_common/sparql/response-templates
+     browseable = yes
+-    read only = no 
++    read only = no
+     force user = cellar
+-    valid users =  PUBLICATIONS+chapexa PUBLICATIONS+claeyje
+-    write users =  PUBLICATIONS+chapexa PUBLICATIONS+claeyje
++    valid users =  PUBLICATIONS+chapexa
++    write users =  PUBLICATIONS+chapexa
+ 
+ [archive-folder]
+     path = /applications/cellar/data/archive-folder
+
+Info: Computing checksum on file /etc/samba/smb.conf.local
+Info: /Stage[main]/Opoce::Linux::Samba/File[/etc/samba/smb.conf.local]: Filebucketed /etc/samba/smb.conf.local to puppet with sum 9f40b0dd3d6fd632ca30772a49d308b8
+Notice: /Stage[main]/Opoce::Linux::Samba/File[/etc/samba/smb.conf.local]/content: content changed '{md5}9f40b0dd3d6fd632ca30772a49d308b8' to '{md5}53d399f50b8646c68e4ad39ecff7cdac'
+Notice: Finished catalog run in 59.54 seconds
+[root@cellarbo-tk samba]# grep -A7 [response-templates] smb.conf.local
+    netbios aliases = opsvc011
+
+[xchange]
+    path = /applications/cellar/xchange/
+    browseable = yes
+    read only = no 
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-rw"
+
+[cellar]
+    path = /applications/cellar/users/cellar/
+    browseable = yes
+    read only = yes
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-ro" PUBLICATIONS+cherrol
+
+[response-templates]
+    path = /applications/cellar/cellar_common/sparql/response-templates
+    browseable = yes
+    read only = no
+    force user = cellar
+    valid users =  PUBLICATIONS+chapexa
+    write users =  PUBLICATIONS+chapexa
+
+[archive-folder]
+    path = /applications/cellar/data/archive-folder
+    browseable = yes
+    read only = no 
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-rw"
+
+[error-folder]
+    path = /applications/cellar/users/cellar/error-folder
+    browseable = yes
+    read only = no 
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-rw"
+
+[foxml-folder]
+    path = /applications/cellar/users/cellar/foxml-folder
+    browseable = yes
+    read only = no 
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-rw"
+
+[license-holder-adhoc-extraction]
+    path = /applications/cellar/users/cellar/license-holder-adhoc-extraction
+    browseable = yes
+    read only = yes
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-ro"
+
+[license-holder-extraction]
+    path = /applications/cellar/users/cellar/license-holder-extraction
+    browseable = yes
+    read only = yes
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-ro"
+[root@cellarbo-tk samba]# grep -A7 'response-template' smb.conf.local
+[response-templates]
+    path = /applications/cellar/cellar_common/sparql/response-templates
+    browseable = yes
+    read only = no
+    force user = cellar
+    valid users =  PUBLICATIONS+chapexa
+    write users =  PUBLICATIONS+chapexa
+
+[archive-folder]
+[root@cellarbo-tk samba]# puppet agent -t
+Info: Retrieving pluginfacts
+Info: Retrieving plugin
+Info: Loading facts
+Info: Caching catalog for cellarbo-tk.opoce.cec.eu.int
+Info: Applying configuration version '1568119325'
+Notice: Finished catalog run in 57.85 seconds
+[root@cellarbo-tk samba]# service puppet status
+puppet is stopped
+[root@cellarbo-tk samba]# service puppet start
+Starting puppet agent:                                     [  OK  ]
+[root@cellarbo-tk samba]# service puppet status
+puppet (pid  7480) is running...
+[root@cellarbo-tk samba]# 
+

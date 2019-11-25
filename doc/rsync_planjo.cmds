@@ -1,0 +1,12 @@
+planjo-pk :
+-----------
+
+Info NAS DIGIT : 
+appgateway@woodgwa.cc.cec.eu.int
+pass: Int@Digita
+
+
+commande de synchro :
+
+rsync -avP --delete /applications/planjo/planjo_archive0* /applications/planjo/docdata /applications/planjo/archives appgateway@woodgwa.cc.cec.eu.int:/ec/acc/app/planjo/documentum/ldc/
+

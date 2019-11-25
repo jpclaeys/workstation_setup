@@ -1,0 +1,5 @@
+Note:
+
+The Linux boot executes in silent mode, only showing a progress bar on the bottom of the screen.
+
+In order to get the verbose mode, click inside the console, and hit the ESC key; this will start the boot verbose mode.

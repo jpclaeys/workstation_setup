@@ -1,0 +1,28 @@
+logrotate -f /etc/logrotate.conf
+
+---------------------------------------------------------------------------------------------------
+You can force logrotate to do it whenever you wish:
+
+logrotate -f /etc/logrotate.conf
+
+     >
+     > Advice I am hoping for:
+     > 1. How to fix my /var/log/message! file so that it will log
+    necessary
+     > warnings. Why did creating a blank /var/log/message file cause
+    the sytem
+     > to not log anything? Is the file a special binary file?
+
+    syslogd only creates log files when it starts up. If it ever tries to
+    log to a non-existant file, it will cease logging for that file
+    entirely. Simply make sure the target file exists, then (as root) run:
+
+killall -HUP syslogd
+
+or
+
+/etc/rc.d/init.d/syslog restart
+
+to force syslogd to look at the file again.
+
+---------------------------------------------------------------------------------------------------

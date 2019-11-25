@@ -1,0 +1,5 @@
+printf %f with only 2 numbers after the decimal point?
+
+printf "%.2f\n" 3,14159
+
+

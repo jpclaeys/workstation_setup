@@ -1,0 +1,11 @@
+Lesson 20 - resetting the root password resumed - Video part199.mp4
+Interrupt the boot sequence by typing <esc> to enter the grub menu
+
+Find the line that starts with linux16/vmlinuz-3.10 and add rd.break to the end of the line
+
+mount -o remount,rw /sysroot
+chroot /sysroot
+echo secret | passwd --stdin root
+touch /.autorelabel
+ctrl-D to exit the chroot shell
+ctrl-D to restart the system (this takes a while +/- 2 min)

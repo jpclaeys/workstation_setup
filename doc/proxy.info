@@ -1,0 +1,51 @@
+Chère utilisatrice, cher utilisateur,
+
+L'accès aux ressources internes de la Commission Européenne depuis les proxies n'est pas autorisé.
+
+Merci de bien vouloir configurer votre navigateur internet afin d'utiliser la configuration automatique du proxy (http://autoproxy.cec.eu.int/proxy.pac). 
+
+Si vous rencontrez des difficultés techniques, veuillez contacter votre local helpdesk pour de plus amples informations.
+
+Merci pour votre compréhension.
+Dear User,
+
+Access to internal resources of European Commission from the proxies is forbidden.
+
+Please configure your web browser in order to use automatic proxy configuration (http://autoproxy.cec.eu.int/proxy.pac).
+
+If you encounter technical difficulties, please contact your local helpdesk for more information.
+
+Thank you for your understanding.
+
+
+Fedora:
+
+Preferences / Network Connections / Ethernet / enp0s25 
+double click
+Proxy tab
+Method: choose "Automatic"
+Check "For browser only"
+PAC URL: http://autoproxy.cec.eu.int/proxy.pac
+
+
+
+
+OR 
+On command line:
+
+[claeyje@muscadet openbox]$ grep -A2  chrome lxde-rc.xml 
+    <!-- Keybindings for launching google-chrome -->
+    <keybind key="W-c">
+      <action name="Execute">
+        <command>google-chrome --proxy-pac-url="http://autoproxy.cec.eu.int/proxy.pac"</command>
+      </action>
+    </keybind>
+
+openbox-lxde --reconfigure
+
+
+
+
+
+
+

@@ -1,0 +1,65 @@
+Increase max_map_count Kernel Parameter (Linux).
+------------------------------------------------
+
+0. Check the current value:
+sysctl vm.max_map_count
+
+1. setting a sysctl variable on the live system (until next reboot)
+sysctl -w <variable name>=<value>
+
+2.Change permanently: Add the following line to /etc/sysctl.conf:
+vm.max_map_count=<map_count>
+For example:
+on a 256 GB system.
+
+echo 'vm.max_map_count=262144' >> /etc/sysctl.conf
+
+3.Reload the config as root:
+sysctl -p
+
+3.Check the new value:
+sysctl vm.max_map_count
+
+cat /proc/sys/vm/max_map_count
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+max_map_count:
+
+This file contains the maximum number of memory map areas a process may have. Memory map areas are used as a side-effect of calling malloc,
+ directly by mmap and mprotect, and also when loading shared libraries.
+
+While most applications need less than a thousand maps, certain programs, particularly malloc debuggers, may consume lots of them, 
+e.g., up to one or two maps per allocation.
+
+The default value is 65536.
+
+Bottom line: this setting limits the number of discrete mapped memory areas - on its own it imposes no limit on the size of those 
+areas or on the memory that is usable by a process.
+
+And yes, this:
+
+sysctl -w vm.max_map_count=65535
+
+is just a nicer way of writing this:
+
+echo 65535 > /proc/sys/vm/max_map_count
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Note.
+-----
+If sysctl.conf is managed by puppet, one can create a custom.conf file in /etc/sysctl.d
+
+All *.conf files in that directory are read during the boot process
+
+PS. 
+To check wether sysctl.conf is handled by puppet, use the following command:
+cd to the directory where the file resides
+[root@orvmwscndwh ~]# cd /etc
+[root@orvmwscndwh etc]# /home/admin/bin/puppet-ls | grep sysctl
+/etc/sysctl.conf
+
+------------------------------------------------------------------------------------------------------------------------------------
+

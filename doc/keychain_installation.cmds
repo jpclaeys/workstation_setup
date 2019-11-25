@@ -1,0 +1,23 @@
+Installing keychain
+Many Linux distributions and versions of UNIX provide a package for keychain, which can be installed using that operating system's package manager.
+
+To install keychain from the source tarball, download the most recent tarball from the Keychain page. Extract the tarball, and copy keychain itself to /usr/sbin:
+
+# wget http://www.funtoo.org/distfiles/keychain/keychain-2.8.5.tar.bz2
+# cd keychain-2.7.2_beta1
+# cp keychain /usr/bin
+# cp keychain.1 /usr/share/man/man1
+Now that keychain is in /usr/bin/, add it to your ~/.bash_profile, supplying paths to your private keys as arguments. Here's a good standard keychain-enabled ~/.bash_profile:
+
+   ~/.bash_profile
+eval $(keychain --eval --agents ssh id_rsa)
+# sourcing ~/.bashrc is a good thing:
+source ~/.bashrc
+
+
+https://build.funtoo.org/distfiles/keychain/
+Index of /distfiles/keychain/
+../
+keychain-2.8.4.tar.bz2                             11-Nov-2017 04:58               34368
+keychain-2.8.5.tar.bz2                             08-Mar-2018 07:27               34869
+

@@ -1,0 +1,14 @@
+If some of the workstations at Howald show only a grey screen (or black with a square cursor
+at the upper left), the Display Manager (lightdm) service on opvmwstsx11 has crashed.
+Solution:
+log into opvmwstsx11, “su” to root and restart the service:
+$ su -
+password:
+NB: pwd: OPv7in       (alias for linuxvm is pinguin: 7 characters)
+# service lightdm restart
+# service lightdm status
+OR
+/bin/systemctl restart lightdm.service
+/bin/systemctl status lightdm.service
+
+

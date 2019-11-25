@@ -1,0 +1,53 @@
+Howto tweak fedora
+
+1. run "tweaks"
+
+# Allow the botoom bar to show the list of active windows
+On the "Extensions" sub-menu, enable the "Window list"
+
+
+# Add the Maximise and Minimise icons on the Windows Titlbars
+
+On the "Window Titlebars" sub-menu, enable the "Maximise" and "Minimise" buttons in the "Titlebar Buttons" section
+
+
+Adding keyboard shortcuts:
+--------------------------
+
+
+Open the "Settings" 
+Select "Devices"
+Select "Keyboard"
+Goto the bottom of the Shortcuts list
+click on the "+"
+
+# Shortcut for "Terminator"
+Fill in the following:
+Name: Terminator
+Command: terminator --geometry=1280x800
+Shortcut: click on the "Set Shortcut..." button
+Press the Windows key and T
+Press the "Add" button
+
+# Shortcut for "Terminator" on banta
+Fill in the following:
+Name: Terminator on banta
+Command: ssh banta myterminator
+Shortcut: click on the "Set Shortcut..." button
+Press the Windows key and B
+Press the "Add" button
+
+# Shortcut for opdt199
+Name: opdt199 on 24" display
+Command: /usr/bin/rdesktop -d publications -x 0x80 -P  -a 32 -g 1920x1024 -k fr-be -u claeyje opdt199
+Shortcut: Windows + w
+
+
+# Shortcut for "Chrome"
+Fill in the following:
+Name: Google Chrome 
+Command: /usr/bin/google-chrome-stable %U
+Shortcut: click on the "Set Shortcut..." button
+Press the Windows key and C
+Press the "Add" button
+

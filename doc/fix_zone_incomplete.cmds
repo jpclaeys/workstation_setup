@@ -1,0 +1,6 @@
+In order to online a Resource Group, the zone has to be in the 'configured' state, otherwise it will not stay up.
+
+If a zone installation or uninstallation is interrupted, the zone is left in
+the incomplete state. Use uninstall to reset such a zone back to the configured state.
+zoneadm -z <zonename> uninstall
+

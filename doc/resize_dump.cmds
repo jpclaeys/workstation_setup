@@ -1,0 +1,182 @@
+
+[root@neo /]# zpool list
+[root@neo /]# zpool list rpool
+NAME   SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+rpool  278G   249G  29.0G  89%  1.00x  ONLINE  -
+[root@neo /]# zfs list -r rpool | egrep 'NAME|dump'
+NAME                              USED  AVAIL  REFER  MOUNTPOINT
+rpool/dump                        103G  20.6G   100G  -
+
+
+[root@neo /]# dumpadm          
+Dump content      : kernel with ZFS metadata
+Dump device       : /dev/zvol/dsk/rpool/dump (dedicated)
+Savecore directory: /var/crash/neo
+Savecore enabled  : yes
+
+[root@neo /]# dumpadm -e
+Estimated space required for dump: 13.96 G
+
+[root@neo /]# zfs get volsize rpool/dump
+NAME        PROPERTY  VALUE  SOURCE
+rpool/dump  volsize   100G   local
+
+[root@neo /]# zfs set volsize=50G rpool/dump
+
+[root@neo /]# zfs get volsize rpool/dump
+NAME        PROPERTY  VALUE  SOURCE
+rpool/dump  volsize   50G    local
+
+[root@neo /]# zpool list rpool
+NAME   SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+rpool  278G   199G  79.0G  71%  1.00x  ONLINE  -
+
+[root@neo /]# zfs list -r rpool | egrep 'NAME|dump'
+NAME                              USED  AVAIL  REFER  MOUNTPOINT
+rpool/dump                       51.6G  70.6G  50.0G  -
+
+[root@neo /]# zfs get all rpool/dump               
+NAME        PROPERTY              VALUE                  SOURCE
+rpool/dump  available             70.6G                  -
+rpool/dump  checksum              off                    local
+rpool/dump  compression           off                    local
+rpool/dump  compressratio         1.00x                  -
+rpool/dump  copies                1                      default
+rpool/dump  creation              Mon Sep 28 11:07 2015  -
+rpool/dump  dedup                 off                    local
+rpool/dump  encryption            off                    -
+rpool/dump  keychangedate         -                      default
+rpool/dump  keysource             none                   default
+rpool/dump  keystatus             none                   -
+rpool/dump  logbias               latency                default
+rpool/dump  primarycache          all                    default
+rpool/dump  readonly              off                    default
+rpool/dump  referenced            50.0G                  -
+rpool/dump  refreservation        51.6G                  local
+rpool/dump  rekeydate             -                      default
+rpool/dump  reservation           none                   default
+rpool/dump  secondarycache        all                    default
+rpool/dump  sync                  standard               default
+rpool/dump  type                  volume                 -
+rpool/dump  used                  51.6G                  -
+rpool/dump  usedbychildren        0                      -
+rpool/dump  usedbydataset         50.0G                  -
+rpool/dump  usedbyrefreservation  1.57G                  -
+rpool/dump  usedbysnapshots       0                      -
+rpool/dump  volblocksize          1M                     -
+rpool/dump  volsize               50G                    local
+rpool/dump  zoned                 off                    default
+
+
+[root@neo /]# zpool history | grep dump
+2015-09-28.11:07:43 zfs create -p -V 130gb rpool/dump
+2015-09-28.13:19:09 zfs set volsize=100G rpool/dump
+2018-12-12.10:09:09 zfs set volsize=50G rpool/dump
+
+
+-------------------------------------------------------------------------------------------------------------------------
+Trinity:
+--------
+
+[root@trinity /]# zfs list rpool
+NAME   USED  AVAIL  REFER  MOUNTPOINT
+rpool  258G  15.2G  73.5K  /rpool
+[root@trinity /]# zfs list -r rpool
+NAME                              USED  AVAIL  REFER  MOUNTPOINT
+rpool/dump                        103G  18.3G   100G  -
+
+[root@trinity /]# zfs get all rpool/dump
+NAME        PROPERTY              VALUE                  SOURCE
+rpool/dump  available             18.3G                  -
+rpool/dump  checksum              off                    local
+rpool/dump  compression           off                    local
+rpool/dump  compressratio         1.00x                  -
+rpool/dump  copies                1                      default
+rpool/dump  creation              Mon Sep 28 11:36 2015  -
+rpool/dump  dedup                 off                    local
+rpool/dump  encryption            off                    -
+rpool/dump  keychangedate         -                      default
+rpool/dump  keysource             none                   default
+rpool/dump  keystatus             none                   -
+rpool/dump  logbias               latency                default
+rpool/dump  primarycache          all                    default
+rpool/dump  readonly              off                    default
+rpool/dump  referenced            100G                   -
+rpool/dump  refreservation        103G                   local
+rpool/dump  rekeydate             -                      default
+rpool/dump  reservation           none                   default
+rpool/dump  secondarycache        all                    default
+rpool/dump  sync                  standard               default
+rpool/dump  type                  volume                 -
+rpool/dump  used                  103G                   -
+rpool/dump  usedbychildren        0                      -
+rpool/dump  usedbydataset         100G                   -
+rpool/dump  usedbyrefreservation  3.15G                  -
+rpool/dump  usedbysnapshots       0                      -
+rpool/dump  volblocksize          1M                     -
+rpool/dump  volsize               100G                   local
+rpool/dump  zoned                 off                    default
+[root@trinity /]# zfs get volsize rpool/dump
+NAME        PROPERTY  VALUE  SOURCE
+rpool/dump  volsize   100G   local
+[root@trinity /]# dumpadm
+Dump content      : kernel with ZFS metadata
+Dump device       : /dev/zvol/dsk/rpool/dump (dedicated)
+Savecore directory: /var/crash/trinity
+Savecore enabled  : yes
+Save compressed   : on
+[root@trinity /]# dumpadm -e
+Estimated space required for dump: 38.33 G
+[root@trinity /]# zfs get volsize rpool/dump
+NAME        PROPERTY  VALUE  SOURCE
+rpool/dump  volsize   100G   local
+[root@trinity /]# zfs set volsize=50G rpool/dump && zfs get volsize rpool/dump
+NAME        PROPERTY  VALUE  SOURCE
+rpool/dump  volsize   50G    local
+[root@trinity /]# zpool list rpool
+NAME   SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+rpool  278G   201G  76.7G  72%  1.00x  ONLINE  -
+[root@trinity /]# zfs get volsize rpool/dump
+NAME        PROPERTY  VALUE  SOURCE
+rpool/dump  volsize   50G    local
+[root@trinity /]# zfs get volsize rpool/dump
+NAME        PROPERTY  VALUE  SOURCE
+rpool/dump  volsize   50G    local
+[root@trinity /]# zfs get all rpool/dump   
+NAME        PROPERTY              VALUE                  SOURCE
+rpool/dump  available             68.3G                  -
+rpool/dump  checksum              off                    local
+rpool/dump  compression           off                    local
+rpool/dump  compressratio         1.00x                  -
+rpool/dump  copies                1                      default
+rpool/dump  creation              Mon Sep 28 11:36 2015  -
+rpool/dump  dedup                 off                    local
+rpool/dump  encryption            off                    -
+rpool/dump  keychangedate         -                      default
+rpool/dump  keysource             none                   default
+rpool/dump  keystatus             none                   -
+rpool/dump  logbias               latency                default
+rpool/dump  primarycache          all                    default
+rpool/dump  readonly              off                    default
+rpool/dump  referenced            50.0G                  -
+rpool/dump  refreservation        51.6G                  local
+rpool/dump  rekeydate             -                      default
+rpool/dump  reservation           none                   default
+rpool/dump  secondarycache        all                    default
+rpool/dump  sync                  standard               default
+rpool/dump  type                  volume                 -
+rpool/dump  used                  51.6G                  -
+rpool/dump  usedbychildren        0                      -
+rpool/dump  usedbydataset         50.0G                  -
+rpool/dump  usedbyrefreservation  1.57G                  -
+rpool/dump  usedbysnapshots       0                      -
+rpool/dump  volblocksize          1M                     -
+rpool/dump  volsize               50G                    local
+rpool/dump  zoned                 off                    default
+[root@trinity /]# zpool history | grep dump
+2015-09-28.11:36:37 zfs create -p -V 130gb rpool/dump
+2015-09-28.13:21:56 zfs set volsize=100G rpool/dump
+2018-12-12.10:10:18 zfs set volsize=50G rpool/dump
+
+
+

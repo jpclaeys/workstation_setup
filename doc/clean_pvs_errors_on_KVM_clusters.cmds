@@ -1,0 +1,5 @@
+# In case of disks not properly cleaned up, pvs generates errors
+# Steps to cleanup those errors: 
+
+pvs > pvserror.txt
+for i in `cat pvserror.txt | grep -v p1 | awk '{print $4}' | uniq`; do /home/admin/bin/removelun_rhel $i | bash  ; done;

@@ -1,0 +1,73 @@
+How to fix samba issues:
+-------------------------
+
+
+net getdomainsid
+
+wbinfo --ping-dc
+
+net ads info
+
+winbindd -S -d 1 -i
+
+
+smbpasswd -a ecodp
+
+list user in local db
+pdbedit -L -v
+
+
+~/git/development/modules/opoce/manifests/linux
+
+   command => '/sbin/service smb stop; /sbin/service winbind stop; /usr/bin/net -U SambaWriter%S4mbaWr1ter$ ads join createcomputer="Publications/Computers/Unix"; /sbin/service winbind start; /sbin/service smb start',
+
+
+net cache flush
+
+
+[root@otvmwscelbo1 samba]# wbinfo --group-info="PUBLICATIONS+cellarbo-smb-test-ro"
+
+
+service smb stop && service winbind stop
+
+net ads leave -U SambaWriter
+mkdir /var/lib/samba/old
+mv /var/lib/samba/* /var/lib/samba/old
+mkdir smb_krb5 winbindd_privileged scripts private && chmod 700 private && chmod 755 smb_krb5 scripts && chmod 750 winbindd_privileged && chgrp wbpriv winbindd_privileged
+/usr/bin/net -U SambaWriter%S4mbaWr1ter$ ads join createcomputer="Publications/Computers/Unix";
+net ads testjoin
+
+service winbind start && service smb start
+service smb status && service winbind status
+
+
+samba-tool dbcheck --cross-ncs --fix --yes
+
+
+  The primary group domain sid
+(S-1-5-21-117609710-1229272821-839522115-32286) 
+
+S-1-5-21-2513275155-4148527679-792317657-513
+
+does not match the domain sid
+(S-1-5-21-2513275155-4148527679-792317657) 
+
+
+for portal(S-1-5-21-2513275155-4148527679-792317657-1001)
+          
+net getdomainsid
+net setlocalsid S-1-5-21-117609710-1229272821-839522115
+
+Didier Bortolin
+System Team - Linux Engineer
+
+ 
+European Commission
+Directorate-General INFORMATICS
+Unit C3.003 OPC – Hosting and Platforms
+Halian S.à.r.l.  (under contract with the European Commission)
+Luxembourg MER 03 / 355
+Tel:    +352 2929-42447
+didier.bortolin@ext.publications.europa.eu
+
+

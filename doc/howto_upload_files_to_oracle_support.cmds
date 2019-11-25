@@ -1,0 +1,43 @@
+
+Uploading files to Oracle Support
+----------------------------------
+
+wiki: http://opitwiki/doku.php?id=op:nix:uploading_files_to_oracle&s[]=curl
+
+1. Copy the files from the Solaris server to the exchange directory:/net/nfs-infra.isilon.opoce.cec.eu.int/xchange/claeyje
+1.1 chmod +r <copied file>
+
+2. Goto the xchange directory on opvmwstsx11 (/net/nfs-infra.isilon.opoce.cec.eu.int/xchange/claeyje)
+
+3. Upload the file(s)
+
+Command:
+--------
+FILE=<file_to_be_uploaded>
+SR=<sr_number>
+CMD="curl -k -T $FILE -o /tmp/out -x http://pslux.ec.europa.eu:8012/ -U a0029ffb:iufjSEP -u opdl-infra-systems@publications.europa.eu https://transport.oracle.com/upload/issue/$SR/" && echo $CMD
+eval $CMD
+
+Note:
+-----
+Connection is not allowed from the physical servers 
+--> will get a connection timeout !!!
+____________________________________________________________________________________________________________________________________
+
+Ex.
+---
+[claeyje@opvmwstsx11 claeyje]# curl -k -T niobe_vmdump-zfs.0 -o /tmp/out -x http://pslux.ec.europa.eu:8012/ -U a0029ffb:iufjSEP -u opdl-infra-systems@publications.europa.eu https://transport.oracle.com/upload/issue/3-20351795951/
+Enter host password for user 'opdl-infra-systems@publications.europa.eu':
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  3 2672M    0     0    3  102M      0   515k  1:28:24  0:03:23  1:25:01  507k
+
+ettelma@opvmwstsx11 [/net/nfs-infra.isilon/xchange/claeyje]: curl -k -T morpheus_vmdump.0  -o /tmp/out -x http://pslux.ec.europa.eu:8012/ -U a0029ffb:iufjSEP -u opdl-infra-systems@publications.europa.eu https://transport.oracle.com/upload/issue/3-20351795951/
+Enter host password for user 'opdl-infra-systems@publications.europa.eu':
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0 17.9G    0     0    0 8256k      0   527k  9:55:59  0:00:15  9:55:44  501k
+
+____________________________________________________________________________________________________________________________________
+
+

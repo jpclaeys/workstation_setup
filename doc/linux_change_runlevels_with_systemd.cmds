@@ -1,0 +1,50 @@
+CentOS / RHEL 7 : How to change runlevels (targets) with systemd
+
+By admin
+
+Systemd has replaced sysVinit as the default service manager in RHEL 7. Some of the sysVinit commands have been symlinked to their RHEL 7 counterparts, however this will eventually be deprecated in favor of the standard systemd commands in the future.
+
+SysVinit V/s systemd runlevels
+Here is a comparison between SysVinit runlevels V/s systemd targets.
+
+Sysvinit Runlevel	Systemd Target	Function
+0	runlevel0.target, poweroff.target	System halt/shutdown
+1, s, single	runlevel1.target, rescue.target	Single-user mode
+2, 4	runlevel2.target, runlevel4.target, multi-user.target	User-defined/Site-specific runlevels. By default, identical to 3.
+3	runlevel3.target, multi-user.target	Multi-user, non-graphical mode, text console only
+5	runlevel5.target, graphical.target	Multi-user, graphical mode
+6	runlevel6.target, reboot.target	Reboot
+emergency	emergency.target	Emergency mode
+Changing runlevels with systemd
+The runlevel target can be changed by using the systemctl isolate command :
+
+# systemctl isolate multi-user.target
+To view what targets are available you can issue the list-units option with the type target
+
+# systemctl list-units --type=target
+Run level 3 is emulated by multi-user.target. This is done by symbolic link and can be used interchangeably
+
+# systemctl isolate multi-user.target
+# systemctl isolate runlevel3.target
+# ls -l /usr/lib/systemd/system/runlevel3.target
+lrwxrwxrwx 1 root root 17 Oct 18 11:41 /usr/lib/systemd/system/runlevel3.target -> multi-user.target
+Run level 5 is emulated by graphical.target. This is also done by symbolic link and can be used interchangeably
+
+# systemctl isolate graphical.target
+# systemctl isolate runlevel5.target
+# ls -l /usr/lib/systemd/system/runlevel5.target
+lrwxrwxrwx 1 root root 16 Oct 18 11:41 /usr/lib/systemd/system/runlevel5.target -> graphical.target
+Changing the default runlevel
+The default runlevel can be changed by using the set-default option.
+
+# systemctl set-default multi-user.target
+To get the currently set default, you can use the get-default option.
+
+# systemctl get-default
+The default runlevel in systemd can also be set using the below method (not recommended though).
+
+# ln -sf /lib/systemd/system/[desired].target /etc/systemd/system/default.target
+The default target can also be set in the kernel line during boot by adding the following option :
+
+systemd.unit=multi-user.target
+

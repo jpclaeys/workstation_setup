@@ -1,0 +1,1 @@
+for H in `thosts`; do msg $H && s $H svcs -xv;done | tee svcs.log

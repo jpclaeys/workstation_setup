@@ -1,0 +1,29 @@
+
+clrg status
+clrg switch -n lappe.cc.cec.eu.int cedprod1
+clrg status
+clrg switch -n chenonetta.cc.cec.eu.int cedprod1
+clrg status
+clrg remove-node -n lappe.cc.cec.eu.int cedprod1
+clrg status
+clrg show -p Nodelist cf8estc1
+
+
+3 root@chenonetta:->clrg status
+
+=== Cluster Resource Groups ===
+
+Group Name   Node Name                  Suspended   Status
+----------   ---------                  ---------   ------
+cf8estc1     lappe.cc.cec.eu.int        No          Online
+
+cedprod1     chenonetta.cc.cec.eu.int   No          Online
+
+4 root@chenonetta:->cluster list
+cluster202
+5 root@chenonetta:->cluster list
+cluster202
+6 root@chenonetta:->clnode list
+lappe.cc.cec.eu.int
+chenonetta.cc.cec.eu.int
+

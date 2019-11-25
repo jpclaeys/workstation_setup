@@ -1,0 +1,7 @@
+# expr example
+
+idx=0 && idx=`expr $idx + 1` && echo $idx
+
+# in recent bash versions, one can use the following:
+
+idx=0 && ((idx++)) ; echo $idx ; ((idx++)) ; echo $idx

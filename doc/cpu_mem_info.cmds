@@ -1,0 +1,11 @@
+kstat :::physmem, which should give you the number of pages. (8K on SPARC, 4K on x86 in most situations)
+
+lgrpinfo 
+
+echo "::memstat" |mdb -k
+kstat zfs::arcstats:size
+
+kstat -n system_pages -p -s physmem |  nawk -v pagesize=$(pagesize) '{print $2*pagesize/1024/1024 "MB"}'
+
+pagesize — Display the Size of a Page of Memory
+

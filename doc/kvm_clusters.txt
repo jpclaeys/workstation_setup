@@ -1,0 +1,34 @@
+voyager (prod): 6
+****************	
+chakotay	EUF
+tuvok		EUF
+janeway		MER
+torres		MER
+	
+Alogens (Prod): 7
+****************	
+fluorine	MER
+bromine		MER
+iodine		EUF
+chlorine	EUF
+	
+TNG (test): 6
+************	
+laforge		EUF
+worf		EUF
+picard		MER
+riker		MER
+	
+Metals (test): 7
+***************	
+titanium	MER
+chromium	MER
+vanadium	EUF
+palladium	EUF
+	
+Noble Gases(Prod): 7 + HDS
+*******************	
+argon		MER
+xenon		MER
+neon		EUF
+krypton		EUF

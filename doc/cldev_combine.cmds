@@ -1,0 +1,41 @@
+# Cldev combine
+
+For each pair of matched DID devices, combine the instances into a single replicated DID device. Run the following command from the RDF2/secondary side.
+
+# cldevice combine -t srdf -g replication-device-group  -d destination-instance source-instance
+
+Note –
+
+The combine command must be executed on the secondary node
+
+-t replication-type
+
+    Specifies the replication type. For EMC SRDF, type SRDF.
+
+-g replication-device-group
+
+    Specifies the name of the device group as shown in the symdg show command.
+
+-d destination-instance
+
+    Specifies the DID instance that corresponds to the RDF1 device. (DID on primary node)
+
+source-instance
+
+    Specifies the DID instance that corresponds to the RDF2 device. (DID on secondary node)
+
+Note –
+
+Before executing this command, check that the DID is not used by any current zone 
+File: /etc/cluster/ccr/global/replicated_devices
+
+Note –
+
+If you combine the wrong DID device, use the -b option for the scdidadm command to undo the combining of two DID devices.
+
+# scdidadm -b device 
+
+-b device
+
+    The DID instance that corresponded to the destination_device when the instances were combined.
+

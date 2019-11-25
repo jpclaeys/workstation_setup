@@ -1,0 +1,15 @@
+On IMM II
+---------
+
+Select the "IMM Management" tab
+Select the "IMM Configuration" tab
+Select the "Reset IMM to factory defaults" option
+Confirm Reset to factory defaults
+
+Do you want to reset all IMM settings to factory defaults?
+
+If you are working from the IMM local system, you will lose your TCP/IP connection as a result. You will need to reconfigure the IMM network interface to restore connectivity.
+
+After the IMM configuration is cleared, the IMM will be restarted.
+
+click ok 

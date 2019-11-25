@@ -1,0 +1,29 @@
+
+/etc/X11/xorg.conf
+
+/etc/hal/fdi/policy/30user
+
+/boot/solaris/bootenv.rc 
+
+log: /var/log/Xorg.0.log
+
+
+root@leech:~# cat /etc/hal/fdi/policy/30user/99-x11-keyboard-settings.fdi
+<?xml version="1.0" encoding="UTF-8"?>
+<deviceinfo version="0.2">
+  <device>
+    <match key="info.capabilities" contains="input.keys">
+        <merge key="input.x11_options.XkbRules" type="string">base</merge>
+        <!-- merge key="input.x11_options.XkbModel" type="string">sun_type6_usb</merge -->
+        <merge key="input.x11_options.XkbModel" type="string">pc105</merge>
+        <merge key="input.x11_options.XkbLayout" type="string">be</merge>
+        <merge key="input.xkb.layout" type="string">be</merge>
+        <merge key="input.xkb.variant" type="string" />
+        <!-- merge key="input.x11_options.XkbLayout" type="string">us</merge --> 
+        <!-- merge key="input.x11_options.XkbLayout" type="string">us,be</merge -->
+        <!-- merge key="input.x11_options.XkbVariant" type="string">nodeadkeys</merge -->
+        <!-- merge key="input.x11_options.XkbOptions" type="string">grp:shifts_toggle,terminate:ctrl_alt_bksp</merge -->
+    </match>
+  </device>
+</deviceinfo>
+

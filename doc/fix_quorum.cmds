@@ -1,0 +1,54 @@
+# Problem: 
+On karadoc, "powermt check" reports a dead disk, but when we try to fix it, powermt complains about the fact that the disk is busy.
+It's actually the quorum disk from EUFO
+disk: karadoc:/dev/rdsk/c0t60014059F9A2F3AA13443BA9177EA433d0
+
+find the DID:
+cldev show -v | ggrep -B2 c0t60014059F9A2F3AA13443BA9177EA433d0 
+--> DID=d35
+--> it's a quorum device
+
+We first need to disable the device, in order to be able to repair it using the powermt check command.
+Then we can remove and re-add the iSCS LUN in the static-config; and then re-add to the cluster.
+
+clq disable d35
+cldev show d35
+powermt check dev=emcpower16a
+powermt display dev=emcpower16a
+cldev clear
+cldev repair
+powermt save
+powermt display
+iscsiadm list static-config
+iscsiadm remove static-config iqn.1986-03.com.sun:e-perceval-karadoc,158.167.99.224:3260
+devfsadm -vC
+iscsiadm add static-config iqn.1986-03.com.sun:e-perceval-karadoc,158.167.99.224:3260
+devfsadm -i iscsi 
+scgdevs 
+less -f /dev/did/rdsk/d35s0 
+clq add d35
+clq status
+
+Note: quorum names
+e-<hostname>: EUFO
+m-<hostname>: MER
+<hostname>:   DIGIT
+
+ex. 
+[root@perceval dd]# iscsiadm list static-config
+Static Configuration Target: iqn.1986-03.com.sun:perceval-karadoc,10.134.124.98:3260
+Static Configuration Target: iqn.1986-03.com.sun:e-perceval-karadoc,158.167.99.224:3260
+Static Configuration Target: iqn.1986-03.com.sun:m-perceval-karadoc,158.167.99.225:3260
+
+Note:
+[claeyje@opvmwstsx11 doc]# dig -x 158.167.99.224 +short
+infra1-pk.opoce.cec.eu.int.
+[claeyje@opvmwstsx11 doc]# dig -x 158.167.99.225 +short
+infra2-pk.opoce.cec.eu.int.
+
+[claeyje@opvmwstsx11 doc]# host 158.167.99.224 # EUFO
+224.99.167.158.in-addr.arpa domain name pointer infra1-pk.opoce.cec.eu.int.
+[claeyje@opvmwstsx11 doc]# host 158.167.99.225 # MER
+225.99.167.158.in-addr.arpa domain name pointer infra2-pk.opoce.cec.eu.int.
+
+10.134.124.98: Digit server

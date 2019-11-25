@@ -1,0 +1,58 @@
+
+IM0018047196
+--> re-assign to WIN-OPOCE
+
+[data]
+    comment = ecodp/data
+    browseable = yes
+    path = /applications/ecodp/data
+    guest ok = no
+    force user = ecodp
+    inherit owner = yes
+    veto files = .htaccess/lost+found
+    write list = @"PUBLICATIONS+ODP-SMB-PROD-RW" PUBLICATIONS+cherrol
+
+# Syntax:
+----------
+@: means a group
+PUBLICATIONS: domain name
++ : prefixes the group name
+ODP-SMB-PROD-RW: group name
+
+# On windows
+-------------
+open a windows explorer
+Network
+Search Active Directory
+Enter the group name
+Find Now
+Double click on the group in the search results
+
+If the user doesn't show up in the group, then forward the ticket to the windows team, and ask to add the user in the AD group.
+
+Dears,
+Can you please add the user "DESURXA" to the AD group "ODP-SMB-PROD-RW" ?
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+IM0018088337
+
+Affected user: CHAPEXA
+ssh cellarbo-tk
+
+
+[root@cellarbo-tk samba]# pwd && grep -A6 '\[cellar'  smb.conf.local
+/etc/samba
+[cellar]
+    path = /applications/cellar/users/cellar/
+    browseable = yes
+    read only = yes
+    force user = cellar
+    valid users = @"PUBLICATIONS+cellarbo-smb-test-ro" PUBLICATIONS+cherrol
+
+
+--> re-assign to WIN-OPOCE
+
+Dears,
+Can you please add the user "CHAPEXA" to the AD group "cellarbo-smb-test-ro" ?

@@ -1,0 +1,66 @@
+example1:
+recover
+recover> list
+recover> cd /var/log
+recover> list    
+recover> pwd
+recover> ls messages*
+recover> list
+recover> changetime May 20 10:00:00
+recover> ls messages*
+recover> add messages-20170516.gz
+recover> list
+recover> destination
+recover> recover
+recover> exit
+
+example2:
+recover
+recover> ls chommpser.db
+recover> add chommpser.db
+recover> list
+recover> recover
+recover> exit
+
+
+
+# On linux, one need to specify the server and client
+
+recover -s bkp-opvmwsbkps2 -c bkp-clientname
+
+Where:
+s: backup server
+c: client name
+
+
+# command help:
+----------------
+
+[root@abel ~]# recover
+Current working directory is /root/
+recover> help
+6477:recover: Available commands are:
+	add [-q] [filename] - add `filename' to list of files to be recovered
+	cd [dir] - change directory to dir
+	changetime [date | -l locale_date] - change the time that you are browsing, changetime [-l] displays the supported [[locale_]date] format
+	debug
+	delete [filename] - delete `filename' from the recover list
+	destination - print destination location for recovered files
+	dir [/w] [filename...] - list filename
+	exit - immediately exit program
+	force - overwrite existing files
+	help or `?' - print this list
+	lf [-aAcCdfFgilLqrRsStu1] [filename...] - list filename type
+	list [-c | -l]  - list the files marked for recover
+	ll [-aAcCdfFgilLqrRsStu1] [filename...] - long list filename
+	ls [-aAcCdfFgilLqrRsStu1] [filename...] - list filename
+	noforce - do not overwrite existing files
+	pwd - print current directory
+	quit - immediately exit program
+	recover - recover requested files
+	relocate [dir] - specify new location for recovered files
+	verbose - toggle verbose mode; feedback about what is going on
+	versions [filename] - report on each version of file `filename'
+	volumes [filename] - report volumes needed to recover marked files
+6478:recover: `filename' can be either a file or a directory
+
