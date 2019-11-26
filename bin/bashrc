@@ -111,3 +111,5 @@ fi
 export HISTTIMEFORMAT="%d/%m/%y %T "
 
 [ "`uname -s`" == "SunOS" ] && TERM=xterm && unalias diff 2>/dev/null
+
+defineproxy

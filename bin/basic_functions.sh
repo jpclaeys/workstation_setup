@@ -92,7 +92,7 @@ function definemypasswd ()
 echo -n "password for `whoami`: "; stty -echo; read mypasswd; export mypasswd; stty echo; echo
 }
 
-function define_proxy ()
+function defineproxy ()
 {
 #proxy_server=158.169.131.13:8012
 proxy_server="psbru.ec.europa.eu"
