@@ -113,5 +113,3 @@
       dest: ~/Documentation
       state: link
     tags: bash
-
-
