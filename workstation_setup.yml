@@ -100,10 +100,10 @@
       state: link
     tags: bash
 
-  - name: setup bin
+  - name: setup doc_oasis2
     file:
-      src: ~/git/workstation_setup/bin
-      dest: ~/bin
+      src: ~/git/workstation_setup/doc_oasis2
+      dest: ~/doc_oasis2
       state: link
     tags: bash
 
