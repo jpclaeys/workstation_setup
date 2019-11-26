@@ -107,10 +107,10 @@
       state: link
     tags: bash
 
-  - name: setup bin1
+  - name: setup Documentation
     file:
-      src: ~/git/workstation_setup/bin
-      dest: ~/bin
+      src: ~/git/workstation_setup/Documentation
+      dest: ~/Documentation
       state: link
     tags: bash
 
