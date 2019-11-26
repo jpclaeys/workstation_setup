@@ -1,0 +1,77 @@
+######################################################################################################################################################
+# creation d'un zpool dedie a la swap
+######################################################################################################################################################
+
+root@sleepy # echo | format
+Searching for disks...done
+
+
+AVAILABLE DISK SELECTIONS:
+       0. c0t0d0 <SUN36G cyl 24620 alt 2 hd 27 sec 107>
+          /pci@1dd,700000/pci@1/scsi@2/sd@0,0
+       1. c0t1d0 <SUN36G cyl 24620 alt 2 hd 27 sec 107>
+          /pci@1dd,700000/pci@1/scsi@2/sd@1,0
+       2. c0t2d0 <SUN36G cyl 24620 alt 2 hd 27 sec 107>
+          /pci@1dd,700000/pci@1/scsi@2/sd@2,0
+       3. c4t600A0B800026676A000014434B380045d0 <SUN-CSM200_R-0660-30.00GB>
+          /scsi_vhci/ssd@g600a0b800026676a000014434b380045
+       4. c4t600A0B800026676A000014494B3987A5d0 <SUN-CSM200_R-0660-40.00GB>
+          /scsi_vhci/ssd@g600a0b800026676a000014494b3987a5
+       5. c4t600A0B8000266772000016144B39A5AEd0 <SUN-CSM200_R-0660-100.00GB>
+          /scsi_vhci/ssd@g600a0b8000266772000016144b39a5ae
+       6. c4t600A0B8000266772000016B94BA1A35Ed0 <SUN-CSM200_R-0660-20.00GB>
+          /scsi_vhci/ssd@g600a0b8000266772000016b94ba1a35e
+Specify disk (enter its number): Specify disk (enter its number): 
+
+
+root@sleepy # zpool create rpoolswap c0t2d0  
+invalid vdev specification
+use '-f' to override the following errors:
+/dev/dsk/c0t2d0s0 contains a ufs filesystem.
+/dev/dsk/c0t2d0s2 contains a ufs filesystem.
+root@sleepy # zpool create -f rpoolswap c0t2d0 
+
+root@sleepy # zpool list
+NAME            SIZE   USED  AVAIL    CAP  HEALTH  ALTROOT
+diraa-tz       59.6G  38.0G  21.6G    63%  ONLINE  -
+etenderint-tz  29.8G  16.9G  12.9G    56%  ONLINE  -
+rpool          33.8G  26.0G  7.73G    77%  ONLINE  -
+rpoolswap      33.8G  76.5K  33.7G     0%  ONLINE  -
+tedmonitor-tz  99.5G  41.1G  58.4G    41%  ONLINE  -
+
+root@sleepy # zpool status rpool
+  pool: rpoolswap
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME        STATE     READ WRITE CKSUM
+        rpoolswap   ONLINE       0     0     0
+          c0t2d0    ONLINE       0     0     0
+
+errors: No known data errors
+
+
+root@sleepy # zfs create -V 10g rpool/swap
+root@sleepy # zfs list -r rpoolswap
+NAME             USED  AVAIL  REFER  MOUNTPOINT
+rpoolswap       10.0G  23.2G    21K  /rpoolswap
+rpoolswap/swap    10G  33.2G    16K  -
+
+
+
+root@sleepy # swap -l
+swapfile             dev  swaplo blocks   free
+/dev/zvol/dsk/rpool/swap 256,2      16 20971504 20958736
+root@sleepy # swap -s
+total: 15409536k bytes allocated + 2305376k reserved = 17714912k used, 5898736k available
+
+root@sleepy # swap -a /dev/zvol/dsk/rpool/swap 
+
+
+root@sleepy # swap -l
+swapfile             dev  swaplo blocks   free
+/dev/zvol/dsk/rpool/swap 256,2      16 20971504 20958736
+/dev/zvol/dsk/rpoolswap/swap 256,3      16 20971504 20971504
+root@sleepy # swap -s
+total: 11500776k bytes allocated + 5021104k reserved = 16521880k used, 17444696k available

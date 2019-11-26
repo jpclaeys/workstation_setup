@@ -1,0 +1,24 @@
+####################################################
+# installation du master agent ECC
+####################################################
+
+
+##### installer le master agent
+cd /net/remus/export/software/EMC2/master-agent/ecc600.cd1/
+./install_master.sh  /net/remus/export/software/EMC2/master-agent/ecc600.cd1
+
+##### reponses:
+/usr/ecc
+N
+pythagore
+5799
+5798
+Y
+Y
+
+##### demarrer le master agent
+/etc/init.d/eccmad start
+
+##### constater que les parametres EMC sont dans /etc/system
+
+##### prevenir mathias de l'installtion pour qu'il installe son agent 

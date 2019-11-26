@@ -1,0 +1,103 @@
+
+opsys_ux@infra-pz:...explo/archives/201710/20171002$ pwd                                                                                                                                                                                      
+/applications/explo/data/oplinuxexplo/archives/201710/20171002
+
+
+
+
+opsys_ux@infra-pz:...ations/explo/data/oplinuxexplo$ cd upload/                                                                                                                                                                               
+opsys_ux@infra-pz:...explo/data/oplinuxexplo/upload$ ls -ltr                                                                                                                                                                                  
+total 99679
+-rw-------   1 root     root     9114996 oct.  2 11:07 OPLinuxExplo.otvmwsrvpxy.2017.10.02-11.05.tar.xz
+-rw-------   1 root     root     20833080 oct.  2 11:18 OPLinuxExplo.laforge.2017.10.02-11.14.tar.xz
+-rw-------   1 root     root     20965284 oct.  2 12:07 OPLinuxExplo.laforge.2017.10.02-12.04.tar.xz
+
+
+
+
+
+
+
+
+
+
+
+bortodi@baghera:[~/git/production/modules/opoce/files/explorer] $ 
+
+
+[root@castor upload]# pwd
+/net/infra-pz/applications/explo/data/oplinuxexplo/upload
+
+
+
+castor : 	general.syslogsize=100   	rh 6.9 sosreport (version 3.2)
+
+centreonfo-tk : sosreport crash?		rh 6.7
+
+chakotay : 	general.syslogsize=100		rh 6.7 sosreport (version 3.2)
+
+drmoon-pk : 	offline 
+
+janeway : 	general.syslogsize=100  	rh 6.9
+
+laforge : 	general.syslogsize=100  	rh 6.9
+
+mykerinos : 	general.syslogsize=100  	rh 6.9
+
+mykerinos2 : 	general.syslogsize=100  	rh 6.9
+
+obvmwsidol04 :	relance OK			rh 6.5 sosreport (version 2.2)
+
+opvmwselk01 : 	relance OK    			rh 7.2 sosreport (version 3.2)
+
+otvmwscrm01 :	general.syslogsize=100 		rh 7.3  sosreport (version 3.3)
+
+
+picard : 	general.syslogsize=100 		rh 6.9
+
+polideuce : 	general.syslogsize=100 		rh 6.9
+
+riker : 	general.syslogsize=100 		rh 6.9
+
+torres : 	general.syslogsize=100 		rh 6.9
+
+worf : 		general.syslogsize=100 		rh 6.9
+
+
+[root@castor etc]# cd cron.d
+
+[root@castor cron.d]# ls -ltr
+total 24
+-rw-r--r-- 1 root root  67 Nov 19  2012 atop
+-rw-r--r-- 1 root root  68 Oct 29  2014 logrotate
+-rw-r--r-- 1 root root 159 Mar 31  2016 explorers
+-rw-r--r-- 1 root root 113 Jul 22  2016 0hourly
+-rw------- 1 root root 235 Oct  6  2016 sysstat
+-rw------- 1 root root 108 Jan 26  2017 raid-check
+
+[root@castor cron.d]# cat ./explorers 
+
+# Run explorers
+20 5 * * * root /opt/OPappExplo/bin/OPappExplo.sh >/dev/null 2>&1 # Applicative explorer
+0 6 * * * root /opt/OPLinuxExplo/bin/OPLinuxExplo.sh
+
+[root@castor cron.d]# 
+
+/opt/OPLinuxExplo/bin/OPLinuxExplo.sh
+/bin/ls: cannot access /tmp/sosreport*: No such file or directory
+ls: cannot access /tmp/sosreport*: No such file or directory
+ERROR:   No sosreport file found in /tmp....
+
+
+ok:
+
+/usr/sbin/sosreport --batch --verbose name castor -k -e amd,dhcp,ds,ftp,tftpserver,vmware,initrd,named,netdump,nfsserver,pxe
+
+pas ok :
+
+[root@castor tmp]# /usr/sbin/sosreport --batch --verbose name castor -k general.syslogsize=100 -e amd,dhcp,ds,ftp,tftpserver,vmware,initrd,named,netdump,nfsserver,pxe
+
+sosreport (version 3.2)
+
+no such option "syslogsize" for plugin (general)
+

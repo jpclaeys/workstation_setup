@@ -1,0 +1,94 @@
+# ajouter dans le framework cluster les devices files par Mathias
+devfsadm -v
+cldev populate
+# constater qu'on a les ressources types StoragePlus et gds
+clrt list
+# regarder si on a le patch 140213-02 installe
+pkgparam SUNWsczone PATCHLIST
+# constater ou il est le quorum car on va devoir l'enlever avant de creer les zpools
+scdidadm -L
+clq status
+
+# zpools:
+export zo=roma
+export zo=camel
+zpool create -f -m /zpool/${zo} ${zo} c4t6006048000028775112853594D374539d0
+zpool create -f -m /zpool/${zo} ${zo} c4t6006048000028775112853594D303030d0
+zfs create ${zo}/zone
+mkdir -p /zones/${zo}
+zfs set mountpoint=/zones/${zo} ${zo}/zone
+zfs create ${zo}/applications
+zfs set mountpoint=/applications/wood ${zo}/applications
+
+
+
+# zones:
+# depuis emile
+mkdir -p /net/opsrv190/xchange/aphrodite
+export zo=roma
+export zo=camel
+zonecfg -z ${zo} export > /net/opsrv190/xchange/aphrodite/${zo}.cfg 
+# changer l'addresse pour une temporaire
+# 5 pour camel
+vi /net/opsrv190/xchange/aphrodite/${zo}.cfg
+zonecfg -z ${zo} -f /net/opsrv190/xchange/aphrodite/${zo}.cfg
+chmod 700 /zones/${zo}
+zoneadm -z ${zo} install
+
+export zo=roma
+export zo=camel
+export ip="158.167.99.103"
+export ip="158.167.99.104"
+cat >/zones/${zo}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+timeserver=158.167.96.18
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${zo} ip_address=${ip} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOF
+
+echo "opocec.cec.eu.int" > /zones/${zo}/root/etc/defaultdomain
+
+### cluster:
+export rg=roma-rg
+export rg=camel-rg
+
+export rs=roma-zfs
+export rs=camel-zfs
+
+export zp=roma
+export zp=camel
+
+export no=aphrodite
+export no=apollon
+
+clrg create ${rg}
+clrg online -M ${rg}
+
+# ressource storage
+clrs create -g ${rg} -t SUNW.HAStoragePlus -p zpools=${zp} ${rs}
+
+# addresses temporaires pour les logical ressources
+echo "158.167.99.104   opgtw001 # LH roma" >> /etc/inet/hosts
+# cordis_pz
+cp -p /etc/inet/hosts /etc/inet/hosts.20080923
+echo "158.167.99.105    cordis_pz" >> /etc/inet/hosts
+cp -p /etc/inet/ipnodes /etc/inet/ipnodes.20080923
+echo "158.167.99.105    cordis_pz" >> /etc/inet/ipnodes
+
+
+# Pour emile/grimaldi
+export rgname=roma-rg
+clrslh create -g ${rgname} -h opgtw001 opgtw001
+export rgname=camel-rg
+clrslh create -g ${rgname} -h opsrv078 opsrv078
+
+# odile/kara n'ont pas de logicalhost resource
+
+# Testing switch
+# Il va faire que les zpools les logical hosts
+clrg switch -n grimaldi roma-rg
+

@@ -1,0 +1,100 @@
+Systemd: Run it last ...
+Fri 26 February 2016
+
+You remember the good ol' days when running a command last was as easy as
+
+echo "last_command" >> /etc/rc.local
+Sure you do, and I bet you also know that now that systemd has become the default init on pretty much all major distributions, it doesn't work anymore.
+Wait, /etc/rc.local still works and a lot of people will jump on the occasion to tell you, but NO, it doesn't work to run your command last. It's even written there in the file
+
+#!/bin/bash
+# THIS FILE IS ADDED FOR COMPATIBILITY PURPOSES
+#
+# It is highly advisable to create own systemd services or udev rules
+# to run scripts during boot instead of using this file.
+#
+# In contrast to previous versions due to parallel execution during boot
+# this script will NOT be run after all other services.
+#
+# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
+# that this script will be executed during boot.
+
+touch /var/lock/subsys/local
+Yes that means that putting command there will have them run in parallel with the other services and you have no control over it.
+
+Did it need improvement? Well maybe, I particularly like how openrc has handled the local service. Let's look at the README in /etc/local.d
+
+This directory should contain programs or scripts which are to be run
+when the local service is started or stopped.
+
+If a file in this directory is executable and it has a .start extension,
+it will be run when the local service is started. If a file is
+executable and it has a .stop extension, it will be run when the local
+service is stopped.
+
+All files are processed in lexical order.
+
+Keep in mind that files in this directory are processed sequencially,
+and the local service is not considered started or stopped until
+everything is processed, so if you have a process which takes a long
+time to run, it can delay your boot or shutdown processing.
+Seems like a smart way of enhancing the feature to me.
+
+But let's get back to our concern, how does one run a command last on systemd?
+When you reach to people which are supposedly knowledgeable about systemd, you often end up with this kind of discussion:
+
+you: Hello, I'm wondering what would be the best way to paint my car red?
+them: Why don't you first start telling us why you think you need to paint your car red
+you: ??? I want it red that's all ???
+them: Well usually people think they _want_ their car red, but that's wrong, they just _need_ it black
+you: Well I don't _need_ it black I _want_ it red
+them: Yep, you _want_ it black
+Yes, true story, people will try to make you think that you don't need/want to run anything last. Well aren't we using Linux because we like the idea of being able to do what we want with our systems? Seems like mentality is changing...
+
+Come on there must be a way?! Yes there is, and this is how you do:
+
+Create a new custom target
+Make this target Requires multi-user.target
+Create a unit file for your command with After multi-user.target
+Put the unit file in custom.target.wants
+Make this new custom target default
+Sounds easy right? Here's a bit more details.
+
+Create a new custom target
+/etc/systemd/system/custom.target
+
+[Unit]
+Description=Custom Target
+Requires=multi-user.target
+After=multi-user.target
+AllowIsolate=yes
+Here you have a new target that should run after multi-user.target that can be used in a similar way as a runlevel thanks to AllowIsolate
+
+Create a unit file for your command
+
+[Unit]
+Description=My last command
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/sbin/last_command
+
+[Install]
+WantedBy=custom.target
+After is important here else it'll be run in parallel with other services of multi-user.target. You wanna put this service file in /etc/systemd/system/custom.target.wants directory.
+
+Make your new target default
+systemctl list-units --type target --all
+Should show you the complete list of available targets, with your custom.target being inactive
+
+systemctl isolate custom.target
+Will switch your current target to your custom.target. Good time to see if it's working and debug.
+
+ln -sf /etc/systemd/system/custom.target /etc/systemd/system/default.target
+Will switch your custom target to the default.
+
+You can now reboot and enjoy your "last_command" being run last, but note that services that take time to start, like a Java app, may very well still be starting when "last_command" will be executed.
+If this is an issue you'll have to play with ExecStartPre=/ExecStartPost=
+
+When I have to do this to simply run a command last in my boot process, I clearly miss the good ol' days, and luckily there's still a bunch a excellent distributions that keep the KISS principle as a priority.

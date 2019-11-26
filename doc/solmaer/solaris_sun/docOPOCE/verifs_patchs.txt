@@ -1,0 +1,6 @@
+patchadd -p | egrep "^Patch: " | cut -c8-17 > /tmp/patchs.txt
+
+for i in 127127-11 137111-08 128306-05 138225-02 127866-05 127892-06 138074-01 127986-01 138056-02
+do
+echo -n " $i : "; grep $i /tmp/patchs.txt || echo "PAS"
+done

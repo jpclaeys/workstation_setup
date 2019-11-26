@@ -1,0 +1,9 @@
+rdesktop -z -a 24 -B oppc400
+LD_LIBRARY_PATH=/usr/sfw/lib rdesktop -g workarea -z -a 24 -B oppc400
+LD_LIBRARY_PATH=/usr/sfw/lib rdesktop -g workarea -z -a 24 -k fr -B oppc162 &
+#plus performante
+LD_LIBRARY_PATH=/usr/sfw/lib rdesktop -P -r sound:off -x m -g workarea -z -a 24 -k fr -B oppc162 &
+LD_LIBRARY_PATH=/usr/sfw/lib rdesktop -P -r sound:off -x m -g workarea -z -a 24 -k fr -B opsun21 &
+LD_LIBRARY_PATH=/usr/sfw/lib rdesktop -P -r sound:off -x m -g workarea -z -a 24 -k fr -B opsun21 &
+#a Capellen
+PATH=$PATH:/opt/OPrdesktop/bin; LD_LIBRARY_PATH=/usr/sfw/lib rdesktop -P -r sound:off -x m -g workarea -z -a 24 -k fr -B opsun21 &

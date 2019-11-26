@@ -1,0 +1,29 @@
+# Voir fragmentation
+/opt/se6x20/cli/bin/sscs list -a gnole vdisk 1
+Virtual Disk: 1
+  Status:               Optimal
+  State:                Ready
+  Number of Disks:      5
+  RAID Level:           5
+  Total Capacity:       1.089 TB
+  Configured Capacity:  660.000 GB
+  Available Capacity:   455.587 GB
+  Array Name:           gnole
+  Array Type:           6140
+  Disk Type:            Fibre Channel
+  Maximal Volume Size:  455.587 GB
+  Associated Disks:
+    Disk:               t1d01
+    Disk:               t1d02
+    Disk:               t1d03
+    Disk:               t1d04
+    Disk:               t1d05
+  Associated Volumes:
+    Volume:             vanninter_dev01
+    Volume:             vdevelop01
+    Volume:             vdlib_prod01
+    Volume:             vjira01
+    Volume:             vseicr01
+# Available doit etre egal a Max Vol
+
+

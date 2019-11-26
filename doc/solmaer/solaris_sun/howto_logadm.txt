@@ -1,0 +1,22 @@
+
+##### sur camel
+
+{
+logfile=/applications/rproxy/users/system/proxy4/proxy-opsrv045/logs/errors
+size=50m
+date=`date +%Y%m%d%H%M`
+logadm ${logfile} -c -s ${size} -a 'kill -HUP `cat /applications/rproxy/users/system/proxy4/proxy-opsrv045/logs/pid`'
+mv ${logfile}.0 ${logfile}.${date}
+gzip -9 ${logfile}.${date}
+}
+
+{
+logfile=/applications/rproxy/users/system/proxy4/proxy-opsrv045/logs/access
+size=50m
+date=`date +%Y%m%d%H%M`
+logadm ${logfile} -c -s ${size} -a 'kill -HUP `cat /applications/rproxy/users/system/proxy4/proxy-opsrv045/logs/pid`'
+mv ${logfile}.0 ${logfile}.${date}
+gzip -9 ${logfile}.${date}
+}
+
+

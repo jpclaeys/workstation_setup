@@ -1,0 +1,477 @@
+#################################################################################################################################
+#
+# Deplacement d'une zone en ZFS d'un hote physique (HOSTSOURCE) vers un autre (HOSTTARGET)
+# HOSTSOURCE et HOSTTARGET sont des noeuds de clusters
+#
+# remarque: les variables LIST_* sont composees de champs separes par un espace
+# ex: export ZPOOL_LIST_TO_MOVE="eub2_tz eub_filecache"
+## S'assurer du masking san pour HOSTTARGET
+#
+#################################################################################################################################
+
+
+##################################################
+# sur l'hote physique de la zone
+##################################################
+
+##### nom de la zone a deplacer
+##### sur les differents noeuds du cluster
+export ZONE=<zonename>
+
+##### repertoire d'echange
+##### sur les differents noeuds du cluster
+REP=/net/opsrv082/xchange/mb/zones/${ZONE}
+mkdir -p ${REP}
+
+##### verifier que la ressource cluster de la zone est unmonitor
+clrs status  $ZONE-rs
+
+###### arret de la zone
+
+zlogin -C ${ZONE}
+
+/applications/*/users/system/init.d/* status
+/applications/*/users/system/init.d/* disable      
+/applications/*/users/system/init.d/* status
+
+init 0
+
+zoneadm list -ivc | grep $ZONE
+
+
+##### detach de la zone
+zoneadm -z $ZONE detach
+umount /zones/${ZONE}
+
+##### recuperation de la configuration de la zone
+cd /etc/zones/
+tar cvfp ${REP}/${ZONE}.tar ${ZONE}.xml
+grep ${ZONE} index > ${REP}/index_${ZONE}
+
+cd /etc/zoneagentparams
+tar cvfp ${REP}/sczbt_${ZONE}-rs.tar sczbt_${ZONE}-rs
+
+##### disable de la ressource cluster de la zone
+echo clrs disable ${ZONE}-rs
+
+##### verification des pool utilises par la zone
+grep dataset /etc/zones/${ZONE}.xml
+zpool list
+
+##### recuperation des zpools a migrer
+export ZPOOL_LIST_TO_MOVE=''
+
+##### status du zpool
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status $POOL
+done
+}
+
+
+##### snapshot post-move
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zfs snapshot -r ${POOL}@post_move_`date +%Y%m%d_%H%M%S`
+done
+}
+
+##### verif
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zfs list -r ${POOL}
+done
+}
+
+#### recupere les disque et leur numero de lun avec luxadm_carlo
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL} | egrep "c*d0" | awk '{print $1}' | while read DISK;
+	do
+		/home/betorma/bin/luxadm_carlo -z | grep ${DISK}
+	done
+done
+perl -ne 'if(m{<device match="/dev/did/\*dsk/(d\d+)s\*"/>}) {print `/usr/cluster/bin/cldev list -v $1`}' /etc/zones/$ZONE.xml | grep `uname -n` | awk -F/ '{print $4}' | while read DISK
+do
+	/home/betorma/bin/luxadm_carlo -z | grep ${DISK}
+done
+}
+
+
+##### genere la commande de mise offline du disk, a utiliser un peu plus bas...
+{
+echo 'A conserver pour la suite'
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL} | egrep "c*d0" | awk '{print $1}' | while read DISK;
+	do
+		echo "luxadm -e offline /dev/rdsk/${DISK}s2"
+	done
+done
+perl -ne 'if(m{<device match="/dev/did/\*dsk/(d\d+)s\*"/>}) {print `/usr/cluster/bin/cldev list -v $1`}' /etc/zones/$ZONE.xml | grep `uname -n` | awk -F':' '{print "luxadm -e offline "$2"s2"}'
+}
+
+
+##### export du (des) zpool(s)
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo clrs disable ${POOL}-zfs
+done
+}
+
+##### verification de l'export du (des) zpool(s)
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL}
+done
+}
+
+##### verifer que les lun a mettre offline ne sont pas des luns de quorum
+
+##### Faire le "A conserver pour la suite" 
+##### sur les 2 noeuds du cluster
+#####luxadm offline....
+
+
+devfsadm -Cv
+cldev populate
+cldev clear
+cldev status -s fail
+
+##### par securite, on supprime la zone de la config des zones 
+##### sur les 2 noeuds du cluster
+cd /etc/zones
+perl -pi.`date +%Y%m%d` -e 's:^$ENV{ZONE}.*\n::' /etc/zones/index
+mv ${ZONE}.xml ${ZONE}.xml.`date +%Y%m%d`
+
+##### on supprime les ressource et rg du cluster
+
+clrs delete ${ZONE}-rs
+clrs delete ${ZONE}-zfs
+clrs status
+
+clrg offline ${ZONE}-rg 
+clrg delete ${ZONE}-rg 
+clrg status
+
+
+##################################################
+# pour une zone de production, 
+# demander a Mathias de demapper la (les) lun(s)
+# de HOSTSOURCE vers HOSTTARGET
+# sinon faire ce qui suit sur un serveur CAM
+##################################################
+
+##### unmap/map avec le gui en attendant une procedure cli
+
+##################################################
+# sur l'hote physique d'acceuil de la zone
+##################################################
+
+
+##### variables a recuperer de la partie precedente
+export ZONE=<zonename>
+export REP=/net/opsrv082/xchange/mb/zones/${ZONE}
+export ZPOOL_LIST_TO_MOVE=''
+
+##### rafraichir les path san (luxadm forcelip...)
+##### sur les 2 noeuds
+
+##### on verifie qu'on a bien les 2 path san pour la lun
+##### sur les 2 noeuds
+cldev populate
+/home/betorma/bin/luxadm_carlo
+
+
+#### import des zpool de $ZPOOL_LIST_TO_MOVE
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zpool import ${POOL}
+done
+}
+
+##### verification de l'import 
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL}
+done
+}
+
+##### upgrade zpool
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zpool upgrade ${POOL}
+done
+}
+
+##### upgrade zfs
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zfs upgrade -r ${POOL}
+done
+}
+
+##### verification de l'upgrade
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL}
+done
+}
+
+#### import du fichier xml de la zone
+cd /etc/zones/
+tar xvfp ${REP}/${ZONE}.tar
+
+##### verification
+cat ${ZONE}.xml
+
+#### choisir l'interface reseau
+export INTERFACE=
+
+##### verification
+ifconfig $INTERFACE
+
+
+##### modification des fichiers de configuration de la zone
+perl -pi.`date +%Y%m%d` -e 's/physical="\w.*?\d"/physical="$ENV{INTERFACE}"/' ${ZONE}.xml
+
+cp -p index index.$(date +%Y%m%d%H%M)
+cat ${REP}/index_${ZONE} >> index
+
+##### verification
+cat ${ZONE}.xml
+cat index
+
+##### attach de la zone
+zoneadm -z $ZONE attach -u  2>&1 | tee ${REP}/attach_-u.txt
+
+##### si l'attch echoue pour case de 'attempt to downgrade package'
+
+grep 'ERROR: attempt to downgrade package' ${REP}/attach_-u.txt | awk '{print "pkgrm -n -a /zones/${ZONE}/root/var/tmp/pkgrm_file "$9}'
+pkgrm -n -a /var/tmp/pkg SUNWant
+pkgrm -n -a /var/tmp/pkg SUNWjaf
+pkgrm -n -a /var/tmp/pkg SUNWjato
+pkgrm -n -a /var/tmp/pkg SUNWjmail
+pkgrm -n -a /var/tmp/pkg SUNWjss
+
+zoneadm -z $ZONE attach -F
+zoneadm -z $ZONE boot && zlogin -C $ZONE
+~~.
+zlogin $ZONE
+
+cat <<EOF >/var/tmp/pkgrm_file
+conflict=nocheck
+idepend=nocheck
+rdepend=nocheck
+action=nocheck
+setuid=nocheck 
+EOF
+
+sh /var/tmp/pkgrm_file
+
+init 0
+zoneadm list -ivc | grep $ZONE
+zoneadm -z $ZONE detach
+zoneadm -z $ZONE attach -u
+
+##### verification de l'etat de la zone
+zoneadm list -ivc | grep $ZONE | grep installed
+
+##### workarround de bug sur les ACLs de /tmp
+chmod 1777 /zones/${ZONE}/root/tmp
+
+##### demarrage de la zone
+zoneadm -z $ZONE boot && zlogin -C $ZONE
+
+##### verification des services
+svcs ldap/client
+svcadm enable  ldap/client
+svcs ldap/client
+
+svcs -xv
+
+##### if svc:/network/smtp:sendmail en maintenance
+svcprop sendmail | grep local_only
+svccfg -s sendmail setprop config/local_only=false
+svcadm refresh sendmail
+svcprop sendmail | grep local_only
+svcadm clear sendmail
+# svcadm restart sendmail
+svcs sendmail
+
+##### verification du log system
+dmesg
+
+#### un p'tit coup de cfengine
+/var/cfengine/bin/cfagent -v -q
+
+##### redemarrage de l'application
+/applications/*/users/system/init.d/* enable
+
+##### deconnexion de la console de la zone
+~~.
+
+##################################################
+# capping de la zone
+##################################################
+
+
+
+##################################################
+# integration d'un zone en cluster
+##################################################
+
+#####
+##### zone arretee
+#####
+
+
+# resource groups et leur resources
+export rgname=<zonename>-rg
+export rsnamestorage=<zonename>-zfs
+export zpool=<zpool>
+export zname=<zonename>
+export server_source=<primary_node>
+export server_target=<secondary_node>
+
+################## POUR LE RESOURCE GROUP
+
+clrg create ${rgname}
+clrg manage ${rgname}
+clrg online ${rgname}
+clrg switch -n ${server_source} ${rgname}
+clrg status ${rgname}
+
+
+# Il faut le register du HAStoragePlus avant de l'utiliser
+#clresourcetype register SUNW.HAStoragePlus
+#clresourcetype register SUNW.gds
+clresourcetype list 
+
+################## POUR LE ZPOOL
+
+# resource pour le storage
+clrs create -g ${rgname} -t SUNW.HAStoragePlus -p zpools=${zpool} ${rsnamestorage}
+clrs status ${rsnamestorage}
+
+
+################## POUR LA ZONE
+
+# ce qu'on change pour roma par exemple:
+# Attention: opgtw/oprvp ont pas LH donc SC_NETWORK=false
+
+
+cat <<EOT >/opt/SUNWsczone/sczbt/util/sczbt_${zname}
+RS=<zonename>-rs
+RG=<zonename>-rg
+PARAMETERDIR=/etc/zones
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=<zpool>-zfs
+Zonename="<zonename>"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOT
+
+cat /opt/SUNWsczone/sczbt/util/sczbt_${zname}
+
+################# CREATION RS ZONE
+
+# on copie notre scratch sur la bonne copie
+cp -p /opt/SUNWsczone/sczbt/util/sczbt_${zname} /opt/SUNWsczone/sczbt/util/sczbt_config
+cd /opt/SUNWsczone/sczbt/util
+./sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_config
+
+##### recuperer le script de demarrage de la ressource zone, pour remplacer, si necessaire, celui cree par defaut
+cd /etc/zones
+tar xvf ${REP}/sczbt_${ZONE}-rs.tar 
+
+
+
+clrg status $rgname
+
+
+
+clrs enable <zonename>-rs
+clrs status <zonename>-rs
+
+
+
+clrs unmonitor <zonename>-rs
+clrs status <zonename>-rs
+
+
+######################### COPIE
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster
+mkdir -p $tmp_dir
+
+##### SOURCE
+
+cd /opt/SUNWsczone/sczbt/util
+tar cvfp $tmp_dir/sczbt_${zname}.tar sczbt_${zname}
+cd /etc
+tar cvfp $tmp_dir/zones.tar zones
+
+##### TARGET
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster
+export zname=cellarmain-pz
+cd /opt/SUNWsczone/sczbt/util
+tar xpf $tmp_dir/sczbt_${zname}.tar
+cd /etc
+cp zones/index zones/index.`date +%Y%m%d%H%M`
+tar xvfp $tmp_dir/zones.tar
+
+
+
+############# TEST DE SWITCH
+echo timex clrg switch -n $server_target $rgname
+clrs status $zname-rs $rsnamestorage
+echo timex clrg switch -n $server_source $rgname
+clrs status $zname-rs $rsnamestorage
+
+##### verif de l'application
+
+##### verif du monitoring de la zone, des opsrv, des noeuds du cluster
+
+
+##### maj cmdb
+
+
+
+##################################################
+# mise a jour client de backup
+##################################################
+
+
+
+##################################################
+# mise a jou monitoring
+##################################################
+
+
+##################################################
+# changement de lun si necessaire (changement de site)
+##################################################
+
+
+
+
+

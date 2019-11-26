@@ -1,0 +1,620 @@
+###########################################################################################################################
+#
+# installation cluster (en phase de conception; attention donc....)
+#
+###########################################################################################################################
+
+
+########################################################################
+# snapshot post install
+########################################################################
+
+
+##############################
+##### sur les 2 nodes
+
+
+zfs snapshot -r rpool@`date +%Y%m%d`_post_intall_sun_cluster
+zfs list -t snapshot
+
+
+########################################################################
+# choix et test des interfaces reseau dediees aux interconnects cluster
+########################################################################
+
+##############################
+##### sur node_1
+
+
+echo 'rpcbind:all' >> /etc/hosts.allow 
+
+##### on choisit les 2 interfaces qui vont etre les interconnects
+
+ifconfig -a
+dladm show-dev
+export interco1=
+export interco2=
+
+ifconfig $interco1 plumb
+ifconfig $interco2 plumb
+
+ifconfig $interco1
+ifconfig $interco2
+
+##### on test si $interco1 n'est pas sur un reseau public
+
+snoop -d $interco1
+ping -s <vlan1_broacast_ip_> ##### dans un autre terminal
+
+##### on test si $interco2 n'est pas sur un reseau public
+
+snoop -d $interco2
+ping -s <vlan1_broacast_ip_> ##### dans un autre terminal
+
+##### on donne des ip pour tester la connexion des interconnects entre les 2 noeuds du cluster
+
+ifconfig $interco1 4.4.4.4 up
+ifconfig $interco2 5.5.5.4 up
+ifconfig $interco1
+ifconfig $interco2
+
+
+##############################
+##### sur node_2
+
+
+echo 'rpcbind:all' >> /etc/hosts.allow 
+
+##### on choisit les 2 interfaces qui vont etre les interconnects
+ifconfig -a
+dladm show-dev
+export interco1=
+export interco2=
+
+ifconfig $interco1 plumb
+ifconfig $interco2 plumb
+
+ifconfig $interco1
+ifconfig $interco2
+
+##### on test si $interco1 n'est pas sur un reseau public
+
+snoop -d $interco1
+ping -s <vlan1_broacast_ip_> ##### dans un autre terminal
+
+##### on test si $interco2 n'est pas sur un reseau public
+
+snoop -d $interco2
+ping -s <vlan1_broacast_ip_> ##### dans un autre terminal
+
+##### on donne des ip pour tester la connexion des interconnects entre les 2 noeuds du cluster
+
+ifconfig $interco1 4.4.4.5 up
+ifconfig $interco2 5.5.5.5 up
+ifconfig $interco1
+ifconfig $interco2
+
+
+##############################
+##### sur node_1
+
+
+snoop -d $interco1
+
+
+##############################
+##### sur node_2
+
+
+ping -s 4.4.4.4
+
+
+##############################
+##### sur node_1
+
+
+snoop -d $interco2
+
+
+##############################
+##### sur node_2
+
+
+ping -s 5.5.5.4
+
+
+########################################################################
+# installation de sun cluster
+########################################################################
+
+
+##############################
+##### sur les 2 nodes
+
+
+cd /var/tmp
+cp -p /net/remus/export/software/Suncluster/suncluster_3_2u2-ga-solaris-sparc.zip /var/tmp
+unzip suncluster_3_2u2-ga-solaris-sparc.zip
+
+##### exporter le display du node
+
+##### lancer l'installation
+
+/var/tmp/Solaris_sparc/installer
+
+##### installer les patchs de l'eiscd 
+
+mkdir -p /var/tmp/eiscd 
+cd /net/remus/export/install/patches/eiscd/29SEP09/patch/SunCluster/3.2/10
+cp -r * /var/tmp/eiscd
+
+cd /var/tmp/eiscd
+cp patch_order patch.ksh
+for line in $(cat patch.ksh );do echo "patchadd $line">> patch.ksh.NEW ;done
+mv patch.ksh.NEW patch.ksh
+chmod +x patch.ksh
+./patch.ksh
+
+init 6
+
+
+########################################################################
+# configuration du cluster
+########################################################################
+
+
+##############################
+##### sur les 2 nodes
+
+
+zfs snapshot -r rpool@`date +%Y%m%d`_post_scinstall
+zfs list -t snapshot
+
+export interco1=
+export interco2=
+ifconfig $interco1 plumb
+ifconfig $interco2 plumb 
+
+
+##############################
+##### sur node_1
+
+scinstall
+1
+2
+yes
+1
+<mercier_node_namde>_<eufo_node_name>
+no
+<node_2>
+^D
+yes
+<interco1>
+yes
+yes
+<interco2>
+yes
+switch2
+yes
+yes
+yes
+yes
+yes
+yes
+
+
+##### equivalent a:
+scinstall -i \ 
+-C emile_grimaldi \ 
+-F \ 
+-G lofi \ 
+-T node=emile,node=grimaldi,authtype=sys \ 
+-w netaddr=172.16.0.0,netmask=255.255.240.0,maxnodes=64,maxprivatenets=10,numvirtualclusters=12 \ 
+-A trtype=dlpi,name=nxge2 -A trtype=dlpi,name=nxge3 \ 
+-B type=switch,name=switch1 -B type=switch,name=switch2 \ 
+-m endpoint=:nxge2,endpoint=switch1 \ 
+-m endpoint=:nxge3,endpoint=switch2
+
+
+##############################
+##### sur node_2
+
+
+scinstall
+1
+3
+yes
+1
+<node_1>
+<mercier_node_namde>_<eufo_node_name>
+<enter>
+no
+yes
+<enter>
+<interco1>
+yes
+yes
+<interco2>
+yes
+switch2
+yes
+yes
+yes
+yes
+yes
+
+##### equivalent a:
+scinstall -i \ 
+-C emile_grimaldi \ 
+-N emile \ 
+-G lofi \ 
+-A trtype=dlpi,name=nxge2 -A trtype=dlpi,name=nxge3 \ 
+-m endpoint=:nxge2,endpoint=switch1 \ 
+-m endpoint=:nxge3,endpoint=switch2
+
+
+##############################################################
+# quorum
+##############################################################
+
+
+
+##### variables
+export array=gnole
+export host=gwint_test
+export size=5g
+
+##### liste des volues deja existants sur host
+./sscs list -a ${array} mapping ${host} | sort -n -k 3
+
+##### choisit le nom du volume
+export volume=vquorum_test2
+
+##### verifie qu'un volume portant ce nom n'existe pas deja
+./sscs list -a ${array} volume ${volume}
+
+##### choisit le numero de lun
+export lun=69
+
+##### verifie que le numero de lun n'est pas deja utilise par l'hote
+./sscs list -a ${array} mapping ${host} | grep "LUN: ${lun}"
+
+##### liste les vdisk
+{
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $array vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $array vdisk $n | egrep 'Virtual Disk:|Capacity'
+done
+}
+
+##### choix du vdisk
+export virtual_disk=1
+export pool=Default
+
+##### creation du volume
+echo ./sscs create -a ${array} -p Default -s ${size} -v ${virtual_disk} volume ${volume}
+
+##### mappage du volume
+echo ./sscs map -a ${array} -v ${volume} -l ${lun} host ${host}
+
+##### verifie le status du volume
+./sscs list -a ${array} volume ${volume}
+Volume: vquorum_test2
+  Type:      Standard
+  WWN:       60:0A:0B:80:00:26:67:6A:00:00:18:C4:4C:CA:7D:E1
+  Pool:      Default
+  Profile:   Default
+  Virtual Disk:         1
+  Size:      5.000 GB
+  State:     Mapped
+  Status:    Online
+  Action:    Initializing...
+  Condition: Optimal
+  Read Only: No
+  Controller:B
+  Preferred Controller: B
+  Modification Priority:High
+  RAID Level:5
+  Segment Size:         512 KB      
+  Read Cache:Enabled
+  Write Cache:          Enabled
+  Write Cache with Replication:    Enabled
+  Write Cache without Batteries:   Disabled
+  Write Cache Active:   True
+  Flush Write Cache After:         10 s
+  Disk Scrubbing:       Enabled
+  Disk Scrubbing with Redundancy:  Disabled
+  Security:  None
+  Associations:
+    Host Group: gwint_test  LUN: 69  Initiator: <node_1>_hba0  WWN: 21:00:00:E0:8B:14:CF:B7  Permission: Read/Write
+    Host Group: gwint_test  LUN: 69  Initiator: <node_1>_hba1  WWN: 21:01:00:E0:8B:34:CF:B7  Permission: Read/Write
+    Host Group: gwint_test  LUN: 69  Initiator: <node_2>_hba0  WWN: 21:01:00:E0:8B:34:E1:BE  Permission: Read/Write
+    Host Group: gwint_test  LUN: 69  Initiator: <node_2>_hba1  WWN: 21:00:00:E0:8B:14:E1:BE  Permission: Read/Write
+root@remus # 
+
+
+
+root@<node_2> # /home/betorma/bin/luxadm_carlo -z | grep '/69'
+/dev/rdsk/c4t600A0B800026676A000018C44CCA7DE1d0s2 ==> 202600a0b8266772/69 202700a0b8266772/69  []
+root@<node_1> # /home/betorma/bin/luxadm_carlo -z | grep '/69'
+/dev/rdsk/c4t600A0B800026676A000018C44CCA7DE1d0s2 ==> 202600a0b8266772/69 202700a0b8266772/69  []
+
+root@<node_2> # cldev populate 
+Configuring DID devices
+did instance 5 created.
+did subpath <node_2>:/dev/rdsk/c4t600A0B800026676A000018C44CCA7DE1d0 created for instance 5.
+Configuring the /dev/global directory (global devices)
+obtaining access to all attached disks
+
+
+root@<node_2> # cldev clear
+Updating shared devices on node_1
+Updating shared devices on node_2
+root@<node_2> # cldev status
+
+=== Cluster DID Devices ===
+
+Device Instance   Node    Status
+---------------   ----    ------
+/dev/did/rdsk/d1  <node_2> Ok
+
+/dev/did/rdsk/d2  <node_2> Ok
+
+/dev/did/rdsk/d3  <node_1>    Ok
+
+/dev/did/rdsk/d4  <node_1>    Ok
+
+/dev/did/rdsk/d5  <node_2> Ok
+       <node_1>    Ok
+
+
+root@<node_2> # zpool create quorum c4t600A0B800026676A000018C44CCA7DE1d0  
+root@<node_2> # zpool status quorum
+  pool: quorum
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME    STATE     READ WRITE CKSUM
+        quorum  ONLINE       0     0     0
+          c4t600A0B800026676A000018C44CCA7DE1d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+
+root@<node_2> # clq list
+<node_2>
+<node_1>
+root@<node_2> # clq add d5
+root@<node_2> # clq list  
+d5
+<node_2>
+<node_1>
+
+
+root@<node_2> # clq status
+
+=== Cluster Quorum ===
+
+--- Quorum Votes Summary from latest node reconfiguration ---
+
+ Needed   Present   Possible
+ ------   -------   --------
+ 2        3         3
+
+
+--- Quorum Votes by Node (current status) ---
+
+Node Name       Present       Possible       Status
+---------       -------       --------       ------
+<node_2>         1  1   Online
+<node_1> 1  1   Online
+
+
+--- Quorum Votes by Device (current status) ---
+
+Device Name       Present      Possible      Status
+-----------       -------      --------      ------
+d5     1 1  Online
+
+
+
+
+####################################################################################################################################
+# suite config cluster
+####################################################################################################################################
+
+
+##############################
+##### sur les 2 nodes
+
+
+##### mpxio ( ca doit etre fausse )
+grep auto /kernel/drv/scsi_vhci.conf | grep disable
+
+svcprop /system/webconsole:console | grep tcp_listen
+
+##### verifier que c'est un dossier et pas un lien:
+ls -ld /usr/cluster/lib/SunClusterManager/WEB-INF/classes/ds
+
+
+##### pour virer des messages qui puissent y arriver:
+svcs "*pools*"
+svcadm enable pools/dynamic
+svcs "*pools*"
+
+##### disques internes:
+clnode set -p reboot_on_path_failure=enabled <node_2>
+clnode set -p reboot_on_path_failure=enabled <node_1>
+scdidadm -L
+
+##### unmonitor des disques internes:
+cldev unmonitor d1 d3 d4 d5 d6 d7 d8 d9
+cldev status
+
+##### bougue sccheck; verifier si ca marche:
+sccheck -v 2 -s4
+# si ca plante, virer les entres "sds" et "vxfsextended" du fichier conf de sccheck:
+vi /usr/cluster/lib/sccheck/explorer_args.cluster
+
+##### nsswitch
+##### eliminer "cluster" comme choix de resolution de noms
+grep cluster /etc/nsswitch.conf
+vi /etc/nsswitch.conf
+perl -pe -i.`date +%Y%m%d` -e 's:cluster::g' /etc/nsswitch.conf
+diff /etc/nsswitch.conf /etc/nsswitch.conf`date +%Y%m%d`
+
+
+echo "####### Cluster">>/etc/netmasks
+echo "172.16.0.128    255.255.255.128">>/etc/netmasks
+echo "172.16.1.0      255.255.255.128">>/etc/netmasks
+echo "172.16.4.0      255.255.254.0">>/etc/netmasks
+
+cat /etc/inet/netmasks
+
+
+# setter les disques internes en autogen et localonly
+scdidadm -L
+
+{
+for disk in d1 d3 d4 d5 d6 d7 d8 d9
+do
+	echo cldg set -p localonly=true  dsk/${disk}
+	echo cldg set -p autogen=true  dsk/${disk}
+done
+}
+
+cldg show -v | egrep '^Device Group Name|localonly|autogen'
+
+      
+# Conseils eiscd crontab
+#Changerles frequences en 5 m de ces trois jobs
+
+crontab -e
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/eventlog
+25 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/DS
+30 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/commandlog
+
+
+# conf ipmp
+# ca doit etre online
+svcs "*multipath*"
+# verifier que ca affiche yes
+grep TRACK_INTERFACES_ONLY_WITH_GROUPS /etc/default/mpathd | grep yes
+
+# doit etre false:
+svcprop rpc/bind | grep local_only | grep false
+# doit etre true
+eeprom | grep local | grep true
+
+# on verifie si on a pas escom:
+pkginfo | grep SUNWescom
+
+# on verifie qu'il est up:
+netstat -a | grep 6789
+# on constate sur le navigateur: https://<node_2>:6789
+# on constate l'etat de cacao sur les deux nodes:
+cacaoadm status
+# on doit voir:
+default instance is ENABLED at system startup.
+Smf monitoring process:
+2196
+2197
+Uptime: 0 day(s), 14:43
+
+
+# on verifie que les deux nodes ont les memes name_to_major pour did et md:
+grep ^did /etc/name_to_major
+
+
+# si on nous file des nouvelles luns lorsque le cluster est en train se faire:
+cldevice populate
+cldev refresh
+# et attendre qu'il montre ok apres taper
+devfsadm -Cv
+cldev clear
+cldev status
+
+stmsboot -D mpt -d
+
+
+# on ajoute ca pour evite des erreurs bizarres lorsque on tape des cmds svm
+cp -p /etc/profile /etc/profile.`date +%Y%m%d`
+echo "########EISCD recommendations" >> /etc/profile
+echo "NOINUSE_CHECK=1" >> /etc/profile
+echo "export NOINUSE_CHECK" >> /etc/profile
+diff /etc/profile /etc/profile.`date +%Y%m%d`
+
+
+
+######################################################################################################
+# Checkings EISCD qui manquaient
+
+# meme s'il est deja offline, on tape
+# tous les nodes!!!
+svcadm -v disable /system/cluster/scsymon-srv
+cp -p /usr/cluster/lib/svc/method/svc_cl_svc_enable /usr/cluster/lib/svc/method/svc_cl_svc_enable.`date +%Y%m%d`
+# on commente la ligne scsymon
+vi /usr/cluster/lib/svc/method/svc_cl_svc_enable
+
+cp -p /usr/cluster/lib/svc/method/svc_boot_check /usr/cluster/lib/svc/method/svc_boot_check.`date +%Y%m%d`
+#on commente la ligne scsymon
+vi /usr/cluster/lib/svc/method/svc_boot_check
+
+# on verifie qu'il existent les trois pkgs du perl suivant:
+pkginfo | egrep "(SUNWpl5u|SUNWpl5v|SUNWpl5p)"
+
+
+######################################################################################################
+# personalisation opoce
+
+
+tar xpf /home/betorma/config_files/SUNWsczone.tar
+mkdir -p /etc/zoneagentparams
+
+clresourcetype register SUNW.HAStoragePlus
+clresourcetype register SUNW.gds
+
+
+
+##############################################
+
+# ajouter banner machines physiques:
+
+eeprom oem-banner
+
+
+####################################################################################################################################
+# cmdb
+####################################################################################################################################
+
+
+##############################
+##### sur les 2 nodes
+
+cat /etc/release 
+cat /etc/cluster/release 
+
+
+####################################################################################################################################
+# monitoring des 2 noeuds
+####################################################################################################################################
+
+
+####################################################################################################################################
+# lancer un explorer
+####################################################################################################################################
+
+
+####################################################################################################################################
+# client de backup
+####################################################################################################################################
+
+####################################################################################################################################
+# remove du snapshot
+####################################################################################################################################
+

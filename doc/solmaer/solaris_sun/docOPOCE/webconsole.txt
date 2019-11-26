@@ -1,0 +1,18 @@
+#logs se trouvent:
+ls -l /var/log/webconsole/console/
+#stmt to start/stop/restart/status
+/usr/sbin/smcwebserver restart
+# par default vient a false le parametre tcp_listen et ca doit etre mis a true
+root@chronos # svccfg
+svc:> select system/webconsole
+svc:/system/webconsole> setprop options/tcp_listen=true
+svc:/system/webconsole> listprop options/tcp_listen
+options/tcp_listen  boolean  true
+svc:/system/webconsole> quit
+root@chronos # svcadm refresh webconsole
+root@chronos # svcprop /system/webconsole:console | grep tcp_listen
+options/tcp_listen boolean true
+
+# efface l'ancien config
+/usr/share/webconsole/private/bin/wcremove -i console
+

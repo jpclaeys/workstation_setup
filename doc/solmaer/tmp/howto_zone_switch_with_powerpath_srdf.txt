@@ -1,0 +1,845 @@
+##################################################################################################################################
+#
+# move a zone from one cluster to another
+# the zone is in cluster, uses EMC SRDF
+#
+##################################################################################################################################
+
+
+##################################################################################
+##### on the cluster where the zone is actually running
+
+export zone_name=restore2-tz
+export actual_primary_node=kusha
+export actual_secondary_node=lava
+export new_primary_node=trinity
+export new_secondary_node=neo
+export tmp_folder=/home/betorma/tmp
+
+
+
+##### get information about disk on actual cluster, on both nodes
+
+/home/betorma/bin/storage_info.pl -A >${tmp_folder}/storage_info_`uname -n`.txt
+
+
+
+##### if ASM is used, get the list of devices which match with DID, on both nodes
+
+zonecfg -z $zone_name info device | grep match: | awk -F'/' '{print $NF}' | sed -e 's/s\*$//'| while read did; do grep "# $did #" ${tmp_folder}/storage_info_`uname -n`.txt; done >${tmp_folder}/storage_info_asm_${zone_name}_`uname -n`.txt
+cat ${tmp_folder}/storage_info_asm_${zone_name}_`uname -n`.txt
+
+
+##### disable SMF service for the application
+
+
+##### stop the zone
+
+clrs disable ${zone_name}-rs
+clrs status ${zone_name}-rs 
+
+
+
+##### export zpool, on global zone
+
+zpool list -H -o name| grep $zone_name | while read pool; do zpool status $pool; done >${tmp_folder}/zpool_status_${zone_name}.txt
+cat ${tmp_folder}/zpool_status_csandbox-tz.txt
+
+clrs disable ${zone_name}-zfs
+
+
+
+##### destroy cluster configuration
+
+clrs disable ${zone_name}-srdf
+clrs delete ${zone_name}-rs
+clrs delete ${zone_name}-zfs
+clrs delete ${zone_name}-srdf
+
+cldg offline ${zone_name}-asm
+cldg disable ${zone_name}-asm
+cldg delete  ${zone_name}-asm
+
+cldg offline ${zone_name}-data
+cldg disable ${zone_name}-data
+cldg delete  ${zone_name}-data
+
+cldg offline ${zone_name}-db
+cldg disable ${zone_name}-db
+cldg delete  ${zone_name}-db
+
+clrg offline ${zone_name}-rg
+clrg unmanage ${zone_name}-rg
+clrg delete ${zone_name}-rg
+
+clrs list
+cldg list
+
+
+
+##### offline disks used by zfs, on primary node
+
+{
+grep ONLINE ${tmp_folder}/zpool_status_${zone_name}.txt | perl -ne 'if(m{(c\d+t\d+.*?d\d+|emcpower\d+.)\s+ONLINE}) {print "$1\n"}' | while read disk
+do
+	grep "$disk " ${tmp_folder}/storage_info_`uname -n`.txt | awk '{print $9}'
+done
+} | sort -u >${tmp_folder}/${zone_name}_zpool_lun_id.txt
+
+cat ${tmp_folder}/${zone_name}_zpool_lun_id.txt
+
+{
+grep ONLINE ${tmp_folder}/zpool_status_${zone_name}.txt | perl -ne 'if(m{(c\d+t\d+.*?d\d+|emcpower\d+.)\s+ONLINE}) {print "$1\n"}' | while read disk
+do
+	grep "$disk " ${tmp_folder}/storage_info_`uname -n`.txt
+done | perl -ne 'print "/etc/powermt display dev=$1\n" if(m{# (emcpower.*?)\s+})' | sort -u
+}
+
+{
+grep ONLINE ${tmp_folder}/zpool_status_${zone_name}.txt | perl -ne 'if(m{(c\d+t\d+.*?d\d+|emcpower\d+.)\s+ONLINE}) {print "$1\n"}' | while read disk
+do
+	grep "$disk " ${tmp_folder}/storage_info_`uname -n`.txt
+done | perl -ne 'print "/home/betorma/bin/dev_offline_powermt_luxadm.sh $1\n" if(m{# (emcpower.*?)\s+})' | sort -u
+}
+
+devfsadm -Cv
+
+
+
+##### offline disks used by zfs, on secondary node
+
+{
+cat ${tmp_folder}/${zone_name}_zpool_lun_id.txt | while read lun
+do
+	grep " $lun " ${tmp_folder}/storage_info_`uname -n`.txt | awk '{print $27}'
+done
+}| sort -u
+
+{
+cat ${tmp_folder}/${zone_name}_zpool_lun_id.txt | while read lun
+do
+	grep " $lun " ${tmp_folder}/storage_info_`uname -n`.txt | grep -i vmax3 | awk '{print "/home/betorma/bin/dev_offline_powermt_luxadm.sh "$27}'
+done
+} | sort -u
+
+devfsadm -Cv
+
+
+
+
+##### offline disks used by asm, if necessary, on primary nodes
+
+
+cat ${tmp_folder}/storage_info_asm_${zone_name}_`uname -n`.txt | perl -ne 'print "/etc/powermt display dev=$1\n" if(m{# (emcpower.*?)\s+})' | sort -u
+cat ${tmp_folder}/storage_info_asm_${zone_name}_`uname -n`.txt | perl -ne 'print "/home/betorma/bin/dev_offline_powermt_luxadm.sh $1\n" if(m{# (emcpower.*?)\s+})' | sort -u
+
+devfsadm -Cv
+cldev populate
+cldev clear
+
+
+
+
+
+
+##### backup configuration zone
+
+zonecfg -z ${zone_name} export >${tmp_folder}/${zone_name}.cfg
+cat ${tmp_folder}/${zone_name}.cfg
+
+#grep $zone_name /etc/zones/index >${tmp_folder}/index_${zone_name}
+#cat ${tmp_folder}/index_${zone_name}
+
+
+
+##### remove zone, on both nodes
+
+zoneadm -z $zone_name uninstall 
+zonecfg -z $zone_name delete
+
+
+
+
+###########################################################################################################################################################################
+###########################################################################################################################################################################
+#####
+##### change masking for all luns
+#####
+###########################################################################################################################################################################
+###########################################################################################################################################################################
+
+
+##################################################################################
+##### on the cluster where the zone is actually running
+
+export zone_name=csandbox-tz
+export actual_primry_node=kusha
+export actual_secondary_node=lava
+export new_primry_node=trinity
+export new_secondary_node=neo
+export tmp_folder=/home/betorma/tmp
+
+
+
+##### refresh storage configuration, on both nodes
+
+cfgadm -al
+cldev populate
+
+
+
+##### import zfs data and db pool, on the primary node
+
+zpool import ${zone_name}-db
+zpool import ${zone_name}-data
+
+zpool status ${zone_name}-db ${zone_name}-data
+
+
+
+##### zone configuration, on all nodes
+
+zonecfg -z csandbox-tz -f /home/betorma/tmp/csandbox-tz.cfg
+
+
+
+##### change zone configuration abour ASM and DID
+
+cp -p /etc/zones/csandbox-tz.xml /etc/zones/csandbox-tz.xml.`date +%Y%m%d`
+
+0[150826/161318]root@trinity# diff /etc/zones/csandbox-tz.xml /etc/zones/csandbox-tz.xml.20150826
+6a7,28
+>   <device match="/dev/did/*dsk/d145s*"/>
+>   <device match="/dev/did/*dsk/d146s*"/>
+>   <device match="/dev/did/*dsk/d147s*"/>
+>   <device match="/dev/did/*dsk/d148s*"/>
+>   <device match="/dev/did/*dsk/d149s*"/>
+>   <device match="/dev/did/*dsk/d150s*"/>
+>   <device match="/dev/did/*dsk/d151s*"/>
+>   <device match="/dev/did/*dsk/d152s*"/>
+>   <device match="/dev/did/*dsk/d153s*"/>
+>   <device match="/dev/did/*dsk/d154s*"/>
+>   <device match="/dev/did/*dsk/d155s*"/>
+>   <device match="/dev/did/*dsk/d156s*"/>
+>   <device match="/dev/did/*dsk/d157s*"/>
+>   <device match="/dev/did/*dsk/d158s*"/>
+>   <device match="/dev/did/*dsk/d159s*"/>
+>   <device match="/dev/did/*dsk/d160s*"/>
+>   <device match="/dev/did/*dsk/d161s*"/>
+>   <device match="/dev/did/*dsk/d162s*"/>
+>   <device match="/dev/did/*dsk/d163s*"/>
+>   <device match="/dev/did/*dsk/d164s*"/>
+>   <device match="/dev/did/*dsk/d123s*"/>
+>   <device match="/dev/did/*dsk/d124s*"/>
+1[150826/161322]root@trinity# 
+
+
+
+
+
+
+
+0[150826/161842]root@trinity# cat  /home/betorma/tmp/storage_info_asm_csandbox-tz.out         
+lava # c1t500009755000F01Bd10 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0xa 10 | 500009755000f09b Vmax3_00060_D3_P27 0xa 10 | 500009755000f0db Vmax3_00060_D4_P27 0xa 10 | 500009755000f05b Vmax3_00060_D2_P27 0xa 10 # emcpower94a 002C # ??? # d145 # ??? #
+lava # c1t500009755000F09Bd10 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0xa 10 | 500009755000f01b Vmax3_00060_D1_P27 0xa 10 | 500009755000f0db Vmax3_00060_D4_P27 0xa 10 | 500009755000f05b Vmax3_00060_D2_P27 0xa 10 # emcpower94a 002C # ??? # d145 # ??? #
+lava # c2t500009755000F0DBd10 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0xa 10 | 500009755000f01b Vmax3_00060_D1_P27 0xa 10 | 500009755000f09b Vmax3_00060_D3_P27 0xa 10 | 500009755000f05b Vmax3_00060_D2_P27 0xa 10 # emcpower94a 002C # ??? # d145 # ??? #
+lava # c2t500009755000F05Bd10 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0xa 10 | 500009755000f01b Vmax3_00060_D1_P27 0xa 10 | 500009755000f09b Vmax3_00060_D3_P27 0xa 10 | 500009755000f0db Vmax3_00060_D4_P27 0xa 10 # emcpower94a 002C # ??? # d145 # ??? #
+lava # c1t500009755000F01Bd11 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0xb 11 | 500009755000f09b Vmax3_00060_D3_P27 0xb 11 | 500009755000f0db Vmax3_00060_D4_P27 0xb 11 | 500009755000f05b Vmax3_00060_D2_P27 0xb 11 # emcpower95a 002D # ??? # d146 # ??? #
+lava # c1t500009755000F09Bd11 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0xb 11 | 500009755000f01b Vmax3_00060_D1_P27 0xb 11 | 500009755000f0db Vmax3_00060_D4_P27 0xb 11 | 500009755000f05b Vmax3_00060_D2_P27 0xb 11 # emcpower95a 002D # ??? # d146 # ??? #
+lava # c2t500009755000F0DBd11 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0xb 11 | 500009755000f01b Vmax3_00060_D1_P27 0xb 11 | 500009755000f09b Vmax3_00060_D3_P27 0xb 11 | 500009755000f05b Vmax3_00060_D2_P27 0xb 11 # emcpower95a 002D # ??? # d146 # ??? #
+lava # c2t500009755000F05Bd11 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0xb 11 | 500009755000f01b Vmax3_00060_D1_P27 0xb 11 | 500009755000f09b Vmax3_00060_D3_P27 0xb 11 | 500009755000f0db Vmax3_00060_D4_P27 0xb 11 # emcpower95a 002D # ??? # d146 # ??? #
+lava # c1t500009755000F01Bd12 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0xc 12 | 500009755000f09b Vmax3_00060_D3_P27 0xc 12 | 500009755000f0db Vmax3_00060_D4_P27 0xc 12 | 500009755000f05b Vmax3_00060_D2_P27 0xc 12 # emcpower96a 002E # ??? # d147 # ??? #
+lava # c1t500009755000F09Bd12 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0xc 12 | 500009755000f01b Vmax3_00060_D1_P27 0xc 12 | 500009755000f0db Vmax3_00060_D4_P27 0xc 12 | 500009755000f05b Vmax3_00060_D2_P27 0xc 12 # emcpower96a 002E # ??? # d147 # ??? #
+lava # c2t500009755000F0DBd12 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0xc 12 | 500009755000f01b Vmax3_00060_D1_P27 0xc 12 | 500009755000f09b Vmax3_00060_D3_P27 0xc 12 | 500009755000f05b Vmax3_00060_D2_P27 0xc 12 # emcpower96a 002E # ??? # d147 # ??? #
+lava # c2t500009755000F05Bd12 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0xc 12 | 500009755000f01b Vmax3_00060_D1_P27 0xc 12 | 500009755000f09b Vmax3_00060_D3_P27 0xc 12 | 500009755000f0db Vmax3_00060_D4_P27 0xc 12 # emcpower96a 002E # ??? # d147 # ??? #
+lava # c1t500009755000F01Bd13 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0xd 13 | 500009755000f09b Vmax3_00060_D3_P27 0xd 13 | 500009755000f0db Vmax3_00060_D4_P27 0xd 13 | 500009755000f05b Vmax3_00060_D2_P27 0xd 13 # emcpower97a 002F # ??? # d148 # ??? #
+lava # c1t500009755000F09Bd13 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0xd 13 | 500009755000f01b Vmax3_00060_D1_P27 0xd 13 | 500009755000f0db Vmax3_00060_D4_P27 0xd 13 | 500009755000f05b Vmax3_00060_D2_P27 0xd 13 # emcpower97a 002F # ??? # d148 # ??? #
+lava # c2t500009755000F0DBd13 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0xd 13 | 500009755000f01b Vmax3_00060_D1_P27 0xd 13 | 500009755000f09b Vmax3_00060_D3_P27 0xd 13 | 500009755000f05b Vmax3_00060_D2_P27 0xd 13 # emcpower97a 002F # ??? # d148 # ??? #
+lava # c2t500009755000F05Bd13 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0xd 13 | 500009755000f01b Vmax3_00060_D1_P27 0xd 13 | 500009755000f09b Vmax3_00060_D3_P27 0xd 13 | 500009755000f0db Vmax3_00060_D4_P27 0xd 13 # emcpower97a 002F # ??? # d148 # ??? #
+lava # c1t500009755000F01Bd14 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0xe 14 | 500009755000f09b Vmax3_00060_D3_P27 0xe 14 | 500009755000f0db Vmax3_00060_D4_P27 0xe 14 | 500009755000f05b Vmax3_00060_D2_P27 0xe 14 # emcpower98a 0030 # ??? # d149 # ??? #
+lava # c1t500009755000F09Bd14 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0xe 14 | 500009755000f01b Vmax3_00060_D1_P27 0xe 14 | 500009755000f0db Vmax3_00060_D4_P27 0xe 14 | 500009755000f05b Vmax3_00060_D2_P27 0xe 14 # emcpower98a 0030 # ??? # d149 # ??? #
+lava # c2t500009755000F0DBd14 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0xe 14 | 500009755000f01b Vmax3_00060_D1_P27 0xe 14 | 500009755000f09b Vmax3_00060_D3_P27 0xe 14 | 500009755000f05b Vmax3_00060_D2_P27 0xe 14 # emcpower98a 0030 # ??? # d149 # ??? #
+lava # c2t500009755000F05Bd14 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0xe 14 | 500009755000f01b Vmax3_00060_D1_P27 0xe 14 | 500009755000f09b Vmax3_00060_D3_P27 0xe 14 | 500009755000f0db Vmax3_00060_D4_P27 0xe 14 # emcpower98a 0030 # ??? # d149 # ??? #
+lava # c1t500009755000F01Bd15 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0xf 15 | 500009755000f09b Vmax3_00060_D3_P27 0xf 15 | 500009755000f0db Vmax3_00060_D4_P27 0xf 15 | 500009755000f05b Vmax3_00060_D2_P27 0xf 15 # emcpower99a 0031 # ??? # d150 # ??? #
+lava # c1t500009755000F09Bd15 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0xf 15 | 500009755000f01b Vmax3_00060_D1_P27 0xf 15 | 500009755000f0db Vmax3_00060_D4_P27 0xf 15 | 500009755000f05b Vmax3_00060_D2_P27 0xf 15 # emcpower99a 0031 # ??? # d150 # ??? #
+lava # c2t500009755000F0DBd15 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0xf 15 | 500009755000f01b Vmax3_00060_D1_P27 0xf 15 | 500009755000f09b Vmax3_00060_D3_P27 0xf 15 | 500009755000f05b Vmax3_00060_D2_P27 0xf 15 # emcpower99a 0031 # ??? # d150 # ??? #
+lava # c2t500009755000F05Bd15 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0xf 15 | 500009755000f01b Vmax3_00060_D1_P27 0xf 15 | 500009755000f09b Vmax3_00060_D3_P27 0xf 15 | 500009755000f0db Vmax3_00060_D4_P27 0xf 15 # emcpower99a 0031 # ??? # d150 # ??? #
+lava # c1t500009755000F01Bd16 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x10 16 | 500009755000f09b Vmax3_00060_D3_P27 0x10 16 | 500009755000f0db Vmax3_00060_D4_P27 0x10 16 | 500009755000f05b Vmax3_00060_D2_P27 0x10 16 # emcpower100a 0032 # ??? # d151 # ??? #
+lava # c1t500009755000F09Bd16 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x10 16 | 500009755000f01b Vmax3_00060_D1_P27 0x10 16 | 500009755000f0db Vmax3_00060_D4_P27 0x10 16 | 500009755000f05b Vmax3_00060_D2_P27 0x10 16 # emcpower100a 0032 # ??? # d151 # ??? #
+lava # c2t500009755000F0DBd16 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x10 16 | 500009755000f01b Vmax3_00060_D1_P27 0x10 16 | 500009755000f09b Vmax3_00060_D3_P27 0x10 16 | 500009755000f05b Vmax3_00060_D2_P27 0x10 16 # emcpower100a 0032 # ??? # d151 # ??? #
+lava # c2t500009755000F05Bd16 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x10 16 | 500009755000f01b Vmax3_00060_D1_P27 0x10 16 | 500009755000f09b Vmax3_00060_D3_P27 0x10 16 | 500009755000f0db Vmax3_00060_D4_P27 0x10 16 # emcpower100a 0032 # ??? # d151 # ??? #
+lava # c1t500009755000F01Bd17 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x11 17 | 500009755000f09b Vmax3_00060_D3_P27 0x11 17 | 500009755000f0db Vmax3_00060_D4_P27 0x11 17 | 500009755000f05b Vmax3_00060_D2_P27 0x11 17 # emcpower101a 0033 # ??? # d152 # ??? #
+lava # c1t500009755000F09Bd17 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x11 17 | 500009755000f01b Vmax3_00060_D1_P27 0x11 17 | 500009755000f0db Vmax3_00060_D4_P27 0x11 17 | 500009755000f05b Vmax3_00060_D2_P27 0x11 17 # emcpower101a 0033 # ??? # d152 # ??? #
+lava # c2t500009755000F0DBd17 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x11 17 | 500009755000f01b Vmax3_00060_D1_P27 0x11 17 | 500009755000f09b Vmax3_00060_D3_P27 0x11 17 | 500009755000f05b Vmax3_00060_D2_P27 0x11 17 # emcpower101a 0033 # ??? # d152 # ??? #
+lava # c2t500009755000F05Bd17 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x11 17 | 500009755000f01b Vmax3_00060_D1_P27 0x11 17 | 500009755000f09b Vmax3_00060_D3_P27 0x11 17 | 500009755000f0db Vmax3_00060_D4_P27 0x11 17 # emcpower101a 0033 # ??? # d152 # ??? #
+lava # c1t500009755000F01Bd18 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x12 18 | 500009755000f09b Vmax3_00060_D3_P27 0x12 18 | 500009755000f0db Vmax3_00060_D4_P27 0x12 18 | 500009755000f05b Vmax3_00060_D2_P27 0x12 18 # emcpower102a 0034 # ??? # d153 # ??? #
+lava # c1t500009755000F09Bd18 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x12 18 | 500009755000f01b Vmax3_00060_D1_P27 0x12 18 | 500009755000f0db Vmax3_00060_D4_P27 0x12 18 | 500009755000f05b Vmax3_00060_D2_P27 0x12 18 # emcpower102a 0034 # ??? # d153 # ??? #
+lava # c2t500009755000F0DBd18 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x12 18 | 500009755000f01b Vmax3_00060_D1_P27 0x12 18 | 500009755000f09b Vmax3_00060_D3_P27 0x12 18 | 500009755000f05b Vmax3_00060_D2_P27 0x12 18 # emcpower102a 0034 # ??? # d153 # ??? #
+lava # c2t500009755000F05Bd18 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x12 18 | 500009755000f01b Vmax3_00060_D1_P27 0x12 18 | 500009755000f09b Vmax3_00060_D3_P27 0x12 18 | 500009755000f0db Vmax3_00060_D4_P27 0x12 18 # emcpower102a 0034 # ??? # d153 # ??? #
+lava # c1t500009755000F01Bd19 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x13 19 | 500009755000f09b Vmax3_00060_D3_P27 0x13 19 | 500009755000f0db Vmax3_00060_D4_P27 0x13 19 | 500009755000f05b Vmax3_00060_D2_P27 0x13 19 # emcpower103a 0035 # ??? # d154 # ??? #
+lava # c1t500009755000F09Bd19 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x13 19 | 500009755000f01b Vmax3_00060_D1_P27 0x13 19 | 500009755000f0db Vmax3_00060_D4_P27 0x13 19 | 500009755000f05b Vmax3_00060_D2_P27 0x13 19 # emcpower103a 0035 # ??? # d154 # ??? #
+lava # c2t500009755000F0DBd19 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x13 19 | 500009755000f01b Vmax3_00060_D1_P27 0x13 19 | 500009755000f09b Vmax3_00060_D3_P27 0x13 19 | 500009755000f05b Vmax3_00060_D2_P27 0x13 19 # emcpower103a 0035 # ??? # d154 # ??? #
+lava # c2t500009755000F05Bd19 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x13 19 | 500009755000f01b Vmax3_00060_D1_P27 0x13 19 | 500009755000f09b Vmax3_00060_D3_P27 0x13 19 | 500009755000f0db Vmax3_00060_D4_P27 0x13 19 # emcpower103a 0035 # ??? # d154 # ??? #
+lava # c1t500009755000F01Bd1 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x1 1 | 500009755000f09b Vmax3_00060_D3_P27 0x1 1 | 500009755000f0db Vmax3_00060_D4_P27 0x1 1 | 500009755000f05b Vmax3_00060_D2_P27 0x1 1 # emcpower104a 0023 # ??? # d155 # ??? #
+lava # c1t500009755000F09Bd1 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x1 1 | 500009755000f01b Vmax3_00060_D1_P27 0x1 1 | 500009755000f0db Vmax3_00060_D4_P27 0x1 1 | 500009755000f05b Vmax3_00060_D2_P27 0x1 1 # emcpower104a 0023 # ??? # d155 # ??? #
+lava # c2t500009755000F0DBd1 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x1 1 | 500009755000f01b Vmax3_00060_D1_P27 0x1 1 | 500009755000f09b Vmax3_00060_D3_P27 0x1 1 | 500009755000f05b Vmax3_00060_D2_P27 0x1 1 # emcpower104a 0023 # ??? # d155 # ??? #
+lava # c2t500009755000F05Bd1 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x1 1 | 500009755000f01b Vmax3_00060_D1_P27 0x1 1 | 500009755000f09b Vmax3_00060_D3_P27 0x1 1 | 500009755000f0db Vmax3_00060_D4_P27 0x1 1 # emcpower104a 0023 # ??? # d155 # ??? #
+lava # c1t500009755000F01Bd20 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x14 20 | 500009755000f09b Vmax3_00060_D3_P27 0x14 20 | 500009755000f0db Vmax3_00060_D4_P27 0x14 20 | 500009755000f05b Vmax3_00060_D2_P27 0x14 20 # emcpower105a 0036 # ??? # d156 # ??? #
+lava # c1t500009755000F09Bd20 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x14 20 | 500009755000f01b Vmax3_00060_D1_P27 0x14 20 | 500009755000f0db Vmax3_00060_D4_P27 0x14 20 | 500009755000f05b Vmax3_00060_D2_P27 0x14 20 # emcpower105a 0036 # ??? # d156 # ??? #
+lava # c2t500009755000F0DBd20 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x14 20 | 500009755000f01b Vmax3_00060_D1_P27 0x14 20 | 500009755000f09b Vmax3_00060_D3_P27 0x14 20 | 500009755000f05b Vmax3_00060_D2_P27 0x14 20 # emcpower105a 0036 # ??? # d156 # ??? #
+lava # c2t500009755000F05Bd20 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x14 20 | 500009755000f01b Vmax3_00060_D1_P27 0x14 20 | 500009755000f09b Vmax3_00060_D3_P27 0x14 20 | 500009755000f0db Vmax3_00060_D4_P27 0x14 20 # emcpower105a 0036 # ??? # d156 # ??? #
+lava # c1t500009755000F01Bd2 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x2 2 | 500009755000f09b Vmax3_00060_D3_P27 0x2 2 | 500009755000f0db Vmax3_00060_D4_P27 0x2 2 | 500009755000f05b Vmax3_00060_D2_P27 0x2 2 # emcpower106a 0024 # ??? # d157 # ??? #
+lava # c1t500009755000F09Bd2 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x2 2 | 500009755000f01b Vmax3_00060_D1_P27 0x2 2 | 500009755000f0db Vmax3_00060_D4_P27 0x2 2 | 500009755000f05b Vmax3_00060_D2_P27 0x2 2 # emcpower106a 0024 # ??? # d157 # ??? #
+lava # c2t500009755000F0DBd2 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x2 2 | 500009755000f01b Vmax3_00060_D1_P27 0x2 2 | 500009755000f09b Vmax3_00060_D3_P27 0x2 2 | 500009755000f05b Vmax3_00060_D2_P27 0x2 2 # emcpower106a 0024 # ??? # d157 # ??? #
+lava # c2t500009755000F05Bd2 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x2 2 | 500009755000f01b Vmax3_00060_D1_P27 0x2 2 | 500009755000f09b Vmax3_00060_D3_P27 0x2 2 | 500009755000f0db Vmax3_00060_D4_P27 0x2 2 # emcpower106a 0024 # ??? # d157 # ??? #
+lava # c1t500009755000F01Bd3 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x3 3 | 500009755000f09b Vmax3_00060_D3_P27 0x3 3 | 500009755000f0db Vmax3_00060_D4_P27 0x3 3 | 500009755000f05b Vmax3_00060_D2_P27 0x3 3 # emcpower107a 0025 # ??? # d158 # ??? #
+lava # c1t500009755000F09Bd3 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x3 3 | 500009755000f01b Vmax3_00060_D1_P27 0x3 3 | 500009755000f0db Vmax3_00060_D4_P27 0x3 3 | 500009755000f05b Vmax3_00060_D2_P27 0x3 3 # emcpower107a 0025 # ??? # d158 # ??? #
+lava # c2t500009755000F0DBd3 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x3 3 | 500009755000f01b Vmax3_00060_D1_P27 0x3 3 | 500009755000f09b Vmax3_00060_D3_P27 0x3 3 | 500009755000f05b Vmax3_00060_D2_P27 0x3 3 # emcpower107a 0025 # ??? # d158 # ??? #
+lava # c2t500009755000F05Bd3 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x3 3 | 500009755000f01b Vmax3_00060_D1_P27 0x3 3 | 500009755000f09b Vmax3_00060_D3_P27 0x3 3 | 500009755000f0db Vmax3_00060_D4_P27 0x3 3 # emcpower107a 0025 # ??? # d158 # ??? #
+lava # c1t500009755000F01Bd4 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x4 4 | 500009755000f09b Vmax3_00060_D3_P27 0x4 4 | 500009755000f0db Vmax3_00060_D4_P27 0x4 4 | 500009755000f05b Vmax3_00060_D2_P27 0x4 4 # emcpower108a 0026 # ??? # d159 # ??? #
+lava # c1t500009755000F09Bd4 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x4 4 | 500009755000f01b Vmax3_00060_D1_P27 0x4 4 | 500009755000f0db Vmax3_00060_D4_P27 0x4 4 | 500009755000f05b Vmax3_00060_D2_P27 0x4 4 # emcpower108a 0026 # ??? # d159 # ??? #
+lava # c2t500009755000F0DBd4 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x4 4 | 500009755000f01b Vmax3_00060_D1_P27 0x4 4 | 500009755000f09b Vmax3_00060_D3_P27 0x4 4 | 500009755000f05b Vmax3_00060_D2_P27 0x4 4 # emcpower108a 0026 # ??? # d159 # ??? #
+lava # c2t500009755000F05Bd4 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x4 4 | 500009755000f01b Vmax3_00060_D1_P27 0x4 4 | 500009755000f09b Vmax3_00060_D3_P27 0x4 4 | 500009755000f0db Vmax3_00060_D4_P27 0x4 4 # emcpower108a 0026 # ??? # d159 # ??? #
+lava # c1t500009755000F01Bd5 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x5 5 | 500009755000f09b Vmax3_00060_D3_P27 0x5 5 | 500009755000f0db Vmax3_00060_D4_P27 0x5 5 | 500009755000f05b Vmax3_00060_D2_P27 0x5 5 # emcpower109a 0027 # ??? # d160 # ??? #
+lava # c1t500009755000F09Bd5 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x5 5 | 500009755000f01b Vmax3_00060_D1_P27 0x5 5 | 500009755000f0db Vmax3_00060_D4_P27 0x5 5 | 500009755000f05b Vmax3_00060_D2_P27 0x5 5 # emcpower109a 0027 # ??? # d160 # ??? #
+lava # c2t500009755000F0DBd5 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x5 5 | 500009755000f01b Vmax3_00060_D1_P27 0x5 5 | 500009755000f09b Vmax3_00060_D3_P27 0x5 5 | 500009755000f05b Vmax3_00060_D2_P27 0x5 5 # emcpower109a 0027 # ??? # d160 # ??? #
+lava # c2t500009755000F05Bd5 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x5 5 | 500009755000f01b Vmax3_00060_D1_P27 0x5 5 | 500009755000f09b Vmax3_00060_D3_P27 0x5 5 | 500009755000f0db Vmax3_00060_D4_P27 0x5 5 # emcpower109a 0027 # ??? # d160 # ??? #
+lava # c1t500009755000F01Bd6 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x6 6 | 500009755000f09b Vmax3_00060_D3_P27 0x6 6 | 500009755000f0db Vmax3_00060_D4_P27 0x6 6 | 500009755000f05b Vmax3_00060_D2_P27 0x6 6 # emcpower110a 0028 # ??? # d161 # ??? #
+lava # c1t500009755000F09Bd6 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x6 6 | 500009755000f01b Vmax3_00060_D1_P27 0x6 6 | 500009755000f0db Vmax3_00060_D4_P27 0x6 6 | 500009755000f05b Vmax3_00060_D2_P27 0x6 6 # emcpower110a 0028 # ??? # d161 # ??? #
+lava # c2t500009755000F0DBd6 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x6 6 | 500009755000f01b Vmax3_00060_D1_P27 0x6 6 | 500009755000f09b Vmax3_00060_D3_P27 0x6 6 | 500009755000f05b Vmax3_00060_D2_P27 0x6 6 # emcpower110a 0028 # ??? # d161 # ??? #
+lava # c2t500009755000F05Bd6 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x6 6 | 500009755000f01b Vmax3_00060_D1_P27 0x6 6 | 500009755000f09b Vmax3_00060_D3_P27 0x6 6 | 500009755000f0db Vmax3_00060_D4_P27 0x6 6 # emcpower110a 0028 # ??? # d161 # ??? #
+lava # c1t500009755000F01Bd7 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x7 7 | 500009755000f09b Vmax3_00060_D3_P27 0x7 7 | 500009755000f0db Vmax3_00060_D4_P27 0x7 7 | 500009755000f05b Vmax3_00060_D2_P27 0x7 7 # emcpower111a 0029 # ??? # d162 # ??? #
+lava # c1t500009755000F09Bd7 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x7 7 | 500009755000f01b Vmax3_00060_D1_P27 0x7 7 | 500009755000f0db Vmax3_00060_D4_P27 0x7 7 | 500009755000f05b Vmax3_00060_D2_P27 0x7 7 # emcpower111a 0029 # ??? # d162 # ??? #
+lava # c2t500009755000F0DBd7 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x7 7 | 500009755000f01b Vmax3_00060_D1_P27 0x7 7 | 500009755000f09b Vmax3_00060_D3_P27 0x7 7 | 500009755000f05b Vmax3_00060_D2_P27 0x7 7 # emcpower111a 0029 # ??? # d162 # ??? #
+lava # c2t500009755000F05Bd7 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x7 7 | 500009755000f01b Vmax3_00060_D1_P27 0x7 7 | 500009755000f09b Vmax3_00060_D3_P27 0x7 7 | 500009755000f0db Vmax3_00060_D4_P27 0x7 7 # emcpower111a 0029 # ??? # d162 # ??? #
+lava # c1t500009755000F01Bd8 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x8 8 | 500009755000f09b Vmax3_00060_D3_P27 0x8 8 | 500009755000f0db Vmax3_00060_D4_P27 0x8 8 | 500009755000f05b Vmax3_00060_D2_P27 0x8 8 # emcpower112a 002A # ??? # d163 # ??? #
+lava # c1t500009755000F09Bd8 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x8 8 | 500009755000f01b Vmax3_00060_D1_P27 0x8 8 | 500009755000f0db Vmax3_00060_D4_P27 0x8 8 | 500009755000f05b Vmax3_00060_D2_P27 0x8 8 # emcpower112a 002A # ??? # d163 # ??? #
+lava # c2t500009755000F0DBd8 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x8 8 | 500009755000f01b Vmax3_00060_D1_P27 0x8 8 | 500009755000f09b Vmax3_00060_D3_P27 0x8 8 | 500009755000f05b Vmax3_00060_D2_P27 0x8 8 # emcpower112a 002A # ??? # d163 # ??? #
+lava # c2t500009755000F05Bd8 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x8 8 | 500009755000f01b Vmax3_00060_D1_P27 0x8 8 | 500009755000f09b Vmax3_00060_D3_P27 0x8 8 | 500009755000f0db Vmax3_00060_D4_P27 0x8 8 # emcpower112a 002A # ??? # d163 # ??? #
+lava # c1t500009755000F01Bd9 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x9 9 | 500009755000f09b Vmax3_00060_D3_P27 0x9 9 | 500009755000f0db Vmax3_00060_D4_P27 0x9 9 | 500009755000f05b Vmax3_00060_D2_P27 0x9 9 # emcpower113a 002B # ??? # d164 # ??? #
+lava # c1t500009755000F09Bd9 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x9 9 | 500009755000f01b Vmax3_00060_D1_P27 0x9 9 | 500009755000f0db Vmax3_00060_D4_P27 0x9 9 | 500009755000f05b Vmax3_00060_D2_P27 0x9 9 # emcpower113a 002B # ??? # d164 # ??? #
+lava # c2t500009755000F0DBd9 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x9 9 | 500009755000f01b Vmax3_00060_D1_P27 0x9 9 | 500009755000f09b Vmax3_00060_D3_P27 0x9 9 | 500009755000f05b Vmax3_00060_D2_P27 0x9 9 # emcpower113a 002B # ??? # d164 # ??? #
+lava # c2t500009755000F05Bd9 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x9 9 | 500009755000f01b Vmax3_00060_D1_P27 0x9 9 | 500009755000f09b Vmax3_00060_D3_P27 0x9 9 | 500009755000f0db Vmax3_00060_D4_P27 0x9 9 # emcpower113a 002B # ??? # d164 # ??? #
+lava # c1t500009755000F01Bd21 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x15 21 | 500009755000f09b Vmax3_00060_D3_P27 0x15 21 | 500009755000f0db Vmax3_00060_D4_P27 0x15 21 | 500009755000f05b Vmax3_00060_D2_P27 0x15 21 # emcpower116a 00DC # ??? # d123 # ??? #
+lava # c1t500009755000F09Bd21 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x15 21 | 500009755000f01b Vmax3_00060_D1_P27 0x15 21 | 500009755000f0db Vmax3_00060_D4_P27 0x15 21 | 500009755000f05b Vmax3_00060_D2_P27 0x15 21 # emcpower116a 00DC # ??? # d123 # ??? #
+lava # c2t500009755000F0DBd21 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x15 21 | 500009755000f01b Vmax3_00060_D1_P27 0x15 21 | 500009755000f09b Vmax3_00060_D3_P27 0x15 21 | 500009755000f05b Vmax3_00060_D2_P27 0x15 21 # emcpower116a 00DC # ??? # d123 # ??? #
+lava # c2t500009755000F05Bd21 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x15 21 | 500009755000f01b Vmax3_00060_D1_P27 0x15 21 | 500009755000f09b Vmax3_00060_D3_P27 0x15 21 | 500009755000f0db Vmax3_00060_D4_P27 0x15 21 # emcpower116a 00DC # ??? # d123 # ??? #
+lava # c1t500009755000F01Bd22 # 4 # 500009755000f01b Vmax3_00060_D1_P27 0x16 22 | 500009755000f09b Vmax3_00060_D3_P27 0x16 22 | 500009755000f0db Vmax3_00060_D4_P27 0x16 22 | 500009755000f05b Vmax3_00060_D2_P27 0x16 22 # emcpower117a 00DD # ??? # d124 # ??? #
+lava # c1t500009755000F09Bd22 # 4 # 500009755000f09b Vmax3_00060_D3_P27 0x16 22 | 500009755000f01b Vmax3_00060_D1_P27 0x16 22 | 500009755000f0db Vmax3_00060_D4_P27 0x16 22 | 500009755000f05b Vmax3_00060_D2_P27 0x16 22 # emcpower117a 00DD # ??? # d124 # ??? #
+lava # c2t500009755000F0DBd22 # 4 # 500009755000f0db Vmax3_00060_D4_P27 0x16 22 | 500009755000f01b Vmax3_00060_D1_P27 0x16 22 | 500009755000f09b Vmax3_00060_D3_P27 0x16 22 | 500009755000f05b Vmax3_00060_D2_P27 0x16 22 # emcpower117a 00DD # ??? # d124 # ??? #
+lava # c2t500009755000F05Bd22 # 4 # 500009755000f05b Vmax3_00060_D2_P27 0x16 22 | 500009755000f01b Vmax3_00060_D1_P27 0x16 22 | 500009755000f09b Vmax3_00060_D3_P27 0x16 22 | 500009755000f0db Vmax3_00060_D4_P27 0x16 22 # emcpower117a 00DD # ??? # d124 # ??? #
+0[150826/161858]root@trinity# 
+
+
+
+
+
+
+0[150826/161858]root@trinity# awk '{print $9}'  /home/betorma/tmp/storage_info_asm_csandbox-tz.out | sort -u 
+0x1
+0x10
+0x11
+0x12
+0x13
+0x14
+0x15
+0x16
+0x2
+0x3
+0x4
+0x5
+0x6
+0x7
+0x8
+0x9
+0xa
+0xb
+0xc
+0xd
+0xe
+0xf
+0[150826/161905]root@trinity# 
+
+
+{
+awk '{print $9}'  /home/betorma/tmp/storage_info_asm_csandbox-tz.out | sort -u | while read id
+do
+	grep " $id " /home/betorma/tmp/storage_info_trinity.out | grep -i vmax3
+done | perl -ne 'if(m{\s+#\s+(d\d+)\s+#}) {print "$1\n"}' | sort -u
+}
+
+
+{
+echo "zonecfg -z ${zone_name} <<EOT" 
+awk '{print $9}'  /home/betorma/tmp/storage_info_asm_csandbox-tz.out | sort -u | while read id
+do
+	grep " $id " /home/betorma/tmp/storage_info_trinity.out | grep -i vmax3
+done | perl -ne 'if(m{\s+#\s+(d\d+)\s+#}) {print "$1\n"}' | sort -u | while read did
+	do
+		echo "add device"
+		echo "set match=/dev/did/*dsk/${did}s*"
+		echo "end"
+	done
+echo verify
+echo commit
+echo exit
+echo EOT
+}
+
+
+
+
+{
+awk '{print $9}'  /home/betorma/tmp/storage_info_asm_csandbox-tz.out | sort -u | while read id
+do
+	grep " $id " /home/betorma/tmp/storage_info_trinity.out | grep -i vmax3
+done | perl -ne 'if(m{\s+#\s+(d\d+)\s+#}) {print "$1\n"}' | sort -u | while read did
+	do
+		chown oracle:dba /zones/${zone_name}/root/dev/did/rdsk/${did}*
+		chmod u=rw,g=,o= /zones/${zone_name}/root/dev/did/rdsk/${did}*
+		ls -l /zones/${zone_name}/root/dev/did/rdsk/${did}*
+	done
+}
+
+
+
+
+{
+awk '{print $9}'  /home/betorma/tmp/storage_info_asm_csandbox-tz.out | sort -u | while read id
+do
+	grep " $id " /home/betorma/tmp/storage_info_trinity.out | grep -i vmax3
+done | perl -ne 'if(m{\s+#\s+(d\d+)\s+#}) {print "$1\n"}' | sort -u | while read did
+	do
+		chown oracle:dba /zones/${zone_name}/root/dev/did/rdsk/${did}*
+		chmod u=rw,g=,o= /zones/${zone_name}/root/dev/did/rdsk/${did}*
+		ls -l /zones/${zone_name}/root/dev/did/rdsk/${did}*
+	done
+}
+
+
+
+
+
+
+
+
+
+##### rdf
+
+
+
+
+0[150827/092143]root@trinity# symdg -type RDF1 create csandbox-tz-asm
+0[150827/092152]root@trinity# symdg show csandbox-tz-asm
+
+Group Name:  csandbox-tz-asm
+
+    Group Type                                   : RDF1  
+    Device Group in GNS                          : Yes 
+    Valid                                        : N/A
+    Symmetrix ID                                 : N/A
+    Group Creation Time                          : Thu Aug 27 09:21:52 2015
+    Vendor ID                                    : N/A
+    Application ID                               : N/A
+
+    Number of STD Devices in Group               :    0
+    Number of Associated GK's                    :    0
+    Number of Locally-associated BCV's           :    0
+    Number of Locally-associated VDEV's          :    0
+    Number of Locally-associated TGT's           :    0
+    Number of Remotely-associated VDEV's(STD RDF):    0
+    Number of Remotely-associated BCV's (STD RDF):    0
+    Number of Remotely-associated TGT's(TGT RDF) :    0
+    Number of Remotely-associated BCV's (BCV RDF):    0
+    Number of Remotely-assoc'd RBCV's (RBCV RDF) :    0
+    Number of Remotely-assoc'd BCV's (Hop-2 BCV) :    0
+    Number of Remotely-assoc'd VDEV's(Hop-2 VDEV):    0
+    Number of Remotely-assoc'd TGT's (Hop-2 TGT) :    0
+    Number of Composite Groups                   :    0
+    Composite Group Names                        : N/A
+
+
+
+
+
+0[150827/082348]root@neo# symdg -type RDF2 create csandbox-tz-asm
+
+
+
+
+
+
+## 000296700069  Eufo
+## 000296700060  mercier
+
+
+1[150827/092803]root@trinity# for id in `cat /home/betorma/tmp/storage_info_asm_csandbox-tz.out  | awk '{print $28}'| uniq | xargs`; do echo symdg -g csandbox-tz-asm -sid 000296700069 add dev $id; done
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 002C
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 002D
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 002E
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 002F
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0030
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0031
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0032
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0033
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0034
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0035
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0023
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0036
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0024
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0025
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0026
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0027
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0028
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 0029
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 002A
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 002B
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 00DC
+symdg -g csandbox-tz-asm -sid 000296700069 add dev 00DD
+0[150827/092804]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 002C
+0[150827/092806]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 002D
+0[150827/092808]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 002E
+0[150827/092813]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 002F
+0[150827/092813]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0030
+0[150827/092813]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0031
+0[150827/092814]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0032
+0[150827/092814]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0033
+0[150827/092814]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0034
+0[150827/092814]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0035
+0[150827/092817]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0023
+0[150827/092817]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0036
+0[150827/092817]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0024
+0[150827/092817]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0025
+0[150827/092818]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0026
+0[150827/092820]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0027
+0[150827/092821]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0028
+0[150827/092821]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 0029
+0[150827/092821]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 002A
+0[150827/092821]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 002B
+0[150827/092822]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 00DC
+0[150827/092824]root@trinity# symdg -g csandbox-tz-asm -sid 000296700069 add dev 00DD
+0[150827/092824]root@trinity# 
+
+
+
+cat /home/betorma/tmp/storage_info_asm_csandbox-tz.out | awk '{print $28}' | sort -u | while read dev
+do
+	primary_did=`grep $dev /home/betorma/tmp/storage_info_trinity.out | tail -1 | awk '{print $32}'`
+	secondary_did=`grep $dev /home/betorma/tmp/storage_info_neo.out | tail -1 | awk '{print $32}'`
+	echo cldev combine -t srdf -g csandbox-tz-asm -d $primary_did $secondary_did
+	echo didadm -F scsi3 $primary_did
+	echo cldev show $primary_did
+	echo
+done
+
+
+cldev combine -t srdf -g csandbox-tz-asm -d d119 d143
+didadm -F scsi3 d119
+cldev show d119
+
+cldev combine -t srdf -g csandbox-tz-asm -d d123 d147
+didadm -F scsi3 d123
+cldev show d123
+
+cldev combine -t srdf -g csandbox-tz-asm -d d124 d148
+didadm -F scsi3 d124
+cldev show d124
+
+cldev combine -t srdf -g csandbox-tz-asm -d d125 d149
+didadm -F scsi3 d125
+cldev show d125
+
+cldev combine -t srdf -g csandbox-tz-asm -d d126 d150
+didadm -F scsi3 d126
+cldev show d126
+
+cldev combine -t srdf -g csandbox-tz-asm -d d127 d151
+didadm -F scsi3 d127
+cldev show d127
+
+cldev combine -t srdf -g csandbox-tz-asm -d d130 d154
+didadm -F scsi3 d130
+cldev show d130
+
+cldev combine -t srdf -g csandbox-tz-asm -d d131 d155
+didadm -F scsi3 d131
+cldev show d131
+
+cldev combine -t srdf -g csandbox-tz-asm -d d132 d156
+didadm -F scsi3 d132
+cldev show d132
+
+cldev combine -t srdf -g csandbox-tz-asm -d d109 d133
+didadm -F scsi3 d109
+cldev show d109
+
+cldev combine -t srdf -g csandbox-tz-asm -d d110 d134
+didadm -F scsi3 d110
+cldev show d110
+
+cldev combine -t srdf -g csandbox-tz-asm -d d111 d135
+didadm -F scsi3 d111
+cldev show d111
+
+cldev combine -t srdf -g csandbox-tz-asm -d d112 d136
+didadm -F scsi3 d112
+cldev show d112
+
+cldev combine -t srdf -g csandbox-tz-asm -d d113 d137
+didadm -F scsi3 d113
+cldev show d113
+
+cldev combine -t srdf -g csandbox-tz-asm -d d114 d138
+didadm -F scsi3 d114
+cldev show d114
+
+cldev combine -t srdf -g csandbox-tz-asm -d d115 d139
+didadm -F scsi3 d115
+cldev show d115
+
+cldev combine -t srdf -g csandbox-tz-asm -d d116 d140
+didadm -F scsi3 d116
+cldev show d116
+
+cldev combine -t srdf -g csandbox-tz-asm -d d117 d141
+didadm -F scsi3 d117
+cldev show d117
+
+cldev combine -t srdf -g csandbox-tz-asm -d d118 d142
+didadm -F scsi3 d118
+cldev show d118
+
+cldev combine -t srdf -g csandbox-tz-asm -d d120 d144
+didadm -F scsi3 d120
+cldev show d120
+
+cldev combine -t srdf -g csandbox-tz-asm -d d121 d145
+didadm -F scsi3 d121
+cldev show d121
+
+cldev combine -t srdf -g csandbox-tz-asm -d d122 d146
+didadm -F scsi3 d122
+cldev show d122
+cldev show $primary_did
+
+
+
+
+{
+cat /home/betorma/tmp/storage_info_asm_csandbox-tz.out | awk '{print $28}' | sort -u | while read dev
+do
+	primary_did=`grep $dev /home/betorma/tmp/storage_info_trinity.out | tail -1 | awk '{print $32}'`
+	cldg offline dsk/$primary_did
+	cldg disable dsk/$primary_did
+	cldg delete dsk/$primary_did
+done
+}
+
+{
+cat /home/betorma/tmp/storage_info_asm_csandbox-tz.out | awk '{print $28}' | sort -u | while read dev
+do
+	secondary_did=`grep $dev /home/betorma/tmp/storage_info_neo.out | tail -1 | awk '{print $32}'`
+	cldg offline dsk/$secondary_did
+	cldg disable dsk/$secondary_did
+	cldg delete dsk/$secondary_did
+done
+}
+
+
+
+????????????????????????????????????????????????????????????????????????????????????????
+
+
+cat /home/betorma/tmp/storage_info_asm_csandbox-tz.out | awk '{print $28}' | sort -u | while read dev
+do
+	primary_did=`grep $dev /home/betorma/tmp/storage_info_trinity.out | tail -1 | awk '{print $32}'`
+	echo $primary_did
+done
+
+
+0[150827/095318]root@trinity# cat /home/betorma/tmp/storage_info_asm_csandbox-tz.out | awk '{print $28}' | sort -u | while read dev
+pipe pipe pipe while> do
+pipe pipe pipe while>   primary_did=`grep $dev /home/betorma/tmp/storage_info_trinity.out | tail -1 | awk '{print $32}'`
+pipe pipe pipe while>   echo $primary_did
+pipe pipe pipe while> done
+d119
+d123
+d124
+d125
+d126
+d127
+d130
+d131
+d132
+d109
+d110
+d111
+d112
+d113
+d114
+d115
+d116
+d117
+d118
+d120
+d121
+d122
+0[150827/095334]root@trinity# 
+
+
+
+
+0[150827/095402]root@trinity# cat /home/betorma/tmp/storage_info_asm_csandbox-tz.out | awk '{print $28}' | sort -u | while read dev
+do
+        primary_did=`grep $dev /home/betorma/tmp/storage_info_trinity.out | tail -1 | awk '{print $32}'`
+        echo $primary_did
+done | xargs | sed -e 's/ /,/g'
+d119,d123,d124,d125,d126,d127,d130,d131,d132,d109,d110,d111,d112,d113,d114,d115,d116,d117,d118,d120,d121,d122
+0[150827/095413]root@trinity# 
+
+
+
+
+
+
+
+0[150827/095622]root@trinity# cldg create -n trinity,neo -t rawdisk -d d119,d123,d124,d125,d126,d127,d130,d131,d132,d109,d110,d111,d112,d113,d114,d115,d116,d117,d118,d120,d121,d122 csandbox-tz-asm
+0[150827/095634]root@trinity# cldg show -v csandbox-tz-asm 
+
+=== Device Groups ===                          
+
+Device Group Name:                              csandbox-tz-asm
+  Type:                                            Disk
+  failback:                                        false
+  Node List:                                       trinity, neo
+  preferenced:                                     false
+  localonly:                                       false
+  autogen:                                         false
+  numsecondaries:                                  1
+  device names:                                    /dev/did/rdsk/d109s2 /dev/did/rdsk/d110s2 /dev/did/rdsk/d111s2 /dev/did/rdsk/d112s2 /dev/did/rdsk/d113s2 /dev/did/rdsk/d114s2 /dev/did/rdsk/d115s2 /dev/did/rdsk/d116s2 /dev/did/rdsk/d117s2 /dev/did/rdsk/d118s2 /dev/did/rdsk/d119s2 /dev/did/rdsk/d120s2 /dev/did/rdsk/d121s2 /dev/did/rdsk/d122s2 /dev/did/rdsk/d123s2 /dev/did/rdsk/d124s2 /dev/did/rdsk/d125s2 /dev/did/rdsk/d126s2 /dev/did/rdsk/d127s2 /dev/did/rdsk/d130s2 /dev/did/rdsk/d131s2 /dev/did/rdsk/d132s2
+  Replication Type:                                srdf
+
+0[150827/095640]root@trinity# 
+0[150827/095640]root@trinity# cldg online csandbox-tz-asm
+0[150827/095654]root@trinity# cldg status csandbox-tz-asm
+
+=== Cluster Device Groups ===
+
+--- Device Group Status ---
+
+Device Group Name     Primary     Secondary     Status
+-----------------     -------     ---------     ------
+csandbox-tz-asm       trinity     neo           Online
+
+0[150827/095700]root@trinity# 
+
+
+
+
+
+
+0[150827/100945]root@trinity# clrs create -g csandbox-tz-rg -t SUNW.HAStoragePlus -p GlobalDevicePaths=csandbox-tz-asm csandbox-tz-asm          
+
+
+
+
+
+3[150827/101019]root@trinity# clrg online csandbox-tz-rg
+0[150827/101036]root@trinity# clrs enable csandbox-tz-asm
+0[150827/101047]root@trinity# clrs status
+
+=== Cluster Resources ===
+
+Resource Name        Node Name      State       Status Message
+-------------        ---------      -----       --------------
+csandbox-tz-asm      trinity        Online      Online
+                     neo            Offline     Offline
+
+0[150827/101055]root@trinity# 
+
+
+
+
+
+
+
+0[150827/101055]root@trinity# clrg switch -n neo csandbox-tz-rg
+0[150827/101124]root@trinity# clrs status                      
+
+=== Cluster Resources ===
+
+Resource Name        Node Name      State       Status Message
+-------------        ---------      -----       --------------
+csandbox-tz-asm      trinity        Offline     Offline
+                     neo            Online      Online
+
+0[150827/101130]root@trinity# 
+
+
+
+
+
+
+
+
+
+0[150827/101154]root@trinity# clrg switch -n trinity csandbox-tz-rg
+0[150827/101211]root@trinity# clrs status                          
+
+=== Cluster Resources ===
+
+Resource Name        Node Name      State       Status Message
+-------------        ---------      -----       --------------
+csandbox-tz-asm      trinity        Online      Online
+                     neo            Offline     Offline
+
+0[150827/101218]root@trinity# 
+
+
+
+
+
+
+##### cluster configuration
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

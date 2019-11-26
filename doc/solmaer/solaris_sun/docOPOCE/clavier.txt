@@ -1,0 +1,23 @@
+~#
+The following connections are open:
+  #0 client-session (t4 r0 i0/0 o0/0 fd 5/6)
+
+~B [sent break]
+
+~?
+Supported escape sequences:
+~.  - terminate connection
+~B  - send break
+~C  - open a command line
+~R  - Request rekey (SSH protocol 2 only)
+~^Z - suspend ssh
+~#  - list forwarded connections
+~&  - background ssh (when waiting for connections to terminate)
+~?  - this message
+~  - send the escape character by typing it twice
+(Note that escapes are only recognized immediately after newline.)
+
+# clavier azerty 
+le ^] est ctrl + alt + )
+
+

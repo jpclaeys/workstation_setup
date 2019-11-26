@@ -1,0 +1,10 @@
+(export new_pass=Canali30 uid=riofrfr
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: userPassword
+userPassword: $new_pass
+EOT
+)
+# Search groups
+ldapsearch  -h camel  -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int'  "cn=*" dn

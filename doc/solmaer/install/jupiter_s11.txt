@@ -1,0 +1,183 @@
+host_ip=10.199.99.3
+router_ip=10.199.99.254
+subnet_mask=255.255.255.0
+hostname=jupiter
+ 
+echo network-boot-arguments host-ip=${host_ip},router-ip=${router_ip},subnet-mask=${subnet_mask},hostname=${hostname},file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+
+setenv network-boot-arguments host-ip=10.199.99.3,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=jupiter,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+
+
+
+
+
+
+
+
+{0} ok setenv auto-boot? false
+
+
+
+
+
+
+
+
+
+
+
+
+
+{0} ok reset-all
+
+Resetting...
+POST Sequence 01 CPU Check
+POST Sequence 02 Banner
+LSB#00 (XSB#01-0): POST 2.17.0 (2011/11/17 10:29)
+POST Sequence 03 Fatal Check
+POST Sequence 04 CPU Register
+POST Sequence 05 STICK
+POST Sequence 06 MMU
+POST Sequence 07 Memory Initialize
+POST Sequence 08 Memory
+POST Sequence 09 Raw UE In Cache
+POST Sequence 0A Floating Point Unit
+POST Sequence 0B SC
+POST Sequence 0C Cacheable Instruction
+POST Sequence 0D Softint
+POST Sequence 0E CPU Cross Call
+POST Sequence 0F CMU-CH
+POST Sequence 10 PCI-CH
+POST Sequence 11 Master Device
+POST Sequence 12 DSCP
+POST Sequence 13 SC Check Before STICK Diag
+POST Sequence 14 STICK Stop
+POST Sequence 15 STICK Start
+POST Sequence 16 Error CPU Check
+POST Sequence 17 System Configuration
+POST Sequence 18 System Status Check
+POST Sequence 19 System Status Check After Sync
+POST Sequence 1A OpenBoot Start...
+POST Sequence Complete.
+ChassisSerialNumber BCF082602A 
+
+SPARC Enterprise M5000 Server, using Domain console
+Copyright (c) 1998, 2012, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2012, Oracle and/or its affiliates and Fujitsu Limited. All rights reserved.
+OpenBoot 4.33.5.d, 32768 MB memory installed, Serial #84017961.
+Ethernet address 0:21:28:2:3:29, Host ID: 85020329.
+
+
+
+
+
+{0} ok watch-net-all
+/pci@2,600000/network@0,1
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+110 10d 110 80 110 80 110 80 110 80 110 80 80 80 80 80 80 80 10d 46 58 40 46 46 46 40 52 44 4a 51 4a 44 44 44 44 44 44 44 44 44 44 44 44 46 44 44 44 44 46 5ee 82 1b9 426 84 46 46 40 40 44 40 40 44 64 44 40 44 44 44 84 44 40 46 1ee 
+/pci@2,600000/network@0
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+110 10d 110 80 
+/pci@0,600000/pci@0/pci@8/pci@0/network@2,1
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+.......
+/pci@0,600000/pci@0/pci@8/pci@0/network@2
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+......
+
+
+
+
+
+
+{0} ok devalias
+cdrom                    /pci@0,600000/pci@0/pci@8/pci@0/scsi@1/disk@3,0:f
+net                      /pci@0,600000/pci@0/pci@8/pci@0/network@2
+disk                     /pci@0,600000/pci@0/pci@8/pci@0/scsi@1/disk@0
+rootdisk                 /pci@0,600000/pci@0/pci@8/pci@0/scsi@1/disk@0
+rootmirror               /pci@0,600000/pci@0/pci@8/pci@0/scsi@1/disk@1
+name                     aliases
+{0} ok 
+
+
+
+
+
+
+{0} ok boot net - install
+Boot device: /pci@0,600000/pci@0/pci@8/pci@0/network@2  File and args: - install
+
+
+{0} ok boot /pci@0,600000/pci@0/pci@8/pci@0/network@2,1 - install
+{0} ok boot /pci@2,600000/network@0,1 - install
+
+
+##### snoop by mac address on aiserver-pz for these interfaces
+
+{0} ok boot /pci@2,600000/network@0 - install
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0[141209/154523]root@aiserver-pz# installadm create-client -n opoce-sparc-sol11_2 -e 00:21:28:46:a1:2c
+1[141209/154531]root@aiserver-pz# installadm list -c                                                  
+Service Name        Client Address    Arch  Secure Custom Args Custom Grub
+------------        --------------    ----  ------ ----------- -----------
+opoce-sparc-sol11_2 00:21:28:46:A1:2C sparc no     no          no         
+opoce_desktop_x86   00:E0:81:5A:99:1E i386  no     no          no         
+                    14:FE:B5:FC:7D:2F i386  no     no          no         
+                    B8:CA:3A:92:57:83 i386  no     no          no         
+                    F8:B1:56:B7:80:4A i386  no     no          no         
+                    F8:B1:56:BA:36:9F i386  no     no          no         
+                    F8:B1:56:BB:DB:08 i386  no     no          no         
+                    F8:B1:56:BB:E2:4C i386  no     no          no         
+0[141209/154538]root@aiserver-pz# 
+
+
+0[141209/155130]root@aiserver-pz# installadm delete-client -e 00:21:28:46:a1:2c
+Deleted Client: '00:21:28:46:A1:2C'
+0[141209/155140]root@aiserver-pz# installadm list -c                       
+Service Name      Client Address    Arch Secure Custom Args Custom Grub
+------------      --------------    ---- ------ ----------- -----------
+opoce_desktop_x86 00:E0:81:5A:99:1E i386 no     no          no         
+                  14:FE:B5:FC:7D:2F i386 no     no          no         
+                  B8:CA:3A:92:57:83 i386 no     no          no         
+                  F8:B1:56:B7:80:4A i386 no     no          no         
+                  F8:B1:56:BA:36:9F i386 no     no          no         
+                  F8:B1:56:BB:DB:08 i386 no     no          no         
+                  F8:B1:56:BB:E2:4C i386 no     no          no         
+0[141209/155146]root@aiserver-pz# 
+
+
+
+
+
+
+
+
+
+
+

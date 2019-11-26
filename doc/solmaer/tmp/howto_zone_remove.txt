@@ -1,0 +1,232 @@
+##### variables on both nodes
+
+export zone_name=
+export zpool_list=""
+export tmp_folder=/home/betorma/tmp
+export storage_array=						# vmax vmax3 vnx
+
+
+##### inform cmdb manager and operators for monitoring
+
+
+{
+cat <<EOT
+Hi, 
+
+I will remove ${zone_name}.
+The monitoring will be impacted for;
+- $zone_name 
+- `grep $zone_name /home/betorma/tmp/getcmdb_opsrv.txt | awk -F';' '{print $1}' | sort -u`
+EOT
+} | mailx -s "$zone_name: will be removed" betorma OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu OP-IT-PRODUCTION@publications.europa.eu
+
+
+##### get storage status on each nodes
+
+storage_info.pl -A >$tmp_folder/storage_info_`uname -n`.txt
+
+
+
+##### get LUN id on primary node
+
+for pool in $zpool_list; do grep $pool $tmp_folder/storage_info_`uname -n`.txt | awk '{print $9}' | sort -u; done | xargs >$tmp_folder/lun_ids.txt
+#zpool status $zpool_list | grep ONLINE | egrep -v "state:|mirror|$zone_name" | awk '{print $1}' | sed -e "s/s[0-9]//" | while read disk; do grep "$disk " $tmp_folder/storage_info_`uname -n`.txt; done | awk '{print $9}' | sort -u >$tmp_folder/lun_ids.txt
+cat $tmp_folder/lun_ids.txt
+
+
+
+##### get the storage information on each nodes
+
+for id in `cat $tmp_folder/lun_ids.txt`
+do
+	grep " $id " $tmp_folder/storage_info_`uname -n`.txt | grep -i "${storage_array}_"
+done
+
+
+
+##### remove cluster configuration
+
+{
+clrs list | grep "${zone_name}-" | while read rs
+do
+        echo clrs disable $rs
+        echo clrs delete $rs
+done
+echo clrg offline ${zone_name}-rg
+echo clrg delete ${zone_name}-rg 
+cldg list | grep "${zone_name}" | while read dg
+do
+        echo cldg offline $dg
+        echo cldg disable $dg
+        echo cldg delete $dg
+done
+}
+
+
+
+
+##### deconfigure zone on both nodes
+
+zonecfg -z $zone_name delete -F
+
+
+
+
+##### destroy zpools on primary node
+
+for pool in $zpool_list
+do
+        echo zpool import $pool
+        echo zpool destroy $pool
+done
+
+
+
+##### offline devices on both nodes
+{
+for id in `cat $tmp_folder/lun_ids.txt`
+do
+        grep " $id " $tmp_folder/storage_info_`uname -n`.txt | awk '{print "op_dev_offline_powermt_luxadm.sh "$27}' 
+done
+} | sort -u 
+
+
+
+
+##### update /dev/, /device on both nodes
+
+devfsadm -Cv
+
+
+
+##### update cluster devices on one node
+
+cldev populate
+
+
+
+##### clear devices on both nodes
+
+cldev clear
+
+cldev status -s fail
+
+
+
+
+
+
+
+
+##### recover luns and disable backup client
+
+{
+grep HEADER $tmp_folder/storage_info_`uname -n`.txt
+clnode list | while read node
+do
+	for id in `cat $tmp_folder/lun_ids.txt`
+	do
+        	grep " $id " $tmp_folder/storage_info_${node}.txt | grep -i "${storage_array}_"
+	done
+done
+} >$tmp_dir/luns_to_recover.txt
+
+
+
+{
+cat <<EOT
+Hi, 
+
+$zone_name is removed.
+Can you please recover these LUNs and delete his backup client ?
+Thanks in advance.
+
+`cat $tmp_dir/luns_to_recover.txt`
+EOT
+} | mailx -s "$zone_name: remove client backup and recover luns" betorma
+
+
+
+
+
+
+
+
+##### monitoring
+
+{
+cat <<EOT
+Hi, 
+
+$zone_name is removed.
+Can you please remove the monitoring client for these hosts?
+- $zone_name
+- `grep $zone_name /home/betorma/tmp/getcmdb_opsrv.txt | awk -F';' '{print $1}' | sort -u`
+
+Thanks in advance.
+
+EOT
+} | mailx -s "$zone_name: remove from monitoring" betorma
+
+
+
+
+##### cmdb
+
+{
+cat <<EOT
+Hi, 
+
+$zone_name is removed.
+Can you please remove from the CMDB these hosts?
+- $zone_name
+- `grep $zone_name /home/betorma/tmp/getcmdb_opsrv.txt | awk -F';' '{print $1}' | sort -u`
+
+Thanks in advance.
+
+EOT
+} | mailx -s "$zone_name: remove from cmdb" betorma
+
+
+
+
+
+
+##### network
+
+
+
+{
+cat <<EOT
+Hi, 
+
+$zone_name is removed.
+You can to recover these IP addresses;
+- $zone_name 
+- bkp-${zone_name}
+- `grep $zone_name /home/betorma/tmp/getcmdb_opsrv.txt | awk -F';' '{print $1}' | sort -u`
+EOT
+} | mailx -s "$zone_name: IP to recover" betorma
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

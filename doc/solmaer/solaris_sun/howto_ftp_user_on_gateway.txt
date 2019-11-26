@@ -1,0 +1,5 @@
+##################################################################################################################
+# creation d'utilisateur ftp sur gateways internes et externes, de test et de production
+##################################################################################################################
+
+Executer le script suivant et suivre ses instructions: /applications/wood/ftpusers/create_guest_account 

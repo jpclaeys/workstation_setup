@@ -1,0 +1,3 @@
+# parfois l'appli demarre pas pour des problemes de shared memory ou semaphores
+# liberer no-entry semaphores rangs
+ipcs -as | awk '$10 ~ /no\-entry/ { print "ipcrm -s " $2 }'

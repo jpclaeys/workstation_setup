@@ -1,0 +1,136 @@
+1[141205/093919]betorma@procyon% for h in `grep -i 'solaris 11' /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print $1}'`; do echo "ssh $h /usr/sbin/zoneadm list -cv | grep -v global | grep running"; done
+ssh burns /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh chico /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh chronos /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh gretel /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh groucho /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh guido /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh hansel /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh harpo /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh heracles /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh hercule /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh kusha /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh lava /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh rama /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh ramone /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh saturne /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh sita /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh smithers /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh x32-01 /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh x32-02 /usr/sbin/zoneadm list -cv | grep -v global | grep running
+ssh zeppo /usr/sbin/zoneadm list -cv | grep -v global | grep running
+
+
+
+
+
+0[141205/093926]betorma@procyon% ssh burns /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 ceresng-tz       running     /zones/ceresng-tz            solaris10  excl  
+   2 etrustext-tz     running     /zones/etrustext-tz          solaris10  excl  
+   3 metaconv-rz      running     /zones/metaconv-rz           solaris10  excl  
+   4 eurlexfo-rz      running     /zones/eurlexfo-rz           solaris10  excl  
+   5 leojparaph-rz    running     /zones/leojparaph-rz         solaris10  excl  
+   6 planjo-rz        running     /zones/planjo-rz             solaris10  excl  
+0[141205/093929]betorma@procyon% ssh chico /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 cordisica3-pz    running     /zones/cordisica3-pz         solaris    excl  
+0[141205/093934]betorma@procyon% ssh chronos /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 aiserver-pz      running     /zones/aiserver-pz           solaris    excl  
+0[141205/093937]betorma@procyon% ssh gretel /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 cportaldiff2-pz  running     /zones/cportaldiff2-pz       solaris    excl  
+   3 cportaldb-pz     running     /zones/cportaldb-pz          solaris    excl  
+0[141205/093940]betorma@procyon% ssh groucho /usr/sbin/zoneadm list -cv | grep -v global | grep running
+1[141205/093943]betorma@procyon% ssh guido /usr/sbin/zoneadm list -cv | grep -v global | grep running
+1[141205/093946]betorma@procyon% ssh hansel /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 cportaldiff1-pz  running     /zones/cportaldiff1-pz       solaris    excl  
+   7 planpubli2-pz    running     /zones/planpubli2-pz         solaris    excl  
+0[141205/093947]betorma@procyon% ssh harpo /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   3 cellarfodb1-pz   running     /zones/cellarfodb1-pz        solaris    excl  
+0[141205/093950]betorma@procyon% ssh heracles /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 ceresng-pz       running     /zones/ceresng-pz            solaris10  excl  
+0[141205/093953]betorma@procyon% ssh hercule /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   3 eurlexfo-pz      running     /zones/eurlexfo-pz           solaris10  excl  
+   4 etrustext-pz     running     /zones/etrustext-pz          solaris10  excl  
+0[141205/093956]betorma@procyon% ssh kusha /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 cellarfodb2-tz   running     /zones/cellarfodb2-tz        solaris    excl  
+   2 planpubli2-tz    running     /zones/planpubli2-tz         solaris    excl  
+   3 cportaldiff2-tz  running     /zones/cportaldiff2-tz       solaris    excl  
+0[141205/094001]betorma@procyon% ssh lava /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   2 planjo2-tz       running     /zones/planjo2-tz            solaris    excl  
+   3 eurovocbo-tz     running     /zones/eurovocbo-tz          solaris    excl  
+   4 csandbox-tz      running     /zones/csandbox-tz           solaris    excl  
+   5 cportaldiff1-tz  running     /zones/cportaldiff1-tz       solaris    excl  
+   6 cportaldb-tz     running     /zones/cportaldb-tz          solaris    excl  
+   8 cellarfodb1-tz   running     /zones/cellarfodb1-tz        solaris    excl  
+0[141205/094005]betorma@procyon% ssh rama /usr/sbin/zoneadm list -cv | grep -v global | grep running
+1[141205/094007]betorma@procyon% ssh ramone /usr/sbin/zoneadm list -cv | grep -v global | grep running
+1[141205/094013]betorma@procyon% ssh saturne /usr/sbin/zoneadm list -cv | grep -v global | grep running
+1[141205/094016]betorma@procyon% ssh sita /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 cordisica3-tz    running     /zones/cordisica3-tz         solaris    excl  
+0[141205/094018]betorma@procyon% ssh x32-01 /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 eudor-1-store    running     /zones/eudor-1-store         solaris    excl  
+   2 eudor-1-web      running     /zones/eudor-1-web           solaris    excl  
+   3 eudor-1-put      running     /zones/eudor-1-put           solaris    excl  
+0[141205/094020]betorma@procyon% ssh x32-02 /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 eudor-2-put      running     /zones/eudor-2-put           solaris    excl  
+   2 eudor-2-web      running     /zones/eudor-2-web           solaris    excl  
+   3 eudor-2-store    running     /zones/eudor-2-store         solaris    excl  
+0[141205/094023]betorma@procyon% ssh zeppo /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 cellarfodb2-pz   running     /zones/cellarfodb2-pz        solaris    excl  
+   2 planjo2-pz       running     /zones/planjo2-pz            solaris    excl  
+0[141205/094025]betorma@procyon% ssh smithers /usr/sbin/zoneadm list -cv | grep -v global | grep running
+   1 cellarmain-rz    running     /zones/cellarmain-rz         solaris10  excl  
+   2 eurlexbo-rz      running     /zones/eurlexbo-rz           solaris10  excl  
+   3 ceresng-rz       running     /zones/ceresng-rz            solaris10  excl  
+
+
+
+
+
+
+
+
+
+
+
+
+
+pkg install pkg:/service/network/ntp
+
+
+cat <<EOF >/etc/inet/ntp.conf
+##
+## /etc/inet/ntp.conf
+## ntp client configuration file for OP
+##
+disable auth
+server rt1mer.opoce.cec.eu.int
+driftfile /var/ntp/ntp.drift
+statsdir /var/ntp/ntpstats/
+filegen peerstats file peerstats type day enable
+filegen loopstats file loopstats type day enable
+EOF
+
+
+
+
+
+svcs ntp
+svcadm restart ntp
+sleep 2
+svcs ntp
+
+ntpq -p
+
+
+
+
+
+
+
+
+
+0[141204/102804]root@mireille# ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+ rt1mer.opoce.ce 158.167.211.103  3 u   16   64    1    5.519    1.474   0.001
+0[141204/102819]root@mireille# 

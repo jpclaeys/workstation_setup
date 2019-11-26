@@ -1,0 +1,101 @@
+################################################################################
+#
+# purge
+#
+################################################################################
+
+
+
+
+0[150825/080940]root@splunk-tk# du -sh /opt/splunk/var/lib/splunk/defaultdb/db
+8.5G    /opt/splunk/var/lib/splunk/defaultdb/db
+
+
+
+
+
+
+0[150825/081025]root@splunk-tk# /opt/splunk/bin/splunk stop                   
+Stopping splunkweb...
+                                                           [  OK  ]
+Stopping splunkd...
+Shutting down.  Please wait, as this may take a few minutes.
+.                                                          [  OK  ]
+Stopping splunk helpers...
+                                                           [  OK  ]
+Done.
+
+
+
+
+
+
+
+
+
+
+
+1[150825/081456]root@splunk-tk# /opt/splunk/bin/splunk clean eventdata       
+This action will permanently erase all events from ALL indexes; it cannot be undone.
+Are you sure you want to continue [y/n]? y
+Cleaning database _audit.
+Cleaning database _blocksignature.
+Cleaning database _internal.
+Cleaning database _thefishbucket.
+Cleaning database history.
+Cleaning database main.
+Cleaning database summary.
+Disabled database 'splunklogger': will not clean.
+
+
+
+
+
+
+
+
+
+0[150825/081509]root@splunk-tk# /opt/splunk/bin/splunk start                 
+
+Splunk> Now with more code!
+
+Checking prerequisites...
+        Checking http port [8000]: open
+        Checking mgmt port [8089]: open
+        Checking configuration...  Done.
+        Checking indexes...
+                Validated databases: _audit _blocksignature _internal _thefishbucket history main summary
+        Done
+        Checking filesystem compatibility...  Done
+        Checking conf files for typos...        Done
+All preliminary checks passed.
+
+Starting splunk server daemon (splunkd)...  Done
+                                                           [  OK  ]
+                                                           [  OK  ]
+Starting splunkweb...  Done
+
+If you get stuck, we're here to help.  
+Look for answers here: http://docs.splunk.com
+
+The Splunk web interface is at http://splunk-tk:8000
+
+
+
+
+
+
+
+
+
+
+
+
+0[150825/081535]root@splunk-tk# du -sh /opt/splunk/var/lib/splunk/defaultdb/db
+252K    /opt/splunk/var/lib/splunk/defaultdb/db
+
+
+
+
+
+

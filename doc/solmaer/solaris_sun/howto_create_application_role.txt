@@ -1,0 +1,67 @@
+####################################################################################################
+creation d'un role pour une application
+
+renseigner les fichiers projectid_list.xml et uid-gid.xls dans
+G:\Exploitation\Systemes ouverts\Systeme_de_production\documentation\Unix_Web\Maintenance SUN
+
+####################################################################################################
+
+##### variables role
+export project=
+export project_id=
+export login_role=kpi
+export uid_role=30311
+export profile_role=
+export group_role=kpi
+export gid_role=20008
+export application=
+export comment=
+
+##### creation du repertoire du role
+mkdir -p /applications/${application}/users/${login_role}
+
+##### verif
+ls -ld /applications/${application}/users/${login_role}
+
+##### maj de /etc/auto_home
+cat /etc/auto_home
+echo -e "${login_role}\t-setuid \$HOST:/applications/${application}/users/&"
+echo -e "${login_role}\t-setuid \$HOST:/applications/${application}/users/&" >>/etc/auto_home
+
+##### verif de l'existance du group
+grep ^${group_role} /etc/group
+
+##### si groupe inexistant, creation de ce groupe
+groupadd -g ${gid_role} ${group_role}
+
+##### verif de l'existance du group
+grep ^${group_role} /etc/group
+
+##### verif de l'existance du role
+grep ^${login_role} /etc/passwd
+grep ^${login_role} /etc/user_attr
+
+##### si role inexistant, creation du role
+echo roleadd -m -d /home/${login_role} -c \"${comment}\" -u ${uid_role} -g ${gid_role} -P ${profile_role}-s /bin/pfksh ${login_role}
+
+#### verif de l'existance du role
+grep ^${login_role} /etc/passwd
+grep ^${login_role} /etc/user_attr
+
+##### modification des droit sur le home du role
+chown ${login_role}:${group_role} /applications/${application}/users/${login_role}
+
+##### verif
+ls -ld /applications/${application}/users/${login_role}
+
+##### changement du mot de passe du role
+passwd ${login_role}
+New Password: 
+Re-enter new Password:
+
+##### ajout du role pour lafarpa, pierrph, petittr
+cat /etc/user_attr
+for u in lafarpa pierrph petittr;
+do
+echo "$u::::type=normal;roles=${login_role}" >>/etc/user_attr
+done

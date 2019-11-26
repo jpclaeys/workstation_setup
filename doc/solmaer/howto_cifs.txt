@@ -1,0 +1,14 @@
+##### mount fs from portal_pz smb shares
+
+
+sudo mkdir -p /cifs/portal_pz/docs
+sudo mount -t cifs -o workgroup=publications,username=betorma \\\\portal_pz\\docs /cifs/portal_pz/docs
+
+sudo mkdir -p /cifs/portal_pz/projet
+sudo mount -t cifs -o workgroup=publications,username=betorma \\\\portal_pz\\060_Projet /cifs/portal_pz/projet
+
+sudo mkdir -p /cifs/portal_pz/management
+sudo mount -t cifs -o workgroup=publications,username=betorma \\\\portal_pz\\010_Management /cifs/portal_pz/management
+
+sudo mkdir -p /cifs/portal_pz/system
+sudo mount -t cifs -o workgroup=publications,username=betorma \\\\portal_pz\\090_System /cifs/portal_pz/system

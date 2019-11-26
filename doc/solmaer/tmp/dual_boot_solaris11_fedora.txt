@@ -1,0 +1,65 @@
+#################################################################################################
+#
+# installaer solaris 11 via ai et fedora via http en dual boot 
+#
+#################################################################################################
+
+
+
+##################################################
+##### installation d'un serveur AI
+
+##################################################
+##### creation d'un servive d'installation
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+##### creation d'un template AI pour le client 
+
+
+##################################################
+##### mise en place d'un depot d' installation fedora via http
+
+##################################################
+##### creation d'une machine virtuelle pour tests
+
+virt-install
+--connect=qemu:///system
+--name=dualhost
+--ram=1024
+--vcpus=1
+--pxe
+--disk path=/vm/kvm/dualhost/disk00.img,size=20,sparse=yes
+--network bridge=virbr0
+--dry-run
+
+
+
+
+##################################################
+##### deploiement de solaris 11
+
+
+##################################################
+##### deploiement de fedora
+
+
+##################################################
+##### personalisation de grub pour le dual boot
+
+
+
+##################################################
+##### tests de reboot d'un systeme a l'autre
+
+
+

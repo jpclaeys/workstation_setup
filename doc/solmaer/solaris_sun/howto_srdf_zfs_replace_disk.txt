@@ -1,0 +1,198 @@
+##### information provided by storage team
+
+Usage			Col 18/Dev	GB	hypers	Type	Hex	Dec	*EOL	Source	Target	SGs 2560	SGs 3453	Type	TargetAdr Dec.	TargetAdr Hex.
+cportaldb-tz-nfs	10E7		33,97	1	H33.97G	43	67	67	10E7	27C4	cportaldb-tz	cportaldb-tz	SATA	72		48
+
+
+
+##### variable example
+
+export pool=cportaldb-tz-nfs
+export lun_dec_id_source=67
+export lun_hex_id_source=43
+export rdf_source=10E7
+export lun_dec_id_target=72
+export lun_hex_id_target=48
+export rdf_target=27C4
+
+
+
+##########################################################################################################################################################################################
+
+
+##### variables
+
+export pool=
+export lun_dec_id_source=
+export lun_hex_id_source=
+export rdf_source=
+export lun_dec_id_target=
+export lun_hex_id_target=
+export rdf_target=
+
+
+##### refrech sym config on all nodes
+
+symcfg discover
+
+
+
+###### check lun on solaris level on all nodes
+
+/home/betorma/bin/luxadm_carlo -z | egrep " $lun_dec_id_source | $lun_dec_id_target "
+
+
+
+##### check lun on srdf level on all nodes
+
+symdev list pd | grep "^$rdf_source"
+symdev list pd | grep "^$rdf_target"
+
+
+
+##### check lun on solaris cluster level 
+
+/home/betorma/bin/luxadm_carlo -z | egrep " $lun_dec_id_source | $lun_dec_id_target " | awk '{print $1}' | perl -ne 'print "$1\n" if (m{/dev/rdsk/(c\d+t.{32}d0)s2})' | xargs | sed -e 's/ /|/g' | awk '{print "cldev list -v | egrep \""$1"\"" }'
+
+
+
+export did_source=
+export did_target_srdf1=
+export did_target_srdf2=
+
+
+
+##### add rdf device on node1
+
+symld list -g $pool
+echo symld -g $pool add dev $rdf_target
+symld list -g $pool
+
+
+
+##### add rdf device on node2
+
+symld list -g $pool
+echo symld -g $pool add dev $rdf_target
+symld list -g $pool
+
+
+
+##### check sync
+
+symrdf -g $pool verify -synchronized
+
+
+
+##### combine cluster devices 
+# from the node2 
+# pour annuler un mauvais combine; scdidadm -b <did>
+
+
+echo cldev combine -t srdf -g $pool -d $did_target_srdf1 $did_target_srdf2
+cldev list -v $did_target_srdf1 $did_target_srdf2
+
+
+
+##### remove all solaris cluster default device group 
+
+{
+echo cldg offline dsk/$did_target_srdf1
+echo cldg disable dsk/$did_target_srdf1
+echo cldg delete dsk/$did_target_srdf1
+}
+
+{
+echo cldg offline dsk/$did_target_srdf2
+echo cldg disable dsk/$did_target_srdf2
+echo cldg delete dsk/$did_target_srdf2
+}
+
+
+
+##### label new disk on node1
+
+cldev list -v  $did_target_srdf1 | grep `uname -n` | awk -F'/' '{print "format -e -d "$4}'
+
+format> label
+[0] SMI Label
+[1] EFI Label
+Specify Label type[0]: 1
+Warning: This disk has an SMI label. Changing to EFI label will erase all
+current partitions.
+Continue? y
+format> q
+
+
+
+##### add device in rdf device group
+
+cldg show $pool
+echo cldg add-device -d $did_target_srdf1 $pool
+cldg show $pool
+
+
+
+##### zpool replace
+
+{
+/home/betorma/bin/luxadm_carlo -z >/home/betorma/tmp/storage_mig2014_`uname -n`_$pool.out
+for storage in 2560 3453
+do
+	cat /home/betorma/tmp/storage_mig2014_`uname -n`_$pool.out | egrep " $lun_dec_id_source " | grep $storage
+	cat /home/betorma/tmp/storage_mig2014_`uname -n`_$pool.out | egrep " $lun_dec_id_target " | grep $storage
+	disk_source=$(cat /home/betorma/tmp/storage_mig2014_`uname -n`_$pool.out | egrep " $lun_dec_id_source " | grep $storage | awk '{print $1}' | awk -F'/' '{print $4}' | sed -e 's/s2$//')
+	disk_target=$(cat /home/betorma/tmp/storage_mig2014_`uname -n`_$pool.out | egrep " $lun_dec_id_target " | grep $storage | awk '{print $1}' | awk -F'/' '{print $4}' | sed -e 's/s2$//')
+	echo zpool replace $pool $disk_source $disk_target
+	echo
+done
+}
+
+
+
+zpool status $pool
+# wait the resilvering end
+
+
+
+##### remove in solaris cluster device group 
+
+cldg show $pool
+echo cldg remove-device -d $did_source $pool
+cldg show $pool
+
+
+
+##### remove in rdf device group on node1
+
+symld list -g $pool
+echo symld -g $pool remove `symld list -g $pool | grep " $rdf_source " |  awk '{print $1}'`
+symld list -g $pool
+
+
+
+##### remove in rdf device group on node2
+
+symld list -g $pool
+echo symld -g $pool remove `symld list -g $pool | grep " $rdf_source " |  awk '{print $1}'`
+symld list -g $pool
+
+
+
+##### luxadm offline on all nodes
+
+
+/home/betorma/bin/luxadm_carlo -z | egrep " $lun_dec_id_source " | awk '{print "luxadm -e offline "$1}'  
+devfsadm -Cv
+cldev populate
+cldev clear
+cldev status -s fail
+
+
+
+##### recover lun to storage team
+
+
+
+
+

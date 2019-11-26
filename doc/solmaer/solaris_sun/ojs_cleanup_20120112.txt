@@ -1,0 +1,945 @@
+
+0[120112/095926]root@odin# df -k /applications/ojs/archive/* /applications/ojs/archive/*/arch* /applications/ojs/users/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vexternal
+                     52405993 42014774 9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/voriginal
+                     11529300 10502171  911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vpaper
+                     51609487 48019902 3073491    94%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume
+                     18866138 18377535  299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/lofi/1          10316795 10100744  112884    99%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch01
+/dev/lofi/2          10316795 9998442  215186    98%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+/dev/lofi/3          10316795 2582580 7631048    26%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+/dev/lofi/4          10316795   10258 10203370     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch04
+/dev/lofi/10         10316795 3928914 6284714    39%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+/dev/lofi/5          3439482 3370406   34682    99%    /applications/ojs/archive/RESUME_TEXT/arch01
+/dev/lofi/6          3439482 3323794   81294    98%    /applications/ojs/archive/RESUME_TEXT/arch02
+/dev/lofi/7          3439482 1822409 1582679    54%    /applications/ojs/archive/RESUME_TEXT/arch03
+/dev/lofi/8          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch04
+/dev/lofi/9          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch05
+/dev/vx/dsk/ojs/vusers
+                     160428408 143496844 15327280    91%    /applications/ojs/users
+
+
+###################################################################################################################################################
+##### cleanup of /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXTERNAL_CONTRACTOR (11-180 -> 11-270)
+
+
+0[120112/100054]root@odin# df -k /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/3          10316795 2582580 7631048    26%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+
+
+##### 11-180
+
+document=(11-18?)
+
+{
+for dir in ${document}
+do
+	find ${dir} -local -mount -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls | perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"' >/tmp/rmext1.lst
+done
+}
+
+0[120112/101030]root@odin# tail -1 /tmp/rmext1.lst
+7385177   84 -rwxrwxr-x   1 oracle   dba         86016 Aug  1 09:54 11-189/11-189997/11-189997SEI1.tar 51080192
+
+
+{
+for dir in ${document}
+do
+	find ${dir} -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'|tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"' | xargs -n 100 /bin/rm
+done
+}
+
+
+{
+for dir in ${document}
+do
+	arch="arch02"
+
+	type="EXTERNAL_CONTRACTOR"
+	echo -n ${dir} " --> "
+	tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+	ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+}
+11-180  --> -rw-r--r--   1 root     root     12669752 Jan 12 10:18 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-180.tgz
+11-181  --> -rw-r--r--   1 root     root     13033886 Jan 12 10:19 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-181.tgz
+11-182  --> -rw-r--r--   1 root     root     12495443 Jan 12 10:19 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-182.tgz
+11-183  --> -rw-r--r--   1 root     root     13622854 Jan 12 10:20 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-183.tgz
+11-184  --> -rw-r--r--   1 root     root     11669101 Jan 12 10:21 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-184.tgz
+11-185  --> -rw-r--r--   1 root     root     12519870 Jan 12 10:21 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-185.tgz
+11-186  --> -rw-r--r--   1 root     root     11984474 Jan 12 10:22 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-186.tgz
+11-187  --> -rw-r--r--   1 root     root     11618510 Jan 12 10:23 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-187.tgz
+11-188  --> -rw-r--r--   1 root     root     13231648 Jan 12 10:24 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-188.tgz
+11-189  --> -rw-r--r--   1 root     root     13196239 Jan 12 10:24 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-189.tgz
+
+
+{
+for dir in ${document}
+do
+	arch="arch02"
+	type="EXTERNAL_CONTRACTOR"
+	echo -n $dir " --> "
+	/bin/rm -rf ${dir}
+	ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+	mkdir $dir
+	chown -h oracle:ojs ${dir}.tgz
+	chown oracle:ojs ${dir}
+	echo "done"
+done
+}
+11-180  --> done
+11-181  --> done
+11-182  --> done
+11-183  --> done
+11-184  --> done
+11-185  --> done
+11-186  --> done
+11-187  --> done
+11-188  --> done
+11-189  --> done
+
+0[120112/104120]root@odin# df -k /applications/ojs/users /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     160428408 141030580 17793544    89%    /applications/ojs/users
+/dev/lofi/3          10316795 2582580 7631048    26%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+
+
+
+
+##### 11-190
+
+document=(11-19?)
+
+{
+for dir in ${document}
+do
+	find ${dir} -local -mount -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls | perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"' >/tmp/rmext1.lst
+done
+}
+
+0[120112/105838]root@odin# tail -1 /tmp/rmext1.lst
+5725493   88 -rwxrwxr-x   1 oracle   dba         88576 Aug 11 11:42 11-199/11-199997/11-199997SEI1.tar 93184000
+
+
+
+{
+for dir in ${document}
+do
+	find ${dir} -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'|tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"' | xargs -n 100 /bin/rm
+done
+}
+
+
+{
+for dir in ${document}
+do
+	arch="arch02"
+
+	type="EXTERNAL_CONTRACTOR"
+	echo -n ${dir} " --> "
+	tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+	ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+}
+11-190  --> -rw-r--r--   1 root     root     10585057 Jan 12 11:27 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-190.tgz
+11-191  --> -rw-r--r--   1 root     root     11858995 Jan 12 11:28 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-191.tgz
+11-192  --> -rw-r--r--   1 root     root     11277341 Jan 12 11:29 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-192.tgz
+11-193  --> -rw-r--r--   1 root     root     12049975 Jan 12 11:30 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-193.tgz
+11-194  --> -rw-r--r--   1 root     root     12502010 Jan 12 11:31 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-194.tgz
+11-195  --> -rw-r--r--   1 root     root     12128059 Jan 12 11:32 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-195.tgz
+11-196  --> -rw-r--r--   1 root     root     10492365 Jan 12 11:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-196.tgz
+11-197  --> -rw-r--r--   1 root     root     11869281 Jan 12 11:34 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-197.tgz
+11-198  --> -rw-r--r--   1 root     root     11107097 Jan 12 11:34 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-198.tgz
+11-199  --> -rw-r--r--   1 root     root     11371809 Jan 12 11:35 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/11-199.tgz
+
+
+{
+for dir in ${document}
+do
+	arch="arch02"
+	type="EXTERNAL_CONTRACTOR"
+	echo -n $dir " --> "
+	/bin/rm -rf ${dir}
+	ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+	mkdir $dir
+	chown -h oracle:ojs ${dir}.tgz
+	chown oracle:ojs ${dir}
+	echo "done"
+done
+}
+11-191  --> done
+11-192  --> done
+11-193  --> done
+11-194  --> done
+11-195  --> done
+11-196  --> done
+11-197  --> done
+11-198  --> done
+11-199  --> done
+
+0[120112/120752]root@odin# df -k /applications/ojs/users /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     160428408 138784996 20039128    88%    /applications/ojs/users
+/dev/lofi/3          10316795 2582580 7631048    26%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+
+
+
+##### 11-200
+
+
+document=(11-2[0123]?)
+
+{
+for dir in ${document}
+do
+	find ${dir} -local -mount -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls | perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"' >/tmp/rmext1.lst
+done
+}
+
+
+0[120112/130940]root@odin# tail -1 /tmp/rmext1.lst
+1752469   12 -rwxrwxr-x   1 oracle   dba         12288 Sep 27 12:48 11-239/11-239996/11-239996SEI1.tar 68109824
+
+
+
+{
+for dir in ${document}
+do
+	find ${dir} -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'|tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"' | xargs -n 100 /bin/rm
+done
+}
+
+
+{
+for dir in ${document}
+do
+	arch="arch03"
+
+	type="EXTERNAL_CONTRACTOR"
+	echo -n ${dir} " --> "
+	tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+	ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+}
+11-200  --> -rw-r--r--   1 root     root     13910170 Jan 12 13:41 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-200.tgz
+11-201  --> -rw-r--r--   1 root     root     13309813 Jan 12 13:41 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-201.tgz
+11-202  --> -rw-r--r--   1 root     root     9052436 Jan 12 13:41 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-202.tgz
+11-203  --> -rw-r--r--   1 root     root     3245896 Jan 12 13:41 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-203.tgz
+11-204  --> -rw-r--r--   1 root     root     2552049 Jan 12 13:41 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-204.tgz
+11-205  --> -rw-r--r--   1 root     root     8963499 Jan 12 13:41 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-205.tgz
+11-206  --> -rw-r--r--   1 root     root     17212929 Jan 12 13:42 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-206.tgz
+11-207  --> -rw-r--r--   1 root     root     13332246 Jan 12 13:42 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-207.tgz
+11-208  --> -rw-r--r--   1 root     root     12883922 Jan 12 13:43 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-208.tgz
+11-209  --> -rw-r--r--   1 root     root     11075512 Jan 12 13:44 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-209.tgz
+11-210  --> -rw-r--r--   1 root     root     12129220 Jan 12 13:45 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-210.tgz
+11-211  --> -rw-r--r--   1 root     root     11771512 Jan 12 13:45 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-211.tgz
+11-212  --> -rw-r--r--   1 root     root     11577413 Jan 12 13:46 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-212.tgz
+11-213  --> -rw-r--r--   1 root     root     12320149 Jan 12 13:47 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-213.tgz
+11-214  --> -rw-r--r--   1 root     root     10494699 Jan 12 13:48 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-214.tgz
+11-215  --> -rw-r--r--   1 root     root     10432091 Jan 12 13:49 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-215.tgz
+11-216  --> -rw-r--r--   1 root     root     11180177 Jan 12 13:49 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-216.tgz
+11-217  --> -rw-r--r--   1 root     root     11158949 Jan 12 13:51 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-217.tgz
+11-218  --> -rw-r--r--   1 root     root     11865006 Jan 12 13:52 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-218.tgz
+11-219  --> -rw-r--r--   1 root     root     13498505 Jan 12 13:53 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-219.tgz
+11-220  --> -rw-r--r--   1 root     root     10391101 Jan 12 13:54 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-220.tgz
+11-221  --> -rw-r--r--   1 root     root     11367064 Jan 12 13:55 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-221.tgz
+11-222  --> -rw-r--r--   1 root     root     11241670 Jan 12 13:56 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-222.tgz
+11-223  --> -rw-r--r--   1 root     root     11482529 Jan 12 13:57 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-223.tgz
+11-224  --> -rw-r--r--   1 root     root     12064406 Jan 12 13:58 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-224.tgz
+11-225  --> -rw-r--r--   1 root     root     13355060 Jan 12 13:59 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-225.tgz
+11-226  --> -rw-r--r--   1 root     root     11355698 Jan 12 14:00 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-226.tgz
+11-227  --> -rw-r--r--   1 root     root     12243439 Jan 12 14:02 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-227.tgz
+11-228  --> -rw-r--r--   1 root     root     11590326 Jan 12 14:03 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-228.tgz
+11-229  --> -rw-r--r--   1 root     root     11582801 Jan 12 14:04 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-229.tgz
+11-230  --> -rw-r--r--   1 root     root     13644734 Jan 12 14:05 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-230.tgz
+11-231  --> -rw-r--r--   1 root     root     12586882 Jan 12 14:06 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-231.tgz
+11-232  --> -rw-r--r--   1 root     root     9804463 Jan 12 14:07 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-232.tgz
+11-233  --> -rw-r--r--   1 root     root     11079602 Jan 12 14:08 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-233.tgz
+11-234  --> -rw-r--r--   1 root     root     10657230 Jan 12 14:10 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-234.tgz
+11-235  --> -rw-r--r--   1 root     root     11037263 Jan 12 14:11 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-235.tgz
+11-236  --> -rw-r--r--   1 root     root     12862284 Jan 12 14:12 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-236.tgz
+11-237  --> -rw-r--r--   1 root     root     12959661 Jan 12 14:14 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-237.tgz
+11-238  --> -rw-r--r--   1 root     root     12215216 Jan 12 14:15 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-238.tgz
+11-239  --> -rw-r--r--   1 root     root     11133496 Jan 12 14:16 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-239.tgz
+
+
+{
+for dir in ${document}
+do
+	arch="arch03"
+	type="EXTERNAL_CONTRACTOR"
+	echo -n $dir " --> "
+	/bin/rm -rf ${dir}
+	ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+	mkdir $dir
+	chown -h oracle:ojs ${dir}.tgz
+	chown oracle:ojs ${dir}
+	echo "done"
+done
+}
+11-200  --> done
+11-201  --> done
+11-202  --> done
+11-203  --> done
+11-204  --> done
+11-205  --> done
+11-206  --> done
+11-207  --> done
+11-208  --> done
+11-209  --> done
+11-210  --> done
+11-211  --> done
+11-212  --> done
+11-213  --> done
+11-214  --> done
+11-215  --> done
+11-216  --> done
+11-217  --> done
+11-218  --> done
+11-219  --> done
+11-220  --> done
+11-221  --> done
+11-222  --> done
+11-223  --> done
+11-224  --> done
+11-225  --> done
+11-226  --> done
+11-227  --> done
+11-228  --> done
+11-229  --> done
+11-230  --> done
+11-231  --> done
+11-232  --> done
+11-233  --> done
+11-234  --> done
+11-235  --> done
+11-236  --> done
+11-237  --> done
+11-238  --> done
+11-239  --> done
+
+
+df -k /applications/ojs/users /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+
+0[120112/145008]root@odin# df -k /applications/ojs/users /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     160428408 127656020 31168104    81%    /applications/ojs/users
+/dev/lofi/3          10316795 3028996 7184632    30%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+0[120112/145017]root@odin# 
+
+
+
+
+##### 11-2[456]?
+
+
+document=(11-2[456]?)
+
+{
+for dir in ${document}
+do
+	find ${dir} -local -mount -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls | perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"' >/tmp/rmext1.lst
+done
+}
+
+
+tail -1 /tmp/rmext1.lst
+0[120112/145637]root@odin# tail -1 /tmp/rmext1.lst
+19395599    8 -rwxrwxr-x   1 oracle   dba          7168 Oct 28 15:30 11-269/11-269993/11-269993SEI1.tar 75162624
+
+
+
+{
+for dir in ${document}
+do
+	find ${dir} -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'|tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"' | xargs -n 100 /bin/rm
+done
+}
+
+
+{
+for dir in ${document}
+do
+	arch="arch03"
+
+	type="EXTERNAL_CONTRACTOR"
+	echo -n ${dir} " --> "
+	tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+	ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+}
+11-240  --> -rw-r--r--   1 root     root     10527730 Jan 12 15:19 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-240.tgz
+11-241  --> -rw-r--r--   1 root     root     10388443 Jan 12 15:21 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-241.tgz
+11-242  --> -rw-r--r--   1 root     root     11177556 Jan 12 15:22 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-242.tgz
+11-243  --> -rw-r--r--   1 root     root     10195504 Jan 12 15:23 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-243.tgz
+11-244  --> -rw-r--r--   1 root     root     11212074 Jan 12 15:24 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-244.tgz
+11-245  --> -rw-r--r--   1 root     root     12591999 Jan 12 15:26 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-245.tgz
+11-246  --> -rw-r--r--   1 root     root     11668982 Jan 12 15:27 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-246.tgz
+11-247  --> -rw-r--r--   1 root     root     10563571 Jan 12 15:29 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-247.tgz
+11-248  --> -rw-r--r--   1 root     root     10826600 Jan 12 15:30 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-248.tgz
+11-249  --> -rw-r--r--   1 root     root     11657734 Jan 12 15:32 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-249.tgz
+11-250  --> -rw-r--r--   1 root     root     12167977 Jan 12 15:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-250.tgz
+11-251  --> -rw-r--r--   1 root     root     11556217 Jan 12 15:35 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-251.tgz
+11-252  --> -rw-r--r--   1 root     root     10833976 Jan 12 15:36 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-252.tgz
+11-253  --> -rw-r--r--   1 root     root     10496631 Jan 12 15:37 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-253.tgz
+11-254  --> -rw-r--r--   1 root     root     11830362 Jan 12 15:39 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-254.tgz
+11-255  --> -rw-r--r--   1 root     root     12372404 Jan 12 15:40 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-255.tgz
+11-256  --> -rw-r--r--   1 root     root     12121143 Jan 12 15:42 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-256.tgz
+11-257  --> -rw-r--r--   1 root     root     11914673 Jan 12 15:43 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-257.tgz
+11-258  --> -rw-r--r--   1 root     root     11434626 Jan 12 15:45 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-258.tgz
+11-259  --> -rw-r--r--   1 root     root     10689002 Jan 12 15:46 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-259.tgz
+11-260  --> -rw-r--r--   1 root     root     11350099 Jan 12 15:47 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-260.tgz
+11-261  --> -rw-r--r--   1 root     root     11341034 Jan 12 15:49 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-261.tgz
+11-262  --> -rw-r--r--   1 root     root     11438118 Jan 12 15:50 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-262.tgz
+11-263  --> -rw-r--r--   1 root     root     12272920 Jan 12 15:52 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-263.tgz
+11-264  --> -rw-r--r--   1 root     root     11511041 Jan 12 15:53 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-264.tgz
+11-265  --> -rw-r--r--   1 root     root     10133291 Jan 12 15:55 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-265.tgz
+11-266  --> -rw-r--r--   1 root     root     11066593 Jan 12 15:56 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-266.tgz
+11-267  --> -rw-r--r--   1 root     root     11488380 Jan 12 15:58 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-267.tgz
+11-268  --> -rw-r--r--   1 root     root     11131904 Jan 12 15:59 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-268.tgz
+11-269  --> -rw-r--r--   1 root     root     10000892 Jan 12 16:00 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03/11-269.tgz
+
+{
+for dir in ${document}
+do
+	arch="arch03"
+	type="EXTERNAL_CONTRACTOR"
+	echo -n $dir " --> "
+	/bin/rm -rf ${dir}
+	ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+	mkdir $dir
+	chown -h oracle:ojs ${dir}.tgz
+	chown oracle:ojs ${dir}
+	echo "done"
+done
+}
+11-240  --> done
+11-241  --> done
+11-242  --> done
+11-243  --> done
+11-244  --> done
+11-245  --> done
+11-246  --> done
+11-247  --> done
+11-248  --> done
+11-249  --> done
+11-250  --> done
+11-251  --> done
+11-252  --> done
+11-253  --> done
+11-254  --> done
+11-255  --> done
+11-256  --> done
+11-257  --> done
+11-258  --> done
+11-259  --> done
+11-260  --> done
+11-261  --> done
+11-262  --> done
+11-263  --> done
+11-264  --> done
+11-265  --> done
+11-266  --> done
+11-267  --> done
+11-268  --> done
+11-269  --> done
+
+
+0[120112/172004]root@odin# df -k /applications/ojs/users /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     160428408 121390632 37433492    77%    /applications/ojs/users
+/dev/lofi/3          10316795 3359404 6854224    33%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+
+
+
+###################################################################################################################################################
+##### cleanup of /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/RESUME_TEXT (11-180 --> 11-240)
+
+
+cd /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/RESUME_TEXT
+
+
+0[120112/172102]root@odin# df -k /applications/ojs/users /applications/ojs/archive/RESUME_TEXT/arch03 
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     160428408 121391596 37432528    77%    /applications/ojs/users
+/dev/lofi/7          3439482 1822409 1582679    54%    /applications/ojs/archive/RESUME_TEXT/arch03
+
+
+
+
+##### 11-180
+
+document=(11-18?)
+
+
+du -sk ${document} | perl -nae '$t+=$F[0]; print "$t $_"' 
+142192 142192   11-180
+297064 154872   11-181
+434672 137608   11-182
+580556 145884   11-183
+713024 132468   11-184
+846804 133780   11-185
+976004 129200   11-186
+1113236 137232  11-187
+1257364 144128  11-188
+1403716 146352  11-189
+
+
+
+
+
+{
+for dir in ${document} 
+do
+	arch="arch03"
+	type="RESUME_TEXT"
+	echo -n $dir " --> "
+	tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+	ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+}
+11-180  --> -rw-r--r--   1 root     root     5567800 Jan 12 17:41 /applications/ojs/archive/RESUME_TEXT/arch03/11-180.tgz
+11-181  --> -rw-r--r--   1 root     root     5056867 Jan 12 17:42 /applications/ojs/archive/RESUME_TEXT/arch03/11-181.tgz
+11-182  --> -rw-r--r--   1 root     root     4624248 Jan 12 17:42 /applications/ojs/archive/RESUME_TEXT/arch03/11-182.tgz
+11-183  --> -rw-r--r--   1 root     root     6065377 Jan 12 17:44 /applications/ojs/archive/RESUME_TEXT/arch03/11-183.tgz
+11-184  --> -rw-r--r--   1 root     root     4478634 Jan 12 17:45 /applications/ojs/archive/RESUME_TEXT/arch03/11-184.tgz
+11-185  --> -rw-r--r--   1 root     root     4671994 Jan 12 17:46 /applications/ojs/archive/RESUME_TEXT/arch03/11-185.tgz
+11-186  --> -rw-r--r--   1 root     root     4644907 Jan 12 17:48 /applications/ojs/archive/RESUME_TEXT/arch03/11-186.tgz
+11-187  --> -rw-r--r--   1 root     root     4587617 Jan 12 17:50 /applications/ojs/archive/RESUME_TEXT/arch03/11-187.tgz
+11-188  --> -rw-r--r--   1 root     root     4997158 Jan 12 17:51 /applications/ojs/archive/RESUME_TEXT/arch03/11-188.tgz
+11-189  --> -rw-r--r--   1 root     root     4771300 Jan 12 17:53 /applications/ojs/archive/RESUME_TEXT/arch03/11-189.tgz
+
+
+
+{
+for dir in ${document} 
+do
+	arch="arch03"
+	type="RESUME_TEXT"
+	echo -n $dir " --> "
+	/bin/rm -rf ${dir}
+	ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+	mkdir $dir
+	chown -h oracle:ojs ${dir}.tgz
+	chown oracle:ojs ${dir}
+	chmod 775 ${dir}
+	echo "done"
+done
+}
+11-180  --> done
+11-181  --> done
+11-182  --> done
+11-183  --> done
+11-184  --> done
+11-185  --> done
+11-186  --> done
+11-187  --> done
+11-188  --> done
+11-189  --> done
+
+
+df -k /applications/ojs/users /applications/ojs/archive/RESUME_TEXT/arch03 
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     160428408 120101680 38722444    76%    /applications/ojs/users
+/dev/lofi/7          3439482 1870849 1534239    55%    /applications/ojs/archive/RESUME_TEXT/arch03
+
+
+
+##### 11-190
+
+document=(11-19?)
+
+du -sk ${document} | perl -nae '$t+=$F[0]; print "$t $_"' 
+121852 121852   11-190
+265352 143500   11-191
+397228 131876   11-192
+522472 125244   11-193
+667372 144900   11-194
+803600 136228   11-195
+926260 122660   11-196
+1063224 136964  11-197
+1193212 129988  11-198
+1324452 131240  11-199
+
+
+
+
+{
+for dir in ${document} 
+do
+	arch="arch03"
+	type="RESUME_TEXT"
+	echo -n $dir " --> "
+	tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+	ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+}
+11-190  --> -rw-r--r--   1 root     root     4086818 Jan 12 18:20 /applications/ojs/archive/RESUME_TEXT/arch03/11-190.tgz
+11-191  --> -rw-r--r--   1 root     root     4506874 Jan 12 18:20 /applications/ojs/archive/RESUME_TEXT/arch03/11-191.tgz
+11-192  --> -rw-r--r--   1 root     root     4249701 Jan 12 18:21 /applications/ojs/archive/RESUME_TEXT/arch03/11-192.tgz
+11-193  --> -rw-r--r--   1 root     root     4271641 Jan 12 18:22 /applications/ojs/archive/RESUME_TEXT/arch03/11-193.tgz
+11-194  --> -rw-r--r--   1 root     root     4573793 Jan 12 18:23 /applications/ojs/archive/RESUME_TEXT/arch03/11-194.tgz
+11-195  --> -rw-r--r--   1 root     root     4368287 Jan 12 18:24 /applications/ojs/archive/RESUME_TEXT/arch03/11-195.tgz
+11-196  --> -rw-r--r--   1 root     root     3824297 Jan 12 18:25 /applications/ojs/archive/RESUME_TEXT/arch03/11-196.tgz
+11-197  --> -rw-r--r--   1 root     root     4507339 Jan 12 18:27 /applications/ojs/archive/RESUME_TEXT/arch03/11-197.tgz
+11-198  --> -rw-r--r--   1 root     root     4375966 Jan 12 18:28 /applications/ojs/archive/RESUME_TEXT/arch03/11-198.tgz
+11-199  --> -rw-r--r--   1 root     root     4394335 Jan 12 18:30 /applications/ojs/archive/RESUME_TEXT/arch03/11-199.tgz
+
+
+{
+for dir in ${document} 
+do
+	arch="arch03"
+	type="RESUME_TEXT"
+	echo -n $dir " --> "
+	/bin/rm -rf ${dir}
+	ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+	mkdir $dir
+	chown -h oracle:ojs ${dir}.tgz
+	chown oracle:ojs ${dir}
+	chmod 775 ${dir}
+	echo "done"
+done
+}
+---------------------------
+df -k /applications/ojs/users /applications/ojs/archive/RESUME_TEXT/arch03 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+document=(xxxx?)
+
+du -sk ${document} | perl -nae '$t+=$F[0]; print "$t $_"' 
+
+{
+for dir in ${document} 
+do
+	arch="arch03"
+	type="RESUME_TEXT"
+	echo -n $dir " --> "
+	tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+	ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+}
+
+{
+for dir in ${document} 
+do
+	arch="arch03"
+	type="RESUME_TEXT"
+	echo -n $dir " --> "
+	/bin/rm -rf ${dir}
+	ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+	mkdir $dir
+	chown -h oracle:ojs ${dir}.tgz
+	chown oracle:ojs ${dir}
+	chmod 775 ${dir}
+	echo "done"
+done
+}
+
+df -k /applications/ojs/users /applications/ojs/archive/RESUME_TEXT/arch03 
+
+
+
+###################################################################################################################################################
+##### cleanup of /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/ORIGINAL_TEXT (11-170 -> 11-180)
+
+
+[110914/135824]root@odin# df -k /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/ORIGINAL_TEXT /applications/ojs/archive/ORIGINAL_TEXT/arch01
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     113638368 77586728 34915260    69%    /applications/ojs/users
+/dev/lofi/10         10316795 3882162 6331466    39%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+
+
+
+
+document=(11-17?)
+
+du -sk $document | perl -nae '$t+=$F[0]; print "$t $_"'
+155644 155644   11-170
+302796 147152   11-171
+432188 129392   11-172
+581680 149492   11-173
+729076 147396   11-174
+846704 117628   11-175
+979452 132748   11-176
+1121236 141784  11-177
+1240496 119260  11-178
+1374264 133768  11-179
+
+{
+for dir in $document
+do
+	arch="arch01"
+	type="ORIGINAL_TEXT"
+	echo -n $dir " --> "
+	tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+	ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+}
+11-170  --> -rw-r--r--   1 root     root     5313705 Sep 14 14:04 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-170.tgz
+11-171  --> -rw-r--r--   1 root     root     5102673 Sep 14 14:05 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-171.tgz
+11-172  --> -rw-r--r--   1 root     root     4058050 Sep 14 14:06 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-172.tgz
+11-173  --> -rw-r--r--   1 root     root     5078068 Sep 14 14:06 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-173.tgz
+11-174  --> -rw-r--r--   1 root     root     4934839 Sep 14 14:07 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-174.tgz
+11-175  --> -rw-r--r--   1 root     root     4289065 Sep 14 14:07 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-175.tgz
+11-176  --> -rw-r--r--   1 root     root     4956162 Sep 14 14:08 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-176.tgz
+11-177  --> -rw-r--r--   1 root     root     4861520 Sep 14 14:09 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-177.tgz
+11-178  --> -rw-r--r--   1 root     root     4094181 Sep 14 14:09 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-178.tgz
+11-179  --> -rw-r--r--   1 root     root     5069382 Sep 14 14:10 /applications/ojs/archive/ORIGINAL_TEXT/arch01/11-179.tgz
+
+
+{
+for dir in $document
+do
+	arch="arch01"
+	type="ORIGINAL_TEXT"
+	echo -n $dir " --> "
+	/bin/rm -rf ${dir}
+	ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+	mkdir $dir
+	chown -h oracle:ojs ${dir}.tgz
+	chown oracle:ojs ${dir}
+	chmod 775 ${dir}
+	chmod g-s ${dir}
+	echo "done"
+done
+}
+11-170  --> done
+11-171  --> done
+11-172  --> done
+11-173  --> done
+11-174  --> done
+11-175  --> done
+11-176  --> done
+11-177  --> done
+11-178  --> done
+11-179  --> done
+
+
+###################################################################################################################################################
+##### cleanup of /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/PAPER (11-130 -> 11-180)
+
+
+[110915/085209]root@odin# cd /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/PAPER 
+
+[110915/090028]root@odin# df -k /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/PAPER /applications/ojs/archive/PAPER/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     113638368 76390496 36111492    68%    /applications/ojs/users
+/dev/vx/dsk/ojs/vpaper
+                     51609487 44880861 6212532    88%    /applications/ojs/archive/PAPER
+
+
+
+document=(11-1[34567]?)
+
+[110915/090245]root@odin# du -sk $document | perl -nae '$t+=$F[0]; print "$t $_"'
+67476 67476     11-130
+137708 70232    11-131
+168444 30736    11-132
+295308 126864   11-133
+371308 76000    11-134
+439536 68228    11-135
+488944 49408    11-136
+526900 37956    11-137
+565448 38548    11-138
+600384 34936    11-139
+680908 80524    11-140
+734348 53440    11-141
+794380 60032    11-142
+874496 80116    11-143
+913328 38832    11-144
+975596 62268    11-145
+1037400 61804   11-146
+1107380 69980   11-147
+1164160 56780   11-148
+1226756 62596   11-149
+1293552 66796   11-150
+1365916 72364   11-151
+1418516 52600   11-152
+1478316 59800   11-153
+1534908 56592   11-154
+1623008 88100   11-155
+1687348 64340   11-156
+1743120 55772   11-157
+1802952 59832   11-158
+1858612 55660   11-159
+1889812 31200   11-160
+1944980 55168   11-161
+2008420 63440   11-162
+2075068 66648   11-163
+2125500 50432   11-164
+2182416 56916   11-165
+2246072 63656   11-166
+2340844 94772   11-167
+2407524 66680   11-168
+2494736 87212   11-169
+2548708 53972   11-170
+2612384 63676   11-171
+2646688 34304   11-172
+2716024 69336   11-173
+2758480 42456   11-174
+2849788 91308   11-175
+2923880 74092   11-176
+3002868 78988   11-177
+3099596 96728   11-178
+3156840 57244   11-179
+
+{
+for dir in $document
+do
+	type="PAPER"
+	echo -n $dir " --> "
+	mv $dir /applications/ojs/archive/${type}
+	ln -s  /applications/ojs/archive/${type}/${dir} $dir
+	chown -h oracle:ojs ${dir}
+	ls -l $dir
+done
+}
+11-130  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:03 11-130 -> /applications/ojs/archive/PAPER/11-130
+11-131  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:03 11-131 -> /applications/ojs/archive/PAPER/11-131
+11-132  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:03 11-132 -> /applications/ojs/archive/PAPER/11-132
+11-133  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:03 11-133 -> /applications/ojs/archive/PAPER/11-133
+11-134  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:03 11-134 -> /applications/ojs/archive/PAPER/11-134
+11-135  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-135 -> /applications/ojs/archive/PAPER/11-135
+11-136  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-136 -> /applications/ojs/archive/PAPER/11-136
+11-137  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-137 -> /applications/ojs/archive/PAPER/11-137
+11-138  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-138 -> /applications/ojs/archive/PAPER/11-138
+11-139  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-139 -> /applications/ojs/archive/PAPER/11-139
+11-140  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-140 -> /applications/ojs/archive/PAPER/11-140
+11-141  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-141 -> /applications/ojs/archive/PAPER/11-141
+11-142  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-142 -> /applications/ojs/archive/PAPER/11-142
+11-143  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-143 -> /applications/ojs/archive/PAPER/11-143
+11-144  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-144 -> /applications/ojs/archive/PAPER/11-144
+11-145  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-145 -> /applications/ojs/archive/PAPER/11-145
+11-146  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-146 -> /applications/ojs/archive/PAPER/11-146
+11-147  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:04 11-147 -> /applications/ojs/archive/PAPER/11-147
+11-148  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-148 -> /applications/ojs/archive/PAPER/11-148
+11-149  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-149 -> /applications/ojs/archive/PAPER/11-149
+11-150  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-150 -> /applications/ojs/archive/PAPER/11-150
+11-151  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-151 -> /applications/ojs/archive/PAPER/11-151
+11-152  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-152 -> /applications/ojs/archive/PAPER/11-152
+11-153  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-153 -> /applications/ojs/archive/PAPER/11-153
+11-154  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-154 -> /applications/ojs/archive/PAPER/11-154
+11-155  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-155 -> /applications/ojs/archive/PAPER/11-155
+11-156  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-156 -> /applications/ojs/archive/PAPER/11-156
+11-157  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-157 -> /applications/ojs/archive/PAPER/11-157
+11-158  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:05 11-158 -> /applications/ojs/archive/PAPER/11-158
+11-159  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-159 -> /applications/ojs/archive/PAPER/11-159
+11-160  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-160 -> /applications/ojs/archive/PAPER/11-160
+11-161  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-161 -> /applications/ojs/archive/PAPER/11-161
+11-162  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-162 -> /applications/ojs/archive/PAPER/11-162
+11-163  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-163 -> /applications/ojs/archive/PAPER/11-163
+11-164  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-164 -> /applications/ojs/archive/PAPER/11-164
+11-165  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-165 -> /applications/ojs/archive/PAPER/11-165
+11-166  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-166 -> /applications/ojs/archive/PAPER/11-166
+11-167  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-167 -> /applications/ojs/archive/PAPER/11-167
+11-168  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-168 -> /applications/ojs/archive/PAPER/11-168
+11-169  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-169 -> /applications/ojs/archive/PAPER/11-169
+11-170  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:06 11-170 -> /applications/ojs/archive/PAPER/11-170
+11-171  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-171 -> /applications/ojs/archive/PAPER/11-171
+11-172  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-172 -> /applications/ojs/archive/PAPER/11-172
+11-173  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-173 -> /applications/ojs/archive/PAPER/11-173
+11-174  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-174 -> /applications/ojs/archive/PAPER/11-174
+11-175  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-175 -> /applications/ojs/archive/PAPER/11-175
+11-176  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-176 -> /applications/ojs/archive/PAPER/11-176
+11-177  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-177 -> /applications/ojs/archive/PAPER/11-177
+11-178  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-178 -> /applications/ojs/archive/PAPER/11-178
+11-179  --> lrwxrwxrwx   1 oracle   ojs           38 Sep 15 09:07 11-179 -> /applications/ojs/archive/PAPER/11-179
+
+
+[110915/091025]root@odin# df -k /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/PAPER /applications/ojs/archive/PAPER/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     113638368 73247816 39254172    66%    /applications/ojs/users
+/dev/vx/dsk/ojs/vpaper
+                     51609487 48019902 3073491    94%    /applications/ojs/archive/PAPER
+
+
+
+###################################################################################################################################################
+##### cleanup of /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXPORT (2011-040 -> 2011-059)
+
+[110915/091033]root@odin# cd /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXPORT
+[110915/092220]root@odin# df -k /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXPORT
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vusers
+                     113638368 73261360 39240628    66%    /applications/ojs/users
+
+##### pas necessaire cette fois-ci
+#document=(11-15?)
+#
+#{
+#for dir in $document
+#do
+#	echo -n $dir ":"
+#	tar cf - $dir |gzip -c > ${dir}.tgz
+#	ls -l ${dir}.tgz
+#done
+#}
+
+# df -k /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXPORT
+
+
+###################################################################################################################################################
+##### df final
+
+[110915/092424]root@odin# df -k | egrep 'ojs/users|archive' | grep -v home
+/dev/vx/dsk/ojs/vusers 113638368 73268848 39233140    66%    /applications/ojs/users
+/dev/vx/dsk/ojs/voriginal 11529300 10502171  911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vexternal 52405993 42014774 9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/vpaper 51609487 48019902 3073491    94%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume 18866138 18377535  299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/lofi/1          10316795 10100744  112884    99%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch01
+/dev/lofi/2          10316795 9998442  215186    98%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+/dev/lofi/3          10316795 2582580 7631048    26%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+/dev/lofi/4          10316795   10258 10203370     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch04
+/dev/lofi/5          3439482 3370406   34682    99%    /applications/ojs/archive/RESUME_TEXT/arch01
+/dev/lofi/6          3439482 3323794   81294    98%    /applications/ojs/archive/RESUME_TEXT/arch02
+/dev/lofi/7          3439482 1822409 1582679    54%    /applications/ojs/archive/RESUME_TEXT/arch03
+/dev/lofi/8          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch04
+/dev/lofi/9          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch05
+/dev/lofi/10         10316795 3928914 6284714    39%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+

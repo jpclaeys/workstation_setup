@@ -1,0 +1,47 @@
+utilisateur=trassch
+
+foreach uid in $utilisateur
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: SolarisAttrKeyValue
+SolarisAttrKeyValue: type=normal;roles=wood,opsys_ux
+EOT
+done
+
+
+utilisateur=raguevi
+
+foreach uid in $utilisateur
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: SolarisAttrKeyValue
+SolarisAttrKeyValue: type=normal;roles=wood,opsys_ux
+EOT
+done
+
+utilisateur="betorma"
+
+foreach uid in $utilisateur
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: objectClass
+objectClass: solarisuserattr
+EOT
+done
+
+foreach uid in $utilisateur
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: SolarisAttrKeyValue
+SolarisAttrKeyValue: type=normal;roles=opsys_ux
+EOT
+done
+

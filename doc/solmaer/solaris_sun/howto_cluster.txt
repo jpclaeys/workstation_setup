@@ -1,0 +1,22 @@
+################################################################################################
+# quorum
+################################################################################################
+
+
+##### verifier la presence de reservation scsi-2
+/usr/cluster/lib/sc/pgre -c pgre_inkeys -d /dev/did/rdsk/d15s2
+
+##### enlever les reservation scsi-2
+/usr/cluster/lib/sc/pgre -c pgre_scrub -d /dev/did/rdsk/d15s2
+
+
+##### verifier la presence de reservation scsi-3
+/usr/cluster/lib/sc/scsi -c inkeys -d /dev/did/rdsk/d15s2
+
+##### enlever les reservation scsi-3
+/usr/cluster/lib/sc/scsi -c scrub -d /dev/did/rdsk/d1452
+
+
+################################################################################################
+# 
+################################################################################################

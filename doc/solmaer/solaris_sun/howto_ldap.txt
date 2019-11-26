@@ -1,0 +1,983 @@
+##### verify an user in ad
+user=betorma
+ldapsearch -h ad -p 389 -r -D 'cn=usr-ldap-auth,ou=users,ou=service-system,ou=_service accounts,ou=publications,dc=publications,dc=win'  -b "OU=Publications Units,OU=Publications,DC=publications,DC=win" -w Ld@p@uth3d  "sAMAccountName=$user" sAMAccountName sn cn givenName|perl -n00e 'm{^CN=.*?\n(cn=.*?\n)\s*(sn=.*?\n)\s*(givenName=.*?)\s*sAMAccountName=(.*?)\s+}s  and do {print qq{dn: uid=@{[lc($4)]},ou=People,dc=opoce,dc=cec,dc=eu,dc=int\nuid=@{[lc($4)]}\n${3}\nobjectClass: top\nobjectClass: person\nobjectClass: inetorgperson\n$1$2userPassword: {CRYPT}@{[crypt(lc($4),$4)]}\n\n}}'|perl -pe 's/(=)|(: )/: /'
+
+##### verify presence of user in ldap
+user=betorma
+ldapsearch -h camel -b 'ou=People,dc=opoce,dc=cec,dc=eu,dc=int' uid=$user dn
+
+##### add an user on camel
+user=USER
+ldapsearch -h ad -p 389 -r -D 'cn=usr-ldap-auth,ou=users,ou=service-system,ou=_service accounts,ou=publications,dc=publications,dc=win'  -b "OU=Publications Units,OU=Publications,DC=publications,DC=win" -w Ld@p@uth3d  "sAMAccountName=$user" sAMAccountName sn cn givenName|perl -n00e 'm{^CN=.*?\n(cn=.*?\n)\s*(sn=.*?\n)\s*(givenName=.*?)\s*sAMAccountName=(.*?)\s+}s  and do {print qq{dn: uid=@{[lc($4)]},ou=People,dc=opoce,dc=cec,dc=eu,dc=int\nuid=@{[lc($4)]}\n${3}\nobjectClass: top\nobjectClass: person\nobjectClass: inetorgperson\n$1$2userPassword: {CRYPT}@{[crypt(lc($4),$4)]}\n\n}}'|perl -pe 's/(=)|(: )/: /' | ldapadd -D "cn=Directory Manager" -w vademecum -h camel -p 389
+
+##### verfify in which group a user is
+user=betorma
+ldapsearch -h loc -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' 'uniqueMember= uid='$user',ou=People,dc=opoce,dc=cec,dc=eu,dc=int' dn
+
+##### create a new application group
+group=GROUP
+description=""
+ldapadd -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+description: $description
+objectClass: top
+objectClass: groupofuniquenames
+cn: $group
+EOT
+
+##### create a new netgroup
+group=admin
+description="admin group"
+ldapadd -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: cn=${group},ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int
+description: $description
+objectClass: top
+objectClass: groupofuniquenames
+cn: $group
+EOT
+
+
+##### add an user to a specific group
+group=GROUP
+user=USER
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: uniqueMember
+uniqueMember: uid=$user,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+
+
+group="root-int"
+user=meyeran
+ldapmodify -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: memberUid
+memberUid: $user
+EOT
+
+
+
+##### which user is in a group
+group=procat
+ldapsearch -h camel -b "ou=group,dc=opoce,dc=cec,dc=eu,dc=int" cn=${group}
+
+##### change uid
+user=boussph
+new_uid=30037
+ldapmodify -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: uid=${user},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: uidNumber
+uidNumber: $new_uid
+EOT
+
+##### change shell
+user=betorma
+new_shell='/bin/zsh'
+ldapmodify -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: uid=${user},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: loginShell
+loginShell: $new_shell
+EOT
+
+##### delete a user from a sepcified group
+user=USER
+group=GROUP
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: uniqueMember
+uniqueMember: uid=$user,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+
+##### delete the user entry from ldap
+user=USER
+ldapdelete -v -D "cn=Directory Manager" -w vademecum -h camel -p 389 "uid=$user,ou=People,dc=opoce,dc=cec,dc=eu,dc=int"
+
+##### add host in ldap capellen
+hostname=brother
+ip=158.167.226.181
+ldapadd -D "cn=Directory Manager" -w vademecum -h phoenix -p 389 <<EOT
+dn: cn=${hostname},ou=Hosts,dc=opoce,dc=sun
+objectClass: top
+objectClass: ipHost
+objectClass: device
+ipHostNumber: ${ip}
+cn: ${hostname}
+EOT
+
+##### add host in ldap mercier
+hostname=procyon
+ip=158.167.99.29
+ldapadd -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=${hostname},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+objectClass: top
+objectClass: ipHost
+objectClass: device
+ipHostNumber: ${ip}
+cn: ${hostname}
+EOT
+
+##### delete a host in ldap mercier
+hostname=flash
+ldapdelete -v -D "cn=Directory Manager" -w vademecum -h loc -p 389 "cn=${hostname},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int"
+
+##### verify presence of host in ldap at capellen
+ldapsearch -h phoenix -b 'ou=Hosts,dc=opoce,dc=sun' cn=brother
+
+##### verify presence of host in ldap at mercier
+host=otvmwsint01
+ldapsearch -h loc -b 'ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int' cn=$host
+
+##### modifier l'ip d'un hosts
+host=odile
+new_ip=10.199.99.172
+ldapmodify -D "cn=Directory Manager" -w vademecum -h alexandria -p 389 <<EOT
+dn: cn=${host},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: ipHostNumber
+ipHostNumber: ${new_ip}
+EOT
+
+##### creation du role ldap
+
+export role=oracle
+export uid=55
+export gid=55
+export homeDirectory=/home/oracle
+export pass='N1adVIyiQ/ufM:12577'
+
+{
+ldapadd -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: uid=${role},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+uid: ${role}
+uidNumber: ${uid}
+gidNumber: ${gid}
+gecos: ${role}
+cn: ${role}
+homeDirectory: ${homeDirectory}
+loginShell: /bin/ksh
+objectClass: account
+objectClass: posixaccount
+objectClass: shadowaccount
+objectClass: top
+objectClass: solarisuserattr
+shadowMax: -1
+SolarisAttrKeyValue: type=role;profiles=s=OraAgent Management,All
+userPassword: ${pass}
+EOT
+}
+
+##### ajouter un role
+user=araujno
+role=opsys_ux
+
+ldapmodify -D "CN=directory manager, DC=opoce,DC=cec,DC=eu,DC=int" -w 0pocE123! -h ldap1-pk -p 389 <<EOT
+dn: uid=$user,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: SolarisAttrKeyValue
+SolarisAttrKeyValue: type=normal;roles=$role
+objectClass: solarisuserattr
+EOT
+
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h alexandria -p 389 <<EOT
+dn: uid=$user,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: SolarisAttrKeyValue
+SolarisAttrKeyValue: type=normal;roles=opsys_ux
+objectClass: solarisuserattr
+EOT
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: uid=$user,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: SolarisAttrKeyValue
+SolarisAttrKeyValue: type=normal;roles=opsys_ux
+EOT
+
+ldapadd -D "cn=Directory Manager" -w vademecum -h magneto -p 389 <<EOT
+dn: uid=${user},ou=People,dc=opoce,dc=sun
+changetype: modify
+add: SolarisAttrKeyValue
+SolarisAttrKeyValue: type=normal;roles=opsys_ux
+objectClass: solarisuserattr
+EOT
+
+
+##### changer le password d'un user
+export user=erradas
+export password=erradas
+ldapmodify -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: uid=${user},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: userPassword
+userPassword: {CRYPT}`perl -e  'print crypt('${password}', '${password}')' `
+EOT
+
+
+##### list auto_direct mount 
+ldapsearch -h loc -T -b automountMapName=auto_direct,dc=opoce,dc=cec,dc=eu,dc=int automountkey=/opt/perl5
+
+##### delete auto_direct mount
+ldapdelete -v -D "cn=Directory Manager" -w vademecum -h loc -p 389 "automountKey=/opt/perl5,automountMapName=auto_direct,dc=opoce,dc=cec,dc=eu,dc=int"
+
+
+##### ajout d'un host redhat a un netgroup
+group=admin
+hostname=oppc456
+ldapmodify -h loc -D "cn=Directory Manager" -w vademecum -p 389 <<EOT
+dn: cn=${group},ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+add: nisNetgroupTriple
+nisNetgroupTriple: (${hostname},,opoce.cec.eu.int)
+EOT
+
+##### ajout d'un host solaris a un netgroup
+group=admin
+hostname=oppc456
+ldapmodify -h loc -D "cn=Directory Manager" -w vademecum -p 389 <<EOT
+dn: cn=${group},ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+add: nisNetgroupTriple
+nisNetgroupTriple: (${hostname}.opoce.cec.eu.int,,)
+EOT
+
+
+##### suppression d'un host dans un netgroup
+group=admin
+hostname=opsun12
+ldapmodify -h loc -D "cn=Directory Manager" -w vademecum -p 389 <<EOT
+dn: cn=${group},ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+delete: nisNetgroupTriple
+nisNetgroupTriple: (${hostname},,opoce.cec.eu.int)
+EOT
+
+
+##### voir les membres du netgroup admin
+ldapsearch -h loc -b 'ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int' cn=admin
+
+##### voir les membres de l'alias mailgroup lsateam
+ldapsearch -h loc -b 'ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int' cn=lsateam
+
+##### ajouter un user a l'alias mailgroup lsateam
+{
+aliases=lsateam
+user=reumose
+ldapmodify -h loc -D "cn=Directory Manager" -w vademecum -p 389 <<EOT
+dn: cn=lsateam,ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+add: mgrpRFC822MailMember
+mgrpRFC822MailMember: $user
+EOT
+
+ldapmodify -h loc -D "cn=Directory Manager" -w vademecum -p 389 <<EOT
+dn: cn=lsateam,ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+add: rfc822mailMember
+rfc822mailMember: $user
+EOT
+}
+
+
+##### changer l'email dans les alias
+user=loeulch
+mailaddress='Christophe.DE-LOEUL@ext.publications.europa.eu'
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h magneto -p 389 <<EOT
+dn: cn=${user},ou=aliases,dc=opoce,dc=sun
+changetype: modify
+replace: mgrpRFC822MailMember
+mgrpRFC822MailMember: ${mailaddress}
+EOT
+
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h magneto -p 389 <<EOT
+dn: cn=${user},ou=aliases,dc=opoce,dc=sun
+changetype: modify
+replace: mgrpRFC822MailMember
+rfc822mailMember: ${mailaddress}
+EOT
+
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: uid=${user},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: mgrpRFC822MailMember
+mgrpRFC822MailMember: ${mailaddress}
+EOT
+
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: uid=${user},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: mgrpRFC822MailMember
+rfc822mailMember: ${mailaddress}
+EOT
+
+#################################################################################################################################################################
+####### (re)creation du netgroup admin
+
+
+group=admin
+description="admin group"
+
+ldapadd -D "cn=Directory Manager" -w vademecum -h loc -p 389 <<EOT
+dn: cn=${group},ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int
+description: $description
+objectClass: top
+objectClass: groupofuniquenames
+cn: $group
+EOT
+
+ldapmodify -h loc -D "cn=Directory Manager" -w vademecum -p 389 <<EOT
+dn: cn=${group},ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+add: objectClass
+objectClass: nisnetgroup
+EOT
+
+ldapmodify -h loc -D "cn=Directory Manager" -w vademecum -p 389 <<EOT
+dn: cn=${group},ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+delete: objectClass
+objectClass: groupofuniquenames
+EOT
+
+
+
+for hostname in xantia spider imhotep kenobi checkov vespa talisker lagavulin mercons01 mercons02 eufocons01 eufocons02 iceman phoenix beast leech colossus cyclops professor storm rogue shadowcat jubilee angel big brother magneto oppc540 opsun01 opsun04 opsun05 opsun06 opsun07 opsun10 opsun12 OPPC653 OPPC672 betelgeuse orwell oppc400 daria pioneer opsun24 oppc oppc162 procyon opsun14 sputnik opsrv011 oppc263 opsrv181 OPEUFSTSS01
+do
+ldapmodify -h loc -D "cn=Directory Manager" -w vademecum -p 389 <<EOT
+dn: cn=${group},ou=Netgroup,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+add: nisNetgroupTriple
+nisNetgroupTriple: (${hostname}.opoce.cec.eu.int,,)
+EOT
+done
+
+
+
+#################################################################################################################################################################
+####### nouvel utilisateur unix
+
+
+
+##### remplacers les valeurs ci dessous dans tout le fichier
+<firt_name>=Sebastien
+<last_name>=Reumont
+<login>=reumose
+<uid>=3218
+
+export login=<login>
+
+##### verifier dans l'AD qu'il n'existe pas deja un utilisateur utilisant le meme login
+ldapsearch -h ad -p 389 -r -D 'cn=usr-ldap-auth,ou=users,ou=service-system,ou=_service accounts,ou=publications,dc=publications,dc=win'  -b "OU=Publications Units,OU=Publications,DC=publications,DC=win" -w Ld@p@uth3d  "sAMAccountName=${login}"
+
+##### verifier dans le ldap qu'il n'existe pas deja un utilisateur utilisant le meme login
+ldaplist -l passwd ${login}
+
+
+######################################################################################################################
+##### creation de l'utilisateur dans le ldap de l'opoce
+
+##### variables
+export ldap_server=loc
+export firt_name=<firt_name>
+export last_name=<last_name>
+export login=<login>
+export uid=<uid>
+export gecos="${firt_name} ${last_name}"
+export internal=			# yes or no
+
+if [[ $internal == yes ]]; then
+	export mailaddress="${firt_name}.${last_name}@publications.europa.eu"
+else
+	export mailaddress="${firt_name}.${last_name}@ext.publications.europa.eu"
+fi
+
+
+##### creation du compte utilisateur
+ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+uid: ${login}
+loginShell: /usr/bin/pfksh
+uidNumber: ${uid}
+gidNumber: 10
+homeDirectory: /home/${login}
+shadowLastChange: 11212
+shadowMax: -1
+objectClass: account
+objectClass: posixaccount
+objectClass: shadowaccount
+objectClass: top
+gecos: ${gecos}
+cn: ${gecos}
+userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
+EOT
+
+##### configuration de l'auto_home
+ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: automountKey=${login},automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+automountInformation: -soft opsrv020:/applications/nfs-srv/export/&
+automountKey: ${login}
+objectClass: automount
+objectClass: top
+EOT
+
+##### configuration de l'alias mail
+ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: cn=${login},ou=aliases,dc=opoce,dc=cec,dc=eu,dc=int
+objectClass: mailgroup
+objectClass: nismailalias
+objectClass: top
+mail:  ${login}
+cn: ${login}
+mgrpRFC822MailMember: ${mailaddress}
+rfc822mailMember: ${mailaddress}
+EOT
+
+##### creation du homedir
+##### sur opsrv020
+
+export login=<login>
+
+zfs create -o mountpoint=/applications/nfs-srv/export/${login}  homedir/applications/nfs-srv/export/${login}
+zfs set sharenfs="rw=.opoce.cec.eu.int" homedir/applications/nfs-srv/export/${login}
+zfs set quota=6G homedir/applications/nfs-srv/export/${login}
+chown -R ${login}:staff /applications/nfs-srv/export/${login}  
+
+##### ajouter ce nouveau file system au sevaset du client de backup opsrv020
+
+
+######################################################################################################################
+##### creation de l'utilisateur dans le ldap de howald
+
+##### variables
+export ldap_server=magneto
+export firt_name=<firt_name>
+export last_name=<last_name>
+export login=<login>
+export uid=<uid>
+export gecos="${firt_name} ${last_name}"
+export mailaddress="${firt_name}.${last_name}@ext.publications.europa.eu"
+
+export firt_name=Sebastien
+export last_name=Reumont
+export login=reumose
+export uid=3218
+export gecos="${firt_name} ${last_name}"
+export mailaddress="${firt_name}.${last_name}@ext.publications.europa.eu"
+
+##### creation du compte utilisateur
+ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: uid=${login},ou=People,dc=opoce,dc=sun
+uid: ${login}
+loginShell: /usr/bin/ksh
+uidNumber: ${uid}
+gidNumber: 10
+homeDirectory: /home/${login}
+shadowLastChange: 11212
+shadowMax: -1
+objectClass: account
+objectClass: posixaccount
+objectClass: shadowaccount
+objectClass: top
+gecos: ${gecos}
+cn: ${gecos}
+userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
+EOT
+
+##### configuration de l'auto_home
+ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: automountKey=${login},automountMapName=auto_home,dc=opoce,dc=sun
+automountInformation: -soft homesrv:/export/users/&
+automountKey: ${login}
+objectClass: automount
+objectClass: top
+EOT
+
+
+##### configuration de l'alias mail
+ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: cn= ${login},ou=aliases,dc=opoce,dc=sun
+objectClass: mailgroup
+objectClass: nismailalias
+objectClass: top
+mail:  ${login}
+cn: ${login}
+mgrpRFC822MailMember: ${mailaddress}
+rfc822mailMember: ${mailaddress}
+EOT
+
+
+##### creation du homedir
+##### sur homesrv
+
+export login=<login>
+
+zfs create -o mountpoint=/export/users/${login} rpool/export/users/${login}
+zfs set sharenfs="rw=.opoce.sun" rpool/export/users/${login}
+chown -R ${login}:staff /export/users/${login}
+
+
+
+
+
+
+
+
+
+
+
+
+
+#################################################################################################################################################################
+####### nouvel utilisateur unix (ancienne version)
+
+
+
+###### referencer l'utilisateur dans uid-gid.xls
+
+% export first_name=Olivier
+% export last_name=Narat
+% export user=naratol
+% export uid=30045
+% export ldap_server=loc
+
+% export gecos="${first_name} ${last_name}"
+% export mailaddress="${user}@ext.publications.europa.eu"
+
+
+##### verification de la presence de l'utilsateur dans Active Directory
+
+% ldapsearch -h ad -p 389 -r -D 'cn=usr-ldap-auth,ou=users,ou=service-system,ou=_service accounts,ou=publications,dc=publications,dc=win'  -b "OU=Publications Units,OU=Publications,DC=publications,DC=win" -w Ld@p@uth3d  "sAMAccountName=${user}"
+
+
+CN=NARAT Olivier (OP-EXT),OU=Users,OU=R4 Infrastructures,OU=Publications Units,OU=Publications,DC=publications,DC=win
+objectClass=top
+objectClass=person
+objectClass=organizationalPerson
+objectClass=user
+cn=NARAT Olivier (OP-EXT)
+sn=NARAT
+description=_1/7/2010
+physicalDeliveryOfficeName=MER 04/469
+telephoneNumber=42714
+givenName=Olivier
+distinguishedName=CN=NARAT Olivier (OP-EXT),OU=Users,OU=R4 Infrastructures,OU=Publications Units,OU=Publications,DC=pub      ons,DC=win
+instanceType=4
+whenCreated=20100701133548.0Z
+whenChanged=20100705073946.0Z
+displayName=NARAT Olivier (OP-EXT)
+uSNCreated=79713333
+memberOf=CN=R4-TWK-ExtUsers,OU=TWK,OU=Groups,OU=R4 Infrastructures,OU=Publications Units,OU=Publications,DC=publication      in
+memberOf=CN=OP PST DISABLE,OU=Email Archiving,OU=Microsoft Exchange,DC=publications,DC=win
+memberOf=CN=DL OPOCE DEFAULT EMAIL ARCHIVE,OU=Email Archiving,OU=Microsoft Exchange,DC=publications,DC=win
+memberOf=CN=DL OPOCE INFRA INT TEST,OU=Distribution Groups,OU=Microsoft Exchange,DC=publications,DC=win
+memberOf=CN=R4-R5-Common-Deliveries-users,OU=Groups,OU=R4 Infrastructures,OU=Publications Units,OU=Publications,DC=publ      ns,DC=win
+memberOf=CN=OPOCE-ALL,OU=Distribution Groups,OU=Microsoft Exchange,DC=publications,DC=win
+memberOf=CN=R4-AllUsers,OU=Groups,OU=R4 Infrastructures,OU=Publications Units,OU=Publications,DC=publications,DC=win
+memberOf=CN=R4-Exploitation-OS-X,OU=Groups,OU=R4 Infrastructures,OU=Publications Units,OU=Publications,DC=publications,      
+memberOf=CN=Local-OpSUN-Admins,OU=Groups,OU=_Delegated Administrators,OU=Publications,DC=publications,DC=win
+uSNChanged=80087973
+department=OPOCE.R4
+homeMTA=CN=Microsoft MTA,CN=OPMERSEM701,CN=Servers,CN=Exchange Administrative Group (FYDIBOHF23SPDLT),CN=Administrative      s,CN=cec,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=publications,DC=win
+proxyAddresses=SMTP:Olivier.NARAT@ext.publications.europa.eu
+proxyAddresses=MRS:naratol@opoce.cec.mrs
+proxyAddresses=smtp:Olivier.NARAT@opoce.cec.eu.int
+proxyAddresses=X400:C=BE;A=RTT;P=CEC;O=OPOCE;S=NARAT;G=Olivier;
+extensionData=NOT ASCII
+extensionData=NOT ASCII
+homeMDB=CN=SG01MB05,CN=SG01,CN=InformationStore,CN=OPMERSEM701,CN=Servers,CN=Exchange Administrative Group (FYDIBOHF23S      CN=Administrative Groups,CN=cec,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=publications,DC=win
+mDBUseDefaults=TRUE
+mailNickname=naratol
+name=NARAT Olivier (OP-EXT)
+objectGUID=NOT ASCII
+userAccountControl=544
+badPwdCount=0
+codePage=0
+countryCode=0
+homeDirectory=\\OPMERSFS401\homes_N$\NARATOL
+homeDrive=H:
+badPasswordTime=129233914829686288
+lastLogoff=0
+lastLogon=129233914903434872
+pwdLastSet=129227891781562032
+primaryGroupID=513
+profilePath=\\OPMERSFS401\profiles_N$\NARATOL
+objectSid=NOT ASCII
+accountExpires=9223372036854775807
+logonCount=4
+sAMAccountName=naratol
+sAMAccountType=805306368
+showInAddressBook=CN=Default Global Address List,CN=All Global Address Lists,CN=Address Lists Container,CN=cec,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=publications,DC=win
+showInAddressBook=CN=All Users,CN=All Address Lists,CN=Address Lists Container,CN=cec,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=publications,DC=win
+legacyExchangeDN=/o=cec/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Recipients/cn=naratol
+userPrincipalName=naratol@publications.win
+objectCategory=CN=Person,CN=Schema,CN=Configuration,DC=publications,DC=win
+lastLogonTimestamp=129227891782030782
+textEncodedORAddress=C=BE;A=RTT;P=CEC;O=OPOCE;S=NARAT;G=Olivier;
+mail=olivier.narat@ext.publications.europa.eu
+msExchHomeServerName=/o=cec/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Configuration/cn=Servers/cn=OPMERSEM701
+msExchALObjectVersion=64
+msExchMailboxSecurityDescriptor=NOT ASCII
+msExchUserAccountControl=0
+msExchMailboxGuid=NOT ASCII
+msExchPoliciesExcluded={26491CFC-9E50-4857-861B-0CB8DF22B5D7}
+msExchRecipientDisplayType=1073741824
+msExchRecipientTypeDetails=1
+msExchVersion=4535486012416
+
+
+
+##### creation de l'utilisateur dans le ldap
+
+% ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: uid=${user},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+uid: ${user}
+loginShell: /bin/ksh
+uidNumber: ${uid}
+gidNumber: 10
+homeDirectory: /home/${user}
+objectClass: account
+objectClass: posixaccount
+objectClass: shadowaccount
+objectClass: top
+gecos: ${gecos}
+cn: ${gecos}
+userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
+EOT
+
+
+##### ajout de son auto_home
+
+% ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: automountKey=${user},automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+automountInformation: -soft opsrv020:/applications/nfs-srv/export/&
+automountKey: ${user}
+objectClass: automount
+objectClass: top
+EOT
+
+adding new entry automountKey=naratol,automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+
+
+##### ajout de son alias mail
+
+% ldapadd -D "cn=Directory Manager" -w vademecum -h ${ldap_server} -p 389 <<EOT
+dn: cn= ${user},ou=aliases,dc=opoce,dc=cec,dc=eu,dc=int
+objectClass: mailgroup
+objectClass: nismailalias
+objectClass: top
+mail:  ${user}
+cn: ${user}
+mgrpRFC822MailMember: ${mailaddress}
+rfc822mailMember: ${mailaddress}
+EOT
+
+
+##### creation de son homedir
+##### se connecter au serveur des homedirs
+
+export user=naratol
+mkdir -p /applications/nfs-srv/export/${user}
+chown ${user}:staff /applications/nfs-srv/export/${user}
+ls -ld /applications/nfs-srv/export/${user}
+
+
+##### changement de son mot de passe (optionnel)
+
+% export password=popo
+% ldapmodify -h ${ldap_server} -D "cn=Directory Manager" -w vademecum -p 389 <<EOT 
+dn: uid=UIDTOCREATE,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+Changetype: Modify
+replace: userPassword
+userPassword: ${password}
+EOT
+
+#################################################################################################################################################################
+####### change client to openldap server
+####### TEST !!!!!!!!!!!
+
+
+
+##### proxy agent ldap credentials
+
+proxyagent2
+0pocE123!
+
+
+##### unconfigure actual settings
+
+ldapclient uninit
+
+
+
+
+
+
+##### configure the client with new server
+
+ldapclient manual  \
+-a defaultSearchBase=dc=opoce,dc=cec,dc=eu,dc=int \
+-a domainName=opoce.cec.eu.int \
+-a proxyDN=cn=proxyagent2,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int \
+-a proxyPassword=0pocE123! \
+158.167.99.9
+
+
+
+
+
+NS_LDAP_AUTH= simple
+NS_LDAP_SEARCH_REF= FALSE
+NS_LDAP_SEARCH_SCOPE= one
+NS_LDAP_SEARCH_TIME= 30
+NS_LDAP_CACHETTL= 43200
+NS_LDAP_PROFILE= default
+
+
+
+
+{
+ldapclient manual  \
+-a defaultSearchBase=dc=opoce,dc=cec,dc=eu,dc=int \
+-a domainName=opoce.cec.eu.int \
+-a credentialLevel=proxy \
+-a proxyDN=cn=proxyagent2,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int \
+-a proxyPassword=0pocE123! \
+-a authenticationMethod=simple \
+158.167.96.247
+cp /etc/nsswitch.conf.bak /etc/nsswitch.conf
+}
+
+
+
+-a certificatePath=/var/ldap/ldap-tk.opoce.cec.eu.int.pem \
+-a bindTimeLimit=10 \
+-a serviceAuthenticationMethod=pam_ldap:simple \
+
+0[140730/095313]root@dcm-dz# ldapclient list
+NS_LDAP_FILE_VERSION= 2.0
+NS_LDAP_BINDDN= cn=proxyagent2,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int
+NS_LDAP_BINDPASSWD= {NS1}e2242335817c6016f4
+NS_LDAP_SERVERS= 158.167.96.247
+NS_LDAP_SEARCH_BASEDN= dc=opoce,dc=cec,dc=eu,dc=int
+NS_LDAP_AUTH= simple
+NS_LDAP_SEARCH_REF= FALSE
+NS_LDAP_SEARCH_SCOPE= one
+NS_LDAP_SEARCH_TIME= 30
+NS_LDAP_CACHETTL= 0
+NS_LDAP_PROFILE= drp
+NS_LDAP_CREDENTIAL_LEVEL= proxy
+NS_LDAP_BIND_TIME= 10
+NS_LDAP_HOST_CERTPATH= /var/ldap
+
+####################################################################################
+##### encrytion ssl
+
+
+##### create certificate database
+
+certutil -N -d /var/ldap
+
+
+##### add certificate to the database
+
+certutil -A -n commission-ca -t CT -i /var/ldap/commission.pem -d /var/ldap/
+
+
+##### check
+
+0[140728/143951]root@jack# certutil -L -d /var/ldap 
+
+Certificate Nickname                                         Trust Attributes
+                                                             SSL,S/MIME,JAR/XPI
+
+commission-ca                                                CT,, 
+
+
+
+cp /home/betorma/tmp/commission.pem /var/ldap
+
+
+##### configure client
+
+{
+ldapclient manual  \
+-a defaultSearchBase=dc=opoce,dc=cec,dc=eu,dc=int \
+-a domainName=opoce.cec.eu.int \
+-a credentialLevel=proxy \
+-a proxyDN=cn=proxyagent2,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int \
+-a proxyPassword=0pocE123! \
+-a authenticationMethod=simple \
+158.167.96.247
+cp /etc/nsswitch.conf.bak /etc/nsswitch.conf
+}
+
+
+
+{
+ldapclient manual  \
+-a defaultSearchBase=dc=opoce,dc=cec,dc=eu,dc=int \
+-a domainName=opoce.cec.eu.int \
+-a credentialLevel=proxy \
+-a proxyDN=cn=proxyagent2,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int \
+-a proxyPassword=0pocE123! \
+-a authenticationMethod=tls:simple \
+-a serviceAuthenticationMethod=pam_ldap:tls:simple \
+-a serviceAuthenticationMethod=keyserv:tls:simple \
+-a serviceAuthenticationMethod=passwd-cmd:tls:simple \
+-a certificatePath=/var/ldap \
+158.167.96.247:636
+cp /etc/nsswitch.conf.bak /etc/nsswitch.conf
+}
+
+
+
+authenticationMethod
+serviceAuthenticationMethod
+
+
+
+
+
+
+
+Jul 29 08:45:46 jack sendmail[9243]: [ID 801593 mail.info] s6T6cxpa009176: to=betorma, ctladdr=betorma (30203/10), delay=00:06:47, xdelay=00:00:00, mailer=relay, pri=120138, relay=[127.0.0.1] [127.0.0.1], dsn=4.0.0, stat=Deferred: Connection refused by [127.0.0.1]
+
+Jul 29 08:45:46 jack sendmail[9243]: [ID 801593 mail.info] s6T6dQCs009182: to=mathieu.betori@ext.publications.europa.eu, ctladdr=betorma (30203/10), delay=00:06:20, xdelay=00:00:00, mailer=relay, pri=120172, relay=[127.0.0.1], dsn=4.0.0, stat=Deferred: Connection refused by [127.0.0.1]
+
+
+Jul 29 09:30:33 flo sendmail[15580]: [ID 801593 mail.info] s6T7UW0c015579: to=Mathieu.Betori@ext.publications.europa.eu, ctladdr=<betorma@flo.opoce.cec.eu.int> (30203/10), delay=00:00:01, xdelay=00:00:01, mailer=smtp, pri=30704, relay=smtp.opoce.cec.eu.int. [158.167.99.235], dsn=2.0.0, stat=Sent (<201407290730.s6T7UW2S015578@flo.opoce.cec.eu.int> Queued mail for delivery)
+
+
+##########################################################
+##### manual procedure for solaris 10
+
+
+cp /home/betorma/tmp/commission.pem /home/betorma/tmp/ldap1-pk.opoce.cec.eu.int.pem /home/betorma/tmp/ldap2-pk.opoce.cec.eu.int.pem /var/ldap 
+
+touch /var/ldap/nss_db_pass
+certutil -N -d /var/ldap -f /var/ldap/nss_db_pass
+certutil -A -d /var/ldap/ -n commission-ca -t CT -i /var/ldap/commission.pem 
+certutil -A -d /var/ldap/ -n "ldap1-pk.opoce.cec.eu.int" -t C,, -i /var/ldap/ldap1-pk.opoce.cec.eu.int.pem
+certutil -A -d /var/ldap/ -n "ldap2-pk.opoce.cec.eu.int" -t C,, -i /var/ldap/ldap2-pk.opoce.cec.eu.int.pem
+
+certutil -L -d /var/ldap 
+
+# modify ldap_client_file
+cp /var/ldap/old/ldap_client_cred /var/ldap/old/ldap_client_file /var/ldap/
+
+svcadm restart svc:/network/ldap/client:default
+svcadm restart svc:/system/name-service-cache:default
+
+
+
+##########################################################
+##### manual procedure for solaris 11
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##########################################################
+##### procedure for cfengine
+
+
+
+
+
+
+
+
+
+0[140807/152558]root@infra-srv# find .
+.
+./nsswitch.conf
+./S9brandz
+./S9brandz/nsswitch.conf
+./S9brandz/nsswitch.conf.20111201
+./ldap_client_cred
+./DRP
+./DRP/ldap_client_file_new
+./DRP/ldap_client_file
+./DRP/ldap_client_cred
+./ldap1-pk.opoce.cec.eu.int.pem
+./ldap2-pk.opoce.cec.eu.int.pem
+./ldap_client_cred_new
+./CC
+./CC/ldap_client_file
+./CC/ldap_client_file_new
+./CC/ldap_client_cred
+./commission.pem
+0[140807/152600]root@infra-srv# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ${SYSTEM_FILES_DIR}/ldapclient/nss_db_pass
+                dest=/var/ldap/nss_db_pass
+                mode=644
+                owner=root
+                group=root
+                force=true
+                backup=false
+                server=${MASTER_SERVER}
+                type=checksum
+                inform=true
+
+        ${SYSTEM_FILES_DIR}/ldapclient/ldap1-pk.opoce.cec.eu.int.pem
+                dest=/var/ldap/ldap1-pk.opoce.cec.eu.int.pem
+                mode=644
+                owner=root
+                group=root
+                force=true
+                backup=false
+                server=${MASTER_SERVER}
+                type=checksum
+                inform=true
+
+        ${SYSTEM_FILES_DIR}/ldapclient/ldap2-pk.opoce.cec.eu.int.pem
+                dest=/var/ldap/ldap2-pk.opoce.cec.eu.int.pem
+                mode=644
+                owner=root
+                group=root
+                force=true
+                backup=false
+                server=${MASTER_SERVER}
+                type=checksum
+                inform=true
+
+
+
+
+
+
+
+

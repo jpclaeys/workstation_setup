@@ -1,0 +1,142 @@
+##### suhtdown hades
+% init 0
+{201} ok setenv auto-boot? false
+~~.
+% setkeyswitch -d hades off
+
+
+##### suhtdown bart
+% init 0
+{201} ok setenv auto-boot? false
+~~.
+% setkeyswitch -d bart off
+
+
+##### verif des arret des domaines
+% showplatform
+Domain configurations:
+======================
+Domain ID   Domain Tag        Solaris Nodename       Domain Status
+A           thor              thor                   Running Solaris
+B           odin              odin                   Running Solaris
+C           minos             minos                  Running Solaris
+D           kerberos          kerberos               Running Solaris
+E           bart              -                      Powered Off
+F           hades             -                      Powered Off
+G           sleepy            sleepy                 Running Solaris
+H           belenos           belenos                Running Solaris
+I           toutatis          toutatis               Running Solaris
+J           bashful           bashful                Running Solaris
+K           -                 -                      Powered Off
+L           -                 -                      Powered Off
+M           -                 -                      Powered Off
+N           -                 -                      Powered Off
+O           -                 -                      Powered Off
+P           -                 -                      Powered Off
+Q           -                 -                      Powered Off
+R           -                 -                      Powered Off
+
+
+
+
+##### on enleve sb17 de hades et on l'ajoute a bart
+% showboards -d bart
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB0         Off    CPU             Assigned      Unknown       bart
+SB7         Off    CPU             Assigned      Unknown       bart
+IO0         Off    HPCI            Assigned      Unknown       bart
+IO3          -     Empty Slot      Available         -         Isolated
+IO6          -     Empty Slot      Available         -         Isolated
+
+
+% showboards -d hades
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB16        Off    CPU             Assigned      Unknown       hades
+SB17        Off    CPU             Assigned      Unknown       hades
+IO3          -     Empty Slot      Available         -         Isolated
+IO6          -     Empty Slot      Available         -         Isolated
+IO16        Off    HPCI            Assigned      Unknown       hades
+IO17        Off    HPCI            Assigned      Unknown       hades
+
+
+% moveboard -d bart SB17 
+Domain: E is not running.  You can only "configure" a component into a
+running domain. Would you like to "assign" the component instead  (yes/no)? yes
+SB17 unassigned from domain: F
+SB17 assigned to domain: E
+
+% showboards -d bart
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB0         Off    CPU             Assigned      Unknown       bart
+SB7         Off    CPU             Assigned      Unknown       bart
+SB17        Off    CPU             Assigned      Unknown       bart
+IO0         Off    HPCI            Assigned      Unknown       bart
+IO3          -     Empty Slot      Available         -         Isolated
+IO6          -     Empty Slot      Available         -         Isolated
+
+
+% showboards -d hades
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB16        Off    CPU             Assigned      Unknown       hades
+IO3          -     Empty Slot      Available         -         Isolated
+IO6          -     Empty Slot      Available         -         Isolated
+IO16        Off    HPCI            Assigned      Unknown       hades
+IO17        Off    HPCI            Assigned      Unknown       hades
+
+
+##### redemarrage de hades
+% setkeyswitch -d hades on
+% console -d hades
+% setenv auto-boot? true
+% boot
+
+
+##### redemarrage de bart
+% setkeyswitch -d bart on
+% console -d bart
+% setenv auto-boot? true
+% boot
+
+
+
+
+
+##### verif sur hades
+% dmesg
+
+
+##### verif sur bart
+bart@root # dmesg
+bart@root # svcs -xv
+svc:/application/print/server:default (LP print server)
+ State: disabled since Tue Dec 08 19:07:25 2009
+Reason: Disabled by an administrator.
+   See: http://sun.com/msg/SMF-8000-05
+   See: man -M /usr/share/man -s 1M lpsched
+Impact: 2 dependent services are not running:
+        svc:/application/print/rfc1179:default
+        svc:/application/print/ipp-listener:default
+
+bart@root # zoneadm list -ivc
+  ID NAME             STATUS     PATH                           BRAND    IP    
+   0 global           running    /                              native   shared
+   1 develop_tz       running    /zones/develop_tz              native   shared
+   2 seibud_tz        running    /zones/seibud_tz               native   shared
+   3 seicr_tz         running    /zones/seicr_tz                native   shared
+   4 planjobo_tz      running    /zones/planjobo_tz             native   shared
+   5 restore_tz       running    /zones/restore_tz              native   shared
+   6 grid_tz          running    /zones/grid_tz                 native   shared
+   7 eudorsqc-tz      running    /zones/eudorsqc-tz             native   shared
+   8 ojmonitor-tz     running    /zones/ojmonitor-tz            native   shared
+   9 cedefop-tz       running    /zones/cedefop-tz              native   shared
+
+
+
+
+
+
+

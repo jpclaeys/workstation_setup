@@ -1,0 +1,99 @@
+#####################################################
+# configuration de vncserver sous solaris 10 >u5
+# en cours...
+#####################################################
+
+##### ajout du port pour le service
+
+% echo 'vnc-server      5900/tcp                        # Xvnc' >>/etc/services
+
+##### autorisation de connexion au X
+
+% cat <<EOF >/etc/X11/gdm/custom.conf
+[xdmcp]
+Enable=true
+[security]
+DisallowTCP=false
+AllowRoot=true
+AllowRemoteRoot=true
+EOF
+
+##### activation du service x11vnc
+
+% svcadm enable svc:/application/x11/xvnc-inetd:default
+
+% svcs svc:/application/x11/xvnc-inetd:default
+STATE          STIME    FMRI
+online         13:48:56 svc:/application/x11/xvnc-inetd:default
+
+##### rendre la session persistante, meme apres fermeture du client vnc
+
+% svccfg -s xvnc-inetd setprop inetd/wait=true
+% svcadm refresh xvnc-inetd
+% svcprop xvnc-inetd | grep 'inetd/wait'
+inetd/wait boolean true
+
+##### securiser la connexion au serveur
+
+% svcprop sxvnc-inetd | grep inetd_start/exec
+inetd_start/exec astring /usr/X11/bin/Xvnc\ -inetd\ -query\ localhost\ -once\ securitytypes=none
+
+% svccfg -s xvnc-inetd inetd_start/exec='/usr/X11/bin/Xvnc\ -inetd\ -query\ localhost\ -once\ securitytypes=VncAuth'
+% svcadm refresh xvnc-inetd
+
+##### configuration du mot de pass vnc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################################
+# configuration de vncserver sous solaris 10 <u5
+#####################################################
+
+##### autoriser la connexion
+autoriser le client (* pour tlm) dans le fichier /usr/dt/config/Xaccess 
+redemarrer le serveur X
+
+##### kill vncserver
+port=10
+cd ~betorma/bin/vnc-4_1_1-x86_solaris
+PATH=`pwd`:/usr/openwin/bin:$PATH ./vncserver -kill :${port}
+
+##### start vncserver
+port=10
+cd ~betorma/bin/vnc-4_1_1-x86_solaris
+PATH=`pwd`:/usr/openwin/bin:$PATH ./vncserver :${port} -geometry 1280x1024 -query localhost
+
+
+###############################################
+# utilisation de vncviewer
+###############################################
+
+host=vespa
+port=10
+cd ~betorma/bin/vnc-4_1_1-x86_solaris
+./vncviewer ${host}:${port} &
+

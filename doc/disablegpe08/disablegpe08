@@ -1,0 +1,10 @@
+#!/bin/bash
+# disable spurious gpe08 
+# Note: the echo command need to be executed 3 times !
+logger disable gpe08 - before run - `cat /sys/firmware/acpi/interrupts/gpe08`
+echo "disable" > /sys/firmware/acpi/interrupts/gpe08
+logger disable gpe08 - after 1st run - `cat /sys/firmware/acpi/interrupts/gpe08`
+echo "disable" > /sys/firmware/acpi/interrupts/gpe08
+logger disable gpe08 - after 2nd run - `cat /sys/firmware/acpi/interrupts/gpe08`
+echo "disable" > /sys/firmware/acpi/interrupts/gpe08
+logger disable gpe08 - after 3rd run - `cat /sys/firmware/acpi/interrupts/gpe08`

@@ -1,0 +1,44 @@
+
+
+
+PLAYBOOKS contain PLAYS
+PLAYS contain TASKS
+TAKS call MODULES
+
+TASKS run sequentially
+
+HANDLERS are triggered by TASK
+and are run once, at the end of plays
+
+
+
+
+450 modules dispo
+
+module: directive1=value directive2=value
+
+http://docs.ansible.com/ansible/modules_by_category.html
+
+
+
+
+
+
+
+
+ansible openldapservers -u ec2-user -v -m command --args "uptime"
+ansible openldapservers -m command yum -a "name=openssl state=latest"
+
+
+ansible-playbook --syntax-check /etc/ansible/roles/ldap.opoce.local.yml -v
+
+
+
+ansible-playbook -i /home/bortodi/ansible/ansible-op-tools/hosts  yumupdates.yml -v
+
+ansible-playbook -i /home/bortodi/ansible/ansible-op-tools/hosts vmware-tools.yml  -v
+
+
+
+auth       [success=ignore default=1] pam_succeed_if.so user = root
+auth       sufficient   pam_succeed_if.so use_uid user = ec2-user

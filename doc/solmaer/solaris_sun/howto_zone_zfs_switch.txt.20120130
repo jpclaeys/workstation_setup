@@ -1,0 +1,333 @@
+#################################################################################################################################
+#
+# Deplacement d'une zone en ZFS d'un hote physique (HOSTSOURCE) vers un autre (HOSTTARGET)
+#
+# remarque: les variables LIST_* sont composees de champs separes par un espace
+# ex: export ZPOOL_LIST_TO_MOVE="eub2_tz eub_filecache"
+#
+# S'assurer du masking san pour HOSTTARGET
+#
+#################################################################################################################################
+
+
+##################################################
+# sur l'hote physique de la zone
+##################################################
+
+##### nom de la zone a deplacer
+export ZONE=
+
+##### repertoire d'echange
+REP=/net/opsrv082/xchange/mb/zones/${ZONE}
+mkdir -p ${REP}
+
+###### arret de la zone
+zlogin -C ${ZONE}
+/applications/*/users/system/init.d/* status
+/applications/*/users/system/init.d/* disable
+/applications/*/users/system/init.d/* status
+init 0
+~~.
+zoneadm list -ivc | grep $ZONE
+
+##### detach de la zone
+zoneadm -z $ZONE detach
+umount /zones/${ZONE}
+
+##### recuperation de la configuration de la zone
+cd /etc/zones/
+tar cvfp ${REP}/${ZONE}.tar ${ZONE}.xml
+grep ${ZONE} index > ${REP}/index_${ZONE}
+
+##### verification des pool utilises par la zone
+grep dataset /etc/zones/${ZONE}.xml
+zpool list
+
+##### recuperation des zpools a migrer
+export ZPOOL_LIST_TO_MOVE=''
+
+##### status du zpool
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status $POOL
+done
+}
+
+
+##### snapshot post-migration u8
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zfs snapshot -r ${POOL}@post_move_`date +%Y%m%d_%H%M%S`
+done
+}
+
+##### verif
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zfs list -r ${POOL}
+done
+}
+
+#### recupere les disque et leur numero de lun avec luxadm_carlo
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL} | egrep "c*d0" | awk '{print $1}' | while read DISK;
+	do
+		/home/betorma/bin/luxadm_carlo | grep ${DISK}
+	done
+done
+}
+
+##### genere la commande de mise offline du disk, a utiliser un peu plus bas...
+{
+echo 'A conserver pour la suite'
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL} | egrep "c*d0" | awk '{print $1}' | while read DISK;
+	do
+		echo "luxadm -e offline /dev/rdsk/${DISK}s2"
+	done
+done
+}
+
+##### export du (des) zpool(s)
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zpool export ${POOL}
+done
+}
+
+##### verification de l'export du (des) zpool(s)
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL}
+done
+}
+
+##### Faire le "A conserver pour la suite"
+#####luxadm offline....
+
+devfsadm -Cv
+cldev populate
+cldev clear
+
+
+##### par securite, on supprime la zone de la config des zones
+cd /etc/zones
+perl -pi.`date +%Y%m%d` -e 's:^$ENV{ZONE}.*\n::' /etc/zones/index
+mv ${ZONE}.xml ${ZONE}.xml.`date +%Y%m%d`
+
+
+##################################################
+# pour une zone de production, 
+# demander a Mathias de demapper la (les) lun(s)
+# de HOSTSOURCE vers HOSTTARGET
+# sinon faire ce qui suit sur un serveur CAM
+##################################################
+
+
+##### variables a recuperer de la partie precedente
+export HOSTSOURCE=
+export HOSTTARGET=
+export ARRAY=
+export LIST_LUN=''
+
+##### connexion au CAM
+cd /opt/se6x20/cli/bin/
+./sscs login -h remus -u root
+
+##### liste les lun mappees sur $HOSTSOURCE
+./sscs list -a $ARRAY mapping ${HOSTSOURCE}
+
+##### recupere les noms de volumes des $LIST_LUN
+{
+export VOLUMES_LIST=''
+for LUN in `echo ${LIST_LUN}`
+do
+	VOLUMES_LIST=`echo -n "${VOLUMES_LIST} "; ./sscs list -a ${ARRAY} mapping ${HOSTSOURCE} | grep "LUN: ${LUN}" | awk -F: '{print $2}' | awk '{print $1}'`
+done
+echo ${VOLUMES_LIST}
+}
+
+
+##### liste des volumes de ${VOLUMES_LIST}
+{
+for VOLUME in `echo ${VOLUMES_LIST}`
+do
+	./sscs list -a ${ARRAY} volume ${VOLUME}
+done
+}
+
+##### unmap des volumes ${VOLUMES_LIST}`
+{
+for VOLUME in `echo ${VOLUMES_LIST}`
+do
+	echo ./sscs unmap -a ${ARRAY} -h ${HOSTSOURCE} volume ${VOLUME}
+done
+}
+
+##### verification du l'unmapping
+./sscs list -a ${ARRAY} mapping ${HOSTSOURCE}  | sort -n -k 3
+
+##### liste des volumes sur ${HOSTTARGET}
+./sscs list -a ${ARRAY} mapping ${HOSTTARGET}  | sort -n -k 3
+
+##### choisir un numero de lun libre pour chaque volume de $VOLUMES_LIST
+{
+COMMAND=''
+for VOLUME in `echo ${VOLUMES_LIST}`
+do
+	echo -n "Numero de lun pour le volume ${VOLUME}: "
+	read LUN
+	COMMAND="${COMMAND}\n./sscs map -a ${ARRAY} -h ${HOSTTARGET} -l ${LUN} volume ${VOLUME}"
+done
+echo ${COMMAND}
+}
+
+##### verification du mapping
+./sscs list -a ${ARRAY} mapping ${HOSTTARGET} | sort -n -k 3
+
+
+##################################################
+# sur l'hote physique d'acceuil de la zone
+##################################################
+
+
+##### variables a recuperer de la partie precedente
+export ZONE=
+export REP=/net/opsrv082/xchange/mb/zones/${ZONE}
+export DISK_LIST=''
+export ZPOOL_LIST_TO_MOVE=''
+
+##### rafraichir les path san (luxadm forcelip...)
+
+##### on verifie qu'on a bien les 2 path san pour la lun
+/home/betorma/bin/luxadm_carlo
+cldev populate
+
+#### import des zpool de $ZPOOL_LIST_TO_MOVE
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zpool import ${POOL}
+done
+}
+
+##### verification de l'import 
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL}
+done
+}
+
+##### upgrade zpool
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zpool upgrade ${POOL}
+done
+}
+
+##### upgrade zfs
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	echo zfs upgrade -r ${POOL}
+done
+}
+
+##### verification de l'upgrade
+{
+for POOL in `echo ${ZPOOL_LIST_TO_MOVE}`
+do
+	zpool status ${POOL}
+done
+}
+
+#### import du fichier xml de la zone
+cd /etc/zones/
+tar xvfp ${REP}/${ZONE}.tar
+
+##### verification
+cat ${ZONE}.xml
+
+#### on determine l'interface reseau a utiliser pour la zone
+export IP=$(getent hosts $(uname -n) | awk '{print $1}')
+export FILE=$(egrep -l "$IP|$(uname -n)" /etc/hostname.*)
+export INTERFACE=$(echo ${FILE##/etc/hostname\.})
+
+##### verification
+ifconfig $INTERFACE
+
+##### modification des fichiers de configuration de la zone
+perl -pi.`date +%Y%m%d` -e 's/physical="\w.*\d"/physical="$ENV{INTERFACE}"/' ${ZONE}.xml
+cp -p index index.$(date +%Y%m%d)
+cat ${REP}/index_${ZONE} >> index
+
+##### verification
+cat ${ZONE}.xml
+
+##### attach de la zone
+zoneadm -z $ZONE attach -u
+
+##### verification de l'etat de la zone
+zoneadm list -ivc | grep $ZONE
+
+##### demarrage de la zone
+zoneadm -z $ZONE boot && zlogin -C $ZONE
+
+##### verification des services
+svcs ldap/client
+svcadm enable  ldap/client
+svcs ldap/client
+
+svcs -xv
+
+##### verification du log system
+dmesg
+
+#### un p'tit coup de cfengine
+/var/cfengine/bin/cfagent -v -q
+
+##### redemarrage de l'application
+/applications/*/users/system/init.d/* enable
+
+##### deconnexion de la console de la zone
+~~.
+
+##################################################
+# capping de la zone
+##################################################
+
+##################################################
+# integration cluster
+##################################################
+
+
+##################################################
+# mise a jour cmdb
+##################################################
+
+
+##################################################
+# mise a jour client de backup
+##################################################
+
+
+
+##################################################
+# mise a jou monitoring
+##################################################
+
+
+##################################################
+# changement de lun si necessaire (changement de site)
+##################################################
+

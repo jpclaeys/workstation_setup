@@ -1,0 +1,11 @@
+#To make one of your interfaces fail:
+ifconfig adapter_name modinsert ldterm@2
+
+#To get it back
+ifconfig adapter_name modremove ldterm@2
+
+#You can also do the supported command:
+if_mpadm -d qfe1
+
+#to get it back
+if_mpadm -r qfe1

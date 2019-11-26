@@ -1,0 +1,158 @@
+
+kworker CPU hug
+---------------
+“kworker” triggers some ACPI interrupts. You can check it out like this:
+grep . -r /sys/firmware/acpi/interrupts/
+
+Note: ACPI GPE (GPE stands for General Purpose Event)
+
+For me GPE 08 triggered a lot of ACPI interruptions. So I disabled it via a systemd service.
+
+Note: This might be caused by an outdated BIOS/UEFI version and probably something mismatched with the Linux kernel.
+
+To prevent that create “/etc/systemd/system/suppress-gpe08.service”:
+
+[Unit]
+Description=Disables GPE 08, an interrupt that is going crazy 
+[Service]
+ExecStart=/usr/bin/bash -c 'echo "disable" > /sys/firmware/acpi/interrupts/gpe08'
+[Install]
+WantedBy=multi-user.target
+
+And enable it:
+sudo systemctl enable suppress-gpe08.service
+
+
+Alternative:
+------------
+
+Use the /etc/rc.local 
+
+How to Execute Scripts/Commands using /etc/rc.d/rc.local in CentOS/RHEL 7
+
+he Problem
+
+The scripts/commands in the configuration file /etc/rc.d/rc.local could not work at boot time in a CentOS/RHEL 7 system. Same used to work in earlier CentOS/RHEL versions. Is it depricated or is there a workaround to still use this method?
+The Answer
+
+The rc.local service is stopped by default in CentOS/RHEL 7. If you check the etc/rc.d/rc.local configuration file, there are hints about this.
+
+# cat /etc/rc.d/rc.local 
+#!/bin/bash
+# THIS FILE IS ADDED FOR COMPATIBILITY PURPOSES
+#
+# It is highly advisable to create own systemd services or udev rules
+# to run scripts during boot instead of using this file.
+#
+# In contrast to previous versions due to parallel execution during boot
+# this script will NOT be run after all other services.
+#
+# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
+# that this script will be executed during boot.
+
+touch /var/lock/subsys/local
+
+The WorkAround
+
+1. With systemd, the init scripts are not there any more. Consequently, the execution of tasks at boot time had to change. In CentOS/RHEL 7, the /etc/rc.d/rc.local file is controlled by rc-local service.
+
+...
+[Unit]
+Description=/etc/rc.d/rc.local Compatibility
+ConditionFileIsExecutable=/etc/rc.d/rc.local
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/rc.d/rc.local start
+TimeoutSec=0
+RemainAfterExit=yes
+
+2. By default, the file /etc/rc.d/rc.local don’t have execution permission. Please append the execution permissions to this file.
+
+# ls -l /etc/rc.d/rc.local
+-rw-r--r--. 1 root root 473 Nov  8 00:20 /etc/rc.d/rc.local
+
+# chmod +x /etc/rc.d/rc.local
+
+# ls -l /etc/rc.d/rc.local
+-rwxr-xr-x. 1 root root 473 Nov  8 00:20 /etc/rc.d/rc.local
+
+3. Enable rc.local service, to make sure it starts every time after a reboot.
+
+# systemctl enable rc-local
+
+Confirm whether the service is enabled:
+
+# systemctl status rc-local.service
+
+3. Then, please start the rc-local service.
+
+# systemctl start rc-local
+
+
+
+----------------------------------------------------------------------------------------------------------------
+Ex on Brutus:
+--------------
+vi .etc.rc.local
+
+cd /etc/rc.d
+
+[root@brutus rc.d]# cat rc.local
+#!/bin/bash
+# THIS FILE IS ADDED FOR COMPATIBILITY PURPOSES
+#
+# It is highly advisable to create own systemd services or udev rules
+# to run scripts during boot instead of using this file.
+#
+# In contrast to previous versions due to parallel execution during boot
+# this script will NOT be run after all other services.
+#
+# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
+# that this script will be executed during boot.
+
+touch /var/lock/subsys/local
+# disable spurious gpe 
+echo "disable" > /sys/firmware/acpi/interrupts/gpe08
+
+
+[root@brutus rc.d]# chmod +x rc.local
+
+[root@brutus rc.d]# systemctl enable rc-local
+[root@brutus rc.d]# systemctl status rc-local
+● rc-local.service - /etc/rc.d/rc.local Compatibility
+   Loaded: loaded (/usr/lib/systemd/system/rc-local.service; static; vendor preset: disabled)
+   Active: inactive (dead)
+[root@brutus rc.d]# systemctl start rc-local
+[root@brutus rc.d]# systemctl status rc-local
+● rc-local.service - /etc/rc.d/rc.local Compatibility
+   Loaded: loaded (/usr/lib/systemd/system/rc-local.service; static; vendor preset: disabled)
+   Active: active (exited) since lun. 2019-07-15 14:28:31 CEST; 1min 36s ago
+  Process: 10065 ExecStart=/etc/rc.d/rc.local start (code=exited, status=0/SUCCESS)
+
+juil. 15 14:28:31 brutus.opoce.cec.eu.int systemd[1]: Starting /etc/rc.d/rc.local Compatibility...
+juil. 15 14:28:31 brutus.opoce.cec.eu.int systemd[1]: Started /etc/rc.d/rc.local Compatibility.
+
+[root@brutus ~]# cat  /usr/lib/systemd/system/rc-local.service
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+# This unit gets pulled automatically into multi-user.target by
+# systemd-rc-local-generator if /etc/rc.d/rc.local is executable.
+[Unit]
+Description=/etc/rc.d/rc.local Compatibility
+ConditionFileIsExecutable=/etc/rc.d/rc.local
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/rc.d/rc.local start
+TimeoutSec=0
+RemainAfterExit=yes
+[root@brutus ~]# 
+

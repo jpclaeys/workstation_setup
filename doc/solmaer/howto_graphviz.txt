@@ -1,0 +1,16 @@
+###############################################################
+##### mcd avec graphviz
+
+cat <<EOF >~/tmp/graph.gv
+digraph G {
+
+	entity1 [shape=record, label=<{entity_name1|<i>prop1</i><br/>prop2<br/>prop3}>];
+	entity2 [shape=record, label="{entity_name3|__prop1__\lprop2\lprop3\l}"];
+
+	relation1 [shape=record, style=rounded, label="{relation1|prop1\lprop2\l}"];
+
+	entity1 -> relation1 -> entity2;
+}
+EOF
+
+% dot -Tps graph.gv -o graph.ps

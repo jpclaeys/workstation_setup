@@ -1,0 +1,12 @@
+ILOM
+
+set /HOST/bootmode script="setenv auto-boot? false"
+
+ALOM
+poweroff
+bootmode bootscript="setenv auto-boot? false"
+poweron
+
+poweroff
+bootmode bootscript="boot -x"
+poweron

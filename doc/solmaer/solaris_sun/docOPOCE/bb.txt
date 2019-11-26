@@ -1,0 +1,64 @@
+#Virer un FS du control de BB:
+# Aller sur la machine ou on veut en virer
+cd /opt/OPbb4/bb/etc
+# Editer le fichier:
+vi bb-dftab
+#
+# bb-dftab
+# BIG BROTHER CUSTOM DISK PARTITION MONITORING FILE
+#
+# bb-dftab: configuration file for disk space checking
+#
+# format: [host:]partition:warn%:panic%
+#
+#    host can be FQDN (fully qualified domain name) or
+#       just a plain hostname but it is preferred that you
+#       use a FQDN.
+#
+# The same host can be specified on multiple lines to aid readability
+#
+# FOR THE SAME FILESYSTEMS ON EACH CLIENT USE EITHER
+# localhost:/mntpoint:XX:YY
+# or
+# /mntpoint:XX:YY
+#
+# COPY THIS FILE TO bb-dftab AND EDIT TO TASTE
+# ANY PARTITIONS NOT EXPLICITLY LISTED HERE WILL
+# USE THE VALUES SET BY DFWARN & DFPANIC SET IN
+# bbdef.sh. DEFAULTS IN bbdef.sh ARE
+# WARNING AT 90% AND PANIC AT 95%
+#
+# You can also use values > 100 to make it always green
+#
+/zones/bari:101:101
+/zones/oprvp:101:101
+/zones/opgtw:101:101
+####################################################
+# Enlever checking de /var/adm/messages empty
+cd /opt/OPbb4/bb/etc
+cp -p bbdef-client.sh bbdef-client.sh.20080702
+vi bbdef-client.sh
+# Changer la variable CHKMSGLEN a false:
+CHKMSGLEN="FALSE"
+# Redemarrer client bb
+/etc/init.d/bbrun stop
+/etc/init.d/bbrun start
+~
+~
+# pour mettre un machine en bleu sur orwell on lance:
+/applications/bb4/users/bb4/bb/bin/bb orwell "disable osho-n5* 100d reinstallation"
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~

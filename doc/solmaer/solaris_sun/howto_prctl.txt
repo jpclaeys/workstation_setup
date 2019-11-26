@@ -1,0 +1,18 @@
+export zone=eurlexfo-pz
+export cpu=30
+export ram=40G
+export swap=40G
+
+
+##### memory
+prctl -n zone.max-locked-memory`pgrep -z $zone init`
+prctl -n zone.max-locked-memory -r -v $ram `pgrep -z $zone init`
+
+##### swap
+prctl -n zone.max-swap `pgrep -z  $zone init`
+prctl -n zone.max-swap -r -v $swap `pgrep -z  $zone init`
+
+
+##### cpu
+prctl -n zone.cpu-cap -i zone $zone
+prctl -n zone.cpu-cap -r -v $cpu -i zone $zone

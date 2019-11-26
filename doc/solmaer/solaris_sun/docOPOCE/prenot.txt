@@ -1,0 +1,532 @@
+#
+# Tout ca, du cote infra-srv
+#
+bash-3.00# /opt/se6x20/cli/bin/sscs login -h infra-srv -u root
+Type your password:  =====> SOAP remember!!!!!
+
+/opt/se6x20/cli/bin/sscs list -a gnole pool Default
+/opt/se6x20/cli/bin/sscs list array absynthe 
+/opt/se6x20/cli/bin/sscs list -a absynthe pool Default
+/opt/se6x20/cli/bin/sscs list -a absynthe  host
+/opt/se6x20/cli/bin/sscs list -a absynthe volume
+/opt/se6x20/cli/bin/sscs list -a absynthe volume vprenot01
+/opt/se6x20/cli/bin/sscs list -a absynthe volume vprenot02
+/opt/se6x20/cli/bin/sscs list -a absynthe vdisk 1
+/opt/se6x20/cli/bin/sscs list -a absynthe vdisk 2
+/opt/se6x20/cli/bin/sscs list -a absynthe host sneezy
+/opt/se6x20/cli/bin/sscs create -a absynthe -p Default -s 30gb -v 1 volume vprenot03 
+/opt/se6x20/cli/bin/sscs list -a absynthe jobs
+/opt/se6x20/cli/bin/sscs map  -a absynthe -h sneezy -l 13 volume vprenot03
+
+#
+# Du cote sneezy
+#
+
+luxadm -e port |perl -nae 'm{CONNECTED$} && print "luxadm -e forcelip $F[0]\n"'|/bin/sh
+
+
+root@sneezy # format -d c8t600A0B800019E591000018DA47B27D16d0
+Searching for disks...done
+
+c8t600A0B800019E591000018DA47B27D16d0: configured with capacity of 30.00GB
+selecting c8t600A0B800019E591000018DA47B27D16d0
+[disk formatted]
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        repair     - repair a defective sector
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        save       - save new disk/partition definitions
+        inquiry    - show vendor, product and revision
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> p
+
+
+PARTITION MENU:
+        0      - change `0' partition
+        1      - change `1' partition
+        2      - change `2' partition
+        3      - change `3' partition
+        4      - change `4' partition
+        5      - change `5' partition
+        6      - change `6' partition
+        7      - change `7' partition
+        select - select a predefined table
+        modify - modify a predefined partition table
+        name   - name the current table
+        print  - display the current table
+        label  - write partition map and label to the disk
+        !<cmd> - execute <cmd>, then return
+        quit
+partition> p
+Current partition table (default):
+Total disk cylinders available: 15358 + 2 (reserved cylinders)
+
+Part      Tag    Flag     Cylinders         Size            Blocks
+  0       root    wm       0 -    63      128.00MB    (64/0/0)      262144
+  1       swap    wu      64 -   127      128.00MB    (64/0/0)      262144
+  2     backup    wu       0 - 15357       30.00GB    (15358/0/0) 62906368
+  3 unassigned    wm       0                0         (0/0/0)            0
+  4 unassigned    wm       0                0         (0/0/0)            0
+  5 unassigned    wm       0                0         (0/0/0)            0
+  6        usr    wm     128 - 15357       29.75GB    (15230/0/0) 62382080
+  7 unassigned    wm       0                0         (0/0/0)            0
+
+partition> q
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        repair     - repair a defective sector
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        save       - save new disk/partition definitions
+        inquiry    - show vendor, product and revision
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> label
+Ready to label disk, continue? yes
+
+format> quit
+root@sneezy # vxdisk list
+DEVICE       TYPE            DISK         GROUP        STATUS
+absynthe_3   auto:cdsdisk    absynthe_4   procatsuivi  online
+absynthe_4   auto:cdsdisk    absynthe_3   lex04        online
+absynthe_5   auto:cdsdisk    absynthe_8   procatxml    online
+absynthe_6   auto:cdsdisk    absynthe_2   procat       online
+absynthe_8   auto:sliced     absynthe_5   sneezy       online
+absynthe_9   auto:cdsdisk    absynthe_10  prenot       online
+absynthe_11  auto:cdsdisk    absynthe_12  procatxml    online
+absynthe_13  auto:cdsdisk    absynthe_14  prelex       online
+absynthe_14  auto:cdsdisk    absynthe_15  cdj          online
+absynthe_15  auto:cdsdisk    absynthe_20  eurlex       online
+absynthe_16  auto:cdsdisk    absynthe_17  eurlex       online
+absynthe_17  auto:cdsdisk    absynthe_19  eurlex       online
+absynthe_18  auto:cdsdisk    absynthe_16  eurlex       online
+absynthe_19  auto:cdsdisk    absynthe_18  eurlex       online
+absynthe_20  auto:cdsdisk    absynthe_21  atto         online
+absynthe_21  auto:cdsdisk    absynthe_0   procatsuivi2 online
+absynthe_22  auto            -            -            error
+absynthe_23  auto:cdsdisk    absynthe_6   eurlex       online
+absynthe_24  auto:cdsdisk    absynthe_1   procatxml    online
+absynthe_25  auto:cdsdisk    absynthe_7   prenot       online
+absynthe_26  auto:cdsdisk    absynthe_11  eurlex       online
+absynthe_27  auto:cdsdisk    absynthe_9   eurlex       online
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t1d0s2     auto:sliced     rootmirror   rootdg       online
+c4t2d0s2     auto:none       -            -            online invalid
+root@sneezy # vxdctl enable
+root@sneezy # vxdisk list
+DEVICE       TYPE            DISK         GROUP        STATUS
+absynthe_3   auto:cdsdisk    absynthe_4   procatsuivi  online
+absynthe_4   auto:cdsdisk    absynthe_3   lex04        online
+absynthe_5   auto:cdsdisk    absynthe_8   procatxml    online
+absynthe_6   auto:cdsdisk    absynthe_2   procat       online
+absynthe_8   auto:sliced     absynthe_5   sneezy       online
+absynthe_9   auto:cdsdisk    absynthe_10  prenot       online
+absynthe_11  auto:cdsdisk    absynthe_12  procatxml    online
+absynthe_13  auto:cdsdisk    absynthe_14  prelex       online
+absynthe_14  auto:cdsdisk    absynthe_15  cdj          online
+absynthe_15  auto:cdsdisk    absynthe_20  eurlex       online
+absynthe_16  auto:cdsdisk    absynthe_17  eurlex       online
+absynthe_17  auto:cdsdisk    absynthe_19  eurlex       online
+absynthe_18  auto:cdsdisk    absynthe_16  eurlex       online
+absynthe_19  auto:cdsdisk    absynthe_18  eurlex       online
+absynthe_20  auto:cdsdisk    absynthe_21  atto         online
+absynthe_21  auto:cdsdisk    absynthe_0   procatsuivi2 online
+absynthe_22  auto            -            -            error
+absynthe_23  auto:cdsdisk    absynthe_6   eurlex       online
+absynthe_24  auto:cdsdisk    absynthe_1   procatxml    online
+absynthe_25  auto:cdsdisk    absynthe_7   prenot       online
+absynthe_26  auto:cdsdisk    absynthe_11  eurlex       online
+absynthe_27  auto:cdsdisk    absynthe_9   eurlex       online
+absynthe_28  auto:none       -            -            online invalid
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t1d0s2     auto:sliced     rootmirror   rootdg       online
+c4t2d0s2     auto:none       -            -            online invalid
+root@sneezy # vxdisk -e list |perl -nae 'if(m{^absynthe}){$d= `/usr/sbin/luxadm disp /dev/rdsk/$F[5]|grep "Device Address"`; ($d,$l)=$d =~m{\s*Device Address\s+([^,]+),(\w+)};; print join("\t", (@F[0..5], $d, "Lun", hex($l))), "\n"}'
+VxVM vxdisk ERROR V-5-1-2272 absynthe_22 not a valid dmpnode disk access name.
+absynthe_3      auto    absynthe_4      procatsuivi     online  c8t600A0B800019E59A00003D31452F1B57d0s2 200500a0b819e592        Lun     4absynthe_4      auto    absynthe_3      lex04   online  c8t600A0B800019E59A00003D30452C9831d0s2 200500a0b819e592        Lun     3
+absynthe_5      auto    absynthe_8      procatxml       online  c8t600A0B800019E59A00003D33453710B5d0s2 200500a0b819e592        Lun     8absynthe_6      auto    absynthe_2      procat  online  c8t600A0B800019E591000015A145219A06d0s2 200500a0b819e592        Lun     2
+absynthe_8      auto    absynthe_5      sneezy  online  c8t600A0B800019E591000015A3452F3508d0s2 200500a0b819e592        Lun     5
+absynthe_9      auto    absynthe_10     prenot  online  c8t600A0B800019E59A00003D34453817C7d0s2 200500a0b819e592        Lun     10
+absynthe_11     auto    absynthe_12     procatxml       online  c8t600A0B800019E59A00003D6045F8AE6Fd0s2 200500a0b819e592        Lun     12
+absynthe_13     auto    absynthe_14     prelex  online  c8t600A0B800019E59A00003D7745FA2867d0s2 200500a0b819e592        Lun     14
+absynthe_14     auto    absynthe_15     cdj     online  c8t600A0B800019E591000016324622D236d0s2 200500a0b819e592        Lun     15
+absynthe_15     auto    absynthe_20     eurlex  online  c8t600A0B800019E591000016424626E5FAd0s2 200500a0b819e592        Lun     20
+absynthe_16     auto    absynthe_17     eurlex  online  c8t600A0B800019E591000016404626E5BAd0s2 200500a0b819e592        Lun     17
+absynthe_17     auto    absynthe_19     eurlex  online  c8t600A0B800019E59A00003DA34626E569d0s2 200500a0b819e592        Lun     19
+absynthe_18     auto    absynthe_16     eurlex  online  c8t600A0B800019E59A00003DA14626E51Dd0s2 200500a0b819e592        Lun     16
+absynthe_19     auto    absynthe_18     eurlex  online  c8t600A0B800019E59A00003DA24626E54Fd0s2 200500a0b819e592        Lun     18
+absynthe_20     auto    absynthe_21     atto    online  c8t600A0B800019E59A00003DBA465B8175d0s2 200500a0b819e592        Lun     21
+absynthe_21     auto    absynthe_0      procatsuivi2    online  c8t600A0B800019E591000016EF46D65480d0s2 200500a0b819e592        Lun     0 Error: Could not get physical path to the device. - /dev/rdsk/0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.
+
+absynthe_22     auto    -       -       error   0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000                Lun     0
+absynthe_23     auto    absynthe_6      eurlex  online  c8t600A0B800019E591000018204726CCAEd0s2 200500a0b819e592        Lun     6
+absynthe_24     auto    absynthe_1      procatxml       online  c8t600A0B800019E591000018CF474D103Cd0s2 200500a0b819e592        Lun     1absynthe_25     auto    absynthe_7      prenot  online  c8t600A0B800019E59A00003FF9474D1819d0s2 200400a0b819e592        Lun     7
+absynthe_26     auto    absynthe_11     eurlex  online  c8t600A0B800019E591000018D1475C9410d0s2 200400a0b819e592        Lun     11
+absynthe_27     auto    absynthe_9      eurlex  online  c8t600A0B800019E59A00003FFB475C9311d0s2 200400a0b819e592        Lun     9
+absynthe_28     auto    -       -       online  c8t600A0B800019E591000018DA47B27D16d0s2 200400a0b819e592        Lun     13
+root@sneezy # vxdisk -e list |perl -nae 'if(m{^absynthe}){$d= `/usr/sbin/luxadm disp /dev/rdsk/$F[5]|grep "Device Address"`; ($d,$l)=$d =~m{\s*Device Address\s+([^,]+),(\w+)};; print join("\t", (@F[0..5], $d, "Lun", hex($l))), "\n"}'
+VxVM vxdisk ERROR V-5-1-2272 absynthe_22 not a valid dmpnode disk access name.
+absynthe_3      auto    absynthe_4      procatsuivi     online  c8t600A0B800019E59A00003D31452F1B57d0s2 200500a0b819e592        Lun     4absynthe_4      auto    absynthe_3      lex04   online  c8t600A0B800019E59A00003D30452C9831d0s2 200500a0b819e592        Lun     3
+absynthe_5      auto    absynthe_8      procatxml       online  c8t600A0B800019E59A00003D33453710B5d0s2 200500a0b819e592        Lun     8absynthe_6      auto    absynthe_2      procat  online  c8t600A0B800019E591000015A145219A06d0s2 200500a0b819e592        Lun     2
+absynthe_8      auto    absynthe_5      sneezy  online  c8t600A0B800019E591000015A3452F3508d0s2 200500a0b819e592        Lun     5
+absynthe_9      auto    absynthe_10     prenot  online  c8t600A0B800019E59A00003D34453817C7d0s2 200500a0b819e592        Lun     10
+absynthe_11     auto    absynthe_12     procatxml       online  c8t600A0B800019E59A00003D6045F8AE6Fd0s2 200500a0b819e592        Lun     12
+absynthe_13     auto    absynthe_14     prelex  online  c8t600A0B800019E59A00003D7745FA2867d0s2 200500a0b819e592        Lun     14
+absynthe_14     auto    absynthe_15     cdj     online  c8t600A0B800019E591000016324622D236d0s2 200500a0b819e592        Lun     15
+absynthe_15     auto    absynthe_20     eurlex  online  c8t600A0B800019E591000016424626E5FAd0s2 200500a0b819e592        Lun     20
+absynthe_16     auto    absynthe_17     eurlex  online  c8t600A0B800019E591000016404626E5BAd0s2 200500a0b819e592        Lun     17
+absynthe_17     auto    absynthe_19     eurlex  online  c8t600A0B800019E59A00003DA34626E569d0s2 200500a0b819e592        Lun     19
+absynthe_18     auto    absynthe_16     eurlex  online  c8t600A0B800019E59A00003DA14626E51Dd0s2 200500a0b819e592        Lun     16
+absynthe_19     auto    absynthe_18     eurlex  online  c8t600A0B800019E59A00003DA24626E54Fd0s2 200500a0b819e592        Lun     18
+absynthe_20     auto    absynthe_21     atto    online  c8t600A0B800019E59A00003DBA465B8175d0s2 200500a0b819e592        Lun     21
+absynthe_21     auto    absynthe_0      procatsuivi2    online  c8t600A0B800019E591000016EF46D65480d0s2 200500a0b819e592        Lun     0 Error: Could not get physical path to the device. - /dev/rdsk/0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.
+
+absynthe_22     auto    -       -       error   0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000                Lun     0
+absynthe_23     auto    absynthe_6      eurlex  online  c8t600A0B800019E591000018204726CCAEd0s2 200500a0b819e592        Lun     6
+absynthe_24     auto    absynthe_1      procatxml       online  c8t600A0B800019E591000018CF474D103Cd0s2 200500a0b819e592        Lun     1absynthe_25     auto    absynthe_7      prenot  online  c8t600A0B800019E59A00003FF9474D1819d0s2 200400a0b819e592        Lun     7
+absynthe_26     auto    absynthe_11     eurlex  online  c8t600A0B800019E591000018D1475C9410d0s2 200400a0b819e592        Lun     11
+absynthe_27     auto    absynthe_9      eurlex  online  c8t600A0B800019E59A00003FFB475C9311d0s2 200400a0b819e592        Lun     9
+absynthe_28     auto    -       -       online  c8t600A0B800019E591000018DA47B27D16d0s2 200400a0b819e592        Lun     13
+root@sneezy # vxdisk list
+DEVICE       TYPE            DISK         GROUP        STATUS
+absynthe_3   auto:cdsdisk    absynthe_4   procatsuivi  online
+absynthe_4   auto:cdsdisk    absynthe_3   lex04        online
+absynthe_5   auto:cdsdisk    absynthe_8   procatxml    online
+absynthe_6   auto:cdsdisk    absynthe_2   procat       online
+absynthe_8   auto:sliced     absynthe_5   sneezy       online
+absynthe_9   auto:cdsdisk    absynthe_10  prenot       online
+absynthe_11  auto:cdsdisk    absynthe_12  procatxml    online
+absynthe_13  auto:cdsdisk    absynthe_14  prelex       online
+absynthe_14  auto:cdsdisk    absynthe_15  cdj          online
+absynthe_15  auto:cdsdisk    absynthe_20  eurlex       online
+absynthe_16  auto:cdsdisk    absynthe_17  eurlex       online
+absynthe_17  auto:cdsdisk    absynthe_19  eurlex       online
+absynthe_18  auto:cdsdisk    absynthe_16  eurlex       online
+absynthe_19  auto:cdsdisk    absynthe_18  eurlex       online
+absynthe_20  auto:cdsdisk    absynthe_21  atto         online
+absynthe_21  auto:cdsdisk    absynthe_0   procatsuivi2 online
+absynthe_22  auto            -            -            error
+absynthe_23  auto:cdsdisk    absynthe_6   eurlex       online
+absynthe_24  auto:cdsdisk    absynthe_1   procatxml    online
+absynthe_25  auto:cdsdisk    absynthe_7   prenot       online
+absynthe_26  auto:cdsdisk    absynthe_11  eurlex       online
+absynthe_27  auto:cdsdisk    absynthe_9   eurlex       online
+absynthe_28  auto:none       -            -            online invalid
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t1d0s2     auto:sliced     rootmirror   rootdg       online
+c4t2d0s2     auto:none       -            -            online invalid
+root@sneezy # vxdisksetup -i absynthe_13 format=cdsdisk
+VxVM vxdisksetup ERROR V-5-2-134 Disk absynthe_13 is already being used as auto:cdsdisk disk absynthe_14 in disk group prelex;
+        Disk cannot be reinitialized.
+root@sneezy # vxdisksetup -i absynthe_28 format=cdsdisk
+root@sneezy # vxdisk list
+DEVICE       TYPE            DISK         GROUP        STATUS
+absynthe_3   auto:cdsdisk    absynthe_4   procatsuivi  online
+absynthe_4   auto:cdsdisk    absynthe_3   lex04        online
+absynthe_5   auto:cdsdisk    absynthe_8   procatxml    online
+absynthe_6   auto:cdsdisk    absynthe_2   procat       online
+absynthe_8   auto:sliced     absynthe_5   sneezy       online
+absynthe_9   auto:cdsdisk    absynthe_10  prenot       online
+absynthe_11  auto:cdsdisk    absynthe_12  procatxml    online
+absynthe_13  auto:cdsdisk    absynthe_14  prelex       online
+absynthe_14  auto:cdsdisk    absynthe_15  cdj          online
+absynthe_15  auto:cdsdisk    absynthe_20  eurlex       online
+absynthe_16  auto:cdsdisk    absynthe_17  eurlex       online
+absynthe_17  auto:cdsdisk    absynthe_19  eurlex       online
+absynthe_18  auto:cdsdisk    absynthe_16  eurlex       online
+absynthe_19  auto:cdsdisk    absynthe_18  eurlex       online
+absynthe_20  auto:cdsdisk    absynthe_21  atto         online
+absynthe_21  auto:cdsdisk    absynthe_0   procatsuivi2 online
+absynthe_22  auto            -            -            error
+absynthe_23  auto:cdsdisk    absynthe_6   eurlex       online
+absynthe_24  auto:cdsdisk    absynthe_1   procatxml    online
+absynthe_25  auto:cdsdisk    absynthe_7   prenot       online
+absynthe_26  auto:cdsdisk    absynthe_11  eurlex       online
+absynthe_27  auto:cdsdisk    absynthe_9   eurlex       online
+absynthe_28  auto:cdsdisk    -            -            online
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t1d0s2     auto:sliced     rootmirror   rootdg       online
+c4t2d0s2     auto:none       -            -            online invalid
+
+root@sneezy # vxdg -g prenot adddisk absynthe_13=absynthe_28
+root@sneezy # vxdisk list
+DEVICE       TYPE            DISK         GROUP        STATUS
+absynthe_3   auto:cdsdisk    absynthe_4   procatsuivi  online
+absynthe_4   auto:cdsdisk    absynthe_3   lex04        online
+absynthe_5   auto:cdsdisk    absynthe_8   procatxml    online
+absynthe_6   auto:cdsdisk    absynthe_2   procat       online
+absynthe_8   auto:sliced     absynthe_5   sneezy       online
+absynthe_9   auto:cdsdisk    absynthe_10  prenot       online
+absynthe_11  auto:cdsdisk    absynthe_12  procatxml    online
+absynthe_13  auto:cdsdisk    absynthe_14  prelex       online
+absynthe_14  auto:cdsdisk    absynthe_15  cdj          online
+absynthe_15  auto:cdsdisk    absynthe_20  eurlex       online
+absynthe_16  auto:cdsdisk    absynthe_17  eurlex       online
+absynthe_17  auto:cdsdisk    absynthe_19  eurlex       online
+absynthe_18  auto:cdsdisk    absynthe_16  eurlex       online
+absynthe_19  auto:cdsdisk    absynthe_18  eurlex       online
+absynthe_20  auto:cdsdisk    absynthe_21  atto         online
+absynthe_21  auto:cdsdisk    absynthe_0   procatsuivi2 online
+absynthe_22  auto            -            -            error
+absynthe_23  auto:cdsdisk    absynthe_6   eurlex       online
+absynthe_24  auto:cdsdisk    absynthe_1   procatxml    online
+absynthe_25  auto:cdsdisk    absynthe_7   prenot       online
+absynthe_26  auto:cdsdisk    absynthe_11  eurlex       online
+absynthe_27  auto:cdsdisk    absynthe_9   eurlex       online
+absynthe_28  auto:cdsdisk    absynthe_13  prenot       online
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t1d0s2     auto:sliced     rootmirror   rootdg       online
+c4t2d0s2     auto:none       -            -            online invalid
+root@sneezy # vxdg -g prenot free
+DISK         DEVICE       TAG          OFFSET    LENGTH    FLAGS
+absynthe_7   absynthe_25  absynthe_25  6279168   1792      -
+absynthe_10  absynthe_9   absynthe_9   41930752  1792      -
+absynthe_13  absynthe_28  absynthe_28  0         62904064  -
+root@sneezy # vxprint -ht -g prenot
+DG NAME         NCONFIG      NLOG     MINORS   GROUP-ID
+ST NAME         STATE        DM_CNT   SPARE_CNT         APPVOL_CNT
+DM NAME         DEVICE       TYPE     PRIVLEN  PUBLEN   STATE
+RV NAME         RLINK_CNT    KSTATE   STATE    PRIMARY  DATAVOLS  SRL
+RL NAME         RVG          KSTATE   STATE    REM_HOST REM_DG    REM_RLNK
+CO NAME         CACHEVOL     KSTATE   STATE
+VT NAME         NVOLUME      KSTATE   STATE
+V  NAME         RVG/VSET/CO  KSTATE   STATE    LENGTH   READPOL   PREFPLEX UTYPE
+PL NAME         VOLUME       KSTATE   STATE    LENGTH   LAYOUT    NCOL/WID MODE
+SD NAME         PLEX         DISK     DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+SV NAME         PLEX         VOLNAME  NVOLLAYR LENGTH   [COL/]OFF AM/NM    MODE
+SC NAME         PLEX         CACHE    DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+DC NAME         PARENTVOL    LOGVOL
+SP NAME         SNAPVOL      DCO
+
+dg prenot       default      default  33000    1161331290.155.sneezy
+
+dm absynthe_7   absynthe_25  auto     2048     6280960  -
+dm absynthe_10  absynthe_9   auto     2048     41932544 -
+dm absynthe_13  absynthe_28  auto     2048     62904064 -
+
+v  voradata     -            ENABLED  ACTIVE   2097152  SELECT    -        fsgen
+pl voradata-01  voradata     ENABLED  ACTIVE   2097152  CONCAT    -        RW
+sd absynthe_10-01 voradata-01 absynthe_10 0    2097152  0         absynthe_9 ENA
+
+v  voralog      -            ENABLED  ACTIVE   8376320  SELECT    -        fsgen
+pl voralog-01   voralog      ENABLED  ACTIVE   8376320  CONCAT    -        RW
+sd absynthe_10-02 voralog-01 absynthe_10 2097152 2097152 0        absynthe_9 ENA
+sd absynthe_25-01 voralog-01 absynthe_7 0      6279168  2097152   absynthe_25 ENA
+
+v  vusers       -            ENABLED  ACTIVE   37736448 SELECT    -        fsgen
+pl vusers-01    vusers       ENABLED  ACTIVE   37736448 CONCAT    -        RW
+sd absynthe_10-03 vusers-01  absynthe_10 4194304 37736448 0       absynthe_9 ENA
+root@sneezy # df -k | grep prenot
+/dev/vx/dsk/prenot/vusers 18572634 15882470 2504438    87%    /applications/prenot/users
+/dev/vx/dsk/prenot/voradata 1048296  880632  157184    85%    /applications/prenot/oradata
+/dev/vx/dsk/prenot/voralog 3932142    6075 3866994     1%    /applications/prenot/oralog
+/applications/prenot/users/comlex 18572634 15882470 2504438    87%    /home/comlex
+/applications/prenot/users/jox 18572634 15882470 2504438    87%    /home/jox
+/applications/prenot/users/prenot 18572634 15882470 2504438    87%    /home/prenot
+/applications/prenot/users/comx 18572634 15882470 2504438    87%    /home/comx
+/applications/prenot/users/jodd 18572634 15882470 2504438    87%    /home/jodd
+root@sneezy # /usr/sbin/vxassist  -g prenot -b  mirror voralog alloc=absynthe_13
+
+root@sneezy # vxtask list
+TASKID  PTID TYPE/STATE    PCT   PROGRESS
+   259           ATCOPY/R 08.56% 0/8376320/716800 PLXATT voralog voralog-02 prenot
+root@sneezy # vxtask list
+TASKID  PTID TYPE/STATE    PCT   PROGRESS
+   259           ATCOPY/R 12.22% 0/8376320/1024000 PLXATT voralog voralog-02 prenot
+root@sneezy # /usr/sbin/vxassist  -g prenot -b  mirror vusers alloc=absynthe_13
+root@sneezy # vxtask list
+TASKID  PTID TYPE/STATE    PCT   PROGRESS
+   259           ATCOPY/R 38.24% 0/8376320/3203072 PLXATT voralog voralog-02 prenot
+   263           ATCOPY/R 00.94% 0/37736448/354304 PLXATT vusers vusers-02 prenot
+root@sneezy # /usr/sbin/vxassist  -g prenot -b  mirror voradata alloc=absynthe_13
+root@sneezy # vxtask list
+TASKID  PTID TYPE/STATE    PCT   PROGRESS
+   259           ATCOPY/R 48.66% 0/8376320/4075520 PLXATT voralog voralog-02 prenot
+   263           ATCOPY/R 03.23% 0/37736448/1220608 PLXATT vusers vusers-02 prenot
+   265           ATCOPY/R 08.01% 0/2097152/167936 PLXATT voradata voradata-02 prenot
+
+# disassociate plexes
+
+root@sneezy # vxplex -g prenot -v vusers dis vusers-01
+root@sneezy # vxplex -g prenot -v voradata dis voradata-01
+root@sneezy # vxplex -g prenot -v voralog dis voralog-01
+
+vxedit -g prenot -r rm voradata-01 voradata-02 voralog-01 vusers-01
+
+root@sneezy # vxdisk -g prenot list
+DEVICE       TYPE            DISK         GROUP        STATUS
+absynthe_9   auto:cdsdisk    absynthe_10  prenot       online
+absynthe_25  auto:cdsdisk    absynthe_7   prenot       online
+absynthe_28  auto:cdsdisk    absynthe_13  prenot       online
+root@sneezy # vxdg -g prenot rmdisk absynthe_10 absynthe_7
+root@sneezy # vxdisk -g prenot list
+DEVICE       TYPE            DISK         GROUP        STATUS
+absynthe_28  auto:cdsdisk    absynthe_13  prenot       online
+root@sneezy # vxdg -g prenot free
+DISK         DEVICE       TAG          OFFSET    LENGTH    FLAGS
+absynthe_13  absynthe_28  absynthe_28  46112768  2097152   -
+absynthe_13  absynthe_28  absynthe_28  50307072  12596992  -
+
+root@sneezy # vxdisk -e list |perl -nae 'if(m{^absynthe}){$d= `/usr/sbin/luxadm disp /dev/rdsk/$F[5]|grep "Device Address"`; ($d,$l)=$d =~m{\s*Device Address\s+([^,]+),(\w+)};; print join("\t", (@F[0..5], $d, "Lun", hex($l))), "\n"}'
+VxVM vxdisk ERROR V-5-1-2272 absynthe_22 not a valid dmpnode disk access name.
+absynthe_3      auto    absynthe_4      procatsuivi     online  c8t600A0B800019E59A00003D31452F1B57d0s2 200500a0b819e592        Lun 4
+absynthe_4      auto    absynthe_3      lex04   online  c8t600A0B800019E59A00003D30452C9831d0s2 200500a0b819e592        Lun     3
+absynthe_5      auto    absynthe_8      procatxml       online  c8t600A0B800019E59A00003D33453710B5d0s2 200500a0b819e592        Lun 8
+absynthe_6      auto    absynthe_2      procat  online  c8t600A0B800019E591000015A145219A06d0s2 200500a0b819e592        Lun     2
+absynthe_8      auto    absynthe_5      sneezy  online  c8t600A0B800019E591000015A3452F3508d0s2 200500a0b819e592        Lun     5
+absynthe_9      auto    -       -       online  c8t600A0B800019E59A00003D34453817C7d0s2 200500a0b819e592        Lun     10
+absynthe_11     auto    absynthe_12     procatxml       online  c8t600A0B800019E59A00003D6045F8AE6Fd0s2 200500a0b819e592        Lun 12
+absynthe_13     auto    absynthe_14     prelex  online  c8t600A0B800019E59A00003D7745FA2867d0s2 200500a0b819e592        Lun     14
+absynthe_14     auto    absynthe_15     cdj     online  c8t600A0B800019E591000016324622D236d0s2 200500a0b819e592        Lun     15
+absynthe_15     auto    absynthe_20     eurlex  online  c8t600A0B800019E591000016424626E5FAd0s2 200500a0b819e592        Lun     20
+absynthe_16     auto    absynthe_17     eurlex  online  c8t600A0B800019E591000016404626E5BAd0s2 200500a0b819e592        Lun     17
+absynthe_17     auto    absynthe_19     eurlex  online  c8t600A0B800019E59A00003DA34626E569d0s2 200500a0b819e592        Lun     19
+absynthe_18     auto    absynthe_16     eurlex  online  c8t600A0B800019E59A00003DA14626E51Dd0s2 200500a0b819e592        Lun     16
+absynthe_19     auto    absynthe_18     eurlex  online  c8t600A0B800019E59A00003DA24626E54Fd0s2 200500a0b819e592        Lun     18
+absynthe_20     auto    absynthe_21     atto    online  c8t600A0B800019E59A00003DBA465B8175d0s2 200500a0b819e592        Lun     21
+absynthe_21     auto    absynthe_0      procatsuivi2    online  c8t600A0B800019E591000016EF46D65480d0s2 200500a0b819e592        Lun 0
+ Error: Could not get physical path to the device. - /dev/rdsk/0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.
+
+absynthe_22     auto    -       -       error   0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000                Lun     0
+absynthe_23     auto    absynthe_6      eurlex  online  c8t600A0B800019E591000018204726CCAEd0s2 200500a0b819e592        Lun     6
+absynthe_24     auto    absynthe_1      procatxml       online  c8t600A0B800019E591000018CF474D103Cd0s2 200500a0b819e592        Lun 1
+absynthe_25     auto    -       -       online  c8t600A0B800019E59A00003FF9474D1819d0s2 200400a0b819e592        Lun     7
+absynthe_26     auto    absynthe_11     eurlex  online  c8t600A0B800019E591000018D1475C9410d0s2 200400a0b819e592        Lun     11
+absynthe_27     auto    absynthe_9      eurlex  online  c8t600A0B800019E59A00003FFB475C9311d0s2 200400a0b819e592        Lun     9
+absynthe_28     auto    absynthe_13     prenot  online  c8t600A0B800019E591000018DA47B27D16d0s2 200400a0b819e592        Lun     13
+root@sneezy # vxdisk rm absynthe_25 absynthe_9
+root@sneezy # vxdisk -e list |perl -nae 'if(m{^absynthe}){$d= `/usr/sbin/luxadm disp /dev/rdsk/$F[5]|grep "Device Address"`; ($d,$l)=$d =~m{\s*Device Address\s+([^,]+),(\w+)};; print join("\t", (@F[0..5], $d, "Lun", hex($l))), "\n"}'
+VxVM vxdisk ERROR V-5-1-2272 absynthe_22 not a valid dmpnode disk access name.
+absynthe_3      auto    absynthe_4      procatsuivi     online  c8t600A0B800019E59A00003D31452F1B57d0s2 200500a0b819e592        Lun 4
+absynthe_4      auto    absynthe_3      lex04   online  c8t600A0B800019E59A00003D30452C9831d0s2 200500a0b819e592        Lun     3
+absynthe_5      auto    absynthe_8      procatxml       online  c8t600A0B800019E59A00003D33453710B5d0s2 200500a0b819e592        Lun 8
+absynthe_6      auto    absynthe_2      procat  online  c8t600A0B800019E591000015A145219A06d0s2 200500a0b819e592        Lun     2
+absynthe_8      auto    absynthe_5      sneezy  online  c8t600A0B800019E591000015A3452F3508d0s2 200500a0b819e592        Lun     5
+absynthe_11     auto    absynthe_12     procatxml       online  c8t600A0B800019E59A00003D6045F8AE6Fd0s2 200500a0b819e592        Lun 12
+absynthe_13     auto    absynthe_14     prelex  online  c8t600A0B800019E59A00003D7745FA2867d0s2 200500a0b819e592        Lun     14
+absynthe_14     auto    absynthe_15     cdj     online  c8t600A0B800019E591000016324622D236d0s2 200500a0b819e592        Lun     15
+absynthe_15     auto    absynthe_20     eurlex  online  c8t600A0B800019E591000016424626E5FAd0s2 200500a0b819e592        Lun     20
+absynthe_16     auto    absynthe_17     eurlex  online  c8t600A0B800019E591000016404626E5BAd0s2 200500a0b819e592        Lun     17
+absynthe_17     auto    absynthe_19     eurlex  online  c8t600A0B800019E59A00003DA34626E569d0s2 200500a0b819e592        Lun     19
+absynthe_18     auto    absynthe_16     eurlex  online  c8t600A0B800019E59A00003DA14626E51Dd0s2 200500a0b819e592        Lun     16
+absynthe_19     auto    absynthe_18     eurlex  online  c8t600A0B800019E59A00003DA24626E54Fd0s2 200500a0b819e592        Lun     18
+absynthe_20     auto    absynthe_21     atto    online  c8t600A0B800019E59A00003DBA465B8175d0s2 200500a0b819e592        Lun     21
+absynthe_21     auto    absynthe_0      procatsuivi2    online  c8t600A0B800019E591000016EF46D65480d0s2 200500a0b819e592        Lun 0
+ Error: Could not get physical path to the device. - /dev/rdsk/0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.
+
+absynthe_22     auto    -       -       error   0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000                Lun     0
+absynthe_23     auto    absynthe_6      eurlex  online  c8t600A0B800019E591000018204726CCAEd0s2 200500a0b819e592        Lun     6
+absynthe_24     auto    absynthe_1      procatxml       online  c8t600A0B800019E591000018CF474D103Cd0s2 200500a0b819e592        Lun 1
+absynthe_26     auto    absynthe_11     eurlex  online  c8t600A0B800019E591000018D1475C9410d0s2 200400a0b819e592        Lun     11
+absynthe_27     auto    absynthe_9      eurlex  online  c8t600A0B800019E59A00003FFB475C9311d0s2 200400a0b819e592        Lun     9
+absynthe_28     auto    absynthe_13     prenot  online  c8t600A0B800019E591000018DA47B27D16d0s2 200400a0b819e592        Lun     13
+root@sneezy #
+
+
+root@sneezy # /usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))'
+path: /dev/rdsk/c8t600A0B800019E59A00003D6045F8AE6Fd0s2 ==> stor: 200500a0b819e592 lun 12 stor: 200400a0b819e592 lun 12
+path: /dev/rdsk/c8t600A0B800019E59A00003D7745FA2867d0s2 ==> stor: 200500a0b819e592 lun 14 stor: 200400a0b819e592 lun 14
+path: /dev/rdsk/c8t600A0B800019E59A00003D30452C9831d0s2 ==> stor: 200500a0b819e592 lun 3 stor: 200400a0b819e592 lun 3
+path: /dev/rdsk/c8t600A0B800019E59A00003D31452F1B57d0s2 ==> stor: 200500a0b819e592 lun 4 stor: 200400a0b819e592 lun 4
+path: /dev/rdsk/c8t600A0B800019E59A00003D33453710B5d0s2 ==> stor: 200500a0b819e592 lun 8 stor: 200400a0b819e592 lun 8
+path: /dev/rdsk/c8t600A0B800019E59A00003DA14626E51Dd0s2 ==> stor: 200500a0b819e592 lun 16 stor: 200400a0b819e592 lun 16
+path: /dev/rdsk/c8t600A0B800019E59A00003DA24626E54Fd0s2 ==> stor: 200500a0b819e592 lun 18 stor: 200400a0b819e592 lun 18
+path: /dev/rdsk/c8t600A0B800019E59A00003DA34626E569d0s2 ==> stor: 200500a0b819e592 lun 19 stor: 200400a0b819e592 lun 19
+path: /dev/rdsk/c8t600A0B800019E59A00003DBA465B8175d0s2 ==> stor: 200500a0b819e592 lun 21 stor: 200400a0b819e592 lun 21
+path: /dev/rdsk/c8t600A0B800019E59A00003FFB475C9311d0s2 ==> stor: 200400a0b819e592 lun 9 stor: 200500a0b819e592 lun 9
+path: /dev/rdsk/c8t600A0B800019E591000015A3452F3508d0s2 ==> stor: 200500a0b819e592 lun 5 stor: 200400a0b819e592 lun 5
+path: /dev/rdsk/c8t600A0B800019E591000015A145219A06d0s2 ==> stor: 200500a0b819e592 lun 2 stor: 200400a0b819e592 lun 2
+path: /dev/rdsk/c8t600A0B800019E591000016EF46D65480d0s2 ==> stor: 200500a0b819e592 lun 0 stor: 200400a0b819e592 lun 0
+path: /dev/rdsk/c8t600A0B800019E591000018CF474D103Cd0s2 ==> stor: 200500a0b819e592 lun 1 stor: 200400a0b819e592 lun 1
+path: /dev/rdsk/c8t600A0B800019E591000018D1475C9410d0s2 ==> stor: 200400a0b819e592 lun 11 stor: 200500a0b819e592 lun 11
+path: /dev/rdsk/c8t600A0B800019E591000018DA47B27D16d0s2 ==> stor: 200400a0b819e592 lun 13 stor: 200500a0b819e592 lun 13
+path: /dev/rdsk/c8t600A0B800019E591000018204726CCAEd0s2 ==> stor: 200500a0b819e592 lun 6 stor: 200400a0b819e592 lun 6
+path: /dev/rdsk/c8t600A0B800019E591000016324622D236d0s2 ==> stor: 200500a0b819e592 lun 15 stor: 200400a0b819e592 lun 15
+path: /dev/rdsk/c8t600A0B800019E591000016404626E5BAd0s2 ==> stor: 200500a0b819e592 lun 17 stor: 200400a0b819e592 lun 17
+path: /dev/rdsk/c8t600A0B800019E591000016424626E5FAd0s2 ==> stor: 200500a0b819e592 lun 20 stor: 200400a0b819e592 lun 20
+
+
+
+
+#
+# A la fin, du cote de infra-srv
+#
+
+bash-3.00# /opt/se6x20/cli/bin/sscs login -h infra-srv -u root
+Type your password:
+bash-3.00# /opt/se6x20/cli/bin/sscs list -a absynthe host sneezy
+Host: sneezy
+  Initiator:  sneezy_hba0
+  Initiator:  sneezy_hba1
+  Volume: vprocatsuivi201  LUN: 0  Permission: Read/Write
+  Volume: vprocat01  LUN: 2  Permission: Read/Write
+  Volume: vlex04  LUN: 3  Permission: Read/Write
+  Volume: vprocatsuivi01  LUN: 4  Permission: Read/Write
+  Volume: vsneezy  LUN: 5  Permission: Read/Write
+  Volume: veurlex_06  LUN: 6  Permission: Read/Write
+  Volume: veurlexddword01  LUN: 8  Permission: Read/Write
+  Volume: vprenot01  LUN: 10  Permission: Read/Write
+  Volume: vprocatxml  LUN: 12  Permission: Read/Write
+  Volume: vprelex  LUN: 14  Permission: Read/Write
+  Volume: vcdj  LUN: 15  Permission: Read/Write
+  Volume: veurlex_01  LUN: 16  Permission: Read/Write
+  Volume: veurlex_02  LUN: 17  Permission: Read/Write
+  Volume: veurlex_03  LUN: 18  Permission: Read/Write
+  Volume: veurlex_04  LUN: 19  Permission: Read/Write
+  Volume: veurlex_05  LUN: 20  Permission: Read/Write
+  Volume: vatto02  LUN: 21  Permission: Read/Write
+  Volume: procatxml2  LUN: 1  Permission: Read/Write
+  Volume: vprenot02  LUN: 7  Permission: Read/Write
+  Volume: veurlex_07  LUN: 9  Permission: Read/Write
+  Volume: veurlex_08  LUN: 11  Permission: Read/Write
+  Volume: vprenot03  LUN: 13  Permission: Read/Write
+
+bash-3.00# /opt/se6x20/cli/bin/sscs delete -a absynthe volume vprenot01
+bash-3.00# /opt/se6x20/cli/bin/sscs delete -a absynthe volume vprenot02
+bash-3.00# /opt/se6x20/cli/bin/sscs list -a absynthe host sneezy
+Host: sneezy
+  Initiator:  sneezy_hba0
+  Initiator:  sneezy_hba1
+  Volume: vprocatsuivi201  LUN: 0  Permission: Read/Write
+  Volume: vprocat01  LUN: 2  Permission: Read/Write
+  Volume: vlex04  LUN: 3  Permission: Read/Write
+  Volume: vprocatsuivi01  LUN: 4  Permission: Read/Write
+  Volume: vsneezy  LUN: 5  Permission: Read/Write
+  Volume: veurlex_06  LUN: 6  Permission: Read/Write
+  Volume: veurlexddword01  LUN: 8  Permission: Read/Write
+  Volume: vprocatxml  LUN: 12  Permission: Read/Write
+  Volume: vprelex  LUN: 14  Permission: Read/Write
+  Volume: vcdj  LUN: 15  Permission: Read/Write
+  Volume: veurlex_01  LUN: 16  Permission: Read/Write
+  Volume: veurlex_02  LUN: 17  Permission: Read/Write
+  Volume: veurlex_03  LUN: 18  Permission: Read/Write
+  Volume: veurlex_04  LUN: 19  Permission: Read/Write
+  Volume: veurlex_05  LUN: 20  Permission: Read/Write
+  Volume: vatto02  LUN: 21  Permission: Read/Write
+  Volume: procatxml2  LUN: 1  Permission: Read/Write
+  Volume: veurlex_07  LUN: 9  Permission: Read/Write
+  Volume: veurlex_08  LUN: 11  Permission: Read/Write
+  Volume: vprenot03  LUN: 13  Permission: Read/Write
+

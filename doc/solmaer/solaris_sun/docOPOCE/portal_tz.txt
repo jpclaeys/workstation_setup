@@ -1,0 +1,125 @@
+export zname=portal_tz profile='drp' name=portal_tz ip=158.167.99.179 interface=ce1
+
+vxassist -g portaldg make vportal_tz 9437184k layout=concat
+
+newfs /dev/vx/rdsk/portaldg/vportal_tz
+
+mkdir /zones/${zname}
+chmod 700 /zones/${zname}
+
+mount /zones/${zname}
+
+cat <<EOT >/tmp/${zname}.cfg
+create -b
+set zonepath=/zones/${zname}
+set autoboot=true
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${ip}
+set physical=${interface}
+end
+add attr
+set name=comment
+set type=string
+set value="Zone ${zname}"
+end
+EOT
+
+
+cat <<EOT >/tmp/${zname}.sysidcfg
+name_service=LDAP { domain_name=opoce.cec.eu.int profile=${profile} profile_server=158.167.96.18 proxy_dn="cn=proxyagent,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int" proxy_password="#!proxy#!" }
+root_password=boajrOmU7GFmY
+system_locale=C
+timeserver=158.167.96.18
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${name} ip_address=${ip} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOT
+
+zonecfg -z ${zname} -f /tmp/${zname}.cfg
+
+zonecfg -z ${zname} info
+
+zoneadm -z ${zname} install
+
+less /zones/portal_tz/root/var/sadm/system/logs/install_log
+
+cp /tmp/${zname}.sysidcfg  /zones/${zname}/root/etc/sysidcfg
+
+cat <<EOT >  /zones/${zname}/root/etc/inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+cat <<EOF > /zones/${zname}/root/etc/resolv.conf
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/resolv.conf
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/hosts.allow
+all:@admin
+sendmail:all
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/hosts.deny
+all:all
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/defaultdomain 
+domainname opoce.cec.eu.int
+EOF
+
+cp -p /zones/${zname}/root/etc/nsswitch.conf /zones/${zname}/root/etc/nsswitch.conf.orig
+
+cp -p /zones/seibud_tz/root/etc/nsswitch.conf /zones/${zname}/root/etc
+
+cp -p /zones/seibud_tz/root/var/ldap/ldap_client_* /zones/${zname}/root/var/ldap
+
+perl -pi -e 's:2007:2008:' /etc/acct/holidays
+
+touch /zones/${zname}/root/etc/notrouter
+
+zoneadm -z portal_tz boot
+
+zlogin -C portal_tz
+
+cd /net/talisker/export/software/Networker/Networker_7.4
+
+pkgadd -d . LGTOclnt
+/nsr
+coppola
+y
+y
+
+
+

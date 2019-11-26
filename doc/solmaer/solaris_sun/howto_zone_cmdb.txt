@@ -1,0 +1,42 @@
+############################################################################################
+# envoie d'une demande par email de maj de la CMDB pour une zone
+############################################################################################
+
+
+
+export zone_name=<zone_name>
+export zone_ip=<zone_ip>
+export appli_opsrv=<application_opsrv>
+export appli_opsrv_ip=<application_ip>
+export zone_alias=<zone_alias>
+export host=<physical_host>
+export cluster_used=<cluster_used>
+export node1=<primary_node>
+export node2=<secondary_node>
+export physical_mem_capping=<physical_mem_capping>
+export swap_mem_capping=<swap_mem_capping>
+export cpu_capping=<cpu_capping>
+
+{
+echo "nom de la zone:\t\t\t${zone_name} (${zone_ip})"
+echo "OS version:\t\t\t\t"`head -1 /etc/release`
+echo "opsrv de l'application:\t\t${appli_opsrv} (${appli_opsrv_ip})"
+echo -ne "vlan configured:\t\t\t"
+ifconfig -a | /usr/xpg4/bin/awk -F':' '{ if (( $1 !~ /lo0/ ) && ( $1 !~ /^[[:space:]]/ )) { gsub(/[a-z]/,"",$1); if ( $1 > 999 ) { printf("%d\n", $1 / 1000); } } }' | sort -u 
+echo "alias de la zone:\t\t\t${zone_alias}"
+echo
+echo "capping cpu:\t\t\t${cpu_capping}"
+echo "capping memoire physique:\t${physical_mem_capping}"
+echo "capping swap:\t\t\t${swap_mem_capping}"
+echo
+	echo "file systems:"
+	zfs list -o name,mountpoint
+echo
+if [[ ${cluster_used} == yes ]]
+then
+	echo "primary cluster node:\t\t${node1}"
+	echo "secondary cluster node:\t\t${node2}"
+else
+	echo "hote physique:\t\t\t${host}"
+fi
+} | mailx -s "mise a jour de la cmdb: ${zone_name}" betorma

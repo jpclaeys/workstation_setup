@@ -1,0 +1,170 @@
+dm DMX4000_113  fabric_1     -        70703616 -        -        -       -
+dm DMX4000_117  fabric_7     -        316522080 -       -        -       -
+dm DMX4000_118  fabric_11    -        316522080 -       -        -       -
+dm DMX4000_119  fabric_9     -        316522080 -       -        -       -
+dm DMX4000_122  fabric_4     -        316522080 -       -        -       -
+dm DMX4000_123  fabric_2     -        316522080 -       -        -       -
+dm tordboyaux_0 fabric_19    -        419411712 -       -        -       -
+dm tordboyaux_1 fabric_18    -        419411712 -       -        -       -
+dm tordboyaux_2 fabric_16    -        419411712 -       -        -       -
+dm tordboyaux_3 fabric_20    -        419411712 -       -        -       -
+dm tordboyaux_4 fabric_21    -        419411712 -       -        -       -
+dm tordboyaux_5 fabric_23    -        419411712 -       -        -       -
+dm tordboyaux_6 fabric_22    -        419411712 -       -        -       -
+dm tordboyaux_7 fabric_26    -        419411712 -       -        -       -
+dm tordboyaux_8 fabric_30    -        419411712 -       -        -       -
+dm tordboyaux_9 fabric_29    -        419411712 -       -        -       -
+dm tordboyaux_10 fabric_25   -        419411712 -       -        -       -
+dm tordboyaux_11 fabric_27   -        419411712 -       -        -       -
+dm tordboyaux_12 fabric_31   -        419411712 -       -        -       -
+dm tordboyaux_13 fabric_24   -        419411712 -       -        -       -
+dm tordboyaux_14 fabric_28   -        419411712 -       -        -       -
+dm tordboyaux_15 fabric_32   -        209704704 -       -        -       -
+dm tordboyaux_16 fabric_33   -        209704704 -       -        -       -
+dm tordboyaux_17 fabric_34   -        209704704 -       -        -       -
+
+
+/etc/vx/bin/vxdiskunsetup -C fabric_1
+/etc/vx/bin/vxdiskunsetup -C fabric_7
+/etc/vx/bin/vxdiskunsetup -C fabric_11
+/etc/vx/bin/vxdiskunsetup -C fabric_9
+/etc/vx/bin/vxdiskunsetup -C fabric_4
+/etc/vx/bin/vxdiskunsetup -C fabric_2
+/etc/vx/bin/vxdiskunsetup -C fabric_19
+/etc/vx/bin/vxdiskunsetup -C fabric_18
+/etc/vx/bin/vxdiskunsetup -C fabric_16
+/etc/vx/bin/vxdiskunsetup -C fabric_20
+/etc/vx/bin/vxdiskunsetup -C fabric_21
+/etc/vx/bin/vxdiskunsetup -C fabric_23
+/etc/vx/bin/vxdiskunsetup -C fabric_22
+/etc/vx/bin/vxdiskunsetup -C fabric_26
+/etc/vx/bin/vxdiskunsetup -C fabric_30
+/etc/vx/bin/vxdiskunsetup -C fabric_29
+/etc/vx/bin/vxdiskunsetup -C fabric_25
+/etc/vx/bin/vxdiskunsetup -C fabric_27
+/etc/vx/bin/vxdiskunsetup -C fabric_31
+/etc/vx/bin/vxdiskunsetup -C fabric_24
+/etc/vx/bin/vxdiskunsetup -C fabric_28
+/etc/vx/bin/vxdiskunsetup -C fabric_32
+/etc/vx/bin/vxdiskunsetup -C fabric_33
+/etc/vx/bin/vxdiskunsetup -C fabric_34
+
+#DMX
+zpool add dlib c8t60060480000290103312533030353837d0
+zpool add dlib c8t60060480000290103312533030353032d0
+zpool add dlib c8t60060480000290103312533030354238d0
+zpool add dlib c8t60060480000290103312533030354341d0
+zpool add dlib c8t60060480000290103312533030363032d0
+zpool add dlib c8t60060480000290103312533030363134d0
+
+#tordboyaux
+zpool attach dlib_archive c8t600A0B800026677200000FBE49D01D96d0 c8t600A0B800048F43A0000078749DB7847d0
+zpool attach dlib_archive c8t600A0B800026676A00000EC749D019E1d0 c8t600A0B800048F5260000060C49DB7A8Fd0
+zpool attach dlib_archive c8t600A0B800026677200000FBF49D01F76d0 c8t600A0B800048F43A0000079349DB7BFCd0
+zpool attach dlib_archive c8t600A0B800026676A00000EC849D01AD9d0 c8t600A0B800048F5260000061749DB7EADd0
+zpool attach dlib_archive c8t600A0B800026677200000FC249D02904d0 c8t600A0B800048F43A0000079E49DB7EFBd0
+
+zpool attach dlib_archive c8t600A0B800019E59100001DC549D01C3Cd0 c8t600A0B800048F5260000062149DB80ABd0
+zpool attach dlib_archive c8t600A0B800019E59A0000448F49D01A97d0 c8t600A0B800048F43A000007AA49DB8127d0
+zpool attach dlib_archive c8t600A0B800019E59100001DC649D01CACd0 c8t600A0B800048F43A000007B049DB8204d0
+zpool attach dlib_archive c8t600A0B800019E59100001DC849D01D30d0 c8t600A0B800048F5260000063149DB83E7d0
+zpool attach dlib_archive c8t600A0B800019E59100001DCA49D01D96d0 c8t600A0B800048F43A000007B649DB83FBd0
+
+zpool detach dlib_archive c8t600A0B800019E59A0000448F49D01A97d0
+zpool detach dlib_archive c8t600A0B800019E59100001DC549D01C3Cd0
+zpool detach dlib_archive c8t600A0B800019E59100001DC649D01CACd0
+zpool detach dlib_archive c8t600A0B800019E59100001DC849D01D30d0
+zpool detach dlib_archive c8t600A0B800019E59100001DCA49D01D96d0
+zpool detach dlib_archive c8t600A0B800026676A00000EC749D019E1d0
+zpool detach dlib_archive c8t600A0B800026676A00000EC849D01AD9d0
+zpool detach dlib_archive c8t600A0B800026677200000FBE49D01D96d0
+zpool detach dlib_archive c8t600A0B800026677200000FBF49D01F76d0
+zpool detach dlib_archive c8t600A0B800026677200000FC249D02904d0 
+
+# ajouter de l'espace:
+zpool add dlib_archive c8t600A0B800048F5260000063349DC50D2d0
+
+# ajouter des fs pour podl
+zfs create -o mountpoint=/applications/dlib/archive10 dlib_archive/applications/archive10
+zfs create -o mountpoint=/applications/dlib/archive11 dlib_archive/applications/archive11
+zfs create -o mountpoint=/applications/dlib/archive12 dlib_archive/applications/archive12
+zfs create -o mountpoint=/applications/dlib/archive13 dlib_archive/applications/archive13
+zfs create -o mountpoint=/applications/dlib/archive14 dlib_archive/applications/archive14
+zfs create -o mountpoint=/applications/dlib/archive15 dlib_archive/applications/archive15
+zfs create -o mountpoint=/applications/dlib/archive16 dlib_archive/applications/archive16
+zfs create -o mountpoint=/applications/dlib/archive17 dlib_archive/applications/archive17
+zfs create -o mountpoint=/applications/dlib/archive18 dlib_archive/applications/archive18
+zfs create -o mountpoint=/applications/dlib/archive19 dlib_archive/applications/archive19
+zfs create -o mountpoint=/applications/dlib/archive20 dlib_archive/applications/archive20
+
+mkdir -p /applications/dlib/archive10/2009/16
+mkdir -p /applications/dlib/archive10/2009/17
+mkdir -p /applications/dlib/archive11/2009/18
+mkdir -p /applications/dlib/archive11/2009/19
+mkdir -p /applications/dlib/archive12/2009/20
+mkdir -p /applications/dlib/archive12/2009/21
+mkdir -p /applications/dlib/archive13/2009/22
+mkdir -p /applications/dlib/archive13/2009/23
+mkdir -p /applications/dlib/archive14/2009/24
+mkdir -p /applications/dlib/archive14/2009/25
+mkdir -p /applications/dlib/archive15/2009/26
+mkdir -p /applications/dlib/archive15/2009/27
+mkdir -p /applications/dlib/archive16/2009/28
+mkdir -p /applications/dlib/archive16/2009/29
+mkdir -p /applications/dlib/archive17/2009/30
+mkdir -p /applications/dlib/archive17/2009/31
+mkdir -p /applications/dlib/archive18/2009/32
+mkdir -p /applications/dlib/archive18/2009/33
+mkdir -p /applications/dlib/archive19/2009/34
+mkdir -p /applications/dlib/archive19/2009/35
+mkdir -p /applications/dlib/archive20/2009/36
+mkdir -p /applications/dlib/archive20/2009/37
+
+chown -R dlib:dlib /applications/dlib/archive10/2009
+chown -R dlib:dlib /applications/dlib/archive11/2009
+chown -R dlib:dlib /applications/dlib/archive12/2009
+chown -R dlib:dlib /applications/dlib/archive13/2009
+chown -R dlib:dlib /applications/dlib/archive14/2009
+chown -R dlib:dlib /applications/dlib/archive15/2009
+chown -R dlib:dlib /applications/dlib/archive16/2009
+chown -R dlib:dlib /applications/dlib/archive17/2009
+chown -R dlib:dlib /applications/dlib/archive18/2009
+chown -R dlib:dlib /applications/dlib/archive19/2009
+chown -R dlib:dlib /applications/dlib/archive20/2009
+
+cd /applications/dlib
+for j in archive10 archive11 archive12 archive13 archive14 archive15 archive16 archive17 archive18 archive19 archive20
+do
+cd ${j}
+for i in `find . -type d`
+do
+chmod A+user:podl:rwxpdDaARWcCos:fd----:allow ${i}
+chmod A+user:w_dlib:rwxpdDaARWcCos:fd----:allow ${i}
+done
+cd /applications/dlib
+done
+
+cd /applications/dlib/data02/podl_archive/01/2009
+ln -s /applications/dlib/archive10/2009/16 16
+ln -s /applications/dlib/archive10/2009/17 17
+ln -s /applications/dlib/archive11/2009/18 18
+ln -s /applications/dlib/archive11/2009/19 19
+ln -s /applications/dlib/archive12/2009/20 20
+ln -s /applications/dlib/archive12/2009/21 21
+ln -s /applications/dlib/archive13/2009/22 22
+ln -s /applications/dlib/archive13/2009/23 23
+ln -s /applications/dlib/archive14/2009/24 24
+ln -s /applications/dlib/archive14/2009/25 25
+ln -s /applications/dlib/archive15/2009/26 26
+ln -s /applications/dlib/archive15/2009/27 27
+ln -s /applications/dlib/archive16/2009/28 28
+ln -s /applications/dlib/archive16/2009/29 29
+ln -s /applications/dlib/archive17/2009/30 30
+ln -s /applications/dlib/archive17/2009/31 31
+ln -s /applications/dlib/archive18/2009/32 32
+ln -s /applications/dlib/archive18/2009/33 33
+ln -s /applications/dlib/archive19/2009/34 34
+ln -s /applications/dlib/archive19/2009/35 35
+ln -s /applications/dlib/archive20/2009/36 36
+ln -s /applications/dlib/archive20/2009/37 37
+

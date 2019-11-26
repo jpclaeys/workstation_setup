@@ -1,0 +1,209 @@
+##################################################################################################################################################
+# 
+# description: 	creation de l'utilisateurs applicatif, acces aux roles d'adminstration pour les equipes dba, int prod, int test
+# date creation: 	16/10/2009
+# date maj: 		11/11/2010
+#
+###################################################################################################################################################
+
+
+##### variables
+export appli_project=<appli_project>
+export appli_project_id=<appli_project_id>
+export appli_user=<appli_user>
+export appli_uid=<appli_uid>
+export comment_appli_user="${appli_user} user for ${appli_project} project"
+export w_appli_user="w_${appli_user}"
+export w_appli_uid=<w_appli_uid>
+export comment_w_appli_user="${w_appli_user} wood user for ${appli_project} project"
+export appli_group=<appli_group>
+export appli_gid=<appli_gid>
+export oracle_used=<oracle_used>			#yes|no
+export documentum_used=<documentum_used>			#yes|no
+export test_used=<test_used>				#yes|no
+
+##### sauvegarde des fichiers a modifier
+{
+for FILE in /etc/auto_home /etc/group /etc/passwd /etc/shadow /etc/user_attr /etc/security/exec_attr /etc/security/prof_attr /etc/project
+do
+	cp $FILE $FILE.`date +%Y%m%d%H%M`
+done
+}
+
+##### ajout des roles dba et oracle
+{
+mkdir -p /u01/home/oracle
+mkdir -p /u01/home/rootdba
+mkdir -p /u02
+echo "rootdba::::type=role;profiles=Primary Administrator" >>/etc/user_attr
+echo "oracle::::type=role;profiles=OraAgent Management,All" >>/etc/user_attr
+echo "oracle     \$HOST:/u01/home/&" >>/etc/auto_home
+echo "rootdba      \$HOST:/u01/home/&" >>/etc/auto_home
+echo 'dba::55:oracle' >>/etc/group
+echo 'oracle:x:55:55:Oracle Role:/home/oracle:/bin/pfksh' >>/etc/passwd
+echo 'rootdba:x:20000:1:DBA Role:/home/rootdba:/bin/pfksh' >>/etc/passwd
+echo 'oracle:N1adVIyiQ/ufM:12577::::::' >>/etc/shadow
+echo 'rootdba:c1B14rQDdgzPY:12500::::::' >>/etc/shadow
+pwconv
+chown 55:55 /u01/home/oracle
+}
+
+{
+if [[ ${oracle_used} == yes ]]
+then
+	for rep in orabin oradata oralog oraflash
+	do
+		if [ -d /applications/${appli_project}/$rep ]
+		then
+			chown 55:55 /applications/${appli_project}/$rep
+               ls -ld /applications/${appli_project}/$rep
+		fi
+	done
+	mkdir /var/opt/oracle
+	chown 55:55 /var/opt/oracle
+fi
+}
+
+##### creation de $appli_group
+{
+grep ^${appli_group} /etc/group
+groupadd -g ${appli_gid} ${appli_group}
+egrep "^${appli_group}|${appli_gid}" /etc/group
+}
+
+##### creation de $appli_user
+{
+grep ^${appli_user} /etc/passwd
+grep ^${appli_user} /etc/user_attr
+mkdir -p /applications/${appli_project}/users/${appli_user}
+roleadd -d /home/${appli_user} -c "${comment_appli_user}" -u ${appli_uid} -g ${appli_group} -s /bin/pfksh  ${appli_user} 
+egrep "^${appli_user}|${appli_uid}" /etc/passwd
+}
+
+##### creation de wood_group 
+{
+grep ^wood /etc/group
+groupadd -g 65535 wood
+egrep "^wood|65535" /etc/group
+}
+
+##### creation de w_appli_user
+{
+grep ^${w_appli_user} /etc/passwd
+grep ^${w_appli_user} /etc/user_attr
+mkdir -p /applications/${appli_project}/users/${w_appli_user}
+roleadd -d /home/${w_appli_user} -c "${comment_w_appli_user}" -u ${w_appli_uid} -g ${appli_group} -G wood -s /bin/pfksh ${w_appli_user}
+egrep "^${w_appli_user}|${w_appli_uid}" /etc/passwd
+}
+
+##### auto_home de $appli_user
+{
+echo "${appli_user}     \$HOST:/applications/${appli_project}/users/&" >> /etc/auto_home
+echo "${w_appli_user}     \$HOST:/applications/${appli_project}/users/&" >> /etc/auto_home
+cat /etc/auto_home
+}
+
+##### modification des droit sur le home de $appli_user
+{
+chown ${appli_user}:${appli_group} /applications/${appli_project}/users/${appli_user}
+ls -ld /applications/${appli_project}/users/${appli_user}
+chown ${w_appli_user}:${appli_group} /applications/${appli_project}/users/${w_appli_user}
+ls -ld /applications/${appli_project}/users/${w_appli_user}
+}
+
+##### changement du mot de passe de $appli_user
+passwd ${appli_user}
+passwd ${w_appli_user}
+
+##### creation des utilisateurs pour documentum
+{
+if [[ ${documentum_used} == yes ]]
+then
+	mkdir -p /applications/${appli_project}/users/dmadmin
+	mkdir -p /applications/${appli_project}/users/pdocu
+	mkdir -p /applications/${appli_project}/users/docuser
+	roleadd -d /home/dmadmin -u 81800 -g ${appli_group} -s /bin/pfksh dmadmin
+	roleadd -d /home/pdocu -u 81801 -g ${appli_group} -s /bin/pfksh pdocu
+	roleadd -d /home/docuser -u 81802 -g ${appli_group} -s /bin/pfksh docuser
+	echo "dmadmin     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	echo "pdocu     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	echo "docuser     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	chown dmadmin:${appli_group} /applications/${appli_project}/users/dmadmin
+	chown pdocu:${appli_group} /applications/${appli_project}/users/pdocu
+	chown docuser:${appli_group} /applications/${appli_project}/users/docuser
+fi
+}
+
+
+
+
+
+
+##### ajout des acces pour l' equipes integration de test au role $appli_user
+{
+if [[ ${test_used} == yes ]]
+then
+	for user in maffima klaerpa lafarpa niedema holotma pierrph dotzech naratol
+	do
+		echo "${user}::::type=normal;roles=${appli_user},${w_appli_user}" >>/etc/user_attr
+	done
+fi
+cat /etc/user_attr
+}
+
+########### exec_attr
+{
+echo "${appli_project} Management:suser:cmd:::/applications/${appli_project}/users/system/init.d/*:uid=0" >>/etc/security/exec_attr
+cat /etc/security/exec_attr
+}
+
+#### /etc/security/prof_attr
+{
+echo "${appli_project} Management:::${appli_project} start/stop:auths=solaris.smf.manage.applications/${appli_project}" >>/etc/security/prof_attr
+echo "OraAgent Management:::OraAgent profile:auths=solaris.smf.manage.monitoring/oraagent" >>/etc/security/prof_attr
+cat /etc/security/prof_attr
+}
+
+####  /etc/project
+{
+cat <<EOF >/etc/project
+system:0::::
+user.root:1::::
+noproject:2::::
+default:3::::
+group.staff:10::::
+user.${appli_project}:${appli_project_id}:${appli_project}:${appli_user}:${appli_group},staff:
+${appli_project}.app:${appli_project_id%0}1:${appli_project}:${appli_user}:${appli_group},staff:
+${appli_project}.dba:${appli_project_id%0}2:${appli_project}:${appli_user},oracle:dba:process.max-file-descriptor=(basic,1024,deny);project.max-shm-memory=(priv,4294967296,deny)
+${appli_project}.wood:${appli_project_id%0}3:${appli_project}:${appli_user},${w_appli_user}:${appli_group}:
+${appli_project}.woodweb:${appli_project_id%0}4:${appli_project}:${appli_user},${w_appli_user}:${appli_group}:
+EOF
+cat /etc/project
+}
+
+##### droit sur le repertoire xchange
+
+{
+if [ -d /applications/${appli_project}/xchange ]
+then
+	chown ${appli_user}:${appli_group} /applications/${appli_project}/xchange
+	ls -ld /applications/${appli_project}/xchange
+fi
+}
+
+
+##### connexion aux roles
+{
+for users in ${appli_user} ${w_appli_user} rootdba oracle dmadmin pdocu docuser
+do
+	echo "##### $users"
+	su - $users -c 'id;pwd'
+	echo	
+done
+}
+
+
+
+
+
+

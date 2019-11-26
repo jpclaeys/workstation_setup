@@ -1,0 +1,41 @@
+########################################################################################################################
+# dupplique les parametres applicatifs, user, ... et zfs de l'environement de test vers l'environement de production
+########################################################################################################################
+
+##### sur l'environement de test
+
+export test_zone=tedmonitor-tz
+export prod_zone=tedmonitor-pz
+export test_zpool=${test_zone}
+export prod_zpool=${prod_zone}
+export tmp_folder=/net/opsrv082/xchange/mb/zones/${test_zone}
+mkdir -p ${tmp_folder}
+echo $date
+
+
+tar cpvf  ${tmp_folder}/${test_zone}_accounting.tar /etc/passwd /etc/shadow /etc/group /etc/user_attr /etc/auto_home /etc/security/prof_attr /etc/security/exec_attr /etc/project 
+
+zfs get -H mountpoint,quota,reservation,recordsize,compression,aclmode,aclinherit,zoned | perl -ne 's/$ENV{test_zpool}/$ENV{prod_zpool}/; @line=split; print "zfs set $line[1]=$line[2] $line[0]\n"' | sort | tee /net/opsrv082/xchange/mb/zones/${test_zone}/zfs_param.txt
+
+
+##### sur l'hote physique de l'environement de prod (zone arretee)
+
+export test_zone=tedmonitor-tz
+export prod_zone=tedmonitor-pz
+export test_zpool=${test_zone}
+export prod_zpool=${prod_zone}
+export tmp_folder=/net/opsrv082/xchange/mb/zones/${test_zone}
+export date=`date +%Y%m%d%H%M`
+
+
+for file in /etc/passwd /etc/shadow /etc/group /etc/user_attr /etc/auto_home /etc/security/prof_attr /etc/security/exec_attr /etc/project
+do
+	cp -p ${file} ${file}.${date}
+done
+
+tar xvf  ${tmp_folder}/${test_zone}_accounting.tar
+
+grep 'zfs set zoned' /net/opsrv082/xchange/mb/zones/${test_zone}/zfs_param.txt | perl -ne 's/zoned=on/zoned=off/; print'
+sh /net/opsrv082/xchange/mb/zones/${test_zone}/zfs_param.txt
+
+

@@ -1,0 +1,627 @@
+
+
+
+
+
+[root@fluorine ~]# multipath -ll | grep mpath
+
+mpathd (360000970000292603453533033424331) dm-134 EMC     ,SYMMETRIX       
+mpathbn (360000970000292603453533033424336) dm-137 EMC     ,SYMMETRIX       
+mpathc (360000970000292603453533030304637) dm-133 EMC     ,SYMMETRIX       
+mpathbl (360000970000292603453533030304638) dm-135 EMC     ,SYMMETRIX  
+
+
+
+
+
+
+
+
+
+
+MER
+****
+
+    multipath {
+       wwid 360000970000296700060533030374536
+       alias centreonbo1-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030374537
+       alias centreonbo1-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030374538
+       alias centreonbo2-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030374539
+       alias centreonbo2-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030374541
+       alias centreonbo3-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030374542
+       alias centreonbo3-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030374543
+       alias centreonbo4-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030374544
+       alias centreonbo4-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030374545
+       alias centreonfo-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030374546
+       alias centreonfo-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030374534
+       alias svn-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030374535
+       alias svn-pk_vmax3_t1_data2
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030374532
+       alias vocbench-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030374533
+       alias vocbench-pk_vmax3_t1_data2
+    }
+
+
+EUF
+****
+
+
+    multipath {
+       wwid 360000970000296700069533030374536
+       alias centreonbo1-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374537
+       alias centreonbo1-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030374538
+       alias centreonbo2-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374539
+       alias centreonbo2-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030374541
+       alias centreonbo3-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374542
+       alias centreonbo3-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030374543
+       alias centreonbo4-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374544
+       alias centreonbo4-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030374545
+       alias centreonfo-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374546
+       alias centreonfo-pk_vmax3_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030374534
+       alias svn-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374535
+       alias svn-pk_vmax3_t1_data2
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030374532
+       alias vocbench-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374533
+       alias vocbench-pk_vmax3_t1_data2
+    }
+
+
+
+
+
+
+		VM_NAME="etenderext-tk"
+
+		sync &&  echo 3 > /proc/sys/vm/drop_caches;
+
+		ddrescue -v -f -n -b 65536 /dev/mapper/${VM_NAME}_vmax3_t1_system1 /dev/mapper/${VM_NAME}_hds_system1
+	
+                ddrescue -v -f -n -b 65536 /dev/mapper/${VM_NAME}_vmax3_t1_data1 /dev/mapper/${VM_NAME}_hds_data1
+             
+
+
+
+dd if=/dev/mapper/${VM_NAME}_vmax3_t1_system1 of=/dev/mapper/${VM_NAME}_vmax3_t1_system1 bs=64K conv=noerror,sync
+
+dd if=/dev/mapper/${VM_NAME}_vmax3_t1_data1 of=/dev/mapper/${VM_NAME}_vmax3_t2_data1  bs=64K conv=noerror,sync
+
+
+
+ 	sur les 4
+		VM_NAME="centreonbo3-pk"
+		partprobe /dev/mapper/${VM_NAME}_vmax3_t2_system1 && ls -l /dev/mapper/${VM_NAME}_vmax3_t2_system*
+	
+		partprobe /dev/mapper/${VM_NAME}_vmax3_t2_data1 && ls -l /dev/mapper/${VM_NAME}_vmax3_t2_data*
+	
+
+		virsh define /etc/libvirt/qemu/$VM_NAME.xml
+		
+		virsh edit $VM_NAME
+		virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+
+ 		for node in `crm_node -p | sed "s/$(hostname -s)-cl//g"`; do echo -n "$node: " && virsh -c qemu+ssh://$node/system define /etc/libvirt/qemu/$VM_NAME.xml; done
+
+
+		/home/admin/bin/removelun_rhel /dev/mapper/${VM_NAME}_t2_system1  | bash
+
+		/home/admin/bin/removelun_rhel /dev/mapper/${VM_NAME}_t2_data1  | bash
+
+
+sync &&  echo 3 > /proc/sys/vm/drop_caches;
+
+partprobe /dev/mapper/${VM_NAME}_hds_system1 && ls -l  /dev/mapper/${VM_NAME}_hds_system1*
+partprobe /dev/mapper/${VM_NAME}_hds_data1 && ls -l  /dev/mapper/${VM_NAME}_hds_data1*
+virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+
+pcs resource enable ${VM_NAME}
+	
+pcs resource create ${VM_NAME} ocf:heartbeat:VirtualDomain config=/etc/libvirt/qemu/${VM_NAME}.xml migration_transport=ssh meta allow-migrate="true" --disabled
+
+pcs constraint location ${VM_NAME} prefers neon-cl=50;
+pcs constraint location ${VM_NAME} prefers krypton-cl=25;
+pcs constraint location ${VM_NAME} prefers argon-cl=75;
+pcs constraint location ${VM_NAME} prefers xenon-cl=100;
+
+
+
+virsh undefine oud-mer-pk
+virsh undefine oud-euf-pk
+virsh undefine centreonbo1-pk
+virsh undefine centreonbo2-pk	
+virsh undefine centreonbo3-pk
+virsh undefine centreonbo4-pk
+virsh undefine centreonfo-pk
+virsh undefine opdns001
+virsh undefine opdns002
+
+
+ oud-mer-pk	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+ oud-euf-pk	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+ centreonbo1-pk	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+ centreonbo2-pk	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+ centreonbo3-pk	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+ centreonbo4-pk	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+ centreonfo-pk	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+ opdns001	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+ opdns002	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+
+
+
+
+
+
+       wwid 360000970000296700060533030303838
+       alias oud-mer-pk_t1_vmax3_system1
+
+
+       wwid 360000970000296700060533030303839
+       alias oud-mer-pk_t1_vmax3_data1
+
+
+       wwid 360000970000296700069533030303838
+       alias oud-euf-pk_t1_vmax3_system1
+
+
+       wwid 360000970000296700069533030303839
+       alias oud-euf-pk_t1_vmax3_data1
+
+       wwid 360000970000296700060533030374536
+       alias centreonbo1-pk_vmax3_t1_system1
+
+       wwid 360000970000296700060533030374537
+       alias centreonbo1-pk_vmax3_t1_data1
+
+       wwid 360000970000296700060533030374538
+       alias centreonbo2-pk_vmax3_t1_system1
+
+       wwid 360000970000296700060533030374539
+       alias centreonbo2-pk_vmax3_t1_data1
+
+
+       wwid 360000970000296700060533030374541
+       alias centreonbo3-pk_vmax3_t1_system1
+
+
+       wwid 360000970000296700060533030374542
+       alias centreonbo3-pk_vmax3_t1_data1
+
+
+       wwid 360000970000296700060533030374543
+       alias centreonbo4-pk_vmax3_t1_system1
+
+       wwid 360000970000296700060533030374544
+       alias centreonbo4-pk_vmax3_t1_data1
+
+       wwid 360000970000296700060533030374545
+       alias centreonfo-pk_vmax3_t1_system1
+
+       wwid 360000970000296700060533030374546
+       alias centreonfo-pk_vmax3_t1_data1
+
+       wwid 360000970000296700060533030374234
+       alias opdns001_vmax3_t1_system1
+
+       wwid 360000970000296700060533030374333
+       alias opdns002_vmax3_t1_system1
+
+
+
+mer_vmax3453_t1_rdfng_data1 (360000970000292603453533033334543) dm-2 EMC,SYMMETRIX
+mer_vmax3453_t1_rdfng_data2 (360000970000292603453533031313032) dm-3 EMC,SYMMETRIX
+mer_vmax3453_t1_rdfng_data3 (360000970000292603453533030324137) dm-4 EMC,SYMMETRIX
+
+
+
+/dev/mapper/etenderext-pk_t2_system1 # 360000970000292602560533030314331
+/dev/mapper/etenderext-pk_t2_data1 # 360000970000292602560533030364336
+
+
+/dev/mapper/etenderext-tk_t2_system1 # 360000970000292602560533030353036
+/dev/mapper/etenderext-tk_t2_data1 # 360000970000292602560533030353035
+
+
+
+/dev/mapper/vocbench-tk_t2_system1 # 360000970000292603453533030364542
+/dev/mapper/vocbench-tk_t2_data1 # 360000970000292603453533030364543
+
+
+
+20/03/2019 13:25:11
+
+Incident "IM0017613656" added.
+
+
+/dev/mapper/cellarbo-tk_system1 # 360000970000292603453533033304139
+/dev/mapper/cellarbo-tk_t2_data2 # 360000970000292603453533032333144
+
+
+
+
+
+
+
+/dev/mapper/cellarbo-rk_t2_system1 # 360000970000292603453533033303538
+/dev/mapper/cellarbo-rk_t2_data1 # 360000970000292603453533033303539
+/dev/mapper/cellarbo-rk_t2_data2 # 360000970000292603453533030364246
+/dev/mapper/cellarbo-rk_t2_data3 # 360000970000292603453533030304639
+
+
+
+
+ dd if=/dev/mapper/${VM_NAME}_t1_system1 of=/dev/mapper/${VM_NAME}_vmax3_t1_system1 bs=64K conv=noerror,sync status=progress
+ dd if=/dev/mapper/${VM_NAME}_t1_data2 of=/dev/mapper/${VM_NAME}_vmax3_t1_data2 bs=64K conv=noerror,sync status=progress
+
+
+/dev/mapper/cportalfs-rk_t2_system1 # 360000970000292603453533030364532
+/dev/mapper/cportalfs-rk_t2_data1 # 360000970000292603453533030364533
+
+
+
+/dev/mapper/svn-pk_t1_system1 # 360000970000292602560533033414641
+/dev/mapper/svn-pk_t1_data2 # 360000970000292602560533031304636
+
+
+
+/dev/mapper/cellarbo-bk_t3_system1 # 360000970000292603453533030344637
+/dev/mapper/cellarbo-bk_t3_data1 # 360000970000292603453533030344638
+
+
+
+/dev/mapper/eurlexfo-rk_t3_system1 # 360000970000292603453533033424136
+/dev/mapper/eurlexfo-rk_t3_data1 # 360000970000292603453533033424137
+
+
+tedmonitor-pk   nfs
+
+MER:
+
+
+
+Mar 14 11:26:59 | 360000970000296700060533030383132: rename mpathda to cellarbo-bk_vmax3_t3_data1
+Mar 14 11:26:59 | 360000970000296700060533030383033: rename mpathcx to cellarbo-bk_vmax3_t3_system1
+Mar 14 11:26:59 | 360000970000296700060533030383034: rename mpathcz to cellarbo-dk_vmax3_t2_system1
+Mar 14 11:26:59 | 360000970000296700060533030383135: rename mpathdb to cellarbo-dk_vmax3_t2_data1
+Mar 14 11:27:00 | 360000970000296700060533030383035: rename mpathcy to cellarbo-rk_vmax3_t2_system1
+Mar 14 11:27:00 | 360000970000296700060533030383136: rename mpathdi to cellarbo-dk_vmax3_t2_data2
+Mar 14 11:27:00 | 360000970000296700060533030383036: rename mpathdf to cellarbo-rk_vmax3_t2_data2
+Mar 14 11:27:00 | 360000970000296700060533030383141: rename mpathdj to cellarbo-rk_vmax3_t2_data3
+Mar 14 11:27:00 | 360000970000296700060533030383037: rename mpathde to cellarbo-tk_vmax3_system1
+Mar 14 11:27:01 | 360000970000296700060533030383137: rename mpathdc to cellarbo-rk_vmax3_t2_data1
+Mar 14 11:27:01 | 360000970000296700060533030383144: rename mpathdd to cellarbo-tk_vmax3_t2_data2
+Mar 14 11:27:01 | 360000970000296700060533030383038: rename mpathdg to cportalfs-rk_vmax3_t2_system1
+Mar 14 11:27:03 | 360000970000296700060533030383142: rename mpathdr to cportalfs-rk_vmax3_t2_data1
+Mar 14 11:27:05 | 360000970000296700060533030383041: rename mpathdu to eurlexfo-rk_vmax3_t3_system1
+Mar 14 11:27:07 | 360000970000296700060533030383133: rename mpathdh to eurlexfo-rk_vmax3_t3_data1
+Mar 14 11:27:08 | 360000970000296700060533030383042: rename mpathdn to eurlexfo-tk_vmax3_t2_system1
+Mar 14 11:27:13 | 360000970000296700060533030383138: rename mpathdm to eurlexfo-tk_vmax3_t2_data2
+Mar 14 11:27:13 | 360000970000296700060533030383143: rename mpathdl to eurlexfo-tk_vmax3_t3_data3
+Mar 14 11:27:14 | 360000970000296700060533030383043: rename mpathdt to eurlexrh7fo-tk_vmax3_t2_system1
+Mar 14 11:27:14 | 360000970000296700060533030383044: rename mpathec to eurlexrh7fo-tk_vmax3_t2_data1
+Mar 14 11:27:15 | 360000970000296700060533030383046: rename mpathdq to rdfngbo-bk_vmax3_t2_system1
+Mar 14 11:27:15 | 360000970000296700060533030383139: rename mpathdv to rdfngbo-bk_vmax3_t2_data1
+Mar 14 11:27:15 | 360000970000296700060533030383130: rename mpathdy to rdfngbo-dk_vmax3_t2_system1
+Mar 14 11:27:16 | 360000970000296700060533030383146: rename mpathdw to rdfngbo-dk_vmax3_t2_data1
+Mar 14 11:27:16 | 360000970000296700060533030383131: rename mpathdx to rdfngbo-rk_vmax3_t2_system1
+Mar 14 11:27:16 | 360000970000296700060533030383230: rename mpathea to rdfngbo-rk_vmax3_t2_data1
+Mar 14 11:27:16 | 360000970000296700060533030383134: rename mpatheb to rdfngbo-tk_vmax3_t2_data1
+Mar 14 11:27:17 | 360000970000296700060533030383231: rename mpathdz to rdfngbo-tk_vmax3_t2_system1
+
+
+EUF:
+
+    multipath {
+       wwid 360000970000296700069533030383033
+       alias cellarbo-bk_vmax3_t3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383132
+       alias cellarbo-bk_vmax3_t3_data1
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030383034
+       alias cellarbo-dk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383135
+       alias cellarbo-dk_vmax3_t2_data1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383136
+       alias cellarbo-dk_vmax3_t2_data2
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030383035
+       alias cellarbo-rk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383137
+       alias cellarbo-rk_vmax3_t2_data1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383036
+       alias cellarbo-rk_vmax3_t2_data2
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383141
+       alias cellarbo-rk_vmax3_t2_data3
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030383037
+       alias cellarbo-tk_vmax3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383144
+       alias cellarbo-tk_vmax3_t2_data2
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030383038
+       alias cportalfs-rk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383142
+       alias cportalfs-rk_vmax3_t2_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030383041
+       alias eurlexfo-rk_vmax3_t3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383133
+       alias eurlexfo-rk_vmax3_t3_data1
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030383042
+       alias eurlexfo-tk_vmax3_t2_system1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030383138
+       alias eurlexfo-tk_vmax3_t2_data2
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030383143
+       alias eurlexfo-tk_vmax3_t3_data3
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030383043
+       alias eurlexrh7fo-tk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383044
+       alias eurlexrh7fo-tk_vmax3_t2_data1
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030383046
+       alias rdfngbo-bk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383139
+       alias rdfngbo-bk_vmax3_t2_data1
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030383130
+       alias rdfngbo-dk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383146
+       alias rdfngbo-dk_vmax3_t2_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030383131
+       alias rdfngbo-rk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383230
+       alias rdfngbo-rk_vmax3_t2_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030383231
+       alias rdfngbo-tk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030383134
+       alias rdfngbo-tk_vmax3_t2_data1
+    }
+
+
+
+
+
+
+
+ /dev/mapper/centreonbo3-pk_t1_system1 # 360000970000292602560533033303145
+ /dev/mapper/centreonbo3-pk_t1_data1 # 360000970000292602560533030333644
+
+ /dev/mapper/centreonbo4-pk_t1_system1 # 360000970000292602560533030364331
+ /dev/mapper/centreonbo4-pk_t1_data1 # 360000970000292602560533030364332
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

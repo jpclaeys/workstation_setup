@@ -1,0 +1,285 @@
+###############################################################################
+# howto remove a zone
+###############################################################################
+
+
+
+##### variables, on both nodes
+
+export zone_name=
+export tmp_folder=/net/vdm-unix/systemstore/temp/${zone_name}
+mkdir $tmp_folder
+who=`who am i | awk '{print $1}'`
+
+
+
+##### inform integration, db teams
+
+
+
+##### schedule dowtine in centreon
+
+
+
+##### get OS on primary node
+
+{
+os=`zlogin $zone_name uname -r | sed -e 's/^5\./Solaris /'`
+echo $os
+}
+
+
+
+##### get network informations, on primary node
+
+{
+global_zone_os=`uname -r`
+if [ x"$global_zone_os" == x'5.10' ]; then
+	zonecfg -z $zone_name info net | grep address: | awk '{print $2}' | awk -F'/' '{print $1}' | while read ip
+	do
+		name=`nslookup $ip | grep name | awk '{print $NF}' | sed -e 's/\.$//'`
+		echo ${ip}: ${name}
+	done > ${tmp_folder}/network_ip.txt
+else
+	zonecfg -z $zone_name info anet| grep allowed-address | grep -v configure-allowed-address | awk '{print $2}' | perl -pe 's/,/\n/g' | awk -F'/' '{print $1}' | while read ip
+	do
+		name=`nslookup $ip | grep name | awk '{print $NF}' | sed -e 's/\.$//'`
+		echo ${ip}: ${name}
+	done > ${tmp_folder}/network_ip.txt
+fi
+cat /zones/${zone_name}/root/etc/hosts >${tmp_folder}/network_etc_hosts.txt
+cat ${tmp_folder}/network_ip.txt
+}
+
+
+
+
+
+##### get storage informations, on both nodes
+
+/home/admin/bin/storage_info.pl -A >${tmp_folder}/storage_info_`uname -n`.txt
+
+
+
+##### get storage informations, on primary node
+
+export zpools=`zonecfg -z $zone_name info dataset | grep name | awk '{print $2}' | awk -F'/' '{print $1}'` 
+zpool status $zpools
+
+
+
+{
+> ${tmp_folder}/storage_hex_lun_id.txt
+for pool in $zpools
+do
+	zpool status $pool | grep ONLINE | egrep -v "state:|$pool|mirror" | awk '{print $1}' | sed -e 's/s0$//' -e 's/s2$//' | while read disk
+	do
+		echo "$disk" | grep '^emcpower' >/dev/null
+		if [ $? = 0 ]; then disk=`echo $disk | sed -e 's/c$/a/'`; fi
+		line=$(grep "$disk " ${tmp_folder}/storage_info_`uname -n`.txt)
+		echo "$line" | grep 'VNX' >/dev/null
+		if [ $? = 0 ]; then export storage_type=VNX; fi
+		echo "$line" | egrep 'VMAX_2560|VMAX_3453' >/dev/null
+		if [ $? = 0 ]; then export storage_type=VMAX; fi
+		echo "$line" | grep 'Vmax3' >/dev/null
+		if [ $? = 0 ]; then export storage_type=Vmax3; fi
+		hex_lun_id=`echo "$line" | awk '{print $9}'`
+		grep `echo "$hex_lun_id" | uniq` ${tmp_folder}/storage_info_`uname -n`.txt | grep $storage_type
+		echo "$hex_lun_id" | uniq >> ${tmp_folder}/storage_hex_lun_id.txt
+		echo "$storage_type" >> ${tmp_folder}/storage_type.txt
+	done 
+done
+}>${tmp_folder}/storage_info_${zone_name}.txt
+cat ${tmp_folder}/storage_info_${zone_name}.txt
+
+
+
+##### storage informations, on secondary node 
+
+{
+for id in `cat ${tmp_folder}/storage_hex_lun_id.txt | sort -u`
+do
+	grep "$id " ${tmp_folder}/storage_info_`uname -n`.txt | grep `cat ${tmp_folder}/storage_type.txt | sort -u` 
+done
+} >> ${tmp_folder}/storage_info_${zone_name}.txt
+cat ${tmp_folder}/storage_info_${zone_name}.txt
+
+
+
+##### get disk WWNs for zone
+
+{
+storage_type=`cat ${tmp_folder}/storage_type.txt | grep -v '^$'| sort -u`
+case "$storage_type" in
+	VMAX)
+		cat ${tmp_folder}/storage_info_${zone_name}.txt | awk '{print $18}' | sort -u | while read symdevice
+		do
+			symdev show -sid 000292603453 $symdevice | grep 'Device WWN' | awk '{print $4}'
+			symdev show -sid 000292602560 $symdevice | grep 'Device WWN' | awk '{print $4}'
+		done
+	;;
+	Vmax3)
+		cat ${tmp_folder}/storage_info_${zone_name}.txt | awk '{print $28}' | sort -u | while read symdevice
+		do
+			symdev show -sid 000296700060 $symdevice | grep 'Device WWN' | awk '{print $4}'
+			symdev show -sid 000296700069 $symdevice | grep 'Device WWN' | awk '{print $4}'
+		done
+	;;
+	VNX)
+		cat ${tmp_folder}/storage_info_${zone_name}.txt | awk '{print $28}' | sort -u
+	;;
+esac
+} >${tmp_folder}/wwn.txt
+cat ${tmp_folder}/wwn.txt
+
+
+
+##### stop the zone, on primary node
+
+zoneadm -z $zone_name halt
+
+
+
+##### phase out backup client
+
+{
+echo "#SMT Title: remove backup client for bkp-${zone_name}"
+echo "#SMT Template: BACKUP REQUEST - Delete client"
+echo
+echo Client name: bkp-$zone_name
+echo OS: $os
+echo Reason: zone removed
+echo; echo Merci
+} | mailx -s "create a ticket with this content" $who
+
+
+
+##### phase out rman client
+
+{
+echo "La zone $zone_name n'existe plus, le(s) client(s) RMAN correspondant(s) peuvent etre supprimes."
+echo Merci.
+} | mailx -s "remove rman client: ${zone_name}" -r mathieu.betori@ext.publications.europa.eu -c mathieu.betori@ext.publications.europa.eu OP-INFRA-DB@publications.europa.eu
+
+
+
+##### unconfigure cluster resources for the zone, on primary node
+
+{
+clrs list -g ${zone_name}-rg | while read rs
+do
+	echo "$rs"
+	clrs disable $rs && \
+	clrs delete $rs
+
+done
+echo ${zone_name}-rg
+clrg offline ${zone_name}-rg && clrg delete ${zone_name}-rg 
+}
+
+
+
+##### unconfigure the zone, on both nodes
+
+zonecfg -z $zone_name delete -F
+
+
+
+##### destroy zpools, on primary node
+
+{
+for pool in $zpools
+do
+	zpool import $pool
+	zpool destroy $pool && echo $pool destroyed
+done
+}
+
+
+
+##### put offline disk, on both nodes
+
+{
+for id in `cat ${tmp_folder}/storage_hex_lun_id.txt  | sort -u`
+do
+	if [ x"$global_zone_os" == x'5.10' ]; then
+		grep " $id " ${tmp_folder}/storage_info_`uname -n`.txt | grep `cat ${tmp_folder}/storage_type.txt| sort -u` | awk '{print "luxadm -e offline /dev/rdsk/"$3"s2"}'
+	else
+		grep " $id " ${tmp_folder}/storage_info_`uname -n`.txt | grep `cat ${tmp_folder}/storage_type.txt| sort -u` | awk '{print "op_dev_offline_powermt_luxadm.sh "$3}'
+	fi
+done
+} | sh | sort -u
+
+devfsadm -Cv
+cldev populate
+cldev clear
+cldev status -s fail
+
+
+
+##### return storage
+
+{
+echo "#SMT Title: recover storage for ${zone_name}"
+echo "#SMT Template: STORAGE REQUEST - Retrieve unused storage"
+echo
+echo "Type of storage (VNX - VMAX - VMAX3 - NAS - eNAS): `cat ${tmp_folder}/storage_type.txt | sort -u`"
+echo "Impacted hosts: `clnode list | xargs| perl -pe 's/ /, /'`"
+echo "Masking info (vm, datastore, zone,... name): $zone_name"
+echo "LUN WWN and/or ID:
+`cat ${tmp_folder}/wwn.txt | sort -u`"
+echo; echo Merci
+} | mailx -s "create a ticket with this content" $who
+
+
+
+##### return network
+
+{
+echo "#SMT Title: recover IP for $zone_name"
+echo "#SMT Template: NETWORK REQUEST - recover IP"
+echo
+echo "Could you please remove the IP addresses present in then attached Excel file ?"
+echo "Thanks in advance"
+echo
+echo
+echo '# content of the Excel file:'
+echo "delete; $zone_name; A; `nslookup $zone_name | grep Address | grep -v '#53' | awk '{print $2}'`"
+echo "delete; bkp-${zone_name}; A; `nslookup bkp-${zone_name} | grep Address | grep -v '#53' | awk '{print $2}'`"
+echo "delete; `egrep 'opsrv|opsvc' /net/vdm-unix/systemstore/temp/${zone_name}/network_ip.txt | awk '{print $2}' | sed -e 's/.opoce.cec.eu.int//'`; CNAME; $zone_name"
+} | mailx -s "create a ticket with this content" $who
+
+
+
+
+##### remove puppet/cfengine client configuration
+
+# for cfengine, edit to remove zone_name in  infra-pz:/var/cfengine/master/inputs/cf.groups
+# for puppet, delete the host from the Foreman GUI
+
+
+
+##### remove monitoring client
+
+{
+cat <<EOT
+Salut,
+
+Pouvez-vous s'il vous plait supprimer les clients de monitoring suivants;
+`cat ${tmp_folder}/network_ip.txt | awk '{print $2}' | sed -e 's/.opoce.cec.eu.int//' | grep -v "bkp-${zone_name}"`
+
+Merci d'avance
+EOT
+} | mailx -s "suppression de client de monitoring pour $zone_name" -r mathieu.betori@ext.publications.europa.eu -c mathieu.betori@ext.publications.europa.eu,OPDL-INFRA-INT-PROD@publications.europa.eu Michel.MOMMATI@ext.publications.europa.eu
+
+
+
+##### change status in CNDB to archived			
+
+{
+echo "La zone $zone_name n'existe plus, elle peut etre supprimee de la CMDB."
+echo Merci.
+} | mailx -s "mise a jour de la cmdb: ${zone_name}" -r mathieu.betori@ext.publications.europa.eu -c mathieu.betori@ext.publications.europa.eu OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
+
+
+

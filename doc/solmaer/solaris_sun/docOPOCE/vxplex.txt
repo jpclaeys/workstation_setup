@@ -1,0 +1,13 @@
+#######/usr/lib/vxvm/bin/vxdiskunsetup -C c3t0d0
+####APRES DIS des plexes et decrochage
+vxdiskadm ( option 4 )
+
+vxdctl enable
+
+/usr/lib/vxvm/bin/vxdisksetup -i c1t0d0 format=sliced 
+
+vxdiskadm ( option 5 )
+
+# Attacher chaque plex ( c'est foreground )
+vxplex att rootvol rootvol-02
+.....

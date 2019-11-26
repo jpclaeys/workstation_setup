@@ -1,0 +1,40 @@
+
+HelpDesk :
+----------
+
+42020
+
+
+Imprimante :
+------------
+
+OPRT-173	(imprimante)
+OPVMWSPRT01 	(serveur d'impression)
+
+
+Share :
+-------
+
+smb://portal_pz/010_management/060_Human_Ressources/030_Timesheets/2017
+
+Fichier XLS :
+-------------
+
+\\portal_pz\090_System\040_Common_parts\020_Architecture
+
+
+Proxy :
+-------
+
+PROXY ps-bxl-usr.cec.eu.int:8012
+PROXY ps-lux-usr.cec.eu.int:8012
+
+Demande IP :
+-------------
+OPDL INFRA TEL NET 
+
+
+Projet LDAP migration :
+------------------------
+
+https://webgate.ec.europa.eu/CITnet/confluence/display/OPC/OP+Cloud+Home 

@@ -1,0 +1,151 @@
+##########################################################################################################################################
+#####
+##### solaris sparc server fully-automated installation
+##### from aiserver and pupper
+#####
+##########################################################################################################################################
+
+
+##### ai server manifest
+# opoce-solaris-large-server group package
+# mirrored zpool with internal disks
+# IPS server publisher
+# system locales
+# "entire" package
+# mpxio disabled
+# LDAP configuration
+# DNS configuration
+# puppet agent
+# service d'installation solaris 11.2 pour sparc
+# profil par machine pour specifier configuration cartes reseau, ip, ...
+
+
+
+##### puppet configuration
+# EMC Powerpath
+# EMC SRDF, with client/server mode
+# EMC SRM
+# EMC agent
+# EMC Networker, with rman
+# packages pkg:/diagnostic/top
+# packages pkg:/text/locale
+# packages pkg:/service/network/smtp/sendmail
+# RBAC configuration for root user
+# RBAC configuration for root oracle/rootdba
+# SMF svc:/system/filesystem/autofs:default
+# SMF svc:/network/smtp:sendmail
+# SMF svc:/application/management/net-snmp:default
+# root password 
+# Solaris Cluster configuration
+# Oracle Explorer
+# OpAppExplo
+# crash/core configuration
+# swap size ZFS volume definition
+# dump size ZFS volume definition
+# oraagent
+# pkg install pkg:/support/explorer
+# pkg install developer/build/make developer/build/gnu-make compatibility/ucb
+# pkg install pkg://solaris/library/motif pkg:/x11/library/libxp xauth xclock x11/diagnostic/x11-info-clients
+# pkg install pkg://solaris/x11/x11-server-utilities
+# pkg install pkg:/developer/assembler
+# remove iaserver user
+
+
+
+
+###################################################################
+#####
+##### for obp server
+#####
+
+
+
+##### variables
+
+host_ip=                             # IP of physical server
+router_ip=                           # IP of default router
+subnet_mask=                         # netmask
+hostname=                            # name of the server
+
+
+
+##### set network-boot-arguments
+
+echo setenv network-boot-arguments host-ip=${host_ip},router-ip=${router_ip},subnet-mask=${subnet_mask},hostname=${hostname},file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+
+
+
+
+### network-boot-arguments =  host-ip=10.199.99.62,router-ip=10.199.99.251,subnet-mask=255.255.255.0,hostname=guido,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+### Requesting Ethernet address for: 10.199.99.251
+
+
+###################################################################
+#####
+##### on ai server
+#####
+
+
+
+##### variables
+
+export client_name=guido
+export client_ipv4=10.199.99.62
+export ethernet_address=0:14:4f:6f:23:4e
+export installation_service=opoce-sparc-sol11_2
+export manifest_file=/applications/ai/manifests/global_zone_internal_disks.xml
+export profile_file=/applications/ai/profiles/global_zone.xml
+
+
+
+##### manifest
+## just one time, during the manifest creation
+# installadm create-manifest -n ${installation_service} -f ${manifest_file}
+# installadm validate -n ${installation_service} -m global_zone_internal_disks
+
+
+##### client
+
+installadm create-client -e ${ethernet_address} -n ${installation_service}
+	
+
+
+##### profile
+
+installadm create-profile -n ${installation_service} -f ${profile_file} -c hostname=${client_name}
+
+
+
+###################################################################
+#####
+##### on obp server
+#####
+
+
+ok setenv diag-switch? false
+
+ok watch-net-all
+ok show-nets
+ok devalias
+
+ok boot net - install
+
+
+
+
+###################################################################
+#####
+##### 
+#####
+
+
+
+
+
+
+
+
+
+
+
+

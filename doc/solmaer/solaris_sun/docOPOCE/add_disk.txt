@@ -1,0 +1,38 @@
+/usr/lib/vxvm/bin/vxdisksetup -i EMC0_10 
+vxdg -g homedir adddisk DMX1000_32=EMC0_10
+
+scgdevs
+vxdctl enable
+scconf -c -D name=homedir,sync
+
+
+root@osiris # df -h   /users
+Filesystem             size   used  avail capacity  Mounted on
+/dev/vx/dsk/homedir/vusers
+                        66G    42G    23G    65%    /users
+root@osiris # df -n  /users
+/users             : ufs     
+root@osiris # vxprint -g homedir -ht | grep vusers 
+v  vusers       -            ENABLED  ACTIVE   141408256 SELECT   -        fsgen
+pl vusers-01    vusers       ENABLED  ACTIVE   141408256 CONCAT   -        RW
+sd DMX1000_36-01 vusers-01   DMX1000_36 0      141408256 0        EMC0_11  ENA
+root@osiris # vxdg -g homedir free
+DISK         DEVICE       TAG          OFFSET    LENGTH    FLAGS
+DMX1000_32   EMC0_10      EMC0_10      0         70703616  -
+DMX1000_36   EMC0_11      EMC0_11      141408256 1280      -
+
+vxassist -g homedir -b growby vusers 70703616 alloc=DMX1000_32
+vxprint -g homedir -ht | grep vusers 
+
+root@osiris # vxprint -g homedir -ht | grep vusers 
+v  vusers       -            ENABLED  ACTIVE   212111872 SELECT   -        fsgen
+pl vusers-01    vusers       ENABLED  ACTIVE   212111872 CONCAT   -        RW
+sd DMX1000_36-01 vusers-01   DMX1000_36 0      141408256 0        EMC0_11  ENA
+sd DMX1000_32-01 vusers-01   DMX1000_32 0      70703616 141408256 EMC0_10  ENA
+
+/usr/lib/vxvm/bin/vxresize -g homedir vusers 212111872
+root@osiris # df -h   /users
+Filesystem             size   used  avail capacity  Mounted on
+/dev/vx/dsk/homedir/vusers
+                       100G    42G    57G    43%    /users
+dmesg

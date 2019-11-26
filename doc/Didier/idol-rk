@@ -1,0 +1,221 @@
+
+
+idol1-rk :
+**********
+
+
+mpathc (360000970000292603453533032423333) dm-20 EMC,SYMMETRIX
+size=84G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 1:0:2:1  sdaa 65:160 active ready running
+  `- 0:0:2:1  sdw  65:96  active ready running
+--
+
+mpatha (360000970000292603453533030334146) dm-18 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 0:0:2:0  sdv  65:80  active ready running
+  `- 1:0:2:0  sdz  65:144 active ready running
+
+mer_vmax_idol1-rk_system1 360000970000292603453533032423333
+mer_vmax_idol1-rk_data1 360000970000292603453533030334146
+
+
+
+      <source dev='/dev/mapper/mer_vnx475_t1_idol1-rk_system1'/>
+      <source dev='/dev/mapper/mer_vnx475_t1_idol1-rk_data1'/>
+
+  dd if=/dev/mapper/mer_vnx475_t1_idol1-rk_system1 of=/dev/mapper/mer_vmax_idol1-rk_system1 bs=64K conv=noerror,sync status=progress
+  dd if=/dev/mapper/mer_vnx475_t1_idol1-rk_data1 of=/dev/mapper/mer_vmax_idol1-rk_data1 bs=64K conv=noerror,sync status=progress
+
+
+
+
+
+idol2-rk :
+**********
+
+mpathd (360000970000292603453533032453137) dm-21 EMC,SYMMETRIX
+size=84G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 0:0:2:3  sdy  65:128 active ready running
+  `- 1:0:2:3  sdac 65:192 active ready running
+
+mpathb (360000970000292603453533030334236) dm-19 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 0:0:2:2  sdx  65:112 active ready running
+  `- 1:0:2:2  sdab 65:176 active ready running
+
+
+mer_vmax_idol2-rk_system1 360000970000292603453533032453137
+mer_vmax_idol2-rk_data1 360000970000292603453533030334236
+
+
+     <source dev='/dev/mapper/mer_vnx475_t1_idol2-rk_system1'/>
+     <source dev='/dev/mapper/mer_vnx475_t1_idol2-rk_data1'/>
+
+
+  dd if=/dev/mapper/mer_vnx475_t1_idol2-rk_system1 of=/dev/mapper/mer_vmax_idol2-rk_system1 bs=64K conv=noerror,sync status=progress
+  dd if=/dev/mapper/mer_vnx475_t1_idol2-rk_data1 of=/dev/mapper/mer_vmax_idol2-rk_data1 bs=64K conv=noerror,sync status=progress
+
+
+
+idol3-rk :
+**********
+
+
+mpathb (360000970000292603453533033303438) dm-19 EMC,SYMMETRIX
+size=84G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 0:0:2:1  sdw  65:96  active ready running
+  `- 1:0:2:1  sdaa 65:160 active ready running
+mpatha (360000970000292603453533030334244) dm-18 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 0:0:2:0  sdv  65:80  active ready running
+  `- 1:0:2:0  sdz  65:144 active ready running
+
+
+
+mer_vmax_idol3-rk_system1 360000970000292603453533033303438
+mer_vmax_idol3-rk_data1 360000970000292603453533030334244
+
+	dd if=/dev/mapper/mer_vnx475_t1_idol3-rk_system1 of=/dev/mapper/mer_vmax_idol3-rk_system1 bs=64K conv=noerror,sync status=progress
+	dd if=/dev/mapper/mer_vnx475_t1_idol3-rk_data1 of=/dev/mapper/mer_vmax_idol3-rk_data1 bs=64K conv=noerror,sync status=progress
+
+
+idol4-rk :
+**********
+
+
+mpathd (360000970000292603453533033343137) dm-21 EMC,SYMMETRIX
+size=84G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 0:0:2:3  sdy  65:128 active ready running
+  `- 1:0:2:3  sdac 65:192 active ready running
+mpathc (360000970000292603453533030334334) dm-20 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 0:0:2:2  sdx  65:112 active ready running
+  `- 1:0:2:2  sdab 65:176 active ready running
+
+
+mer_vmax_idol4-rk_system1 360000970000292603453533033343137
+mer_vmax_idol4-rk_data1 360000970000292603453533030334334
+
+
+      <source dev='/dev/mapper/mer_vnx475_t1_idol4-rk_system1'/>
+      <source dev='/dev/mapper/mer_vnx475_t1_idol4-rk_data1'/>
+
+
+	dd if=/dev/mapper/mer_vnx475_t1_idol4-rk_system1 of=/dev/mapper/mer_vmax_idol4-rk_system1 bs=64K conv=noerror,sync status=progress
+	dd if=/dev/mapper/mer_vnx475_t1_idol4-rk_data1 of=/dev/mapper/mer_vmax_idol4-rk_data1 bs=64K conv=noerror,sync status=progress
+
+
+idol5-rk :
+**********
+
+
+mpathb (360000970000292602560533032423333) dm-19 EMC,SYMMETRIX
+size=84G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  `- 0:0:2:1  sdw 65:96  active ready running
+
+mpatha (360000970000292602560533030334146) dm-18 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  `- 0:0:2:0  sdv 65:80  active ready running
+
+
+euf_vmax_idol5-rk_system1 360000970000292602560533032423333
+euf_vmax_idol5-rk_data1 360000970000292602560533030334146
+
+      <source dev='/dev/mapper/euf_vnx476_t1_idol5-rk_system1'/>
+      <source dev='/dev/mapper/euf_vnx476_t1_idol5-rk_data1'/>
+
+	dd if=/dev/mapper/euf_vnx476_t1_idol5-rk_system1 of=/dev/mapper/euf_vmax_idol5-rk_system1 bs=64K conv=noerror,sync status=progress
+	dd if=/dev/mapper/euf_vnx476_t1_idol5-rk_data1 of=/dev/mapper/euf_vmax_idol5-rk_data1 bs=64K conv=noerror,sync status=progress
+
+idol6-rk :
+**********
+
+
+mpathd (360000970000292602560533032453137) dm-21 EMC,SYMMETRIX
+size=84G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  `- 0:0:2:3  sdy 65:128 active ready running
+
+mpathc (360000970000292602560533030334236) dm-20 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  `- 0:0:2:2  sdx 65:112 active ready running
+
+
+euf_vmax_idol6-rk_system1 360000970000292602560533032453137
+euf_vmax_idol6-rk_data1 360000970000292602560533030334236
+
+
+     <source dev='/dev/mapper/euf_vnx476_t1_idol6-rk_system1'/>
+     <source dev='/dev/mapper/euf_vnx476_t1_idol6-rk_data1'/>
+
+	dd if=/dev/mapper/euf_vnx476_t1_idol6-rk_system1 of=/dev/mapper/euf_vmax_idol6-rk_system1 bs=64K conv=noerror,sync status=progress
+	dd if=/dev/mapper/euf_vnx476_t1_idol6-rk_data1 of=/dev/mapper/euf_vmax_idol6-rk_data1 bs=64K conv=noerror,sync status=progress
+
+
+idol7-rk :
+***********
+
+
+
+mpathb (360000970000292602560533033303438) dm-19 EMC,SYMMETRIX
+size=84G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 1:0:2:1  sdw  65:96  active ready running
+  `- 0:0:2:1  sdaa 65:160 active ready running
+mpatha (360000970000292602560533030334244) dm-18 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 1:0:2:0  sdv  65:80  active ready running
+  `- 0:0:2:0  sdz  65:144 active ready running
+
+
+euf_vmax_idol7-rk_system1 360000970000292602560533033303438
+euf_vmax_idol7-rk_data1 360000970000292602560533030334244
+
+
+      <source dev='/dev/mapper/euf_vnx476_t1_idol7-rk_system1'/>
+      <source dev='/dev/mapper/euf_vnx476_t1_idol7-rk_data1'/>
+
+	dd if=/dev/mapper/euf_vnx476_t1_idol7-rk_system1 of=/dev/mapper/euf_vmax_idol7-rk_system1 bs=64K conv=noerror,sync status=progress
+	dd if=/dev/mapper/euf_vnx476_t1_idol7-rk_data1 of=/dev/mapper/euf_vmax_idol7-rk_data1 bs=64K conv=noerror,sync status=progress
+
+
+idol8-rk :
+***********
+
+mpathd (360000970000292602560533033343137) dm-21 EMC,SYMMETRIX
+size=84G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 1:0:2:3  sdy  65:128 active ready running
+  `- 0:0:2:3  sdac 65:192 active ready running
+mpathc (360000970000292602560533030334334) dm-20 EMC,SYMMETRIX
+size=238G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 1:0:2:2  sdx  65:112 active ready running
+  `- 0:0:2:2  sdab 65:176 active ready running
+
+
+euf_vmax_idol8-rk_system1 360000970000292602560533033343137
+euf_vmax_idol8-rk_data1 360000970000292602560533030334334
+
+    <source dev='/dev/mapper/euf_vnx476_t1_idol8-rk_system1'/>
+    <source dev='/dev/mapper/euf_vnx476_t1_idol8-rk_data1'/>
+
+	dd if=/dev/mapper/euf_vnx476_t1_idol8-rk_system1 of=/dev/mapper/euf_vmax_idol8-rk_system1 bs=64K conv=noerror,sync status=progress
+	dd if=/dev/mapper/euf_vnx476_t1_idol8-rk_data1 of=/dev/mapper/euf_vmax_idol8-rk_data1 bs=64K conv=noerror,sync status=progress
+
+
+
+
+

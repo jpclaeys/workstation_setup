@@ -1,0 +1,280 @@
+############################################################################
+##### base configuration
+
+
+export PREFIX_DWM=/opt/dwm/dwm-6.0
+
+0[151103/201725]root@portmb# find /opt/dwm 
+/opt/dwm
+/opt/dwm/dwm-6.0.tar
+/opt/dwm/dmenu-4.5.tar
+
+
+
+0[151103/201854]root@portmb# tar xf dwm-6.0.tar 
+0[151103/201859]root@portmb# cd dwm-6.0
+
+
+
+2[151103/203741]root@portmb# cp config.mk config.mk.orig
+0[151103/203756]root@portmb# vi config.mk
+0[151103/203820]root@portmb# diff config.mk config.mk.orig
+7c7
+< PREFIX = /opt/dwm/dwm-6.0
+---
+> PREFIX = /usr/local
+1[151103/203823]root@portmb# 
+
+
+ 
+1[151103/203844]root@portmb# cp config.def.h config.h
+0[151103/203850]root@portmb# vi config.h 
+0[151103/204020]root@portmb# diff config.def.h config.h
+8c8
+< static const char selbordercolor[]  = "#005577";
+---
+> static const char selbordercolor[]  = "red";
+22c22
+< 	{ "Firefox",  NULL,       NULL,       1 << 8,       False,       -1 },
+---
+> 	//{ "Firefox",  NULL,       NULL,       1 << 8,       False,       -1 },
+32,34c32,36
+< 	{ "[]=",      tile },    /* first entry is default */
+< 	{ "><>",      NULL },    /* no layout function means floating behavior */
+< 	{ "[M]",      monocle },
+---
+> 	/* first entry is default */
+> 	/* no layout function means floating behavior */
+> 	{ "[f]",      NULL },    
+> 	{ "t[]",      tile },
+> 	{ "[m]",      monocle },
+1[151103/204024]root@portmb# 
+
+
+0[151103/204920]root@portmb# mkdir /opt/dwm/dwm-6.0/bin 
+0[151103/204043]root@portmb# mkdir patches
+
+
+
+############################################################################
+##### xsession
+
+{
+cat <<EOF >$PREFIX_DWM/bin/startdwm
+#!/bin/sh
+
+PATH=\$PATH:$PREFIX_DWM
+csum=\$(sha1sum \$(which dwm))
+new_csum=""
+while true
+do
+    if [ "\$csum" != "\$new_csum" ]
+    then
+        csum=\$new_csum
+        dwm
+    else
+        exit 0
+    fi
+    new_csum=\$(sha1sum \$(which dwm))
+    sleep 0.5
+done
+EOF
+}
+
+
+0[151103/205957]root@portmb# chmod +x /opt/dwm/dwm-6.0/bin/startdwm
+
+
+{
+cat <<EOF >/usr/share/xsessions/dwm.desktop 
+[Desktop Entry]
+Type=Application
+Name=dwm
+Comment=Dynamic window manager for X
+Exec=$PREFIX_DWM/bin/startdwm
+EOF
+}
+
+
+
+
+#######################################################################
+##### patch shiftview
+
+
+
+0[151103/212003]root@portmb# cd /opt/dwm/dwm-6.0/patches 
+0[151103/212010]root@portmb# wget "http://lists.suckless.org/dev/att-7590/shiftview.c"
+
+0[151103/212040]root@portmb# cd ..
+1[151103/212055]root@portmb# cp config.h config.def.h
+
+0[151103/212121]root@portmb# cp patches/shiftview.c .
+
+0[151103/212227]root@portmb# diff config.h config.def.h
+50,52d49
+< #include "shiftview.c"
+
+
+0[151103/212625]root@portmb# diff config.h config.def.h
+50,52d49
+< #include "shiftview.c"
+< 
+92,94d88
+< 
+<       { MODKEY,                       XK_i,      shiftview,  { .i = +1 } },
+<       { MODKEY,                       XK_u,      shiftview,  { .i = -1 } },
+1[151103/212629]root@portmb# 
+
+1[151103/212629]root@portmb# make clean install
+
+
+
+
+#######################################################################
+##### patch exresize
+
+
+0[151103/223630]root@portmb# pwd
+/opt/dwm/dwm-6.0/patches
+0[151103/223631]root@portmb# wget "http://dwm.suckless.org/patches/dwm-r1606-exresize.diff"
+
+0[151103/223658]root@portmb# grep ^diff exresize.diff 
+diff --git a/config.def.h b/config.def.h
+diff --git a/dwm.c b/dwm.c
+diff --git a/exresize.c b/exresize.c
+0[151103/223704]root@portmb# 
+
+
+0[151103/223718]root@portmb# pwd
+/opt/dwm/dwm-6.0
+0[151103/223722]root@portmb# cp config.h config.def.h
+0[151103/223734]root@portmb# cp dwm.c dwm.c_before_patch01_exresize
+
+1[151103/224827]root@portmb# patch -p1 < patches/exresize.diff
+
+
+0[151103/225022]root@portmb# diff config.h config.def.h
+95a96,122
+>       { MODKEY,                       XK_KP_7,   explace,                {.ui = EX_NW }},
+>       { MODKEY,                       XK_KP_8,   explace,                {.ui = EX_N  }},
+>       { MODKEY,                       XK_KP_9,   explace,                {.ui = EX_NE }},
+>       { MODKEY,                       XK_KP_4,   explace,                {.ui = EX_W  }},
+>       { MODKEY,                       XK_KP_5,   explace,                {.ui = EX_C  }},
+>       { MODKEY,                       XK_KP_6,   explace,                {.ui = EX_E  }},
+>       { MODKEY,                       XK_KP_1,   explace,                {.ui = EX_SW }},
+>       { MODKEY,                       XK_KP_2,   explace,                {.ui = EX_S  }},
+>       { MODKEY,                       XK_KP_3,   explace,                {.ui = EX_SE }},
+>  
+>       { MODKEY|ShiftMask,             XK_KP_8,   exresize,               {.v = (int []){   0,  25 }}},
+>       { MODKEY|ShiftMask,             XK_KP_2,   exresize,               {.v = (int []){   0, -25 }}},
+>       { MODKEY|ShiftMask,             XK_KP_6,   exresize,               {.v = (int []){  25,   0 }}},
+>       { MODKEY|ShiftMask,             XK_KP_4,   exresize,               {.v = (int []){ -25,   0 }}},
+>       { MODKEY|ShiftMask,             XK_KP_5,   exresize,               {.v = (int []){  25,  25 }}},
+>       { MODKEY|ShiftMask|ControlMask, XK_KP_5,   exresize,               {.v = (int []){ -25, -25 }}},
+>  
+>       { MODKEY|ControlMask,           XK_KP_6,   togglehorizontalexpand, {.i = +1} },
+>       { MODKEY|ControlMask,           XK_KP_3,   togglehorizontalexpand, {.i =  0} },
+>       { MODKEY|ControlMask,           XK_KP_4,   togglehorizontalexpand, {.i = -1} },
+>       { MODKEY|ControlMask,           XK_KP_8,   toggleverticalexpand,   {.i = +1} },
+>       { MODKEY|ControlMask,           XK_KP_1,   toggleverticalexpand,   {.i =  0} },
+>       { MODKEY|ControlMask,           XK_KP_2,   toggleverticalexpand,   {.i = -1} },
+>       { MODKEY|ControlMask,           XK_KP_9,   togglemaximize,         {.i = -1} },
+>       { MODKEY|ControlMask,           XK_KP_7,   togglemaximize,         {.i = +1} },
+>       { MODKEY|ControlMask,           XK_KP_5,   togglemaximize,         {.i =  0} },
+> 
+1[151103/225024]root@portmb# 
+
+
+1[151103/225024]root@portmb# diff dwm.c dwm.c_before_patch01_exresize 
+89d88
+<       int sfx, sfy, sfw, sfh; /* stored float geometry, used on mode revert */
+94,96c93
+<       unsigned char expandmask;
+<       int expandx1, expandy1, expandx2, expandy2;
+<       Bool wasfloating, isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+---
+>       Bool isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+1155,1158d1151
+<       c->sfx = c->x;
+<       c->sfy = c->y;
+<       c->sfw = c->w;
+<       c->sfh = c->h;
+1161,1162d1153
+<       c->wasfloating = False;
+<       c->expandmask = 0;
+1258,1260c1249,1250
+<                       if ((m = recttomon(nx, ny, c->w, c->h))) {
+<                               if (m != selmon) 
+<                                       sendmon(c, m);
+---
+>                       if(nx >= selmon->wx && nx <= selmon->wx + selmon->ww
+>                       && ny >= selmon->wy && ny <= selmon->wy + selmon->wh) {
+1368d1357
+<       c->expandmask = 0;
+1403,1405c1392,1394
+<                       if ((m = recttomon(c->x, c->y, nw, nh))) {
+<                               if (m != selmon) 
+<                                       sendmon(c, m);
+---
+>                       if(c->mon->wx + nw >= selmon->wx && c->mon->wx + nw <= selmon->wx + selmon->ww
+>                       && c->mon->wy + nh >= selmon->wy && c->mon->wy + nh <= selmon->wy + selmon->wh)
+>                       {
+1487d1475
+<       Monitor *oldm = selmon;
+1497,1501c1485,1486
+<       if (oldm != m)
+<               arrange(oldm);
+<       arrange(m);
+<       focus(c);
+<       restack(m);
+---
+>       focus(NULL);
+>       arrange(NULL);
+1573c1558
+<       if(!arg || !arg->v || arg->v != selmon->lt[selmon->sellt]) {
+---
+>       if(!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
+1575,1584d1559
+<               if (!selmon->lt[selmon->sellt]->arrange) {
+<                       for (Client *c = selmon->clients ; c ; c = c->next) {
+<                               if(!c->isfloating) {
+<                                       /*restore last known float dimensions*/
+<                                       resize(c, selmon->mx + c->sfx, selmon->my + c->sfy,
+<                                              c->sfw, c->sfh, False);
+<                               }
+<                       }
+<               }
+<       }
+1768,1780c1743,1745
+<       if(selmon->sel->isfloating) {
+<               /*restore last known float dimensions*/
+<               resize(selmon->sel, selmon->mx + selmon->sel->sfx, selmon->my + selmon->sel->sfy,
+<                      selmon->sel->sfw, selmon->sel->sfh, False);
+<       } else {
+<               if (selmon->sel->isfullscreen)
+<                       setfullscreen(selmon->sel, False);
+<               /*save last known float dimensions*/
+<               selmon->sel->sfx = selmon->sel->x - selmon->mx;
+<               selmon->sel->sfy = selmon->sel->y - selmon->my;
+<               selmon->sel->sfw = selmon->sel->w;
+<               selmon->sel->sfh = selmon->sel->h;
+<       }
+---
+>       if(selmon->sel->isfloating)
+>               resize(selmon->sel, selmon->sel->x, selmon->sel->y,
+>                      selmon->sel->w, selmon->sel->h, False);
+1[151103/225042]root@portmb# 
+
+
+
+1[151103/225100]root@portmb# cp config.def.h config.h
+0[151103/225122]root@portmb# vi config.h
+0[151103/225143]root@portmb# diff config.h config.def.h
+52d51
+< #include "exresize.c"
+1[151103/225145]root@portmb# 
+
+0[151103/225513]root@portmb# make clean install
+
+

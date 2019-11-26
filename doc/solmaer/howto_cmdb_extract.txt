@@ -1,0 +1,70 @@
+###########################################################################
+# zones pour le poweroff
+############################################################################
+
+
+##### variables
+export SITE='MER'								##### choix du site (MER|EUFO)
+export TYPE_ZONE='Solaris Zones'			##### choix du type de zone (Solaris Zones|Solaris Zones Clusters)
+export ENVIRONMENT='Production'				##### choix de l'environnement (Test|Development|Production)
+
+##### zone;host;alias
+/home/admin/bin/getcmdb.sh zone | perl -ne 's/ \(opsrv\d{3}\)//; print "$1;$7;$3\n" if /^(.*?);($ENV{TYPE_ZONE});(.*?);($ENV{ENVIRONMENT});(.*?);(.*?);(.*?);(.*?);($ENV{SITE})/' | sort -t';' -k 2
+
+##### host;console port;alias
+/home/admin/bin/getcmdb.sh host | perl -ne 's#N/A##g; print "$1;$11 $12;$2\n" if /^(.*?);(.*?);($ENV{ENVIRONMENT});($ENV{SITE}.*?);(.*?);(.*?);(.*?);(.*?);(.*?);(.*?);(.*?);(.*?)$/' | sort -t';' -k 2
+
+
+#####
+aphrodite;aphrodite-sc ;ares
+chronos;chronos-sc ;backup
+emile;emile-sc ;gravier
+coppola;ford-sc0 ;ford
+horus;horus-sc ;toupie
+vulcain;m5k01-sc0 ;spock
+cyberdyne;mertc01 Port 4;terminator
+talisker;mertc01 Port 7;pepper
+sf15k01-sc0;mertc01 Port 8;system
+anubis;mertc03 Port 1;flower
+mireille;mireille-sc ;mathieu
+odile;odile-sc ;deray
+romulus;romulus-sc ;backup
+toutatis;sf15k01-sc0 ;empty
+odin;sf15k01-sc0 ;foudre
+belenos;sf15k01-sc0 ;melville
+bashful;sf15k01-sc0 ;monkey
+hades;sf15k01-sc0 ;noir
+thor;sf15k01-sc0 ;thor
+spectrum1;spectrum1-sc ;rainbow
+alambic;thumper01-sc0 ;distiller
+
+
+##################################################################################################################################################
+                /usr/sfw/bin/wget -O - -nv "portal_pz/modules/mpirequester/lists.php?id=6" 2>/dev/null
+
+
+system controller + domain/port	023
+host							023	021
+host env						023	021
+host alias					023
+zone								021
+zone alias						021
+zone env							021
+
+
+
+
+
+
+
+ 
+
+print "line[0]: -$line[0]-\n";
+print "line[2]: -$line[2]-\n";
+print "line[3]:  -$line[3]-\n";
+print "line[11]: -$line[11]-\n";
+print "line[10]: -$line[10]-\n";
+print "line[12]: -$line[12]-\n";
+
+
+

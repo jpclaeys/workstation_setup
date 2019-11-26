@@ -1,0 +1,417 @@
+#######################################################################################################
+#
+# add asm disk in solaris 10 non-global zone on solaris 10 global zone
+#
+#######################################################################################################
+
+
+##### refresh storage configuration on both nodes
+
+cfgadm -al
+cldev populate
+
+
+
+##### variables
+
+export zone_name=cellarmain-tz
+export lun_id_list='0x18 0x19'
+export tmp_folder=/home/betorma/tmp
+export date=`date +%Y%m%d`
+
+
+
+##### get storage configuration on both nodes
+
+/home/betorma/bin/storage_info.pl -A >${tmp_folder}/storage_info_`uname -n`.out
+
+
+
+
+##### check lun visibility on both nodes
+
+for lun in $lun_id_list; do grep $lun ${tmp_folder}/storage_info_`uname -n`.out; done
+
+
+0[150825/115229]root@seymour# for lun in $lun_id_list; do grep $lun ${tmp_folder}/storage_info_`uname -n`.out; done
+seymour # c3t6006016017602D001120B7895E4AE511d0 # 4 # 5006016f3ea02f4a VNX_0475_SpB_P7_port_7 0x18 24 | 500601673ea02f4a VNX_0475_SpA_P7_port_7 0x18 24 | 500601653ea02f4a VNX_0475_SpA_P5_port_5 0x18 24 | 5006016d3ea02f4a VNX_0475_SpB_P5_port_5 0x18 24 # ??? # d38 #
+seymour # c3t60060160261033008EA63DBE5E4AE511d0 # 4 # 5006016d3ea02f5e VNX_0476_SpB_P5_port_5 0x18 24 | 5006016f3ea02f5e VNX_0476_SpB_P7_port_7 0x18 24 | 500601673ea02f5e VNX_0476_SpA_P7_port_7 0x18 24 | 500601653ea02f5e VNX_0476_SpA_P5_port_5 0x18 24 # ??? # d39 #
+seymour # c3t6006016017602D0087A0DA9C5E4AE511d0 # 4 # 5006016f3ea02f4a VNX_0475_SpB_P7_port_7 0x19 25 | 500601653ea02f4a VNX_0475_SpA_P5_port_5 0x19 25 | 500601673ea02f4a VNX_0475_SpA_P7_port_7 0x19 25 | 5006016d3ea02f4a VNX_0475_SpB_P5_port_5 0x19 25 # ??? # d40 #
+seymour # c3t6006016026103300EC3520DF5E4AE511d0 # 4 # 5006016d3ea02f5e VNX_0476_SpB_P5_port_5 0x19 25 | 500601653ea02f5e VNX_0476_SpA_P5_port_5 0x19 25 | 5006016f3ea02f5e VNX_0476_SpB_P7_port_7 0x19 25 | 500601673ea02f5e VNX_0476_SpA_P7_port_7 0x19 25 # ??? # d32 #
+
+0[150825/115233]root@skinner# for lun in $lun_id_list; do grep $lun ${tmp_folder}/storage_info_`uname -n`.out; done
+skinner # c3t6006016017602D001120B7895E4AE511d0 # 4 # 500601653ea02f4a VNX_0475_SpA_P5_port_5 0x18 24 | 500601673ea02f4a VNX_0475_SpA_P7_port_7 0x18 24 | 5006016f3ea02f4a VNX_0475_SpB_P7_port_7 0x18 24 | 5006016d3ea02f4a VNX_0475_SpB_P5_port_5 0x18 24 # ??? # d38 #
+skinner # c3t60060160261033008EA63DBE5E4AE511d0 # 4 # 500601673ea02f5e VNX_0476_SpA_P7_port_7 0x18 24 | 500601653ea02f5e VNX_0476_SpA_P5_port_5 0x18 24 | 5006016f3ea02f5e VNX_0476_SpB_P7_port_7 0x18 24 | 5006016d3ea02f5e VNX_0476_SpB_P5_port_5 0x18 24 # ??? # d39 #
+skinner # c3t6006016017602D0087A0DA9C5E4AE511d0 # 4 # 500601673ea02f4a VNX_0475_SpA_P7_port_7 0x19 25 | 5006016f3ea02f4a VNX_0475_SpB_P7_port_7 0x19 25 | 500601653ea02f4a VNX_0475_SpA_P5_port_5 0x19 25 | 5006016d3ea02f4a VNX_0475_SpB_P5_port_5 0x19 25 # ??? # d40 #
+skinner # c3t6006016026103300EC3520DF5E4AE511d0 # 4 # 500601673ea02f5e VNX_0476_SpA_P7_port_7 0x19 25 | 500601653ea02f5e VNX_0476_SpA_P5_port_5 0x19 25 | 5006016d3ea02f5e VNX_0476_SpB_P5_port_5 0x19 25 | 5006016f3ea02f5e VNX_0476_SpB_P7_port_7 0x19 25 # ??? # d32 #
+
+
+
+##### backup zone configuration on both nodes
+
+cp -p /etc/zones/${zone_name}.xml /etc/zones/${zone_name}.${date}.xml
+
+
+
+##### add did to the zone on both nodes
+
+{
+echo "zonecfg -z ${zone_name} <<EOT" 
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out | perl -ne 'print "$1\n" if(m{\s+#\s+(d\d+)\s+#\s+})' | uniq | while read did
+	do
+		echo "add device"
+		echo "set match=/dev/did/*dsk/${did}s*"
+		echo "end"
+	done
+done
+echo verify
+echo commit
+echo exit
+echo EOT
+} 
+
+
+
+##### check
+
+diff /etc/zones/${zone_name}.xml /etc/zones/${zone_name}.${date}.xml
+
+2[150825/120010]root@seymour# diff /etc/zones/${zone_name}.xml /etc/zones/${zone_name}.${date}.xml
+52,55d51
+<   <device match="/dev/did/*dsk/d38s*"/>
+<   <device match="/dev/did/*dsk/d39s*"/>
+<   <device match="/dev/did/*dsk/d40s*"/>
+<   <device match="/dev/did/*dsk/d32s*"/>
+
+0[150825/120002]root@skinner# diff /etc/zones/${zone_name}.xml /etc/zones/${zone_name}.${date}.xml
+52,55d51
+<   <device match="/dev/did/*dsk/d38s*"/>
+<   <device match="/dev/did/*dsk/d39s*"/>
+<   <device match="/dev/did/*dsk/d40s*"/>
+<   <device match="/dev/did/*dsk/d32s*"/>
+
+
+
+##### add disk dynamically to the zone, on global zone where the non-global zone is running
+
+mkdir -p /zones/${zone_name}/dev/did/dsk
+mkdir -p /zones/${zone_name}/dev/did/rdsk
+
+{
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out | perl -ne 'print "$1\n" if(m{\s+#\s+(d\d+)\s+#\s+})' | uniq | while read did
+	do
+		ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "mknod /zones/$ENV{zone_name}/dev/did/$4/$5 $1 $2 $3\n"}'
+	done
+done
+}
+
+
+{
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out | perl -ne 'print "$1\n" if(m{\s+#\s+(d\d+)\s+#\s+})' | uniq | while read did
+	do
+		ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "chmod u=rw,g=,o= /zones/$ENV{zone_name}/dev/did/$4/$5\n"}'
+	done
+done
+}
+
+
+
+{
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out | perl -ne 'print "$1\n" if(m{\s+#\s+(d\d+)\s+#\s+})' | uniq | while read did
+	do
+		ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "chown oracle:dba /zones/$ENV{zone_name}/dev/did/$4/$5\n"}'
+	done
+done
+}
+
+
+
+##### s0 slice partitionning
+
+{
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out | awk '{print "/home/betorma/bin/format_s0.sh --asm " $3}'
+done
+}
+
+
+
+
+##### provide list disk for db team, on both nodes
+
+{
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out
+done
+}
+
+
+
+
+seymour # c3t6006016017602D001120B7895E4AE511d0 # 4 # 5006016f3ea02f4a VNX_0475_SpB_P7_port_7 0x18 24 | 500601673ea02f4a VNX_0475_SpA_P7_port_7 0x18 24 | 500601653ea02f4a VNX_0475_SpA_P5_port_5 0x18 24 | 5006016d3ea02f4a VNX_0475_SpB_P5_port_5 0x18 24 # ??? # d38 #
+seymour # c3t60060160261033008EA63DBE5E4AE511d0 # 4 # 5006016d3ea02f5e VNX_0476_SpB_P5_port_5 0x18 24 | 5006016f3ea02f5e VNX_0476_SpB_P7_port_7 0x18 24 | 500601673ea02f5e VNX_0476_SpA_P7_port_7 0x18 24 | 500601653ea02f5e VNX_0476_SpA_P5_port_5 0x18 24 # ??? # d39 #
+seymour # c3t6006016017602D0087A0DA9C5E4AE511d0 # 4 # 5006016f3ea02f4a VNX_0475_SpB_P7_port_7 0x19 25 | 500601653ea02f4a VNX_0475_SpA_P5_port_5 0x19 25 | 500601673ea02f4a VNX_0475_SpA_P7_port_7 0x19 25 | 5006016d3ea02f4a VNX_0475_SpB_P5_port_5 0x19 25 # ??? # d40 #
+seymour # c3t6006016026103300EC3520DF5E4AE511d0 # 4 # 5006016d3ea02f5e VNX_0476_SpB_P5_port_5 0x19 25 | 500601653ea02f5e VNX_0476_SpA_P5_port_5 0x19 25 | 5006016f3ea02f5e VNX_0476_SpB_P7_port_7 0x19 25 | 500601673ea02f5e VNX_0476_SpA_P7_port_7 0x19 25 # ??? # d32 #
+
+skinner # c3t6006016017602D001120B7895E4AE511d0 # 4 # 500601653ea02f4a VNX_0475_SpA_P5_port_5 0x18 24 | 500601673ea02f4a VNX_0475_SpA_P7_port_7 0x18 24 | 5006016f3ea02f4a VNX_0475_SpB_P7_port_7 0x18 24 | 5006016d3ea02f4a VNX_0475_SpB_P5_port_5 0x18 24 # ??? # d38 #
+skinner # c3t60060160261033008EA63DBE5E4AE511d0 # 4 # 500601673ea02f5e VNX_0476_SpA_P7_port_7 0x18 24 | 500601653ea02f5e VNX_0476_SpA_P5_port_5 0x18 24 | 5006016f3ea02f5e VNX_0476_SpB_P7_port_7 0x18 24 | 5006016d3ea02f5e VNX_0476_SpB_P5_port_5 0x18 24 # ??? # d39 #
+skinner # c3t6006016017602D0087A0DA9C5E4AE511d0 # 4 # 500601673ea02f4a VNX_0475_SpA_P7_port_7 0x19 25 | 5006016f3ea02f4a VNX_0475_SpB_P7_port_7 0x19 25 | 500601653ea02f4a VNX_0475_SpA_P5_port_5 0x19 25 | 5006016d3ea02f4a VNX_0475_SpB_P5_port_5 0x19 25 # ??? # d40 #
+skinner # c3t6006016026103300EC3520DF5E4AE511d0 # 4 # 500601673ea02f5e VNX_0476_SpA_P7_port_7 0x19 25 | 500601653ea02f5e VNX_0476_SpA_P5_port_5 0x19 25 | 5006016d3ea02f5e VNX_0476_SpB_P5_port_5 0x19 25 | 5006016f3ea02f5e VNX_0476_SpB_P7_port_7 0x19 25 # ??? # d32 #
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#######################################################################################################
+#
+# add asm disk in solaris 11 non-global zone on solaris 11 global zone
+#
+#######################################################################################################
+
+
+##### refresh storage configuration on both nodes
+
+cfgadm -al
+cldev populate
+
+
+
+##### variables
+
+export zone_name=
+export lun_id_list='0x38 0x39'
+export tmp_folder=/home/betorma/tmp
+export date=`date +%Y%m%d`
+
+0[150825/114043]root@lava# export zone_name=cellarfodb1-tz                                
+0[150825/134401]root@lava# export lun_id_list='0x38 0x39'
+0[150825/134408]root@lava# export tmp_folder=/home/betorma/tmp
+0[150825/134408]root@lava# export date=`date +%Y%m%d`
+
+0[150825/134349]root@kusha# export zone_name=cellarfodb2-tz
+0[150825/134356]root@kusha# export lun_id_list='0x38 0x39'
+0[150825/134410]root@kusha# export tmp_folder=/home/betorma/tmp
+0[150825/134410]root@kusha# export date=`date +%Y%m%d`
+
+
+
+##### get storage configuration on both nodes
+
+/home/betorma/bin/storage_info.pl -A >${tmp_folder}/storage_info_`uname -n`.out
+
+
+
+##### check lun visibility on both nodes
+
+for lun in $lun_id_list; do grep $lun ${tmp_folder}/storage_info_`uname -n`.out; done
+
+0[150825/135334]root@lava# for lun in $lun_id_list; do grep $lun ${tmp_folder}/storage_info_`uname -n`.out; done | grep -vi vmax3
+lava # c1t5006016A3EA42F4Ad56 # 4 # 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x38 56 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x38 56 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x38 56 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x38 56 # emcpower76a 6006016017602D0071B0D2C5604AE511 [] # ??? # d128 # ??? #
+lava # c1t500601623EA42F4Ad56 # 4 # 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x38 56 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x38 56 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x38 56 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x38 56 # emcpower76a 6006016017602D0071B0D2C5604AE511 [] # ??? # d128 # ??? #
+lava # c2t500601603EA42F4Ad56 # 4 # 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x38 56 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x38 56 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x38 56 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x38 56 # emcpower76a 6006016017602D0071B0D2C5604AE511 [] # ??? # d128 # ??? #
+lava # c2t500601683EA42F4Ad56 # 4 # 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x38 56 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x38 56 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x38 56 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x38 56 # emcpower76a 6006016017602D0071B0D2C5604AE511 [] # ??? # d128 # ??? #
+lava # c1t5006016A3EA42F4Ad57 # 4 # 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x39 57 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x39 57 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x39 57 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x39 57 # emcpower119a 6006016017602D0081EC6BE0604AE511 [] # ??? # d129 # ??? #
+lava # c1t500601623EA42F4Ad57 # 4 # 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x39 57 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x39 57 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x39 57 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x39 57 # emcpower119a 6006016017602D0081EC6BE0604AE511 [] # ??? # d129 # ??? #
+lava # c2t500601603EA42F4Ad57 # 4 # 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x39 57 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x39 57 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x39 57 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x39 57 # emcpower119a 6006016017602D0081EC6BE0604AE511 [] # ??? # d129 # ??? #
+lava # c2t500601683EA42F4Ad57 # 4 # 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x39 57 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x39 57 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x39 57 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x39 57 # emcpower119a 6006016017602D0081EC6BE0604AE511 [] # ??? # d129 # ??? #
+0[150825/135344]root@lava# 
+
+0[150825/134909]root@kusha# for lun in $lun_id_list; do grep $lun ${tmp_folder}/storage_info_`uname -n`.out; done
+kusha # c1t5006016A3EA42F5Ed56 # 4 # 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x38 56 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x38 56 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x38 56 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x38 56 # emcpower119a 6006016026103300B497A028614AE511 [] # ??? # d126 # ??? #
+kusha # c1t500601623EA42F5Ed56 # 4 # 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x38 56 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x38 56 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x38 56 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x38 56 # emcpower119a 6006016026103300B497A028614AE511 [] # ??? # d126 # ??? #
+kusha # c2t500601603EA42F5Ed56 # 4 # 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x38 56 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x38 56 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x38 56 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x38 56 # emcpower119a 6006016026103300B497A028614AE511 [] # ??? # d126 # ??? #
+kusha # c2t500601683EA42F5Ed56 # 4 # 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x38 56 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x38 56 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x38 56 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x38 56 # emcpower119a 6006016026103300B497A028614AE511 [] # ??? # d126 # ??? #
+kusha # c1t5006016A3EA42F5Ed57 # 4 # 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x39 57 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x39 57 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x39 57 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x39 57 # emcpower120a 60060160261033001C3DF836614AE511 [] # ??? # d127 # ??? #
+kusha # c1t500601623EA42F5Ed57 # 4 # 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x39 57 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x39 57 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x39 57 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x39 57 # emcpower120a 60060160261033001C3DF836614AE511 [] # ??? # d127 # ??? #
+kusha # c2t500601603EA42F5Ed57 # 4 # 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x39 57 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x39 57 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x39 57 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x39 57 # emcpower120a 60060160261033001C3DF836614AE511 [] # ??? # d127 # ??? #
+kusha # c2t500601683EA42F5Ed57 # 4 # 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x39 57 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x39 57 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x39 57 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x39 57 # emcpower120a 60060160261033001C3DF836614AE511 [] # ??? # d127 # ??? #
+
+
+
+##### backup zone configuration on both nodes
+
+cp -p /etc/zones/${zone_name}.xml /etc/zones/${zone_name}.${date}.xml
+
+
+
+##### add did to the zone on both nodes
+
+{
+echo "zonecfg -z ${zone_name} <<EOT" 
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out | perl -ne 'print "$1\n" if(m{\s+#\s+(d\d+)\s+#\s+})' | uniq | while read did
+	do
+		echo "add device"
+		echo "set match=/dev/did/*dsk/${did}s*"
+		echo "end"
+	done
+done
+echo verify
+echo commit
+echo exit
+echo EOT
+} 
+
+
+
+##### check
+
+diff /etc/zones/${zone_name}.xml /etc/zones/${zone_name}.${date}.xml
+
+0[150825/135538]root@lava# diff /etc/zones/${zone_name}.xml /etc/zones/${zone_name}.${date}.xml
+62,63d61
+<   <device match="/dev/did/*dsk/d128s*"/>
+<   <device match="/dev/did/*dsk/d129s*"/>
+
+0[150825/135511]root@kusha# diff /etc/zones/${zone_name}.xml /etc/zones/${zone_name}.${date}.xml
+63,64d62
+<   <device match="/dev/did/*dsk/d126s*"/>
+<   <device match="/dev/did/*dsk/d127s*"/>
+
+
+
+##### add disk dynamically to the zone, on global zone where the non-global zone is running
+
+mkdir -p /zones/${zone_name}/dev/did/dsk
+mkdir -p /zones/${zone_name}/dev/did/rdsk
+
+zoneadm -z $zone_name apply
+
+0[150825/135609]root@lava# zoneadm -z $zone_name apply
+zone 'cellarfodb1-tz': Checking: Modifying anet linkname=net0_222
+zone 'cellarfodb1-tz': Checking: Adding device match=/dev/did/*dsk/d128s*
+zone 'cellarfodb1-tz': Checking: Adding device match=/dev/did/*dsk/d129s*
+zone 'cellarfodb1-tz': Applying the changes
+0[150825/135620]root@lava# 
+
+0[150825/135605]root@kusha# zoneadm -z $zone_name apply
+zone 'cellarfodb2-tz': Checking: Modifying anet linkname=net0_222
+zone 'cellarfodb2-tz': Checking: Adding device match=/dev/did/*dsk/d126s*
+zone 'cellarfodb2-tz': Checking: Adding device match=/dev/did/*dsk/d127s*
+zone 'cellarfodb2-tz': Applying the changes
+0[150825/135632]root@kusha# 
+
+
+
+##### change acl on new devices attached on the zone, from the global zone
+
+{
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out | perl -ne 'print "$1\n" if(m{\s+#\s+(d\d+)\s+#\s+})' | uniq | while read did
+	do
+		chown oracle:dba /zones/${zone_name}/root/dev/did/rdsk/${did}*
+		chmod u=rw,g=,o= /zones/${zone_name}/root/dev/did/rdsk/${did}*
+		ls -l /zones/${zone_name}/root/dev/did/rdsk/${did}*
+	done
+done
+}
+
+
+
+##### s0 slice partitionning, on the global-zone
+
+{
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out | awk '{print "/home/betorma/bin/format_s0.sh --asm " $3}'
+done
+}
+
+
+
+##### provide list disk for db team, on both nodes
+
+{
+for lun in $lun_id_list
+do
+	grep $lun ${tmp_folder}/storage_info_`uname -n`.out
+done
+}
+
+lava # c1t5006016A3EA42F4Ad56 # 4 # 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x38 56 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x38 56 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x38 56 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x38 56 # emcpower76a 6006016017602D0071B0D2C5604AE511 [] # ??? # d128 # ??? #
+lava # c1t500601623EA42F4Ad56 # 4 # 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x38 56 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x38 56 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x38 56 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x38 56 # emcpower76a 6006016017602D0071B0D2C5604AE511 [] # ??? # d128 # ??? #
+lava # c2t500601603EA42F4Ad56 # 4 # 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x38 56 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x38 56 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x38 56 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x38 56 # emcpower76a 6006016017602D0071B0D2C5604AE511 [] # ??? # d128 # ??? #
+lava # c2t500601683EA42F4Ad56 # 4 # 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x38 56 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x38 56 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x38 56 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x38 56 # emcpower76a 6006016017602D0071B0D2C5604AE511 [] # ??? # d128 # ??? #
+lava # c1t5006016A3EA42F4Ad57 # 4 # 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x39 57 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x39 57 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x39 57 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x39 57 # emcpower119a 6006016017602D0081EC6BE0604AE511 [] # ??? # d129 # ??? #
+lava # c1t500601623EA42F4Ad57 # 4 # 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x39 57 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x39 57 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x39 57 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x39 57 # emcpower119a 6006016017602D0081EC6BE0604AE511 [] # ??? # d129 # ??? #
+lava # c2t500601603EA42F4Ad57 # 4 # 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x39 57 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x39 57 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x39 57 | 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x39 57 # emcpower119a 6006016017602D0081EC6BE0604AE511 [] # ??? # d129 # ??? #
+lava # c2t500601683EA42F4Ad57 # 4 # 500601683ea42f4a VNX_0475_SpB_P8_port_8 0x39 57 | 5006016a3ea42f4a VNX_0475_SpB_PA_port_a 0x39 57 | 500601623ea42f4a VNX_0475_SpA_PA_port_a 0x39 57 | 500601603ea42f4a VNX_0475_SpA_P8_port_8 0x39 57 # emcpower119a 6006016017602D0081EC6BE0604AE511 [] # ??? # d129 # ??? #
+
+kusha # c1t5006016A3EA42F5Ed56 # 4 # 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x38 56 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x38 56 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x38 56 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x38 56 # emcpower119a 6006016026103300B497A028614AE511 [] # ??? # d126 # ??? #
+kusha # c1t500601623EA42F5Ed56 # 4 # 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x38 56 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x38 56 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x38 56 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x38 56 # emcpower119a 6006016026103300B497A028614AE511 [] # ??? # d126 # ??? #
+kusha # c2t500601603EA42F5Ed56 # 4 # 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x38 56 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x38 56 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x38 56 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x38 56 # emcpower119a 6006016026103300B497A028614AE511 [] # ??? # d126 # ??? #
+kusha # c2t500601683EA42F5Ed56 # 4 # 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x38 56 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x38 56 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x38 56 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x38 56 # emcpower119a 6006016026103300B497A028614AE511 [] # ??? # d126 # ??? #
+kusha # c1t5006016A3EA42F5Ed57 # 4 # 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x39 57 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x39 57 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x39 57 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x39 57 # emcpower120a 60060160261033001C3DF836614AE511 [] # ??? # d127 # ??? #
+kusha # c1t500601623EA42F5Ed57 # 4 # 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x39 57 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x39 57 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x39 57 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x39 57 # emcpower120a 60060160261033001C3DF836614AE511 [] # ??? # d127 # ??? #
+kusha # c2t500601603EA42F5Ed57 # 4 # 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x39 57 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x39 57 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x39 57 | 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x39 57 # emcpower120a 60060160261033001C3DF836614AE511 [] # ??? # d127 # ??? #
+kusha # c2t500601683EA42F5Ed57 # 4 # 500601683ea42f5e VNX_0476_SpB_P8_port_8 0x39 57 | 5006016a3ea42f5e VNX_0476_SpB_PA_port_a 0x39 57 | 500601623ea42f5e VNX_0476_SpA_PA_port_a 0x39 57 | 500601603ea42f5e VNX_0476_SpA_P8_port_8 0x39 57 # emcpower120a 60060160261033001C3DF836614AE511 [] # ??? # d127 # ??? #
+
+
+
+#######################################################################################################
+#
+# create disk group with asmcdm command line
+#
+#######################################################################################################
+
+
+
+root@csandbox2-tz:~# su - oracle
+Oracle Corporation      SunOS 5.11      11.2    June 2015
+oracle@csandbox2-tz:~$ 
+
+oracle@csandbox2-tz:~$ cat profile/gi.env                                                                                                                                                                                                
+ORACLE_HOME=/applications/cellar/orabin/clusterware
+ORACLE_SID=+ASM
+PATH=$PATH:$ORACLE_HOME/bin
+export ORACLE_HOME ORACLE_SID PATH
+oracle@csandbox2-tz:~$                                                                                                                                                                                                                   
+oracle@csandbox2-tz:~$ . profile/gi.env                                                                                                                                                                                                  
+
+oracle@csandbox2-tz:~$ cat dg.xml                                                                                                                                                                                                    
+<dg name="DG_DUMMY" redundancy="external">
+<dsk string="/dev/did/rdsk/d129s0" />
+<a name="compatible.asm" value="12.1.0.0.0" />
+<a name="compatible.rdbms" value="11.2.0.0.0" />
+</dg>
+oracle@csandbox2-tz:~$                                                                                                                                                                                                                   
+
+oracle@csandbox2-tz:~$ asmcmd mkdg dg.xml 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

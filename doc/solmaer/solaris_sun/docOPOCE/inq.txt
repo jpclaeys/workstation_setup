@@ -1,0 +1,3 @@
+# devices EMC
+/opt/OPemc/bin/inq -sym_wwn
+

@@ -1,0 +1,16 @@
+{
+FS="/applications/planpubli/storage_01"
+DG=`df -k $FS |sed 's/\/dev\/vx\/dsk\///g' | awk -F\/ '{print $1}' | grep -v File`
+VOL=`df -k $FS |sed 's/\/dev\/vx\/dsk\///g' | awk -F\/ '{print $2}' | grep -v ^$ | awk '{print $1}'`
+echo "df -h   $FS"
+echo "df -n  $FS"
+echo "vxprint -g $DG -ht | grep $VOL "
+echo "vxdg -g $DG free"
+echo "vxassist -g $DG -b growby $VOL SIZE alloc=DISK"
+echo "vxprint -g $DG -ht | grep $VOL "
+echo "/usr/lib/vxvm/bin/vxresize -x -g $DG $VOL SIZE"
+echo "df -h   $FS"
+echo "dmesg"
+}
+
+

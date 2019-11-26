@@ -1,0 +1,160 @@
+# Liser l'infodoc 206844 du sunsolve:
+# http://sunsolve.sun.com/search/document.do?assetkey=1-61-206844-1&searchclause=206844
+# verifier les patches affectes aux packages du liveupgrade pour prendre les dernieres revisions du eiscd de serveur jumpstart
+pkginfo | grep SUNWlu
+pkgparam SUNWlur PATCHLIST
+pkgparam SUNWluu PATCHLIST
+pkgparam SUNWluzone PATCHLIST
+pkgparam SUNWlucfg PATCHLIST
+# ces trois commandes precedentes nous donnent trois patches: 121430, 121306 et 121428
+# choper du serveur jumpstart la revision qui correspond aux patches de l'update de release qu'on va faire
+mkdir -p /var/tmp/LU 
+cd /net/remus/export/patches/Quark/eiscd/26FEB08
+find . -name "121430*" -o -name "121306*" -o -name "121428*" 
+cd /net/remus/export/patches/Quark/eiscd/26FEB08/patch/10/
+cp 121430* /var/tmp/LU
+# bien qu'on trouve qu'un patch, chercher sur sunsolve pour des patches plus recents pour les packages liveupgrade
+# REMARQUE 1: la requete doit se baser sur la date aussi, si on actualise a 10 u4 avec les patches de fevrier 08, 
+#             Par exemple, ici on cible la requete sur fev 08 ou proche.
+# REMARQUE 2: Verifier les patches requis avant de telecharger le patch
+# REMARQUE 3: Le patch principal est le 121430 et c'est ce patch la qu'on doit installer le premier
+cp /home/trassch/tmp/121428-10.jar /var/tmp/LU
+# verifier la partie 'Special Instructions' de chaque patch du fait qu'il est probable qu'on doit installer d'autres patches
+
+# Selon infodoc 72099, il vaut mieux deinstaller les pkgs liveupgrade avant de les reinstaller
+pkgrm SUNWluu SUNWlur SUNWluzone SUNWlucfg
+# installer les pkgs depuis le release qu'on va installer et installer leur patches apres
+# REMARQUE: Depuis le 121430-16, liveupgrade utilise un autre package SUNWlucfg qu'il faut installer
+export ju=/net/remus/export/install/Solaris_10_0807_SPARC/Solaris_10/Product
+pkgadd -d ${ju} SUNWlur
+pkgadd -d ${ju} SUNWluu
+pkgadd -d ${ju} SUNWluzone
+pkgadd -d ${ju} SUNWlucfg
+# d'abord verifier le fichier /etc/zones/index pour constater que tous les zones sont presents sur le serveur
+# REMARQUE: les patches liveupgrade vient avec la variable SUNW_PKG_ALLZONES a true, donc il est necessaire que les zones soit presents
+unzip -o /var/tmp/LU/121430-22.zip
+patchadd /var/tmp/LU/121430-22
+patchadd -n /var/tmp/LU/121428-10.jar
+
+# ensuite il manquera les patches des outils qui servent au liveupgrade:
+# pour cela, regarder le http://sunsolve.sun.com/search/document.do?assetkey=1-61-206844-1&searchclause=206844
+patchadd -p | egrep "^Patch: " | cut -c8-17 > /tmp/patchs.txt
+
+# Valider si ces patches la ont ete installes:
+118815-05
+120900-04
+121133-02
+119254-42
+119317-01
+120235-01
+121428-08
+121002-03
+123121-02
+119309-03
+121004-03
+119574-02
+120996-02
+120068-03
+119042-10
+126538-01
+123332-01
+119246-27
+121901-02
+125418-01
+121430-17
+123839-07
+127922-03
+137321-01
+119081-25
+124628-05
+119252-21
+120199-11
+124630-13
+119578-30
+118918-24
+119042-10
+124327-04
+118833-36
+120272-13
+126897-02
+122640-05
+125369-10
+125503-02
+126419-01
+124204-04
+118731-01
+122660-10
+125547-02
+120011-14
+
+# avec cette liste la on constate si les patches ont ete installes
+foreach i in `cat patches.txt`
+do
+echo -n " $i : "; grep $i /tmp/patchs.txt || echo "PAS"
+done
+
+# patch p7zip:
+patchadd -n 138275-01.jar
+# patch cpio:
+patchadd -n 137321-01.jar
+
+# creer le boot disque 10 pour liveupgrade
+# Avec VxVM:
+# choper le disque et creer des miroirs
+export di=c0t2d0s0
+fmthard -s /dev/null /dev/rdsk/${di}
+export di=c0t2d0
+/etc/vx/bin/vxdisksetup -i ${di} format=sliced
+export di=c0t2d0s0
+prtvtoc /dev/rdsk/${di}
+export di=c0t2d0
+export et=rootupgrade
+vxdg -g bootdg adddisk ${et}=${di}
+# mirrorer les volumes du root
+foreach i in rootvol swapvol var
+do
+vxassist -b -g rootdg mirror ${i} alloc=${et}
+done
+
+# detacher les plexes
+foreach i in rootvol-03 swapvol-03 var-03
+do
+vxplex -g bootdg dis ${i}
+done
+
+# creer des nouvelles volumes a partir les plexes mirrores
+export px=rootvol-03
+export px=swapvol-03
+export px=var-03
+vxmake -U fsgen vol rootvolupg plex=${px}
+vxmake -U swap vol swapvolupg plex=${px}
+vxmake -U fsgen vol varupg plex=${px}
+foreach i in rootvolupg varupg swapvolupg
+do
+vxvol start ${i}
+done
+# accrocher la marque pour que le nouveau disque soit bootable
+/etc/vx/bin/vxbootsetup rootupgrade
+
+export e1=sol_10_u3
+export e2=sol_10_u4
+export ex="/zones/eub2_tz"
+lucreate -A 'jumpstart update' -m /:/dev/dsk/c0t2d0s0:ufs -m -:/dev/dsk/c0t2d0s1:swap \
+-m /var:/dev/dsk/c0t2d0s5:ufs -x /zones -y ${zo} -c ${e1} -n ${e2}
+lucreate -A 'jumpstart update' -m /:/dev/dsk/c0t2d0s0:ufs -m -:/dev/dsk/c0t2d0s1:swap \
+-m /var:/dev/dsk/c0t2d0s5:ufs -c ${e1} -n ${e2}
+
+cat > /var/tmp/LU/dopey.profile <<EOF
+install_type upgrade
+nospacecheck
+nobootblock
+backup_media none
+EOF
+export e2=sol_10_u4
+export pr=/var/tmp/LU/dopey.profile
+luupgrade -u -n ${e2} -s /net/romulus/export/install/Solaris_10_0807_SPARC/ -j ${pr} 
+
+export e2=sol_10_u4_patch
+# remove patch
+luupgrade -T -n ${e2} 121430-29
+luupgrade -t -n ${e2} -s /var/tmp/LU/test 125891-01.jar

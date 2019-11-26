@@ -1,0 +1,214 @@
+/usr/lib/vxvm/bin/vxdisksetup -i fabric_13
+
+vxdg init anninter gnole_2=fabric_13
+
+
+export zname=anninter_dz profile='drp' name=anninter_dz ip=158.167.98.48 interface=ce4
+
+vxassist -g anninter make vzone 8g layout=concat
+vxassist -g anninter make vanninter 10g layout=concat
+
+
+newfs /dev/vx/rdsk/anninter/vzone
+newfs /dev/vx/rdsk/anninter/vanninter
+
+mkdir /zones/${zname}
+
+<==edit vfstab
+
+mount /zones/${zname}
+chmod 700 /zones/${zname}
+
+cat <<EOT >/tmp/${zname}.cfg
+create -b
+set zonepath=/zones/${zname}
+set autoboot=true
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${ip}
+set physical=${interface}
+end
+add attr
+set name=comment
+set type=string
+set value="Zone ${zname}"
+end
+EOT
+
+
+cat <<EOT >/tmp/${zname}.sysidcfg
+name_service=none
+root_password=boajrOmU7GFmY
+system_locale=C
+timeserver=158.167.96.18
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${name} ip_address=${ip} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOT
+
+zonecfg -z ${zname} -f /tmp/${zname}.cfg
+
+zonecfg -z ${zname} info
+
+zoneadm -z ${zname} install
+
+less /zones/anninter_dz/root/var/sadm/system/logs/install_log
+
+cp /tmp/${zname}.sysidcfg  /zones/${zname}/root/etc/sysidcfg
+
+cat <<EOT >  /zones/${zname}/root/etc/inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+cat <<EOF > /zones/${zname}/root/etc/resolv.conf
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/resolv.conf
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/hosts.allow
+all:@admin
+sendmail:all
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/hosts.deny
+all:all
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/defaultdomain 
+opoce.cec.eu.int
+EOF
+
+perl -pi -e 's:2007:2008:' /zones/${zname}/root/etc/acct/holidays
+
+touch /zones/${zname}/root/etc/notrouter
+
+zoneadm -z anninter_dz boot
+
+zlogin -C anninter_dz
+
+cp -p /zones/${zname}/root/etc/nsswitch.conf /zones/${zname}/root/etc/nsswitch.conf.orig
+
+cp -p /etc/nsswitch.conf /zones/${zname}/root/etc
+
+cp -p /var/ldap/ldap_client_* /zones/${zname}/root/var/ldap
+
+
+cd /net/talisker/export/software/Networker/Networker_7.4_sp2
+
+cp nw742_solaris_64.tar.gz /var/tmp
+
+cd /var/tmp
+
+gunzip -c nw742_solaris_64.tar.gz  | tar xvf -
+
+pkgadd -d . LGTOclnt
+/nsr
+coppola
+y
+y
+
+cp -p /etc/init.d/bbrun /zones/${zname}/root/etc/init.d
+ln /etc/init.d/bbrun /etc/rc3.d/S95bbrun
+
+grep bb /etc/passwd >> /zones/${zname}/root/etc/passwd
+grep bb /etc/shadow >> /zones/${zname}/root/etc/shadow
+grep bb /etc/group >> /zones/${zname}/root/etc/group
+
+cd /opt/OPbb4/bb/etc
+vi bb-hosts # Aussi en orwell
+
+# Change a CHKMSGLEN="FALSE" en bbdef-client.sh
+# Changement en thor
+cp bb-dftab.DIST bb-dftab
+vi bb-dftab
+# Editer et ajouter
+/zones/procatx_tz:101:101
+/zones/anninter_dz:101:101
+
+# en thor
+/etc/init.d/bbrun start
+# en anninter_dz
+/etc/init.d/bbrun start
+# en orwell
+svcadm refresh bb4:app
+svcadm refresh bb4:web
+
+
+# Ajouter opsrv048 sur /etc/vfstab
+vi /etc/vfstab
+
+# Creer le client Networker
+# Ajouter  sur /nsr/dev/list_client
+
+group -g 20101 anninter
+useradd -u 20101 -g anninter -s /bin/pfksh -d /home/anninter -m -c 'Project Anninter' anninter
+
+# changemente /etc/auto_home
+# restart autofs
+mkdir -p /applications/anninter/users/anninter
+
+# Creer utilisateurs:
+	20102	vlietmi	anninter_dz	
+
+	20103	valovma	anninter_dz	developer (ext)
+
+	20104	karpora	anninter_dz	
+
+	20105	castrpr	anninter_dz	
+
+# et leur homes
+ mkdir -p /applications/anninter/users/kastrpr
+root@anninter_dz 7:44 [/home] mkdir -p /applications/anninter/users/vlietmi
+root@anninter_dz 7:44 [/home] mkdir -p /applications/anninter/users/valovma
+root@anninter_dz 7:44 [/home] mkdir -p /applications/anninter/users/karpora
+root@anninter_dz 7:45 [/home] chown kastrpr:staff /applications/anninter/users/kastrpr
+root@anninter_dz 7:45 [/home] chown vlietmi:staff /applications/anninter/users/vlietmi
+root@anninter_dz 7:45 [/home] chown vlietmi:staff /applications/anninter/users/valovma
+root@anninter_dz 7:45 [/home] chown valovma:staff /applications/anninter/users/valovma
+root@anninter_dz 7:45 [/home] chown karpora:staff /applications/anninter/users/karpora
+
+
+foreach i in `echo "vlietmi\nvalovma\nkarpora\ncastrpr"`
+do
+find  /applications/anninter/users/system/tomcat/conf  -exec setfacl -m user:${i}:rwx,mask:rwx {} \;
+find  /applications/anninter/users/system/tomcat/conf -type d -exec setfacl -m d:user:${i}:rwx,d:u::rwx,d:g::r-x,d:o:r-x,d:mask:rwx {} \;
+done
+
+
+getfacl /applications/anninter/users/system/tomcat/conf | setfacl -f - /applications/anninter/users/system/tomcat/logs
+getfacl /applications/anninter/users/system/tomcat/conf | setfacl -f - /applications/anninter/users/system/tomcat/webapps
+
+# Modifier /etc/hosts.allow
+# Modifier /etc/pam.conf
+

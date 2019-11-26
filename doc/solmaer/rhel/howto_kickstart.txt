@@ -1,0 +1,199 @@
+
+########################################################################################################################################################
+# creation d'un client kickstart
+########################################################################################################################################################
+
+
+export VIRTUAL=			##### 'yes' or 'no' virtual server
+export SERVER=<hostname>
+export IPSERVER=<ip_hostname>
+export MACSERVER=<mac_adress>
+export OPrange=255.255.0.0
+export OPgtw=158.167.96.1
+export DOMAINNAME=opoce.cec.eu.int
+export DISKSERVER= 			##### 'hda' for workstation 'sda' for vmware 'cciss/c0d0' for HP proliant
+export HEXASERVER=$(echo $IPSERVER|perl -ne 'printf("%X",$_) foreach split /\./;'; ) 
+export RHELVERSION=RHEL_5u6_x86_64
+
+export PASSWDROOTDBA=
+export PASSWDOPSYS=
+export PASSWDROOTINT=
+
+
+###### COPY pxelinux.0 FOR PXEBOOT INSTALLATION ######
+#In case of a new rhel release
+
+###### CREATE JET TEMPLATE AND CLIENT FOR REDHAT ######
+cd /opt/*jet*/Templates
+../bin/make_template -f -A i86pc -o redhat -O $RHELVERSION -E $MACSERVER $SERVER base_config
+../bin/make_client -f $SERVER
+
+
+#### verify
+cat /tftpboot/pxelinux.cfg/$HEXASERVER ### check name server
+
+###### REPLACE JET KICKSTART WITH OPOCE KICKSTART FILE ######
+
+cp /tftpboot/OPOCE-default-kickstart.cfg /opt/SUNWjet/Clients/${SERVER}/kickstart.cfg 
+perl -pi -e '
+	s/IPSERVER/$ENV{IPSERVER}/;
+	s/DISKSERVER/$ENV{DISKSERVER}/;
+	s/DOMAINNAME/$ENV{DOMAINNAME}/;
+	s/SERVER/$ENV{SERVER}/;
+	s/VIRTUAL/$ENV{VIRTUAL}/;
+	s/PASSWDROOTDBA/$ENV{PASSWDROOTDBA}/;
+	s/PASSWDOPSYS_UX/$ENV{PASSWDOPSYS_UX}/;
+	s/PASSWDROOTINT/$ENV{PASSWDROOTINT}/;
+	s/OPrange/$ENV{OPrange}/;
+	s/OPgtw/$ENV{OPgtw}/;
+' /opt/SUNWjet/Clients/${SERVER}/kickstart.cfg 
+
+#### IF BOUNDING=yes
+#perl -pi -e 's:BONDING=0:BONDING=1:;s:OPrange:"$ENV{OPrange}":;s:OPgtw:"$ENV{OPgtw}":' /opt/SUNWjet/Clients/${SERVER}/kickstart.cfg 
+
+
+#### IF MULTIPATH=yes
+#perl -pi -e "s:MULTIPATH=0:MULTIPATH=1:" /opt/SUNWjet/Clients/${SERVER}/kickstart.cfg 
+
+less /opt/SUNWjet/Clients/${SERVER}/kickstart.cfg 
+
+#####################################################################################################################################
+# recuperer la liste des groupes de package depuis une source d'installation
+#####################################################################################################################################
+
+perl -ne 'print "$1\n" if(m{<groupid>(.*)</groupid>})' /export/install/media/RHEL_5u6_x86_64/*/repodata/comps*.xml
+
+#####################################################################################################################################
+# kickstart.cfg pour procyon (workstation pour tests)
+#####################################################################################################################################
+
+
+##### installation 
+install
+text
+nfs --server=158.167.99.56 --dir=/export/install/media/RHEL_5u6_x86_64
+bootloader --append="quiet panic=10" --location mbr 
+reboot
+
+##### network
+network --bootproto=static --device=eth0 --ip=158.167.99.29 --gateway=158.167.96.1 --nameserver=158.167.99.7,158.167.99.8 --netmask=255.255.0.0 --hostname=procyon.opoce.cec.eu.int --noipv6
+
+##### disk
+zerombr
+clearpart --all
+partition /boot --fstype=ext3 --size=250 --ondisk=hda
+partition pv.001 --size=100 --grow --ondisk=hda
+volgroup rootvg pv.001 
+logvol / --vgname=rootvg --fstype=ext3 --size=20448 --name=root
+logvol /var --vgname=rootvg --fstype=ext3 --size=10240 --name=var
+logvol /virtualbox --vgname=rootvg --fstype=ext3 --size=102400 --name=virtualbox
+logvol swap --vgname=rootvg --fstype=swap --size=4096 --name=swap
+
+##### security
+selinux --disabled
+firewall --disabled
+rootpw --iscrypted $1$gtXmQvSD$hdYCwSpfYmDXGvrfkl.0Z.
+key --skip
+authconfig --enablemd5 --enableshadow --enableldap --enableldapauth --ldapserver=158.167.99.7,158.167.99.8 --ldapbasedn=dc=opoce,dc=cec,dc=eu,dc=int
+
+##### other configuration
+keyboard be-latin1
+lang en_US
+timezone --utc Europe/Luxembourg
+xconfig --defaultdesktop=gnome --startxonboot --resolution=1024x768 --depth=24
+
+##### packages
+%packages
+@ gnome-desktop
+@ authoring-and-publishing
+@ editors
+@ graphical-internet
+@ graphics
+@ office
+@ sound-and-video
+@ text-internet
+@ dns-server
+@ ftp-server
+@ legacy-network-server
+@ mail-server
+@ mysql
+@ network-server
+@ printing
+@ server-cfg
+@ smb-server
+@ sql-server
+@ web-server
+@ admin-tools
+@ base
+@ base-x
+@ openfabrics-enterprise-distribution
+@ system-tools
+strace
+rdesktop.x86_64
+
+##### pre-script execution
+%pre
+
+##### post-script execution
+%post 
+
+
+
+
+#############################################################
+##### ce qui a ete fait apres l'installation de procyon
+
+export date=`date +%Y%m%d`
+
+##### autofs
+
+cp /etc/auto.master /etc/auto.master.${date}
+
+cat <<OEF >/etc/auto.master 
++auto_master
+/net            -hosts          -nosuid,nobrowse,intr
+/home           auto.home       -nobrowse
+/misc           /etc/auto.misc
+OEF
+
+cat <<EOT >/etc/auto.home
+*       -fstype=nfs4,soft,rw,intr,fsc   opsrv020:/applications/nfs-srv/export/&
+EOT
+
+/etc/init.d/autofs restart
+
+
+##### packages
+
+cat <<EOF >/etc/yum.repos.d/opoce.repo
+[opoce-supplementary]
+name=OPOCE Supplementary Package for RHEL 5u5
+baseurl=file:///net/remus/export/install/linux
+enabled=1
+gpgcheck=0
+[opoce-rhel5u5-server]
+name=RHEL 5u5 X86_64 Server
+baseurl=file:///net/remus/export/install/media/RHEL_5u5_x86_64/Server
+enabled=1
+gpgcheck=0
+[opoce-rhel5u5-VT]
+name=RHEL 5u5 X86_64 Server
+baseurl=file:///net/remus/export/install/media/RHEL_5u5_x86_64/VT
+enabled=1
+gpgcheck=0
+EOF
+
+yum install group kvm
+
+
+##### dns
+
+cp -p /etc/resolv.conf /etc/resolv.conf.$date
+cat <<EOF
+domain opoce.cec.eu.int
+nameserver 158.167.99.8
+nameserver 158.167.99.7
+search opoce.cec.eu.int
+EOF
+
+

@@ -1,0 +1,26 @@
+##### use vi to edit configuration 
+ldapvi -Y EXTERNAL -h ldapi:/// -b cn=config
+
+
+
+
+
+##### reset password
+
+export user=romeola
+export password=romeola
+export ldap_server=ldap1-pk
+export bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
+
+
+cat <<EOF >/tmp/new_passwd.ldif
+dn: uid=${user},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: userPassword
+userPassword: {CRYPT}`perl -e  'print crypt('${password}', '${password}')' `
+EOF
+
+ldapmodify -H ldap:// -x -D "$bind_dn" -W -f /tmp/new_passwd.ldif
+
+rm /tmp/new_passwd.ldif
+

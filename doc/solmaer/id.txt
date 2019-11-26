@@ -1,0 +1,9 @@
+user;password;target;protocole;description
+
+spectrum;archwhale;spectrum1;telnet;machine network opoce
+root;SPe7ow;spectrum2;;machine network opoce
+adm-linux;Admlinux;opeufc7koa1;ssh;console blade eufo
+oprhsadm;8eIZjNfw3OE1;https://iglica.cc.cec.eu.int/rhn;http;redhat rhn satellite digit 
+oprhsadm;Eido8sho!Ee5tieve;https://access.redhat.com/support/cases/list/open;http;redhat support
+r4admin;qrD.71ma;http://opsrv880:8180/admin/;admin interface pour cellar test
+r4admin;qrD.71ma;http://opsrv752:8180/admin/;admin interface pour cellar prod

@@ -1,0 +1,30 @@
+##### install boot block
+/usr/sbin/installboot -F zfs /usr/platform/$(uname -i)/lib/fs/zfs/bootblk /dev/rdsk/c1t0d0s0
+
+##### check boot block
+disk=c1t0d0s0
+dd if=/dev/rdsk/$disk of=/tmp/bootblk.$disk bs=1b iseek=1 count=15 conv=sync             
+cmp /tmp/bootblk.$disk /usr/platform/`uname -i`/lib/fs/zfs/bootblk
+less tmp/bootblk.$disk
+
+
+##### current usage of ZFS arc cache
+kstat -pn arcstats | egrep 'zfs:0:arcstats:c_min|zfs:0:arcstats:c_max|zfs:0:arcstats:size'
+
+
+
+##### current usage of ZFS arc cache percent
+{
+max=`kstat -pn arcstats | grep 'zfs:0:arcstats:c_max' | awk '{print $2}'`
+current=`kstat -pn arcstats | grep 'fs:0:arcstats:size' | awk '{print $2}'`
+percent=`echo "${current}/${max}*100" | bc -l | awk -F'.' '{print $1}'`
+echo
+echo "max_zfs_arc\t\tcurrent_zfs_arc\t\t%"
+echo "$max\t\t$current\t\t$percent"
+}
+
+
+
+##### ZFS arc cache usage by application (^c to stop and show the repport)
+dtrace -n 'sdt:zfs::arc-hit,sdt:zfs::arc-miss { @[execname] = count() }'
+

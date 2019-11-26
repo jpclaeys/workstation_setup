@@ -1,0 +1,53 @@
+##### creation des fs pour les archives jurel sur dlib_pz
+##### un fs correspond a une semaine
+
+
+{
+YEAR=11
+YEARFULL=2011
+FS_TO_CREATE=dlib_pz_archive/applications/archive_jurel
+MOUNT_PT=/applications/dlib/archive_jurel
+APPL=jurel
+for WEEK in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20
+do 
+	echo "########### JUREL ${WEEK} #############"
+	echo "zfs create ${FS_TO_CREATE}${YEAR}${WEEK}"
+	echo "zfs set mountpoint=${MOUNT_PT}${YEAR}${WEEK} ${FS_TO_CREATE}${YEAR}${WEEK}"
+	echo "zfs set quota=none ${FS_TO_CREATE}${YEAR}${WEEK}"
+	echo "zfs set reservation=none ${FS_TO_CREATE}${YEAR}${WEEK}"
+	echo "zfs set compression=off ${FS_TO_CREATE}${YEAR}${WEEK}"
+	echo "zfs set aclmode=passthrough ${FS_TO_CREATE}${YEAR}${WEEK}"
+	echo "zfs set aclinherit=passthrough ${FS_TO_CREATE}${YEAR}${WEEK}"
+	echo "chmod A+user:${APPL}:list_directory/read_data/write_data/execute/add_file/add_subdirectory/delete/delete_child/read_acl:file_inherit/dir_inherit:allow ${MOUNT_PT}${YEAR}${WEEK}"
+	echo "chmod A+user:w_dlib:list_directory/read_data/write_data/execute/add_file/add_subdirectory/delete/delete_child/read_acl:file_inherit/dir_inherit:allow ${MOUNT_PT}${YEAR}${WEEK}"
+	echo "mkdir -p ${MOUNT_PT}${YEAR}${WEEK}/${YEARFULL}/${WEEK}"
+	if [ $WEEK -lt 10 ]
+	then 
+		WEEKb=`echo $WEEK | sed -e 's/0//'`
+	else
+		WEEKb=$WEEK
+	fi
+	echo "ln -s ${MOUNT_PT}${YEAR}${WEEK}/${YEARFULL}/${WEEK} /applications/dlib/jurel01/archive_jurel/${YEARFULL}/${WEEKb}"
+	echo "chown -R w_dlib:dlib ${MOUNT_PT}${YEAR}${WEEK}/${YEARFULL}"
+	echo "chown -h w_dlib:dlib /applications/dlib/jurel01/archive_jurel/${YEARFULL}/${WEEKb}"
+done
+} | tee /tmp/JUREL_ARCHIVE_NEWWEEK
+
+
+
+
+sh  /tmp/JUREL_ARCHIVE_NEWWEEK
+
+zfs create dlib_pz_archive/applications/archive_jurel1101
+zfs set mountpoint=/applications/dlib/archive_jurel1101 dlib_pz_archive/applications/archive_jurel1101
+zfs set quota=none dlib_pz_archive/applications/archive_jurel1101
+zfs set reservation=none dlib_pz_archive/applications/archive_jurel1101
+zfs set compression=off dlib_pz_archive/applications/archive_jurel1101
+zfs set aclmode=passthrough dlib_pz_archive/applications/archive_jurel1101
+zfs set aclinherit=passthrough dlib_pz_archive/applications/archive_jurel1101
+chmod A+user:jurel:list_directory/read_data/write_data/execute/add_file/add_subdirectory/delete/delete_child/read_acl:file_inherit/dir_inherit:allow /applications/dlib/archive_jurel1101
+chmod A+user:w_dlib:list_directory/read_data/write_data/execute/add_file/add_subdirectory/delete/delete_child/read_acl:file_inherit/dir_inherit:allow /applications/dlib/archive_jurel1101
+mkdir -p /applications/dlib/archive_jurel1101/2011/01
+ln -s /applications/dlib/archive_jurel1101/2011/01 /applications/dlib/jurel01/archive_jurel/2011/1
+chown -R w_dlib:dlib /applications/dlib/archive_jurel1101/2011
+chown -h w_dlib:dlib /applications/dlib/jurel01/archive_jurel/2011/1

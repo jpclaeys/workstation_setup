@@ -1,0 +1,325 @@
+################################################################################################################################################
+# red hat multipathd
+################################################################################################################################################
+
+##### problem
+
+des device n'ont pas correctement ete supprimes
+ils genere des erreurs dans /var/log/messages:
+	ex: Sep  5 14:50:05 leia kernel: end_request: I/O error, dev sdfd, sector 0
+et lors d'execution de commandes lvm:
+	ex:   /dev/sdfd: read failed after 0 of 4096 at 0: Input/output error
+	      /dev/sdfd: read failed after 0 of 4096 at 108610125824: Input/output error
+	      /dev/sdfd: read failed after 0 of 4096 at 108610183168: Input/output error
+
+
+##### resolution
+
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+
+##### if necessary
+multipath -F
+
+export tmp_folder=/home/betorma/tmp
+pvs 2>${tmp_folder}/`uname -n`_multipath_error.out
+ls -l ${tmp_folder}/`uname -n`_multipath_error.out
+
+{
+awk '{print $1}' ${tmp_folder}/`uname -n`_multipath_error.out | sort -u | perl -pe 's#^/dev/##g; s#:$##' | while read device
+do
+	echo $device
+	hbtl=`multipath -v4 -ll | grep "${device}: h:b:t:l =" | awk '{print $8}'`
+	echo $hbtl
+	multipath -l | grep "$hbtl " >/dev/null
+	if [[ $? == 1 ]]; then
+		echo 1 > /sys/class/scsi_device/${hbtl}/device/delete
+		echo deleted
+	fi
+	echo
+done
+}
+
+
+
+##### resultat
+
+les commandes lvm (lvs, pvs, vgs, pvsdisplay, etc...) ne retournent plus les erreurs precedente
+on voit le remove du device dans le log /var/log/messages:
+	ex: Sep  5 15:08:17 leia multipathd: sdfd: remove path (uevent)
+
+
+
+################################################################################################################################################
+# sun cluster
+################################################################################################################################################
+
+##### probleme
+
+un ressource group avec (par exemple) une ressource SUNW.LogicalHostname:3 et une ressource SUNW.HAStoragePlus:8 ne switch pas d'un noeud a l'autre.
+
+root@flo # clrg switch -n fillmore transjai-nfs-rg
+clrg:  (C748634) Resource group transjai-nfs-rg failed to start on chosen node and might fail over to other node(s)
+
+root@fillmore #
+---snip---
+Mar 16 15:31:00 fillmore SC[,SUNW.HAStoragePlus:8,transjai-nfs-rg,transjai-tz-shared-zfs,hastorageplus_prenet_start]: [ID 777770 daemon.warning] Failed to read CCR table transjai-tz-shared.cachefile for cachefile contents of pool transjai-tz-shared : file /var/cluster/run/HAStoragePlus/zfs/transjai-tz-shared.cachefile open failed: No such file or directory.
+---snip---
+
+##### resolution
+
+meme si on cree manuellement le repertoire /var/cluster/run/HAStoragePlus/zfs, il ne sera plus present au prochain redemarrage du serveur, reandant de futurs switchs du resource group a nouveau impossible.
+il faut que le fichier /etc/cluster/eventlog/eventlog.conf contienne la ligne suivante:
+
+# Class         Subclass        Vendor  Publisher       Plugin location                         Plugin parameters
+EC_zfs          -               -       -               /usr/cluster/lib/sc/events/zpool_cachefile_plugin.so
+
+
+
+################################################################################################################################################
+# zone
+################################################################################################################################################
+
+##### problem
+
+apres avoir detache une zone d'un serveur, puis la ratacher sur un autre, un probleme de version de package apparait lors d'un `attach -u`
+
+##### resolution
+
+
+0[120406/092240]root@minerve# zoneadm -z $ZONE attach -u
+zoneadm: zone 'eurlex_pz': ERROR: attempt to downgrade package SUNWstosreg 1.1.5,REV=2009.09.23.10.58 to version 1.0,REV=2007.05.21.20.36
+
+1[120406/092300]root@minerve# zoneadm -z $ZONE attach -u -F
+0[120406/092332]root@minerve# zoneadm list -ivc | grep $ZONE
+   - eurlex_pz        installed  /zones/eurlex_pz               native   shared
+
+
+
+
+0[120406/092352]root@minerve# zoneadm -z $ZONE boot
+0[120406/092359]root@minerve# zlogin $ZONE
+
+
+
+root@eurlex_pz # pkgrm SUNWstosreg
+
+The following package is currently installed:
+   SUNWstosreg  Service Tags Solaris OS Registration
+                (sparc) 1.1.5,REV=2009.09.23.10.58
+
+Do you want to remove this package? [y,n,?,q] y
+
+## Removing installed package instance <SUNWstosreg>
+
+This package contains scripts which will be executed with super-user
+permission during the process of removing this package.
+
+Do you want to continue with the removal of this package [y,n,?,q] y
+## Verifying package <SUNWstosreg> dependencies in global zone
+## Processing package information.
+## Executing preremove script.
+## Removing pathnames in class <manifest>
+## Removing pathnames in class <none>
+/var/svc/manifest/application <shared pathname not removed>
+/var/svc/manifest <shared pathname not removed>
+/var/svc <shared pathname not removed>
+/var <shared pathname not removed>
+pkgrm: ERROR: unable to remove </lib/svc/method/svc-stosreg>
+/lib/svc/method <shared pathname not removed>
+/lib/svc <shared pathname not removed>
+## Updating system information.
+
+Removal of <SUNWstosreg> partially failed.
+
+
+
+
+
+
+root@eurlex_pz # pkgrm SUNWstosreg
+
+The following package is currently installed:
+   SUNWstosreg  Service Tags Solaris OS Registration
+                (sparc) 1.1.5,REV=2009.09.23.10.58
+
+Do you want to remove this package? [y,n,?,q] y
+
+## Removing installed package instance <SUNWstosreg>
+(A previous attempt may have been unsuccessful.)
+
+This package contains scripts which will be executed with super-user
+permission during the process of removing this package.
+
+Do you want to continue with the removal of this package [y,n,?,q] y
+## Verifying package <SUNWstosreg> dependencies in global zone
+## Processing package information.
+## Executing preremove script.
+## Removing pathnames in class <manifest>
+## Removing pathnames in class <none>
+## Updating system information.
+
+Removal of <SUNWstosreg> was successful.
+
+
+
+
+root@eurlex_pz # init 0
+0[120406/092532]root@minerve# zoneadm list -ivc | grep $ZONE
+   - eurlex_pz        installed  /zones/eurlex_pz               native   shared
+
+
+
+0[120406/092538]root@minerve# zoneadm -z $ZONE detach
+0[120406/092547]root@minerve# zoneadm -z $ZONE attach -u
+Getting the list of files to remove
+Removing 5 files
+Remove 42 of 42 packages
+Installing 2867 files
+Add 1088 of 1088 packages
+Installation of these packages generated warnings: SUNWaccr SUNWapch2r SUNWapchr SUNWbnur SUNWbsr SUNWcacaort SUNWcsr SUNWdtlog SUNWjatodmo SUNWjatodoc SUNWmdu SUNWnfssr SUNWpostgr-82-client SUNWpostgr-82-contrib SUNWpostgr-82-devel SUNWpostgr-82-libs SUNWpostgr-82-server SUNWpostgr-82-server-data-root SUNWpostgr-83-libs SUNWpostgr-83-server-data-root SUNWsacom SUNWsmbar SUNWsndmr SUNWvolr
+Updating editable files
+The file </var/sadm/system/logs/update_log> within the zone contains a log of the zone update.
+
+
+
+
+
+
+
+##### problem
+
+une zone qui doit s'arreter reste dans un status down
+
+##### resolution
+
+
+0[120531/162744]root@scratchy# zoneadm list -ivc
+  ID NAME             STATUS     PATH                           BRAND    IP    
+   0 global           running    /                              native   shared
+  13 tedmonitor-tz    down       /zones/tedmonitor-tz           native   shared
+   - planjo-tz        installed  /zones/planjo-tz               native   shared
+   - planjobo_tz      installed  /zones/planjobo_tz             native   shared
+   - teddvd-tz        installed  /zones/teddvd-tz               native   shared
+   - fedora1-dz       installed  /zones/fedora1-dz              native   shared
+   - fedora2-dz       installed  /zones/fedora2-dz              native   shared
+   - diraa-tz         installed  /zones/diraa-tz                native   shared
+   - gescomx-dz       installed  /zones/gescomx-dz              native   shared
+
+
+0[120531/162744]root@scratchy# echo ::fsinfo | mdb -k | grep tedmonitor
+00000600b18c6040 namefs          /var/run/zones/tedmonitor-tz.zoneadmd_door
+
+0[120531/162854]root@scratchy# fdetach  /var/run/zones/tedmonitor-tz.zoneadmd_door
+0[120531/163003]root@scratchy# echo ::fsinfo | mdb -k | grep tedmonitor | wc
+       0       0       0
+
+
+
+
+################################################################################################################################################
+# last error
+################################################################################################################################################
+
+
+0[120906/143138]root@opgtw# last
+/var/adm/wtmpx: Value too large for defined data type
+
+1[120906/143153]root@opgtw# ls -lh /var/adm/wtmpx 
+-rw-r--r--   1 adm      adm          10G Sep  6 14:31 /var/adm/wtmpx
+
+
+0[120906/143303]root@odile# cp /zones/opgtw/root/var/adm/wtmpx /home/betorma/xchange/backup 
+130[120906/145039]root@odile# /usr/lib/acct/fwtmp </home/betorma/xchange/backup/wtmpx >/home/betorma/tmp/opgtw_wtmpx
+
+
+
+
+0[120906/145747]root@opgtw# cd /var/adm
+0[120906/145747]root@opgtw# mv wtmpx && touch wtmpx
+
+################################################################################################################################################
+# sendmail
+################################################################################################################################################
+
+##### probleme
+
+apres une mise a jour de solaris 10u8 vers u10, sendmail a aussi ete mis a jour, et genere les erreurs suivantes en boucle, et le serveice smf tombe en maintenance:
+
+--- snip ---
+Apr  6 09:14:57 dlib_pz sendmail[3018]: [ID 702911 mail.alert] daemon MTA-v6: problem creating SMTP socket
+Apr  6 09:15:02 dlib_pz sendmail[3018]: [ID 801593 mail.crit] NOQUEUE: SYSERR(root): opendaemonsocket: daemon MTA-v6: cannot bind: Cannot assign requested address
+--- snip ---
+
+0[120406/091517]root@dlib_pz# svcs -a | grep sendmail
+online          9:13:02 svc:/network/sendmail-client:default
+online          9:15:17 svc:/network/smtp:sendmail
+
+
+##### resolution
+
+0[120406/091523]root@dlib_pz# svcprop sendmail | grep local_only
+config/local_only boolean true
+
+
+0[120406/091538]root@dlib_pz# svccfg -s sendmail setprop config/local_only=false
+0[120406/091546]root@dlib_pz# svcprop sendmail | grep local_only
+config/local_only boolean true
+
+2[120406/091609]root@dlib_pz# svcadm refresh sendmail 
+0[120406/091617]root@dlib_pz# svcprop sendmail | grep local_only
+config/local_only boolean false
+
+
+0[120406/091631]root@dlib_pz# svcadm restart sendmail
+1[120406/091642]root@dlib_pz# svcs sendmail
+STATE          STIME    FMRI
+maintenance     9:16:02 svc:/network/smtp:sendmail
+0[120406/091655]root@dlib_pz# svcadm clear sendmail
+0[120406/091700]root@dlib_pz# svcs sendmail        
+STATE          STIME    FMRI
+online          9:17:00 svc:/network/smtp:sendmail
+
+
+
+################################################################################################################################################
+# EMC Solution Enabler
+################################################################################################################################################
+
+##### problem 1
+
+# After a network adapter change, symapi command don't work any more, and display these messages:
+# "Unable to obtain unique ID for host"
+# or
+# "The host System Stable Values do not match the current system configuration"
+
+# we need to generate new host ID for ACL
+# To do this, we need to follow this procedure;
+
+##### reinstall SE 
+root@trinity# /net/opsvc058/systemstore/srdf/se8020/se8020_install.sh -uninstall
+Do you want to shutdown SYMCLI daemons [Y] or Exit setup [X]? [Y] : y
+root@trinity# mv /usr/emc/API/symapi/ /usr/emc/API/symapi_old
+root@trinity# /net/opsvc058/systemstore/srdf/se8020/se8020_install.sh -install -silent -lockboxpassword='L0cKbo%P4$$'
+
+##### Change client/server mode to local mode
+root@trinity# unset SYMCLI_CONNECT SYMCLI_CONNECT_TYPE SYMCLI_FULL_PDEVNAME
+
+##### check lternate access enable (run puppet if necessary)
+root@trinity# puppet agent -t
+root@trinity# grep -i alternate /var/symapi/config/options
+SYMAPI_ALTERNATE_ACCESS_ID = ENABLE
+
+##### force unique id with passphrase
+#root@trinity# symacl -unique -passphrase 'L0cKbo%P4$$' -force
+root@trinity# symacl -unique -force
+The unique id for this host is: 79417E95-F8AA0A8F-7C9608B2
+
+
+
+##### problem 2
+
+root@rama# symacl -unique -passphrase 'L0cKbo%P4$$' -force
+The SYMAPI database file cannot be used because it was written by a version of SYMAPI that is no longer supported
+
+Solution: 
+root@rama# > /var/symapi/db/symapi_db.bin

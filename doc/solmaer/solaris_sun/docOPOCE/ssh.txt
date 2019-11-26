@@ -1,0 +1,3 @@
+# regenerate server's key ( ssh v2 )
+ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
+ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa

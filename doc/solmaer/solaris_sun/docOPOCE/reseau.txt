@@ -1,0 +1,3 @@
+# En plus de ndd, pour voir vitesse de link et parametres:
+kstat ce:0 | grep link_
+kstat ce:0 | grep lp_cap

@@ -1,0 +1,30 @@
+#device device  mount   FS      fsck    mount   mount
+#to     mount   to      fsck            point           type    pass    at boot options
+#
+fd      -       /dev/fd fd      -       no      -
+/proc   -       /proc   proc    -       no      -
+/dev/md/dsk/d13 /dev/md/rdsk/d13        /       ufs     1       no      logging
+/dev/md/dsk/d23 -       -       swap    -       no      -
+/dev/md/dsk/d33 /dev/md/rdsk/d33        /var    ufs     1       no      logging
+/devices        -       /devices        devfs   -       no      -
+ctfs    -       /system/contract        ctfs    -       no      -
+objfs   -       /system/object  objfs   -       no      -
+swap    -       /tmp    tmpfs   -       yes     -
+#/dev/md/dsk/d70        /dev/md/rdsk/d70        /globaldevices  ufs     2       yes     -
+/dev/md/dsk/d43 /dev/md/rdsk/d43        /global/.devices/node@1 ufs     2       no      global,logging
+
+
+#device device  mount   FS      fsck    mount   mount
+#to     mount   to      fsck            point           type    pass    at boot options
+#
+fd      -       /dev/fd fd      -       no      -
+/proc   -       /proc   proc    -       no      -
+/dev/dsk/c1t2d0s0 /dev/rdsk/c1t2d0s0        /       ufs     1       no      logging
+/dev/dsk/c1t2d0s1 -       -       swap    -       no      -
+/dev/dsk/c1t2d0s5 /dev/rdsk/c1t2d0s5        /var    ufs     1       no      logging
+/devices        -       /devices        devfs   -       no      -
+ctfs    -       /system/contract        ctfs    -       no      -
+objfs   -       /system/object  objfs   -       no      -
+swap    -       /tmp    tmpfs   -       yes     -
+#/dev/md/dsk/d70        /dev/md/rdsk/d70        /globaldevices  ufs     2       yes     -
+#/dev/md/dsk/d43 /dev/md/rdsk/d43        /global/.devices/node@1 ufs     2       no      global,logging

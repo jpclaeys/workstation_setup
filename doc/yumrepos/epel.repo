@@ -1,0 +1,14 @@
+[epel]
+name=Extra Packages for Enterprise Linux 7
+baseurl=http://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/Library/custom/EPEL/epel-7/
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+[epel-net]
+name=Extra Packages for Enterprise Linux 7
+baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+

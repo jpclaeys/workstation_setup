@@ -1,0 +1,190 @@
+##### check publisher
+
+0[140311/155451]root@groucho# pkg publisher
+PUBLISHER                   TYPE     STATUS P LOCATION
+solaris                     origin   online F http://pkg.opoce.cec.eu.int:10001/solaris/
+ha-cluster                  origin   online F http://pkg.opoce.cec.eu.int:10002/ha-cluster/
+
+
+
+# if no "emc.com" publisher is present, install it:
+
+pkg set-publisher -p http://pkg.opoce.cec.eu.int:10003/emc.com
+
+0[140311/170510]root@groucho# pkg publisher                                                 
+PUBLISHER                   TYPE     STATUS P LOCATION
+solaris                     origin   online F http://pkg.opoce.cec.eu.int:10001/solaris/
+ha-cluster                  origin   online F http://pkg.opoce.cec.eu.int:10002/ha-cluster/
+emc.com                     origin   online F http://pkg.opoce.cec.eu.int:10003/emc.com/
+
+
+0[140311/170510]root@groucho# pkg publisher                                                 
+PUBLISHER                   TYPE     STATUS P LOCATION
+solaris                     origin   online F http://pkg.opoce.cec.eu.int:10001/solaris/
+ha-cluster                  origin   online F http://pkg.opoce.cec.eu.int:10002/ha-cluster/
+emc.com                     origin   online F http://pkg.opoce.cec.eu.int:10003/emc.com/
+
+
+
+##### disable mpxio for fiber channel usage
+
+stmsboot -d
+
+
+
+
+0[140311/173306]root@groucho# stmsboot -d
+
+WARNING: stmsboot operates on each supported multipath-capable controller
+         detected in a host. In your system, these controllers are
+
+/pci@400/pci@1/pci@0/pci@c/SUNW,qlc@0/fp@0,0
+/pci@400/pci@1/pci@0/pci@c/SUNW,qlc@0,1/fp@0,0
+/pci@400/pci@2/pci@0/pci@8/SUNW,qlc@0/fp@0,0
+/pci@400/pci@2/pci@0/pci@8/SUNW,qlc@0,1/fp@0,0
+/pci@400/pci@2/pci@0/pci@e/scsi@0/iport@1
+/pci@400/pci@2/pci@0/pci@e/scsi@0/iport@2
+/pci@400/pci@2/pci@0/pci@e/scsi@0/iport@4
+/pci@400/pci@2/pci@0/pci@e/scsi@0/iport@8
+/pci@400/pci@2/pci@0/pci@e/scsi@0/iport@80
+
+If you do NOT wish to operate on these controllers, please quit stmsboot
+and re-invoke with -D { fp | mpt | mpt_sas | pmcs} to specify which controllers you wish
+to modify your multipathing configuration for.
+
+Do you wish to continue? [y/n] (default: y) y
+WARNING: This operation will require a reboot.
+Do you want to continue ? [y/n] (default: y) y
+The changes will come into effect after rebooting the system.
+Reboot the system now ? [y/n] (default: y) n
+0[140311/173425]root@groucho# 
+
+
+
+# other solution
+cp -p /kernel/drv/fp.conf /kernel/drv/fp.conf.`date +%Y%m%d`
+vi /kernel/drv/fp.conf
+diff /kernel/drv/fp.conf /kernel/drv/fp.conf.`date +%Y%m%d`
+
+
+
+
+##### boot into non-cluster mode
+reboot -- -x
+
+
+
+
+
+##### install powerpath
+
+pkg install pkg:/system/EMCpower@5.5.0.2.0-12
+
+
+0[140311/174016]root@groucho# pkg install pkg:/system/EMCpower@5.5.0.2.0-12
+           Packages to install:  1
+       Create boot environment: No
+Create backup boot environment: No
+            Services to change:  1
+
+DOWNLOAD                                PKGS         FILES    XFER (MB)   SPEED
+Completed                                1/1       226/226    28.4/28.4 10.3M/s
+
+PHASE                                          ITEMS
+Installing new actions                       320/320
+Updating package state database                 Done 
+Updating image state                            Done 
+Creating fast lookup database                   Done 
+0[140311/174105]root@groucho# 
+
+
+
+
+tail -f system-emcpower-config:default.log
+
+##### check powerpath
+
+svcs -a | grep emcpower
+
+0[140311/174157]root@groucho# svcs -a | grep emcpower
+online         17:41:14 svc:/system/emcpower/powerstartup:default
+online         17:41:16 svc:/system/emcpower/emcp_mond:default
+online         17:41:16 svc:/system/emcpower/powershift:default
+online         17:41:16 svc:/system/emcpower/config:default
+
+
+##### licence registration
+
+/etc/emcpreg -install
+
+
+
+2[140311/175941]root@chico# /etc/emcpreg -install
+
+===========   EMC PowerPath Registration ===========
+Do you have a new registration key or keys to enter?[n] y
+                  Enter the registration keys(s) for your product(s),
+                  one per line, pressing Enter after each key.
+                  After typing all keys, press Enter again.
+
+Key (Enter if done): BAP6-JB4L-SFQW-QOJY-MN9P-XTEW
+1 key(s) successfully added.
+Key successfully installed.
+
+Key (Enter if done): 
+1 key(s) successfully registered.
+0[140311/180010]root@chico# 
+
+
+
+
+
+1[140312/101911]root@groucho# powermt set policy=so dev=all
+
+
+
+
+
+127[140311/180301]root@groucho# /etc/emcpreg -list
+unable to open license key file: No such file or directory
+2[140311/180303]root@groucho# /etc/emcpreg -add BVPH-WB4L-6F9L-QTA9-MZ9H-BAGQ
+1 key(s) successfully added.
+0[140311/180312]root@groucho# /etc/emcpreg -list                             
+
+Key BVPH-WB4L-6F9L-QTA9-MZ9H-BAGQ
+  Product: PowerPath
+  Capabilities: All 
+0[140311/180314]root@groucho# 
+
+
+
+
+
+
+##### reboot in cluster mode
+
+init 6
+
+
+##### check devices
+
+echo | format
+
+
+##### check cluster devices
+
+
+
+
+
+
+
+
+
+powermt config
+powermt save
+
+
+
+
+

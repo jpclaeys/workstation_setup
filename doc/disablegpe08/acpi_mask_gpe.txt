@@ -1,0 +1,12 @@
+acpi_mask_gpe=  [HW,ACPI]
+                        Advanced Configuration and Power Interface
+                        Due to the existence of _Lxx/_Exx, some GPEs triggered
+                        by unsupported hardware/firmware features can result in
+                        GPE floodings that cannot be automatically disabled by
+                        the GPE dispatcher.
+                        This facility can be used to prevent such uncontrolled
+                        GPE floodings.
+                        Format: <int>
+                        Support masking of GPEs numbered from 0x00 to 0x7f.
+
+

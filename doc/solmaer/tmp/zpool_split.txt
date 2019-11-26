@@ -1,0 +1,218 @@
+#########################################################################
+##### variables
+
+export orig_zpool=seicr_pz
+export tmp_folder=/home/betorma/tmp
+
+export data_zpool=${orig_zpool}-data
+export db_zpool=${orig_zpool}-db
+export date=`date +%Y%m%d`
+
+
+#########################################################################
+##### estimation des nouveaux zpools
+
+zpool list $orig_zpool
+zfs list -r $orig_zpool
+
+zfs get -rp used $orig_zpool
+
+export data_dataset_list='seicr_pz/applications/budget/users seicr_pz/applications/oraagent seicr_pz/applications/seicr/data seicr_pz/applications/seicr/users seicr_pz/applications/seicr/xchange seicr_pz/zone'
+export db_dataset_list='seicr_pz/applications/seicr/orabin seicr_pz/applications/seicr/oradata seicr_pz/applications/seicr/oraflash seicr_pz/applications/seicr/oralog'
+
+
+{
+zfs get -rpH -o value used $data_dataset_list | perl -nae '$t+=$F[0];print "$ENV{data_zpool}: " . $t*100/70 . "\n"' | tail -1
+zfs get -rpH -o value used $db_dataset_list | perl -nae '$t+=$F[0];print "$ENV{db_zpool}: " . $t*100/70 . "\n"' | tail -1
+}
+
+##################################################################################
+##### request to storage team
+
+
+
+##################################################################################
+##### luns info
+
+From: SACRE Catherine (OP-EXT) 
+Sent: July 18 2014 17:07
+To: BETORI Mathieu (OP-EXT); OPDL A4 STORAGE BACKUP
+Cc: OPDL INFRA INT PROD; OPDL INFRA UNIX WEB; VALLET Jean-Claude (OP-EXT); OP INFRA OPENSYSTEMS CHGMG; NEISIUS Jean-Christophe (OP)
+Subject: RE: Reqtes for service : CIBA : PROD : demande d'ajout d'espace disque
+
+
+Bonjour,
+
+Cest fait.
+ 	Size	Lun	Master Device	 	Replica Device
+Zone 	Requested	Type	Real	Dec	Hexa	Host	Device	Array	Replication	Host	Device	Array
+Seicr_Pz-Data	120	H16.86G	134.88	1	1	Athena/Artemis	106D	SYM_3453	HostBased	Athena/Artemis	106D	SYM_2560
+Seicr_Pz-Db	200	H16.86G	202.32	2	2	Athena/Artemis	1075	SYM_3453	HostBased	Athena/Artemis	1075	SYM_2560
+
+Bon après-midi,
+Catherine
+
+
+
+##################################################################################
+##### check luns
+
+export data_lun_list='1'
+export db_lun_list='2'
+
+##### on each cluster nodes
+/home/betorma/bin/luxadm_carlo -z >${tmp_folder}/luxadm_carlo_`uname -n`.txt 
+
+{
+for lunid in $data_lun_list
+do
+	echo $lunid
+	grep " $lunid "${tmp_folder}/luxadm_carlo_`uname -n`.txt 
+done
+}
+
+
+{
+for lunid in $db_lun_list
+do
+	echo $lunid
+	grep " $lunid " ${tmp_folder}/luxadm_carlo_`uname -n`.txt 
+done
+}
+
+
+############################################################
+##### update cluster devices
+
+cldev populate
+cldev status -s fail
+
+
+############################################################
+##### create zpools
+
+
+
+zpool create -m /zpool/${orig_zpool}-data ${orig_zpool}-data mirror c3t60000970000292603453533031303644d0 c3t60000970000292602560533031303644d0
+zpool create -m /zpool/${orig_zpool}-db ${orig_zpool}-db mirror c3t60000970000292603453533031303735d0 c3t60000970000292602560533031303735d0
+
+
+zpool list ${orig_zpool}-data ${orig_zpool}-db 
+zfs list -r ${orig_zpool}-data ${orig_zpool}-db 
+zpool status  ${orig_zpool}-data ${orig_zpool}-db 
+
+
+
+{
+zfs list -Hr -o name ${orig_zpool} | grep oradata$ | while read dataset
+do
+	echo zfs create -p -o recordsize=8k $dataset | sed -e "s/${orig_zpool}/${orig_zpool}-db/"
+done
+}
+
+
+
+############################################################
+##### first syncrho
+
+zfs snapshot -r ${orig_zpool}@split_${date}
+zfs list -r -t snapshot ${orig_zpool}
+
+zfs list -r -t filesystem ${orig_zpool}
+$data_dataset_list=''
+$db_dataset_list=''
+
+{
+for dataset in $data_dataset_list
+do
+	echo "zfs send -R $dataset@split_${date} | timex zfs receive -vd ${data_zpool}"
+done
+}
+
+{
+for dataset in $db_dataset_list
+do
+	echo "zfs send -R $dataset@split_${date} | timex zfs receive -vd ${db_zpool}"
+done
+}
+
+
+############################################################
+##### check synchro
+
+zfs list -r ${orig_zpool} ${orig_zpool}-data ${orig_zpool}-db
+
+############################################################
+##### incremental synchro to estimate time
+
+
+
+
+############################################################
+##### plan downtime
+
+# with project manager, integrators, etc...
+
+# in centreon
+
+
+############################################################
+##### disable application
+
+
+############################################################
+##### shutdown zone
+
+
+
+
+
+############################################################
+##### incremental synchro
+
+
+############################################################
+##### check synchro
+
+zfs list -r ${orig_zpool} ${orig_zpool}-data ${orig_zpool}-db
+
+############################################################
+##### change configuration zone for new zpools
+
+############################################################
+##### start zone
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

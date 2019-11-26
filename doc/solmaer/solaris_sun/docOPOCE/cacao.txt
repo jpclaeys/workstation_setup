@@ -1,0 +1,13 @@
+# a cacao problem:
+
+Mar 22 10:33:12 apollon cacao[1626]: [ID 702911 daemon.warning] com.sun.mfwk.util.log.MfLogService.init : Warning: unable to initialize log file!
+Mar 22 10:33:12 apollon cacao[1626]: [ID 702911 daemon.warning] com.sun.mfwk.util.log.MfLogService.init : Couldn't get lock for //var/opt/SUNWmfwk/logs/agent.log.%g
+Mar 22 10:33:33 apollon cacao[1626]: [ID 702911 daemon.crit] com.sun.mfwk.snmp.mibregistration.MibRegistrationSoftwareComponent.addSecurity : MibRegistrationSoftwareComponent unable to set up SNMP securityERROR: Cannot read file [/etc/opt/SUNWmfwk/config/security/snmp/jdmk.acl] : check for existence and access right.
+Mar 22 10:33:33 apollon cacao[1626]: [ID 702911 daemon.warning] com.sun.mfwk.jobtool.JobTool.start : Job Dir does not exists: //var/opt/SUNWmfwk/jobtool
+Mar 22 10:33:33 apollon cacao[1626]: [ID 702911 daemon.warning] com.sun.management.oss.impl.tools.Persistence.loadManagedEntities : loadManagedEntities: persistence repository is not a directory: //var/opt/SUNWmfwk/persistence/measurement
+Mar 22 10:33:33 apollon cacao[1626]: [ID 702911 daemon.warning] com.sun.management.oss.impl.tools.Persistence.loadManagedEntities : loadManagedEntities: persistence repository is not a directory: //var/opt/SUNWmfwk/persistence/threshold
+Mar 22 10:33:33 apollon cacao[1626]: [ID 702911 daemon.warning] com.sun.management.oss.impl.tools.Persistence.loadManagedEntities : loadManagedEntities: persistence repository is not a directory: //var/opt/SUNWmfwk/persistence/opstatus
+
+
+/opt/SUNWmfwk/bin/mfwksetup -i
+

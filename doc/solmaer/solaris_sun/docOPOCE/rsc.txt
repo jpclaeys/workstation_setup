@@ -1,0 +1,28 @@
+Method 1) "version -v" output from rsc>. Look for RSC firmware checksum: output.
+
+example (checksum 7DFCFF5B):
+
+ rsc> version -v
+ RSC Version: 2.2.1
+ RSC Bootmon version: 2.0.0
+ RSC bootmon checksum: D3865290
+
+ RSC Firmware version: 2.2.1
+ RSC Build Release: 54
+ RSC firmware checksum: 7DFCFF5B
+
+ RSC firmware built Oct 23 2002, 15:01:54
+
+ RSC System Memory Size: 8 MB
+
+ RSC NVRAM Version = 4
+
+ RSC hardware type: 3
+
+# Cette methode la est si on a le package RSC installe et donc si la machine a des cartes rsc
+
+Method 2) From the system, login as root and execute the following:
+
+ cd /usr/platform/`uname -i`/lib/images
+ tail -2 rscfw | head -1 | cut -c 69-76
+

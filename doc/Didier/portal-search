@@ -1,0 +1,153 @@
+
+
+Repo ID:   DG-OPOCE_DG-OPOCE_3rd-party-7
+Repo Name: 3rd-party-7
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/DG-OPOCE/3rd-party-7
+Enabled:   1
+
+Repo ID:   DG-OPOCE_EPEL_epel-7
+Repo Name: epel-7
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/EPEL/epel-7
+Enabled:   1
+
+
+
+
+
+
+
+subscription-manager release --set 7.4 && subscription-manager release --show
+subscription-manager refresh
+
+subscription-manager repos --disable DG-OPOCE_EPEL_epel-7 && subscription-manager repos --disable DG-OPOCE_DG-OPOCE_3rd-party-7
+
+yum repolist
+
+yum clean all
+
+yum update --exclude elastic*,postgresql*,zookeeper*
+
+
+opvmwspses01	RHEL	7.2	pses	PORTALSEARCH	CUSTOM	TODO	
+opvmwspses02	RHEL	7.2	pses	PORTALSEARCH	CUSTOM	TODO	
+opvmwspses03	RHEL	7.2	pses	PORTALSEARCH	CUSTOM	TODO	
+opvmwspses04	RHEL	7.2	pses	PORTALSEARCH	CUSTOM	TODO	
+opvmwspses05	RHEL	7.2	pses	PORTALSEARCH	CUSTOM	TODO	
+opvmwspses06	RHEL	7.2	pses	PORTALSEARCH	CUSTOM	TODO	
+
+opvmwspsmq01	RHEL	7.3	psmq	PORTALSEARCH	CUSTOM	TODO	
+opvmwspsmq02	RHEL	7.2	psmq	PORTALSEARCH	CUSTOM	TODO	
+opvmwspsmq03	RHEL	7.2	psmq	PORTALSEARCH	CUSTOM	TODO	
+
+opvmwspsqp01	RHEL	7.2	psqp	PORTALSEARCH	CUSTOM	TODO	
+opvmwspsqp02	RHEL	7.2	psqp	PORTALSEARCH	CUSTOM	TODO	
+
+opvmwspssa01	RHEL	7.2	pssa	PORTALSEARCH	CUSTOM	TODO	
+
+opvmwspsxd01	RHEL	7.2	psxd	PORTALSEARCH	CUSTOM	TODO	
+opvmwspsxd02	RHEL	7.2	psxd	PORTALSEARCH	CUSTOM	TODO	
+opvmwspsxd03	RHEL	7.2	psxd	PORTALSEARCH	CUSTOM	TODO	
+
+
+
+yum update --exclude elastic*
+yum update --exclude elastic*,postgresql*,rabbitmq*,spring-*,zookeeper*
+
+
+
+[root@opvmwspses01 ~]# subscription-manager repos
++----------------------------------------------------------+
+    Available Repositories in /etc/yum.repos.d/redhat.repo
++----------------------------------------------------------+
+Repo ID:   rhel-7-server-satellite-tools-6.2-rpms
+Repo Name: Red Hat Satellite Tools 6.2 (for RHEL 7 Server) (RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7Server/$basearch/sat-tools/6.2/os
+Enabled:   1
+
+Repo ID:   DG-OPOCE_Elastic_Stack_beats
+Repo Name: beats
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/Elastic_Stack/beats
+Enabled:   0
+
+Repo ID:   DG-OPOCE_Elastic_Stack_elasticsearch-2_x
+Repo Name: elasticsearch-2.x
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/Elastic_Stack/elasticsearch-2_x
+Enabled:   0
+
+Repo ID:   DG-OPOCE_Elastic_Stack_elasticsearch-5_x
+Repo Name: elasticsearch-5.x
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/Elastic_Stack/elasticsearch-5_x
+Enabled:   1
+
+Repo ID:   rhel-7-server-rh-common-rpms
+Repo Name: Red Hat Enterprise Linux 7 Server - RH Common (RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7.2/$basearch/rh-common/os
+Enabled:   1
+
+Repo ID:   rhel-7-server-optional-rpms
+Repo Name: Red Hat Enterprise Linux 7 Server - Optional (RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7.2/$basearch/optional/os
+Enabled:   1
+
+Repo ID:   rhel-7-server-debug-rpms
+Repo Name: Red Hat Enterprise Linux 7 Server (Debug RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7.2/$basearch/debug
+Enabled:   0
+
+Repo ID:   DG-OPOCE_Elastic_Stack_HDP-2_4_2_0
+Repo Name: HDP-2.4.2.0
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/Elastic_Stack/HDP-2_4_2_0
+Enabled:   1
+
+Repo ID:   DG-OPOCE_Elastic_Stack_kibana-4_5
+Repo Name: kibana-4.5
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/Elastic_Stack/kibana-4_5
+Enabled:   0
+
+Repo ID:   DG-OPOCE_Elastic_Stack_curator
+Repo Name: curator
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/Elastic_Stack/curator
+Enabled:   1
+
+Repo ID:   DG-OPOCE_Elastic_Stack_logstash-2_3
+Repo Name: logstash-2.3
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/Elastic_Stack/logstash-2_3
+Enabled:   0
+
+Repo ID:   rhel-7-server-satellite-tools-6.3-puppet4-rpms
+Repo Name: Red Hat Satellite Tools 6.3 - Puppet 4 (for RHEL 7 Server) (RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7Server/$basearch/sat-tools/6.3-puppet4/os
+Enabled:   0
+
+Repo ID:   rhel-7-server-satellite-tools-6.3-rpms
+Repo Name: Red Hat Satellite Tools 6.3 (for RHEL 7 Server) (RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7Server/$basearch/sat-tools/6.3/os
+Enabled:   0
+
+Repo ID:   rhel-7-server-rpms
+Repo Name: Red Hat Enterprise Linux 7 Server (RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7.2/$basearch/os
+Enabled:   1
+
+Repo ID:   DG-OPOCE_DG-OPOCE_3rd-party-7
+Repo Name: 3rd-party-7
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/DG-OPOCE/3rd-party-7
+Enabled:   1
+
+Repo ID:   DG-OPOCE_EPEL_epel-7
+Repo Name: epel-7
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/custom/EPEL/epel-7
+Enabled:   1
+
+Repo ID:   rhel-7-server-supplementary-rpms
+Repo Name: Red Hat Enterprise Linux 7 Server - Supplementary (RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7.2/$basearch/supplementary/os
+Enabled:   1
+
+Repo ID:   rhel-7-server-extras-rpms
+Repo Name: Red Hat Enterprise Linux 7 Server - Extras (RPMs)
+Repo URL:  https://satellite-pk.opoce.cec.eu.int/pulp/repos/DG-OPOCE/production/OPOCE-RHEL7-GLOBAL/content/dist/rhel/server/7/7Server/$basearch/extras/os
+Enabled:   1
+
+
+

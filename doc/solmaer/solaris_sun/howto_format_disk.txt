@@ -1,0 +1,92 @@
+##############################################################
+# howto format/erase disk
+##############################################################
+
+
+##### liste des disks
+
+echo | format
+
+
+##### creatin d'une nouvelle vtoc
+
+disk=c2t0d0
+format -d ${disk} <<EOT
+partition
+modify
+1
+yes
+6
+$
+yes
+popo
+yes
+q
+q
+EOT
+
+prtvtoc /dev/rdsk/${disk}s2 >/tmp/vtoc
+
+
+##### ecrasement des donnes de chaque disque
+
+
+c=2
+for n in 0 1 2;
+do 
+  for t in 0 1 2 3;
+  do 
+  echo "################################################# c${c}t${t}d0 pass ${n}"
+  date
+  fmthard -s /tmp/vtoc /dev/rdsk/c${c}t${t}d0s2;
+  echo yes | newfs  /dev/rdsk/c${c}t${t}d0s2;
+  echo dd if=/dev/zero of=/dev/dsk/c${c}t${t}d0s2 bs=10240
+  dd if=/dev/zero of=/dev/dsk/c${c}t${t}d0s2  
+  date
+  echo
+  done
+done
+
+
+
+
+
+
+c=2
+for pass in 1 2 3
+do
+    echo; echo "##### INFO: `date +%Y%m%d_%H%M` pass $pass"
+    for t in 0 1 2 3
+    do
+        echo; echo "##### INFO: `date +%Y%m%d_%H%M` c${c}t${t}d0"
+        fmthard -s /tmp/vtoc /dev/rdsk/c${c}t${t}d0s2
+        echo; echo "##### INFO: `date +%Y%m%d_%H%M` fmthard for c${c}t${t}d0 done"
+        echo; echo yes | newfs  /dev/rdsk/c${c}t${t}d0s2 >/dev/null
+        echo; echo "##### INFO: `date +%Y%m%d_%H%M` newfs for c${c}t${t}d0 done"
+        dd if=/dev/zero of=/dev/dsk/c${c}t${t}d0s2 &
+        echo; echo "##### INFO: `date +%Y%m%d_%H%M` dd for c${c}t${t}d0 started"
+    done
+    ps -ef | grep "dd if=/dev/zero of=/dev/dsk/c${c}t${t}d0s2$" >/dev/null
+    while [[ $? == 0 ]]
+    do
+        echo "##### INFO: `date +%Y%m%d_%H%M` dd in progress..."
+        sleep 600
+        ps -ef | grep "dd if=/dev/zero of=/dev/dsk/c" >/dev/null
+    done
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

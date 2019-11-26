@@ -1,0 +1,14 @@
+# root-int, group, opoce.cec.eu.int
+dn: cn=root-int,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+cn: root-int
+sn: root-int
+objectClass: top
+objectClass: posixGroup
+objectClass: person
+gidNumber: 21007
+description: LDAP group used to handle the sudoers root-int role like.
+memberUid: zadraju
+memberUid: sattihe
+memberUid: solmaer
+memberUid: meyeran
+memberUid: neisije

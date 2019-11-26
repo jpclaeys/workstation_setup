@@ -1,0 +1,47 @@
+###########################################################
+# Ajout d'une image au server jumpstart
+# http://wikis.sun.com/display/JET/Complete+JET+User+Guide
+###########################################################
+
+
+##### telechargement de l'image iso du cd d'installation
+
+##### se connecter au server jumpstart (phoenix pour capellen)
+% ssh phoenix
+
+##### passer root
+
+##### mount iso
+% lofiadm -a ~betorma/download/sol-10-u7-ga-x86-dvd.iso 
+/dev/lofi/1
+% export source_dir=/mnt
+% mount -F hsfs /dev/lofi/1 ${source_dir}
+
+##### creer le repertoire d'accueil de l'image
+% export target_dir=/export/install/media/Solaris_10_u7_x86
+% mkdir ${target_dir}
+
+##### copier le contenu de l'image
+% export os_name=solaris_10_u7_x86
+% /opt/SUNWjet/bin/copy_solaris_media -d ${target_dir} -n ${os_name} ${source_dir}
+Copying Solaris image....
+Verifying target directory...
+Calculating the required disk space for the Solaris_10 product
+Calculating space required for the installation boot image
+Copying the CD image to disk...
+Copying Install Boot Image hierarchy...
+Copying /boot netboot hierarchy...
+Install Server setup complete
+ 
+Added Solaris image solaris_10_u7_x86 at the following location:
+        Media:          /export/install/media/Solaris_10_u7_x86
+ 
+removing directory /export/install/media/1064
+
+##### enregistrer la nouvelle image
+export version=10u7_x86
+export media_dir=/export/install/media/Solaris_10_u7_x86
+/opt/SUNWjet/bin/add_solaris_location ${version} ${media_dir}
+
+
+

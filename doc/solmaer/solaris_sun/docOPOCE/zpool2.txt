@@ -1,0 +1,14 @@
+# Appairement marche pas le zfs clonning entre deux pools differents
+foreach i in `zfs list -H | awk '{ print $1 }'`
+do
+zfs snapshot ${i}\@20080729
+done
+zpool create -f -m /zpool/seibud_DMX4000 seibud_DMX4000 c8t60060480000290103312533030344236d0
+foreach i in `zfs list -H -t filesystem | perl -nae 'm{DMX4000} or print "$F[0]\n"'`
+do
+zfs clone ${i}\@20080729 seibud_DMX4000/${i}
+done
+
+# Ajouter deux luns mirrores
+zpool add roma mirror c4t6006048000028775112853594D353330d0 c4t60060480000290103312533030343738d0
+

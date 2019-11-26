@@ -1,0 +1,30 @@
+#########################################################################
+#
+# Howto generate static web site on Apache Lenya production for simap
+#
+#########################################################################
+
+
+##### connect to belenos and switch to wcmj2ee
+ssh belenos
+su -    # or opsys_ux
+su - wcmj2ee
+
+##### execute export
+/applications/wcmj2ee/users/system/apache-lenya/utils/export_web_site/export_simap.sh
+
+##### archive the result of export
+cd /home/wcmj2ee/apache-lenya-export/simap
+/usr/sfw/bin/tar czf export_simap.tgz *
+
+##### move tgz file to xchange of thor
+mv export_simap.tgz /net/thor.opoce.cec.eu.int/xchange/   # or to your home
+
+##### connect as root to sleepy
+ssh sleepy
+su -   # or opsys_ux
+su - simap
+
+##### take export_simap.tgz on xchange of thor and extract this
+cd /applications/simap/users/simap/web
+/usr/sfw/bin/gtar -xzf /net/thor/xchange/export_simap.tgz

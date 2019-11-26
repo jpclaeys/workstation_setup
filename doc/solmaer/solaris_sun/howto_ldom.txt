@@ -1,0 +1,123 @@
+###########################################################################################################################################
+##### enable whole-core constraint
+
+
+
+0[150720/100221]root@hansel# ldm list
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    256G     1.7%  1.6%  10d 20h 
+secondary        active     -n----  5000    64    255G     1.1%  0.8%  10d 20h 
+0[150720/100224]root@hansel# 
+
+
+
+
+
+0[150720/100228]root@hansel# ldm ls -o resmgmt primary
+NAME             
+primary          
+
+CONSTRAINT
+    threading=max-throughput
+
+0[150720/100230]root@hansel# 
+
+
+
+
+
+
+0[150720/100230]root@hansel# ldm set-core 1 primary
+0[150720/100256]root@hansel# ldm ls -o resmgmt primary
+NAME             
+primary          
+
+CONSTRAINT
+    cpu=whole-core
+    max-cores=unlimited
+    threading=max-throughput
+
+0[150720/100258]root@hansel# ldm list                 
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    8     256G     3.8%  3.8%  10d 20h 
+secondary        active     -n----  5000    64    255G     1.0%  1.0%  10d 20h 
+0[150720/100302]root@hansel# 
+
+
+
+
+
+
+
+
+
+
+
+0[150720/100316]root@hansel# ldm ls -o resmgmt secondary
+NAME             
+secondary        
+
+CONSTRAINT
+    threading=max-throughput
+
+0[150720/100321]root@hansel# ldm set-core 1 secondary   
+0[150720/100345]root@hansel# ldm ls -o resmgmt secondary
+NAME             
+secondary        
+
+CONSTRAINT
+    cpu=whole-core
+    max-cores=unlimited
+    threading=max-throughput
+
+0[150720/100348]root@hansel# ldm list                   
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    8     256G     5.5%  5.5%  10d 20h 1m
+secondary        active     -n----  5000    8     255G      16%   16%  10d 20h 1m
+0[150720/100353]root@hansel# 
+
+
+
+
+
+
+
+
+
+
+
+0[150720/105432]root@hansel# ldm list         
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    8     256G     7.2%  7.2%  10d 20h 52m
+secondary        active     -n----  5000    8     255G      21%   21%  10d 20h 52m
+0[150720/105444]root@hansel# ldm set-core 8 primary
+0[150720/105505]root@hansel# ldm list              
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    256G      25%   18%  10d 20h 52m
+secondary        active     -n----  5000    8     255G      39%   39%  10d 20h 52m
+0[150720/105507]root@hansel# ldm set-core 8 secondary
+0[150720/105538]root@hansel# ldm list                
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    256G     1.0%  1.0%  10d 20h 53m
+secondary        active     -n----  5000    64    255G      30%   30%  10d 20h 53m
+0[150720/105540]root@hansel# ldm ls -o resmgmt primary
+NAME             
+primary          
+
+CONSTRAINT
+    cpu=whole-core
+    max-cores=unlimited
+    threading=max-throughput
+
+0[150720/105547]root@hansel# ldm ls -o resmgmt secondary
+NAME             
+secondary        
+
+CONSTRAINT
+    cpu=whole-core
+    max-cores=unlimited
+    threading=max-throughput
+
+0[150720/105551]root@hansel# 
+
+

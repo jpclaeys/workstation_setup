@@ -1,0 +1,276 @@
+##############################################################################################################################
+# creation d'un template de zone
+##############################################################################################################################
+
+######################################################
+# sur l'hote physique de la zone
+######################################################
+
+##### variables
+% export ZONE=template-u8
+% export ZPOOL=${ZONE}
+% export IP=temp1
+% export INTERFACE=nxge0
+% export TMP_FOLDER=/net/alambic/xchange/mb/${ZONE}
+% mkdir -p ${TMP_FOLDER}
+% export release=u8
+% export DATE=`date +%Y%m%d%H%M`
+% echo ${DATE}
+200910161301
+
+##### verification qu'aucun autre dataset que celui du zpool n'existe dans le pool
+% zfs list -r $ZPOOL
+NAME          USED  AVAIL  REFER  MOUNTPOINT
+template-u8   176K  16.5G    21K  /zpool/template-u8
+
+##### modification du point de montage du zpool
+% zfs mountpoint=/zpool/${ZPOOL} ${ZPOOL}
+
+##### verification
+% zfs list -r $ZPOOL
+NAME          USED  AVAIL  REFER  MOUNTPOINT
+template-u8   176K  16.5G    21K  /zpool/template-u8
+
+##### creation des differents fs 
+% zfs create -o mountpoint=/zones/${ZONE} ${ZPOOL}/zone
+% zfs create -o mountpoint=none ${ZPOOL}/applications
+% zfs create -o mountpoint=/u01/oraagent ${ZPOOL}/applications/oraagent
+
+##### verification
+% zfs list -r $ZPOOL
+NAME                                USED  AVAIL  REFER  MOUNTPOINT
+template-u8                         285K  16.5G    21K  /zpool/template-u8
+template-u8/applications             42K  16.5G    21K  none
+template-u8/applications/oraagent    21K  16.5G    21K  /u01/oraagent
+template-u8/zone                     21K  16.5G    21K  /zones/template-u8
+
+##### creation du fichier de configuration de la zone
+% cat >${TMP_FOLDER}/${ZONE}.cfg <<EOF
+create -b
+set zonepath=/zones/${ZONE}
+set autoboot=false
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${IP}
+set physical=${INTERFACE}
+end
+add dataset
+set name=${ZPOOL}/applications
+end
+EOF
+
+##### verification
+% cat ${TMP_FOLDER}/${ZONE}.cfg
+create -b
+set zonepath=/zones/template-u8
+set autoboot=false
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=temp1
+set physical=nxge0
+end
+add dataset
+set name=template-u8/applications
+end
+
+##### configuration et installation de la zone
+% chmod 700 /zones/${ZONE}
+% zonecfg -z ${ZONE} -f ${TMP_FOLDER}/${ZONE}.cfg
+% zoneadm -z ${ZONE} install
+
+##### verification des erreurs possibles
+% grep -i err /zones/${ZONE}/root/var/sadm/system/logs/install_log
+
+##### /etc/sysidcfg
+% cat >/zones/${ZONE}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+timeserver=158.167.99.7
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${ZONE} ip_address=${IP} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOF
+
+##### /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+% touch /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+
+##### /inet/ntp.conf
+% cat <<EOT > /zones/${ZONE}/root/etc/inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+##### /etc/resolv.conf
+% cat >/zones/${ZONE}/root/etc/resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.99.8
+nameserver 158.167.99.7
+search opoce.cec.eu.int
+EOT
+
+##### /etc/nsswitch.conf
+% tar cpfv /zones/${ZONE}/root/etc/nsswitch.conf.tar /etc/nsswitch.conf
+
+##### fichier de configuration du client ldap
+% cp /var/ldap/ldap_client_cred /zones/${ZONE}/root/var/ldap/
+% cp /var/ldap/ldap_client_file /zones/${ZONE}/root/var/ldap/
+
+##### configuration du nom de domaine
+% echo "opoce.cec.eu.int" >/zones/${ZONE}/root/etc/defaultdomain
+
+##### configuration des holidays
+% LINE="$(egrep -v '^\*' /etc/acct/holidays | head -1)"
+% VAL=$(echo ${LINE} | cut -d ' ' -f 1)
+% perl -pi.${DATE} -e "$year=`date +%Y`; s/$VAL/$year/" /zones/${ZONE}/root/etc/acct/holidays
+
+##### demarrage de la zone
+% zoneadm -z ${ZONE} boot
+
+##### connexion a la console de la zone
+% zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+% export IP=temp1
+% export TMP_FOLDER=/net/alambic/xchange/mb/${ZONE}
+% export DATE=`date +%Y%m%d%H%M`
+% echo ${DATE}
+
+##### enleve loghost du fichier /etc/inet/hosts
+% perl -i.${DATE} -pe 's/loghost//' /etc/inet/hosts
+
+##### /etc/nsswitch.conf
+% tar xvf /etc/nsswitch.conf.tar
+
+##### rafraichissement du cache dns
+% svcadm restart svc:/system/name-service-cache:default
+
+##### configuration du repertoire d'accueil des core system
+% coreadm -i /var/cores/%f_%p_%u_%g.core
+
+##### activation du service ldap/client
+% svcadm disable svc:/network/ldap/client:default
+% svcadm enable svc:/network/ldap/client:default
+
+##### tester le ldap
+% ldaplist
+
+##### desactivation du webconsole
+% svcadm disable svc:/system/webconsole:console
+
+##### installation de LGTO
+% cd /net/remus/export/packages/networker/
+% ./install_update.ksh  /net/remus/export/packages/networker/LGTOclnt-7.5.1.Build.269
+% ./install_update.ksh  /net/remus/export/packages/networker/LGTOman-7.5.1.Build.269
+% ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+% ln -s /etc/init.d/networker /etc/rc0.d/K05networker
+
+##### copie de la cle cfengine
+% cp -p /var/cfengine/ppkeys/localhost.pub ${TMP_FOLDER}/root-${IP}.pub
+
+
+######################################################
+# sur le serveur cfengine
+######################################################
+
+
+##### ajout de la zone dans la configuration de cfengine (cf.groups)
+% cp /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+% vi /var/cfengine/master/inputs/cf.groups
+% diff /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+
+##### import de la cle publique de la zone dans cfengine
+% cp -p ${TMP_FOLDER}/root-${IP}.pub /var/cfengine/ppkeys
+
+
+######################################################
+# sur la zone
+######################################################
+
+##### creation de /applications/wood
+
+##### execution du client cfengine
+% /var/cfengine/bin/cfagent -v -q
+
+##### redemarrage du service auto-fs
+% svcadm restart svc:/system/filesystem/autofs:default
+
+##### verification de la zone
+% ls /home/admin/
+% /home/admin/bin/check_host.sh
+
+##### test d'envoie d'email depuis la zone
+% mailx -s "email de test depuis `/usr/bin/uname -n`" opensystem-logs@publications.europa.eu </dev/null
+
+##### verfication des services SMF
+% svcs -xv
+
+##### verification system
+% dmesg
+
+##### arret de la zone
+% init 0
+~~.
+
+
+######################################################
+# sur l'hote physique de la zone
+######################################################
+
+
+##### creation des snapshots des fs de la zone template
+% zfs snapshot -r ojparaph-tz@${DATE}
+
+##### verification
+% zfs list -r ${TEMPLATE_ZPOOL}
+
+##### zfs send
+% zfs send ${ZPOOL}@${DATE} >${TMP_FOLDER}/template_zone_u8_zpool
+% zfs send ${ZPOOL}/zone@${DATE} >${TMP_FOLDER}/template_zone_u8_zone
+% zfs send ${ZPOOL}/applications@${DATE} >${TMP_FOLDER}/template_zone_u8_applications
+
+
+
+
+
+
+
+
+
+

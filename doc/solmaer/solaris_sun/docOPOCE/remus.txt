@@ -1,0 +1,25 @@
+Use is subject to license terms.
+Hostname: remus
+
+WARNING: The following files in / differ from the boot archive:
+
+    changed /kernel/drv/sgen.conf
+    changed /kernel/drv/did.conf
+
+The recommended action is to reboot to the failsafe archive to correct
+the above inconsistency. To accomplish this, on a GRUB-based platform,
+reboot and select the "Solaris failsafe" option from the boot menu.
+On an OBP-based platform, reboot then type "boot -F failsafe". Then
+follow the prompts to update the boot archive. Alternately, to continue
+booting at your own risk, you may clear the service by running:
+"svcadm clear system/boot-archive"
+
+Jan 13 07:40:00 svc.startd[7]: svc:/system/boot-archive:default: Method "/lib/svc/method/boot-archive" failed with exit status 95.
+Jan 13 07:40:00 svc.startd[7]: system/boot-archive:default failed fatally: transitioned to maintenance (see 'svcs -xv' for details)
+Requesting System Maintenance Mode
+(See /lib/svc/share/README for more information.)
+Console login service(s) cannot run
+
+Root password for system maintenance (control-d to bypass): SUNW,eri0 : 100 Mbps full duplex link up
+
+

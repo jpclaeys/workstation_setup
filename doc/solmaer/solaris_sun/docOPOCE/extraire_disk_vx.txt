@@ -1,0 +1,8 @@
+# Mettre offline
+vxdisk offline c2t2d0s2
+# RM de disk en VX
+vxdisk rm c2t2d0s2
+# Offline de vrai
+luxadm -e offline /dev/rdsk/c0t2d0s2
+# Recreer le devices
+devfsadm -C

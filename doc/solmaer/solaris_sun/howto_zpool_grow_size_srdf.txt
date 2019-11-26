@@ -1,0 +1,327 @@
+
+
+export zone_name=
+export zpool_name=
+export primary_node=																# name of the primary node of the zone
+export secondary_node=																# name of the secondary node of the zone
+
+export rdf_device_groupe_name=${zone_name}													# the rdf device group name for LUNs for system zpool
+export hex_lun_id_list='' 															# provided by storage team, if many devices please separate it with space character - Example : "35 36 37")
+export dec_lun_id_list='' 															# provided by storage team, if many devices please separate it with space character - Example : "7 8 9")
+export rdf_dev_list=''																# provided by storage team, if many devices please separate it with space character - Example : "220B 2245")
+
+export local_site=$(/home/admin/bin/getcmdb.sh host | grep `uname -n` | awk -F';' '{print $5}' | awk '{print $1}')				# provide the primary site, based on the CMDB
+export remote_site=$(/home/admin/bin/getcmdb.sh host | grep $(clnode list| grep -v `uname -n`)  | awk -F';' '{print $5}' | awk '{print $1}')	# provide the primary site, based on the CMDB
+export mercier_storage=																# SymmID possible: 000292603453 000296700060 
+export eufo_storage=																# SymmID possible: 000292602560 000296700069
+export short_mercier_storage=${mercier_storage:8:12}
+export short_eufo_storage=${eufo_storage:8:12}
+if [[ $local_site == 'MER' ]]; then export local_storage=$mercier_storage;  fi
+if [[ $local_site == 'EUFO' ]]; then export local_storage=$eufo_storage;  fi
+export storage_info_file=/home/betorma/docs/storage.txt
+
+
+# other
+export tmp_dir=/home/systemstore/temp/${zone_name}     												# folder used to store temporay files or configuration files
+mkdir -p $tmp_dir
+export date=`date +%Y%m%d%H%M`	
+
+
+
+
+
+
+
+
+
+
+
+
+#############################################################################################################################
+##### 
+##### lun check
+#####
+
+
+
+##### on all nodes
+
+cfgadm -al
+powermt check
+powermt display dev=all class=all
+symcfg discover
+
+
+##### on one node
+
+cldev populate
+
+
+
+##### on all nodes
+
+/home/betorma/bin/storage_info.pl -A >${tmp_dir}/storage_info_`uname -n`.txt
+
+
+
+##### if hexa lun id are know, search luns with hexa lun id, else use decimal lun id
+
+{
+if [[ -n $hex_lun_id_list ]]; then
+	for dev in $hex_lun_id_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+else
+	for dev in $dec_lun_id_list; do grep -i " ${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+fi
+} | egrep "$short_mercier_storage|$short_eufo_storage"
+
+
+
+
+#############################################################################################################################
+##### 
+##### rdf device groups check
+#####
+#####
+
+
+
+##### check if we are in client/server mode for EMC Solution Enabler
+
+{
+env | grep ^SYMCLI >/dev/null
+if [[ ! $? = 0 ]]; then
+	echo; echo "ERROR: This server don't use EMC Solution Enabler with client/server/mode"
+fi
+}
+
+
+
+##### define/check rdf type, on each node
+
+{
+if [ $primary_node = `uname -n` ]; then
+	rdf_type=RDF1
+else 
+	rdf_type=RDF2
+fi
+if [ -z $rdf_type ]; then
+	echo "Can't determine primary node and RDF type for this node."
+	echo 'Please check or define RDF type manually.'
+else
+	echo $rdf_type
+fi
+}
+
+
+
+##### check if devices are with the good rdf type
+
+{
+for dev in $rdf_dev_list
+do
+	echo $dev
+	if [ $local_site = 'EUFO' ]; then
+		symdev show -sid $eufo_storage $dev | grep 'Device Configuration' | grep $rdf_type >/dev/null
+		if [ $? != 0 ]; then
+			echo "$dev is not with the good rdf type."
+		fi
+	fi
+	if [ $local_site = 'MER' ]; then
+		symdev show -sid $mercier_storage $dev | grep 'Device Configuration' | grep $rdf_type >/dev/null
+		if [ $? != 0 ]; then
+			echo "$dev is not with the good rdf type."
+		fi
+	fi
+done
+}
+
+
+
+##### create rdf device group if it don't exists, on all nodes
+
+{
+symdg show ${rdf_device_groupe_name} >/dev/null
+if [[ $? != 0 ]]; then 
+        symdg -type $rdf_type create $rdf_device_groupe_name
+        if [[ $? == 0 ]];then echo $rdf_device_groupe_name created.; fi
+else
+        echo $rdf_device_groupe_name already exists
+fi
+}
+
+
+
+##### add devices within rdf device groups
+
+for dev in $rdf_dev_list; do symdg -g $rdf_device_groupe_name -sid $local_storage add dev $dev; done
+
+
+
+##### check rdf sync, on primary node
+
+symrdf query -g $rdf_device_groupe_name | grep '^DEV' | grep -v 'Synchronized$'
+
+
+
+#############################################################################################################################
+##### 
+##### combine cluster device group
+#####
+#####
+
+
+##### get concerned cluster devices, on each node
+
+{
+for dev in $rdf_dev_list
+do
+	grep -i " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "$1\n" if(m{#\s(d\d+)\s#})'
+done
+} | uniq >${tmp_dir}/did.${rdf_type}
+cat ${tmp_dir}/did.${rdf_type}
+
+
+##### label disk on primary node
+
+{
+for dev in $rdf_dev_list
+do
+	grep -i " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | tail -1 | perl -ne '@list=split; print "\n{echo label; echo yes} | format -d $list[2]\n"'
+done
+}
+
+
+
+##### combine cluster devices, on secondary/rdf2 node
+
+{
+export device_number=`wc -l ${tmp_dir}/did.${rdf_type} | awk '{print $1}'`
+if [[ $rdf_type == 'RDF2' ]]; then 
+
+	for i in $(seq 1 `echo $device_number`)
+	do
+		echo cldev combine -t srdf -g ${rdf_device_groupe_name} -d `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1` `cat ${tmp_dir}/did.RDF2 | head -${i} | tail -1`
+		echo didadm -F scsi3 `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1`
+		echo cldev show `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1`
+		echo
+	done
+else
+	echo; echo 'ERROR: you are not on RDF2 node to combine cluster devices.'
+fi
+}
+
+
+
+{
+cat ${tmp_dir}/did.RDF[12] | while read did
+do
+	echo cldg offline dsk/${did}
+	echo cldg disable dsk/${did}
+	echo cldg delete dsk/${did}
+done
+}
+
+
+
+
+
+#############################################################################################################################
+##### 
+##### add new devices in cluster device group 
+#####
+
+if [[ $rdf_type == 'RDF1' ]]; then 
+	cldg add-device -d `cat ${tmp_dir}/did.RDF1 2>/dev/null | xargs | sed -e 's/ /,/g'` ${rdf_device_groupe_name}
+	cldg show -v ${rdf_device_groupe_name}
+	cldg status ${rdf_device_groupe_name}
+else
+	echo; echo 'ERROR: you are not on RDF1 node to create cluster device goup.'
+fi
+
+
+#############################################################################################################################
+##### 
+##### format device on the good slice
+#####
+
+
+
+disk=$(
+{
+if [[ -n $hex_lun_id_list ]]; then
+	for dev in $hex_lun_id_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+else
+	for dev in $dec_lun_id_list; do grep -i " ${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+fi
+} | egrep "$short_mercier_storage|$short_eufo_storage" | grep $primary_node | awk '{print $3}' | tail -1)
+echo $disk
+
+
+
+op_format_s0.sh --emc $disk
+#op_format_s0.sh --asm $disk
+#op_format_s2.sh --emc $disk
+#op_format_s2.sh --asm $disk
+
+
+
+
+#############################################################################################################################
+##### 
+##### zpool growing
+#####
+
+
+
+##### check the actual zpool size
+
+zpool list $zpool_name
+
+
+##### check the zpool status
+
+zpool status $zpool_name
+
+
+
+##### get device type and slice
+
+{
+export device_type=`zpool status $zpool_name | grep ONLINE | egrep -v "$zpool_name|state:" | awk '{print $1}'| tail -1 | perl -ne 'print "$&\n" if(m{c\d+t|emcpower})'`
+echo $device_type | grep emcpower >/dev/null
+if [[ $? == 0 ]]; then
+	export slice=`zpool status $zpool_name | grep ONLINE | egrep -v "$zpool_name|state:" | awk '{print $1}' | tail -1 | perl -ne 'print $1 if(m{emcpower\d+(a|c)$})'`
+else
+	export slice=`zpool status $zpool_name | grep ONLINE | egrep -v "$zpool_name|state:" | awk '{print $1}' | tail -1 | perl -ne 'print $1 if(m{(s0|s2)$})'`
+fi
+}
+
+
+
+##### format device on the good slice
+
+
+
+##### determine device name
+
+device=$(if [[ -n $hex_lun_id_list ]]; then
+	for dev in $hex_lun_id_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+else
+	for dev in $dec_lun_id_list; do grep -i " ${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+fi | egrep "$short_mercier_storage|$short_eufo_storage"| grep $device_type | awk '{print $3}' | tail -1)
+
+
+
+##### add new luns (with slice0)
+
+echo zpool add $zpool_name ${device}${slice}
+
+
+
+##### check zpool
+
+zpool status $zpool_name
+zpool list $zpool_name
+
+
+

@@ -1,0 +1,18 @@
+export zone=cellar1-dz
+export zone_ip=158.167.225.4
+export zone_octal_netmask=26
+export zone_gateway=158.169.97.1
+export date=`date +%Y%m%d`
+
+cp -p /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date}
+
+zonecfg -z ${zone} <<EOT
+select net address=${zone_ip}/${zone_octal_netmask}
+set defrouter=${zone_gateway}
+end
+verify
+commit
+exit
+EOT
+
+diff /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date}

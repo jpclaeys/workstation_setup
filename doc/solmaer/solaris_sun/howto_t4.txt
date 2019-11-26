@@ -1,0 +1,27 @@
+###### reboot primary ldom on t4
+
+-> set /HOST/domain/control/ auto-boot=disable
+Set 'auto-boot' to 'disable' [disabled]
+
+-> reset /HOST/domain/control/
+Are you sure you want to reset /HOST/domain/control (y/n)? y
+Performing reset on /HOST/domain/control
+
+
+-> start /HOST/console/
+Are you sure you want to start /HOST/console (y/n)? y
+Console session already in use. [view mode]
+
+Serial console started.  To stop, type #.
+Broadcast Message from root (msglog) on groucho Wed Oct 26 15:10:42...
+THE SYSTEM groucho IS BEING SHUT DOWN NOW ! ! !
+Log off now or risk your files being damaged
+
+
+Write failed
+updating /platform/sun4v/boot_archive
+NOTICE: Entering OpenBoot.
+NOTICE: Fetching Guest MD from HV.
+NOTICE: Starting additional cpus.
+NOTICE: Initializing LDC services.
+NOTICE: Probing PCI devices.

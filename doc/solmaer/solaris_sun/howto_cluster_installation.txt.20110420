@@ -1,0 +1,675 @@
+###########################################################################################################################
+#
+# installation cluster (en phase de conception; attention donc....)
+#
+###########################################################################################################################
+
+
+
+##############################################################
+# test des interfaces reseau dediees aux interconnects cluster
+##############################################################
+
+
+##### sur node_1
+
+
+root@averell # echo 'rpcbind:all' >> /etc/hosts.allow 
+
+root@averell # dladm show-dev
+bge0            link: up        speed: 1000  Mbps       duplex: full
+bge1            link: up        speed: 1000  Mbps       duplex: full
+bge2            link: unknown   speed: 0     Mbps       duplex: unknown
+bge3            link: unknown   speed: 0     Mbps       duplex: unknown
+
+
+
+root@averell # ifconfig bge2 plumb
+root@averell # ifconfig bge2 4.4.4.4 up
+
+root@averell # ifconfig bge3 plumb 
+root@averell # ifconfig bge3 5.5.5.4 up
+
+
+##### sur node_2
+
+
+root@jack # echo 'rpcbind:all' >> /etc/hosts.allow
+
+root@jack # dladm show-dev
+bge0            link: up        speed: 1000  Mbps       duplex: full
+bge1            link: up        speed: 1000  Mbps       duplex: full
+bge2            link: unknown   speed: 0     Mbps       duplex: unknown
+bge3            link: unknown   speed: 0     Mbps       duplex: unknown
+
+root@jack # ifconfig bge2 plumb
+root@jack # ifconfig bge2 4.4.4.5 up
+
+root@jack # ifconfig bge3 plumb 
+root@jack # ifconfig bge3 5.5.5.5 up
+
+
+
+
+
+
+
+
+
+
+##### sur les 2 nodes
+
+
+root@jack # snoop -d bge2
+Using device bge2 (promiscuous mode)
+           ? -> *            ETHER Type=9000 (Loopback), size = 60 bytes
+           ? -> (multicast)  ETHER Type=010B (LLC/802.3), size = 64 bytes
+           ? -> (multicast)  ETHER Type=010B (LLC/802.3), size = 64 bytes
+           ? -> (multicast)  ETHER Type=010B (LLC/802.3), size = 64 bytes
+     4.4.4.4 -> dialup-4.255.255.255.Dial1.Atlanta1.Level3.net ICMP Echo request (ID: 15755 Sequence number: 0)
+vlan148.car1.StLouis1.Level3.net -> 4.4.4.4      ICMP Echo reply (ID: 15755 Sequence number: 0)
+     4.4.4.4 -> dialup-4.255.255.255.Dial1.Atlanta1.Level3.net ICMP Echo request (ID: 15755 Sequence number: 1)
+vlan148.car1.StLouis1.Level3.net -> 4.4.4.4      ICMP Echo reply (ID: 15755 Sequence number: 1)
+           ? -> (multicast)  ETHER Type=010B (LLC/802.3), size = 64 bytes
+     4.4.4.4 -> dialup-4.255.255.255.Dial1.Atlanta1.Level3.net ICMP Echo request (ID: 15755 Sequence number: 2)
+vlan148.car1.StLouis1.Level3.net -> 4.4.4.4      ICMP Echo reply (ID: 15755 Sequence number: 2)
+
+root@averell # ping -s 4.255.255.255
+PING 4.255.255.255: 56 data bytes
+64 bytes from 4.4.4.4: icmp_seq=0. time=0.321 ms
+64 bytes from vlan148.car1.StLouis1.Level3.net (4.4.4.5): icmp_seq=0. time=10.5 ms
+64 bytes from 4.4.4.4: icmp_seq=1. time=0.274 ms
+64 bytes from vlan148.car1.StLouis1.Level3.net (4.4.4.5): icmp_seq=1. time=0.874 ms
+64 bytes from 4.4.4.4: icmp_seq=2. time=0.137 ms
+64 bytes from vlan148.car1.StLouis1.Level3.net (4.4.4.5): icmp_seq=2. time=0.530 ms
+64 bytes from 4.4.4.4: icmp_seq=3. time=0.213 ms
+64 bytes from vlan148.car1.StLouis1.Level3.net (4.4.4.5): icmp_seq=3. time=0.742 ms
+
+
+
+
+root@jack # snoop -d bge3
+Using device bge3 (promiscuous mode)
+           ? -> (multicast)  ETHER Type=010B (LLC/802.3), size = 64 bytes
+     5.5.5.4 -> 5.255.255.255 ICMP Echo request (ID: 15756 Sequence number: 0)
+     5.5.5.5 -> (broadcast)  ARP C Who is 5.5.5.4, 5.5.5.4 ?
+     5.5.5.4 -> 5.5.5.5      ARP R 5.5.5.4, 5.5.5.4 is 0:3:ba:67:45:90
+     5.5.5.5 -> 5.5.5.4      ICMP Echo reply (ID: 15756 Sequence number: 0)
+           ? -> *            ETHER Type=9000 (Loopback), size = 60 bytes
+           ? -> (multicast)  ETHER Type=010B (LLC/802.3), size = 64 bytes
+     5.5.5.4 -> 5.255.255.255 ICMP Echo request (ID: 15756 Sequence number: 1)
+     5.5.5.5 -> 5.5.5.4      ICMP Echo reply (ID: 15756 Sequence number: 1)
+     5.5.5.4 -> 5.255.255.255 ICMP Echo request (ID: 15756 Sequence number: 2)
+     5.5.5.5 -> 5.5.5.4      ICMP Echo reply (ID: 15756 Sequence number: 2)
+           ? -> (multicast)  ETHER Type=010B (LLC/802.3), size = 64 bytes
+
+root@averell # ping -s 5.255.255.255
+PING 5.255.255.255: 56 data bytes
+64 bytes from 5.5.5.4: icmp_seq=0. time=0.317 ms
+64 bytes from 5.5.5.5: icmp_seq=0. time=25.7 ms
+64 bytes from 5.5.5.4: icmp_seq=1. time=0.285 ms
+64 bytes from 5.5.5.5: icmp_seq=1. time=0.855 ms
+64 bytes from 5.5.5.4: icmp_seq=2. time=0.204 ms
+
+
+##############################################################
+# snapshot post install
+##############################################################
+
+##### sur les 2 noueds
+
+zfs snapshot -r rpool@`date +%Y%m%d`_post_intall_sun_cluster
+
+
+##############################################################
+# installation de sun cluster
+##############################################################
+
+
+##### sur node_1
+
+
+root@averell # cd /var/tmp
+root@averell # cp -p /net/remus/export/software/Suncluster/suncluster_3_2u2-ga-solaris-sparc.zip /var/tmp
+root@averell # unzip suncluster_3_2u2-ga-solaris-sparc.zip
+
+betorma@vespa %  /usr/openwin/bin/xhost +
+
+root@averell # export DISPLAY=vespa:0                     
+root@averell # /var/tmp/Solaris_sparc/installer 
+
+root@averell # mkdir -p /var/tmp/eiscd 
+root@averell # cd /net/remus/export/install/patches/eiscd/29SEP09/patch/SunCluster/3.2/10
+root@averell # cp * /var/tmp/eiscd
+root@averell # cd /var/tmp/eiscd
+root@averell # {
+cursh> for i in `ls *.zip`
+cursh for> do
+cursh for> unzip -o ${i}
+cursh for> done
+cursh> }
+
+root@averell # \rm *.zip
+root@averell # cp patch_order patch.ksh
+root@averell # for line in $(cat patch.ksh );do echo "patchadd $line">> patch.ksh.NEW ;done
+root@averell # mv patch.ksh.NEW patch.ksh
+root@averell # chmod +x patch.ksh
+16:55/root@averell # ./patch.ksh
+
+root@mireille # init 6
+
+
+##### sur node_2
+
+
+root@jack # cd /var/tmp
+root@jack # cp -p /net/remus/export/software/Suncluster/suncluster_3_2u2-ga-solaris-sparc.zip /var/tmp
+root@jack # unzip suncluster_3_2u2-ga-solaris-sparc.zip
+
+root@jack # export DISPLAY=vespa:0 
+root@jack # /var/tmp/Solaris_sparc/installer 
+
+root@jack # mkdir -p /var/tmp/eiscd
+root@jack # cd /net/remus/export/install/patches/eiscd/29SEP09/patch/SunCluster/3.2/10
+root@jack # cp * /var/tmp/eiscd
+root@jack # cd /var/tmp/eiscd
+root@jack #  {
+cursh> for i in `ls *.zip`
+cursh for> do
+cursh for> unzip -o ${i}
+cursh for> done
+cursh> }
+
+root@jack # \rm *.zip
+root@jack # cp patch_order patch.ksh
+root@jack # for line in $(cat patch.ksh );do echo "patchadd $line">> patch.ksh.NEW ;done
+root@jack # mv patch.ksh.NEW patch.ksh
+root@jack # chmod +x patch.ksh
+root@jack # ./patch.ksh
+
+root@martoni # init 6
+
+
+##############################################################
+# configuration du cluster
+##############################################################
+
+root@averell # ifconfig bge2 plumb
+root@averell # ifconfig bge3 plumb 
+root@jack # ifconfig bge2 plumb
+root@jack # ifconfig bge3 plumb 
+
+
+##### sur node_1
+
+root@averell # scinstall                
+1
+1
+yes
+2
+gwtint-test
+averell
+^D
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+<enter>
+
+
+##### equivalent a...
+##### root@averell #  scinstall -i -C gwtint-test -F -o -G lofi -P task=quorum,state=INIT
+
+
+root@averell # scsetup
+7						##### noeud autorise a joindre le cluster
+3
+yes
+jack
+yes
+<enter>
+q
+q
+
+##### equivalent a...
+##### scconf -a -T node=jack
+
+##### creation des adapter sur node_1
+root@averell # clinterconnect add averell:bge2
+root@averell # clinterconnect add averell:bge3
+
+##### creation des switchs sur node_1
+root@averell # clinterconnect add swicth1
+root@averell # clinterconnect add swicth2
+
+##### creation des cables sur node_1
+root@averell # clinterconnect add averell:bge2,swicth1@1
+root@averell # clinterconnect add averell:bge3,swicth2@1
+
+
+
+
+##### sur node_2
+
+root@jack # scinstall
+1
+3
+yes
+2
+averell
+gwtint-test
+<enter>
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+
+##### equivalent a...
+##### scinstall -i -C gwtint-test -N averell -G lofi -A trtype=dlpi,name=bge2 -A trtype=dlpi,name=bge3 -m endpoint=:bge2,endpoint=swicth1 -m endpoint=:bge3,endpoint=swicth2
+
+
+##############################################################
+# quorum
+##############################################################
+
+
+
+##### variables
+export array=gnole
+export host=gwint_test
+export size=5g
+
+##### liste des volues deja existants sur host
+./sscs list -a ${array} mapping ${host} | sort -n -k 3
+
+##### choisit le nom du volume
+export volume=vquorum_test2
+
+##### verifie qu'un volume portant ce nom n'existe pas deja
+./sscs list -a ${array} volume ${volume}
+
+##### choisit le numero de lun
+export lun=69
+
+##### verifie que le numero de lun n'est pas deja utilise par l'hote
+./sscs list -a ${array} mapping ${host} | grep "LUN: ${lun}"
+
+##### liste les vdisk
+{
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $array vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $array vdisk $n | egrep 'Virtual Disk:|Capacity'
+done
+}
+
+##### choix du vdisk
+export virtual_disk=1
+export pool=Default
+
+##### creation du volume
+echo ./sscs create -a ${array} -p Default -s ${size} -v ${virtual_disk} volume ${volume}
+
+##### mappage du volume
+echo ./sscs map -a ${array} -v ${volume} -l ${lun} host ${host}
+
+##### verifie le status du volume
+./sscs list -a ${array} volume ${volume}
+Volume: vquorum_test2
+  Type:                            Standard
+  WWN:                             60:0A:0B:80:00:26:67:6A:00:00:18:C4:4C:CA:7D:E1
+  Pool:                            Default
+  Profile:                         Default
+  Virtual Disk:                    1
+  Size:                            5.000 GB
+  State:                           Mapped
+  Status:                          Online
+  Action:                          Initializing...
+  Condition:                       Optimal
+  Read Only:                       No
+  Controller:                      B
+  Preferred Controller:            B
+  Modification Priority:           High
+  RAID Level:                      5
+  Segment Size:                    512 KB      
+  Read Cache:                      Enabled
+  Write Cache:                     Enabled
+  Write Cache with Replication:    Enabled
+  Write Cache without Batteries:   Disabled
+  Write Cache Active:              True
+  Flush Write Cache After:         10 s
+  Disk Scrubbing:                  Enabled
+  Disk Scrubbing with Redundancy:  Disabled
+  Security:                        None
+  Associations:
+    Host Group: gwint_test  LUN: 69  Initiator: jack_hba0  WWN: 21:00:00:E0:8B:14:CF:B7  Permission: Read/Write
+    Host Group: gwint_test  LUN: 69  Initiator: jack_hba1  WWN: 21:01:00:E0:8B:34:CF:B7  Permission: Read/Write
+    Host Group: gwint_test  LUN: 69  Initiator: averell_hba0  WWN: 21:01:00:E0:8B:34:E1:BE  Permission: Read/Write
+    Host Group: gwint_test  LUN: 69  Initiator: averell_hba1  WWN: 21:00:00:E0:8B:14:E1:BE  Permission: Read/Write
+root@remus # 
+
+
+
+root@averell # /home/betorma/bin/luxadm_carlo -z | grep '/69'
+/dev/rdsk/c4t600A0B800026676A000018C44CCA7DE1d0s2 ==> 202600a0b8266772/69 202700a0b8266772/69  []
+root@jack # /home/betorma/bin/luxadm_carlo -z | grep '/69'
+/dev/rdsk/c4t600A0B800026676A000018C44CCA7DE1d0s2 ==> 202600a0b8266772/69 202700a0b8266772/69  []
+
+root@averell # cldev populate 
+Configuring DID devices
+did instance 5 created.
+did subpath averell:/dev/rdsk/c4t600A0B800026676A000018C44CCA7DE1d0 created for instance 5.
+Configuring the /dev/global directory (global devices)
+obtaining access to all attached disks
+
+
+root@averell # cldev clear
+Updating shared devices on node_1
+Updating shared devices on node_2
+root@averell # cldev status
+
+=== Cluster DID Devices ===
+
+Device Instance              Node               Status
+---------------              ----               ------
+/dev/did/rdsk/d1             averell            Ok
+
+/dev/did/rdsk/d2             averell            Ok
+
+/dev/did/rdsk/d3             jack               Ok
+
+/dev/did/rdsk/d4             jack               Ok
+
+/dev/did/rdsk/d5             averell            Ok
+                             jack               Ok
+
+
+root@averell # zpool create quorum c4t600A0B800026676A000018C44CCA7DE1d0  
+root@averell # zpool status quorum
+  pool: quorum
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        quorum                                   ONLINE       0     0     0
+          c4t600A0B800026676A000018C44CCA7DE1d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+
+root@averell # clq list
+averell
+jack
+root@averell # clq add d5
+root@averell # clq list  
+d5
+averell
+jack
+
+
+root@averell # clq status
+
+=== Cluster Quorum ===
+
+--- Quorum Votes Summary from latest node reconfiguration ---
+
+            Needed   Present   Possible
+            ------   -------   --------
+            2        3         3
+
+
+--- Quorum Votes by Node (current status) ---
+
+Node Name       Present       Possible       Status
+---------       -------       --------       ------
+averell         1             1              Online
+jack            1             1              Online
+
+
+--- Quorum Votes by Device (current status) ---
+
+Device Name       Present      Possible      Status
+-----------       -------      --------      ------
+d5                1            1             Online
+
+
+
+
+####################################################################################################################################
+# suite config cluster
+####################################################################################################################################
+
+##### a faire sur chaque node
+
+
+
+# mpxio ( ca doit etre fausse )
+grep auto /kernel/drv/scsi_vhci.conf | grep disable
+
+
+svcprop /system/webconsole:console | grep tcp_listen
+
+# verifier que c'est un dossier et pas un lien:
+ls -ld /usr/cluster/lib/SunClusterManager/WEB-INF/classes/ds
+
+
+#pour virer des messages qui puissent y arriver:
+svcs "*pools*"
+svcadm enable pools/dynamic
+svcs "*pools*"
+
+#disques internes:
+clnode set -p reboot_on_path_failure=enabled averell
+clnode set -p reboot_on_path_failure=enabled jack
+scdidadm -L
+# unmonitor des disques internes:
+
+cldev unmonitor d1
+cldev unmonitor d2 
+cldev unmonitor d3
+cldev unmonitor d4
+cldev status
+
+
+
+# bougue sccheck
+# verifier si ca marche:
+sccheck -v 2 -s4
+# si ca plante, virer les entres "sds" et "vxfsextended" du fichier conf de sccheck:
+vi /usr/cluster/lib/sccheck/explorer_args.cluster
+
+# nsswitch
+# eliminer "cluster" comme choix de resolution de noms
+grep cluster /etc/nsswitch.conf
+vi /etc/nsswitch.conf
+perl -pi.20100819 -e 's:cluster::g' /etc/nsswitch.conf
+diff /etc/nsswitch.conf /etc/nsswitch.conf.20100819
+
+
+echo "####### Cluster">>/etc/netmasks
+echo "172.16.0.128    255.255.255.128">>/etc/netmasks
+echo "172.16.1.0      255.255.255.128">>/etc/netmasks
+echo "172.16.4.0      255.255.254.0">>/etc/netmasks
+
+cat /etc/inet/netmasks
+
+
+# setter les disques internes en autogen et localonly
+scdidadm -L
+
+
+cldg set -p localonly=true  dsk/d1
+cldg set -p localonly=true  dsk/d2
+cldg set -p localonly=true  dsk/d3
+cldg set -p localonly=true  dsk/d4
+cldg set -p autogen=true  dsk/d1
+cldg set -p autogen=true  dsk/d2
+cldg set -p autogen=true  dsk/d3
+cldg set -p autogen=true  dsk/d4
+cldg show -v                      
+
+                 
+# Conseils eiscd crontab
+#Changerles frequences en 5 m de ces trois jobs
+
+crontab -e
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/eventlog
+25 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/DS
+30 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/commandlog
+
+
+# conf ipmp
+# ca doit etre online
+svcs "*multipath*"
+# verifier que ca affiche yes
+grep TRACK_INTERFACES_ONLY_WITH_GROUPS /etc/default/mpathd | grep yes
+
+# doit etre false:
+svcprop rpc/bind | grep local_only | grep false
+# doit etre true
+eeprom | grep local | grep true
+
+
+# On suit la guide du doc EISCD donc:
+clnode set -p reboot_on_path_failure=enabled averell
+clnode set -p reboot_on_path_failure=enabled jack
+
+# on verifie si on a pas escom:
+pkginfo | grep SUNWescom
+
+
+# on verifie qu'il est up:
+netstat -a | grep 6789
+# on constate sur le navigateur: https://averell:6789
+# on constate l'etat de cacao sur les deux nodes:
+cacaoadm status
+# on doit voir:
+default instance is ENABLED at system startup.
+Smf monitoring process:
+2196
+2197
+Uptime: 0 day(s), 14:43
+
+
+# on verifie que les deux nodes ont les memes name_to_major pour did et md:
+grep ^did /etc/name_to_major
+
+
+# si on nous file des nouvelles luns lorsque le cluster est en train se faire:
+cldevice populate
+cldev refresh
+# et attendre qu'il montre ok apres taper
+devfsadm -Cv
+cldev clear
+cldev status
+
+
+
+stmsboot -D mpt -d
+
+
+# on ajoute ca pour evite des erreurs bizarres lorsque on tape des cmds svm
+cp -p /etc/profile /etc/profile.20101020
+echo "########EISCD recommendations" >> /etc/profile
+echo "NOINUSE_CHECK=1" >> /etc/profile
+echo "export NOINUSE_CHECK" >> /etc/profile
+
+
+
+
+######################################################################################################
+# Checkings EISCD qui manquaient
+
+# meme s'il est deja offline, on tape
+# tous les nodes!!!
+svcadm -v disable /system/cluster/scsymon-srv
+cp -p /usr/cluster/lib/svc/method/svc_cl_svc_enable /usr/cluster/lib/svc/method/svc_cl_svc_enable.20101020
+# on commente la ligne scsymon
+vi /usr/cluster/lib/svc/method/svc_cl_svc_enable
+
+cp -p /usr/cluster/lib/svc/method/svc_boot_check /usr/cluster/lib/svc/method/svc_boot_check.20101020
+#on commente la ligne scsymon
+vi /usr/cluster/lib/svc/method/svc_boot_check
+
+# on verifie qu'il existent les trois pkgs du perl suivant:
+pkginfo | egrep "(SUNWpl5u|SUNWpl5v|SUNWpl5p)"
+
+
+######################################################################################################
+# personalisation opoce
+
+
+
+tar xpf /home/betorma/config_files/SUNWsczone.tar
+mkdir -p /etc/zoneagentparams
+
+clresourcetype register SUNW.HAStoragePlus
+clresourcetype register SUNW.gds
+
+
+
+##############################################
+
+# ajouter banner machines physiques:
+
+eeprom oem-banner
+
+
+
+
+####################################################################################################################################
+# cmdb
+####################################################################################################################################
+
+root@averell # cat /etc/release 
+                      Solaris 10 10/09 s10s_u8wos_08a SPARC
+           Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+                        Use is subject to license terms.
+                           Assembled 16 September 2009
+root@averell # cat /etc/cluster/release 
+                     Sun Cluster 3.2u2 for Solaris 10 sparc
+           Copyright 2008 Sun Microsystems, Inc. All Rights Reserved.
+
+
+
+
+root@jack # cat /etc/release 
+                      Solaris 10 10/09 s10s_u8wos_08a SPARC
+           Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+                        Use is subject to license terms.
+                           Assembled 16 September 2009
+root@jack # cat /etc/cluster/release 
+                     Sun Cluster 3.2u2 for Solaris 10 sparc
+           Copyright 2008 Sun Microsystems, Inc. All Rights Reserved.
+
+
+####################################################################################################################################
+# monitoring des 2 noeuds
+####################################################################################################################################
+
+
+####################################################################################################################################
+# lancer un explorer
+####################################################################################################################################
+
+
+####################################################################################################################################
+# client de backup
+####################################################################################################################################
+
+####################################################################################################################################
+# remove du snapshot
+####################################################################################################################################
+

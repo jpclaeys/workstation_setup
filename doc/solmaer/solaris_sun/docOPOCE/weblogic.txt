@@ -1,0 +1,3 @@
+-Dweblogic.management.username=admin
+-Dweblogic.management.password=administrator
+-Dweblogic.system.StoreBootIdentity=true

@@ -1,0 +1,692 @@
+0[150617/174121]root@hansel# lgrpinfo   
+lgroup 0 (root):
+        Children: 1 2
+        CPUs: 0-63
+        Memory: installed 255G, allocated 58G, free 197G
+        Lgroup resources: 1 (CPU); 1 2 (memory)
+        Latency: 18
+lgroup 1 (leaf):
+        Children: none, Parent: 0
+        CPUs: 0-63
+        Memory: installed 128G, allocated 33G, free 95G
+        Lgroup resources: 1 (CPU); 1 (memory)
+        Load: 0.0885
+        Latency: 12
+lgroup 2 (leaf):
+        Children: none, Parent: 0
+        Memory: installed 127G, allocated 25G, free 102G
+        Lgroup resources: 2 (memory)
+
+
+
+
+0[150617/180620]root@hansel# ldm ls-devices -a memory
+MEMORY
+    PA                   SIZE            BOUND    
+    0xa00000             32M             _sys_            
+    0x2a00000            96M             _sys_            
+    0x8a00000            374M            _sys_            
+    0x20000000           128G            primary          
+    0x2020000000         127G            secondary        
+    0x3fe0000000         127G            primary          
+    0x5fa0000000         120G            secondary        
+    0x7da0000000         1536M          
+    0x7e00000000         8G              secondary        
+
+
+0[150617/180237]root@hansel# zoneadm list -cv
+  ID NAME             STATUS      PATH                         BRAND      IP    
+   0 global           running     /                            solaris    shared
+   1 cportaldiff1-pz  running     /zones/cportaldiff1-pz       solaris    excl  
+   - planpubli2-pz    configured  /zones/planpubli2-pz         solaris    excl  
+0[150617/180239]root@hansel# 
+
+
+0[150617/171534]root@lava# zoneadm list -cv
+  ID NAME             STATUS      PATH                         BRAND      IP    
+   0 global           running     /                            solaris    shared
+   1 cellarfodb1-tz   running     /zones/cellarfodb1-tz        solaris    excl  
+   6 cportaldiff1-tz  running     /zones/cportaldiff1-tz       solaris    excl  
+   7 cportaldb-tz     running     /zones/cportaldb-tz          solaris    excl  
+   8 planjo2-tz       running     /zones/planjo2-tz            solaris    excl  
+  10 csandbox-tz      running     /zones/csandbox-tz           solaris    excl  
+  20 restore2-tz      running     /zones/restore2-tz           solaris    excl  
+   - eurovocbo-tz     configured  /zones/eurovocbo-tz          solaris    excl  
+   - planpubli2-tz    configured  /zones/planpubli2-tz         solaris    excl  
+0[150617/173646]root@lava# 
+
+
+
+0[150617/180404]root@lava# clrs disable cportaldb-tz-rs                                                                 
+0[150617/180613]root@lava# clrs disable planjo2-tz-rs
+0[150617/180718]root@csandbox-tz# /etc/init.d/ohasd stop
+0[150617/180919]root@lava# clrs disable csandbox-tz-rs
+0[150617/180828]root@restore2-tz# /etc/init.d/ohasd stop
+0[150617/181102]root@lava# clrs disable restore2-tz-rs
+1[150617/180530]root@lava# zonecfg -z cellarfodb1-tz set autoboot=false
+0[150617/180551]root@lava# zonecfg -z cportaldiff1-tz set autoboot=false
+0[150617/180239]root@hansel# zonecfg -z cportaldiff1-pz set autoboot=false
+
+
+
+0[150617/181308]root@lava# init 0
+
+0[150617/181314]root@hansel# ldm list
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    255G     1.9%  1.9%  48d 7h 26m
+secondary        active     -t----  5000    64    255G     1.6%  1.6%  1m
+0[150617/182340]root@hansel# ldm stop secondary
+Remote graceful shutdown or reboot capability is not available on secondary
+LDom secondary stopped
+0[150617/182400]root@hansel# ldm unbind secondary
+0[150617/182700]root@hansel# ldm list
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    255G     2.5%  3.2%  48d 7h 29m
+secondary        inactive   ------          64    255G                 
+0[150617/182702]root@hansel# ldm set-core 16 primary
+0[150617/182712]root@hansel# ldm set-domain max-cores=16 primary
+Cannot modify max-cores until the control domain is in delayed reconfiguration
+1[150617/182719]root@hansel# ldm start-reconf primary
+Initiating a delayed reconfiguration operation on the primary domain.
+All configuration changes for other domains are disabled until the primary
+domain reboots, at which time the new configuration for the primary domain
+will also take effect.
+0[150617/182728]root@hansel# ldm set-memory  255G primary
+------------------------------------------------------------------------------
+Notice: The primary domain is in the process of a delayed reconfiguration.
+Any changes made to the primary domain will only take effect after it reboots.
+------------------------------------------------------------------------------
+0[150617/182732]root@hansel# 
+
+
+0[150617/182919]root@hansel# init 6
+
+
+
+0[150617/184218]root@hansel# ldm list
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    128   255G     2.0%  1.6%  5m
+secondary        inactive   ------          64    255G                 
+0[150617/184224]root@hansel# 
+
+
+
+
+0[150617/184224]root@hansel# lgrpinfo                           
+lgroup 0 (root):
+        Children: 1 2
+        CPUs: 0-127
+        Memory: installed 255G, allocated 11G, free 244G
+        Lgroup resources: 1 2 (CPU); 1 2 (memory)
+        Latency: 18
+lgroup 1 (leaf):
+        Children: none, Parent: 0
+        CPUs: 0-63
+        Memory: installed 128G, allocated 3.6G, free 124G
+        Lgroup resources: 1 (CPU); 1 (memory)
+        Load: 0.0232
+        Latency: 12
+lgroup 2 (leaf):
+        Children: none, Parent: 0
+        CPUs: 64-127
+        Memory: installed 127G, allocated 7.9G, free 119G
+        Lgroup resources: 2 (CPU); 2 (memory)
+        Load: 0.0368
+        Latency: 12
+0[150617/184329]root@hansel# 
+
+
+0[150617/184329]root@hansel# ldm ls-devices -a memory
+MEMORY
+    PA                   SIZE            BOUND    
+    0xa00000             32M             _sys_            
+    0x2a00000            96M             _sys_            
+    0x8a00000            374M            _sys_            
+    0x20000000           128G            primary          
+    0x2020000000         127G           
+    0x3fe0000000         127G            primary          
+    0x5fa0000000         132608M        
+
+
+0[150617/184637]root@hansel# ldm set-domain max-cores=8 primary 
+0[150617/184711]root@hansel# init 6
+
+
+0[150617/185449]root@hansel# ldm list
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    255G     1.3%  1.2%  5m
+secondary        inactive   ------          64    255G                 
+0[150617/185455]root@hansel# lgrpinfo
+lgroup 0 (root):
+        Children: 1 2
+        CPUs: 0-63
+        Memory: installed 255G, allocated 11G, free 244G
+        Lgroup resources: 1 (CPU); 1 2 (memory)
+        Latency: 18
+lgroup 1 (leaf):
+        Children: none, Parent: 0
+        CPUs: 0-63
+        Memory: installed 128G, allocated 2.8G, free 125G
+        Lgroup resources: 1 (CPU); 1 (memory)
+        Load: 0.0513
+        Latency: 12
+lgroup 2 (leaf):
+        Children: none, Parent: 0
+        Memory: installed 127G, allocated 7.7G, free 119G
+        Lgroup resources: 2 (memory)
+
+
+
+
+
+1[150617/185550]root@hansel# ldm bind secondary
+0[150617/185553]root@hansel# ldm list
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    255G     0.9%  0.4%  8m
+secondary        bound      ------  5000    64    255G                 
+0[150617/185713]root@hansel# ldm ls-devices -a memory
+MEMORY
+    PA                   SIZE            BOUND    
+    0xa00000             32M             _sys_            
+    0x2a00000            96M             _sys_            
+    0x8a00000            374M            _sys_            
+    0x20000000           128G            primary          
+    0x2020000000         127G            secondary        
+    0x3fe0000000         127G            primary          
+    0x5fa0000000         120G            secondary        
+    0x7da0000000         1536M          
+    0x7e00000000         8G              secondary        
+
+0[150617/185718]root@hansel# 
+
+0[150617/185718]root@hansel# lgrpinfo
+
+lgroup 0 (root):
+        Children: 1 2
+        CPUs: 0-63
+        Memory: installed 255G, allocated 11G, free 244G
+        Lgroup resources: 1 (CPU); 1 2 (memory)
+        Latency: 18
+lgroup 1 (leaf):
+        Children: none, Parent: 0
+        CPUs: 0-63
+        Memory: installed 128G, allocated 2.8G, free 125G
+        Lgroup resources: 1 (CPU); 1 (memory)
+        Load: 0.0225
+        Latency: 12
+lgroup 2 (leaf):
+        Children: none, Parent: 0
+        Memory: installed 127G, allocated 7.8G, free 119G
+        Lgroup resources: 2 (memory)
+0[150617/185747]root@hansel# 
+0[150617/185747]root@hansel# ldm start secondary
+
+
+
+
+
+
+
+
+
+
+##################################################################################
+#####  oracle recommandation, because on habsel/lava, the following procedure don't work
+
+
+please assign all cores to primary in a first step
+
+# ldm stop secondary
+# ldm unbind secondary
+# ldm list
+# ldm set-core 16 primary
+# ldm set-domain max-cores=16 primary
+# ldm start-reconf primary
+# ldm set-memory  255G primary
+# init 6
+
+Check if the memory is contiguous.
+Please provide output. If confirmed reset the cores value to 8.
+Then add secondary domain.
+
+Please provide output. 
+
+
+
+
+
+
+
+
+
+
+
+##################################################################################
+##################################################################################
+##################################################################################
+##################################################################################
+##################################################################################
+
+
+
+
+
+0[150429/092118]root@gretel# zoneadm list -cv
+  ID NAME             STATUS      PATH                         BRAND      IP    
+   0 global           running     /                            solaris    shared
+   5 cportaldiff2-pz  running     /zones/cportaldiff2-pz       solaris    excl  
+   - planpubli2-pz    configured  /zones/planpubli2-pz         solaris    excl  
+0[150429/092240]root@gretel# 
+
+
+0[150429/091952]root@kusha# zoneadm list -cv
+  ID NAME             STATUS      PATH                         BRAND      IP    
+   0 global           running     /                            solaris    shared
+   3 cellarfodb2-tz   running     /zones/cellarfodb2-tz        solaris    excl  
+   6 planpubli2-tz    running     /zones/planpubli2-tz         solaris    excl  
+  10 cportaldiff2-tz  running     /zones/cportaldiff2-tz       solaris    excl  
+   - cportaldb-tz     configured  /zones/cportaldb-tz          solaris    excl  
+   - eurovocbo-tz     configured  /zones/eurovocbo-tz          solaris    excl  
+   - csandbox-tz      configured  /zones/csandbox-tz           solaris    excl  
+   - planjo2-tz       configured  /zones/planjo2-tz            solaris    excl  
+   - csandbox-tz      configured  /zones/csandbox-tz           solaris    excl  
+0[150429/092108]root@kusha# 
+
+
+
+
+
+
+
+
+
+
+0[150429/093634]root@gretel# ldm ls-devices -a memory
+MEMORY
+    PA                   SIZE            BOUND    
+    0xa00000             32M             _sys_            
+    0x2a00000            96M             _sys_            
+    0x8a00000            374M            _sys_            
+    0x20000000           128G            primary          
+    0x2020000000         127G            secondary        
+    0x3fe0000000         16G             primary          
+    0x43e0000000         16G             primary          
+    0x47e0000000         16G             primary          
+    0x4be0000000         16G             primary          
+    0x4fe0000000         16G             primary          
+    0x53e0000000         16G             primary          
+    0x57e0000000         16G             primary          
+    0x5be0000000         16G             primary          
+    0x5fe0000000         16G             secondary        
+    0x63e0000000         16G             secondary        
+    0x67e0000000         16G             secondary        
+    0x6be0000000         16G             secondary        
+    0x6fe0000000         16G             secondary        
+    0x73e0000000         16G             secondary        
+    0x77e0000000         16G             secondary        
+    0x7be0000000         16G             secondary        
+    0x7fe0000000         512M           
+
+0[150429/093649]root@gretel# 
+
+
+
+
+
+
+
+0[150429/093649]root@gretel# ldm list 
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    256G     0.3%  0.2%  149d 18h 
+secondary        active     -n----  5000    64    255G     0.3%  0.2%  46d 23h 51m
+0[150429/093806]root@gretel# 
+
+
+
+
+0[150429/093435]root@kusha# init 0
+
+{0} ok setenv auto-boot? false
+auto-boot? =            false
+{0} ok 
+
+
+
+
+0[150429/094343]root@gretel# ldm list 
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    256G     0.2%  0.1%  149d 18h 
+secondary        active     -t----  5000    64    255G     1.6%  1.6%  2m
+
+
+
+
+0[150429/095102]root@gretel# ldm stop secondary
+Remote graceful shutdown or reboot capability is not available on secondary
+LDom secondary stopped
+0[150429/095122]root@gretel# 
+0[150429/095138]root@gretel# ldm unbind secondary
+0[150429/095141]root@gretel# ldm list            
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    256G     0.7%  0.4%  149d 18h 
+secondary        inactive   ------          64    255G                 
+0[150429/095144]root@gretel# 
+
+
+
+
+0[150429/095144]root@gretel# ldm ls-devices -a memory
+MEMORY
+    PA                   SIZE            BOUND    
+    0xa00000             32M             _sys_            
+    0x2a00000            96M             _sys_            
+    0x8a00000            374M            _sys_            
+    0x20000000           128G            primary          
+    0x2020000000         127G           
+    0x3fe0000000         16G             primary          
+    0x43e0000000         16G             primary          
+    0x47e0000000         16G             primary          
+    0x4be0000000         16G             primary          
+    0x4fe0000000         16G             primary          
+    0x53e0000000         16G             primary          
+    0x57e0000000         16G             primary          
+    0x5be0000000         16G             primary          
+    0x5fe0000000         131584M        
+
+0[150429/095201]root@gretel# 
+
+
+1[150429/095435]root@gretel# ldm start-reconf primary
+Initiating a delayed reconfiguration operation on the primary domain.
+All configuration changes for other domains are disabled until the primary
+domain reboots, at which time the new configuration for the primary domain
+will also take effect.
+0[150429/095452]root@gretel# 
+
+
+
+
+
+0[150429/095524]root@gretel# ldm set-memory --auto-adj 256G secondary
+Operation on another domain not allowed while domain primary is in the process
+of a delayed reconfiguration
+1[150429/095530]root@gretel# ldm set-memory --auto-adj 255G primary
+------------------------------------------------------------------------------
+Notice: The primary domain is in the process of a delayed reconfiguration.
+Any changes made to the primary domain will only take effect after it reboots.
+------------------------------------------------------------------------------
+0[150429/095540]root@gretel# 
+
+
+
+
+0[150429/095553]root@gretel# reboot -- -r
+
+
+
+
+
+
+
+
+
+0[150429/100144]root@gretel# ldm list
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    255G     6.6%  6.4%  5m
+secondary        inactive   ------          64    255G                 
+0[150429/100145]root@gretel# 
+
+
+
+
+
+
+
+
+
+
+0[150429/100232]root@gretel# ldm ls-devices -a memory             
+MEMORY
+    PA                   SIZE            BOUND    
+    0xa00000             32M             _sys_            
+    0x2a00000            96M             _sys_            
+    0x8a00000            374M            _sys_            
+    0x20000000           7680M           primary          
+    0x200000000          8G             
+    0x400000000          8G              primary          
+    0x600000000          8G             
+    0x800000000          8G              primary          
+    0xa00000000          8G             
+    0xc00000000          8G              primary          
+    0xe00000000          8G             
+    0x1000000000         8G              primary          
+    0x1200000000         8G             
+    0x1400000000         8G              primary          
+    0x1600000000         8G             
+    0x1800000000         8G              primary          
+    0x1a00000000         8G             
+    0x1c00000000         8G              primary          
+    0x1e00000000         8G             
+    0x2000000000         8G              primary          
+    0x2200000000         8G             
+    0x2400000000         8G              primary          
+    0x2600000000         8G             
+    0x2800000000         8G              primary          
+    0x2a00000000         8G             
+    0x2c00000000         8G              primary          
+    0x2e00000000         8G             
+    0x3000000000         8G              primary          
+    0x3200000000         8G             
+    0x3400000000         8G              primary          
+    0x3600000000         8G             
+    0x3800000000         8G              primary          
+    0x3a00000000         8G             
+    0x3c00000000         8G              primary          
+    0x3e00000000         8G             
+    0x4000000000         8G              primary          
+    0x4200000000         8G             
+    0x4400000000         8G              primary          
+    0x4600000000         8G             
+    0x4800000000         8G              primary          
+    0x4a00000000         8G             
+    0x4c00000000         8G              primary          
+    0x4e00000000         8G             
+    0x5000000000         8G              primary          
+    0x5200000000         8G             
+    0x5400000000         8G              primary          
+    0x5600000000         8G             
+    0x5800000000         8G              primary          
+    0x5a00000000         8G             
+    0x5c00000000         8G              primary          
+    0x5e00000000         8G             
+    0x6000000000         8G              primary          
+    0x6200000000         8G             
+    0x6400000000         8G              primary          
+    0x6600000000         8G             
+    0x6800000000         8G              primary          
+    0x6a00000000         8G             
+    0x6c00000000         8G              primary          
+    0x6e00000000         8G             
+    0x7000000000         8G              primary          
+    0x7200000000         8G             
+    0x7400000000         8G              primary          
+    0x7600000000         8G             
+    0x7800000000         8G              primary          
+    0x7a00000000         8G             
+    0x7c00000000         7680M           primary          
+    0x7de0000000         8704M          
+
+0[150429/100334]root@gretel# 
+
+
+
+
+
+
+
+
+
+
+0[150429/100355]root@gretel# ldm bind secondary
+0[150429/100359]root@gretel# ldm list                                           
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    255G     0.7%  0.5%  7m
+secondary        bound      ------  5000    64    255G                 
+
+
+
+
+
+
+
+
+
+
+
+
+
+0[150429/100403]root@gretel# ldm ls-devices -a memory
+MEMORY
+    PA                   SIZE            BOUND    
+    0xa00000             32M             _sys_            
+    0x2a00000            96M             _sys_            
+    0x8a00000            374M            _sys_            
+    0x20000000           7680M           primary          
+    0x200000000          8G              secondary        
+    0x400000000          8G              primary          
+    0x600000000          8G              secondary        
+    0x800000000          8G              primary          
+    0xa00000000          8G              secondary        
+    0xc00000000          8G              primary          
+    0xe00000000          8G              secondary        
+    0x1000000000         8G              primary          
+    0x1200000000         8G              secondary        
+    0x1400000000         8G              primary          
+    0x1600000000         8G              secondary        
+    0x1800000000         8G              primary          
+    0x1a00000000         8G              secondary        
+    0x1c00000000         8G              primary          
+    0x1e00000000         8G              secondary        
+    0x2000000000         8G              primary          
+    0x2200000000         8G              secondary        
+    0x2400000000         8G              primary          
+    0x2600000000         8G              secondary        
+    0x2800000000         8G              primary          
+    0x2a00000000         8G              secondary        
+    0x2c00000000         8G              primary          
+    0x2e00000000         8G              secondary        
+    0x3000000000         8G              primary          
+    0x3200000000         8G              secondary        
+    0x3400000000         8G              primary          
+    0x3600000000         8G              secondary        
+    0x3800000000         8G              primary          
+    0x3a00000000         8G              secondary        
+    0x3c00000000         8G              primary          
+    0x3e00000000         8G              secondary        
+    0x4000000000         8G              primary          
+    0x4200000000         8G              secondary        
+    0x4400000000         8G              primary          
+    0x4600000000         8G              secondary        
+    0x4800000000         8G              primary          
+    0x4a00000000         8G              secondary        
+    0x4c00000000         8G              primary          
+    0x4e00000000         8G              secondary        
+    0x5000000000         8G              primary          
+    0x5200000000         8G              secondary        
+    0x5400000000         8G              primary          
+    0x5600000000         8G              secondary        
+    0x5800000000         8G              primary          
+    0x5a00000000         8G              secondary        
+    0x5c00000000         8G              primary          
+    0x5e00000000         8G              secondary        
+    0x6000000000         8G              primary          
+    0x6200000000         8G              secondary        
+    0x6400000000         8G              primary          
+    0x6600000000         8G              secondary        
+    0x6800000000         8G              primary          
+    0x6a00000000         8G              secondary        
+    0x6c00000000         8G              primary          
+    0x6e00000000         8G              secondary        
+    0x7000000000         8G              primary          
+    0x7200000000         8G              secondary        
+    0x7400000000         8G              primary          
+    0x7600000000         8G              secondary        
+    0x7800000000         8G              primary          
+    0x7a00000000         8G              secondary        
+    0x7c00000000         7680M           primary          
+    0x7de0000000         512M           
+    0x7e00000000         7G              secondary        
+    0x7fc0000000         1G             
+
+0[150429/100407]root@gretel# 
+
+
+
+
+
+
+
+0[150429/100524]root@gretel# lgrpinfo 
+lgroup 0 (root):
+        Children: 1
+        CPUs: 0-63
+        Memory: installed 255G, allocated 12G, free 243G
+        Lgroup resources: 1 (CPU); 1 (memory)
+        Latency: 12
+lgroup 1 (leaf):
+        Children: none, Parent: 0
+        CPUs: 0-63
+        Memory: installed 255G, allocated 12G, free 243G
+        Lgroup resources: 1 (CPU); 1 (memory)
+        Load: 0.0384
+        Latency: 12
+0[150429/100527]root@gretel# 
+
+
+
+
+
+
+0[150429/100553]root@gretel# ldm start secondary
+LDom secondary started
+0[150429/100558]root@gretel# 
+
+
+0[150429/100643]root@gretel# ldm list
+NAME             STATE      FLAGS   CONS    VCPU  MEMORY   UTIL  NORM  UPTIME
+primary          active     -n-cv-  UART    64    255G     0.3%  0.2%  10m
+secondary        active     -t----  5000    64    255G     1.6%  1.6%  1m
+0[150429/100645]root@gretel# 
+
+
+
+{0} ok boot
+
+
+
+
+
+
+
+
+
+0[150429/100550]betorma@kusha% lgrpinfo 
+lgroup 0 (root):
+        Children: 1
+        CPUs: 0-63
+        Memory: installed 255G, allocated 12G, free 243G
+        Lgroup resources: 1 (CPU); 1 (memory)
+        Latency: 12
+lgroup 1 (leaf):
+        Children: none, Parent: 0
+        CPUs: 0-63
+        Memory: installed 255G, allocated 12G, free 243G
+        Lgroup resources: 1 (CPU); 1 (memory)
+        Load: 0.314
+        Latency: 12
+0[150429/100553]betorma@kusha% 
+
+
+0[150429/100724]root@kusha# eeprom "auto-boot?=true"
+
+

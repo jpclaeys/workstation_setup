@@ -1,0 +1,105 @@
+###########################################################
+# creer un template de client jumpstart
+###########################################################
+
+
+#######################################
+# sur le futur client (si possible)
+#######################################
+
+
+##### se connecter en tant que root sur le futur client
+su -
+
+##### recuperer sa installer sa cle cfengine
+tar cvf ~betorma/tmp/cf_keys_valerian.tar /var/cfengine/ppkeys
+
+##### recuperer l'adresse mac et ip du client a installer
+ifconfig -a
+
+##### relever le nom du disk sur le client a installer
+echo | format 
+
+
+####################################
+# sur le serveur jumpstart
+####################################
+
+
+##### se connecter au server jumpstart en tant que root
+
+##### variables
+export template_path="/opt/SUNWjet/Templates"
+export template=solaris_10_u7_x86
+export inet='158.167.226.180'
+export eth='0:14:4f:58:5f:2c'
+export disk='c0d1s0'
+export source_template=storm
+export target_template=big
+
+##### creer un template
+/opt/SUNWjet/bin/make_template -f ${target_template}
+##### ou creer le template depuis un modele
+/opt/SUNWjet/bin/make_template -f -T ${source_template} ${target_template}
+
+
+##### modifier les champs suivants
+base_config_ClientOS=solaris_10_u7_x86
+base_config_ClientArch="i86pc"
+base_config_profile_zfs_disk="c0d1s0"
+base_config_products=" custom zfs eiscd"
+base_config_profile_fdisk="alldisk"
+
+##### configurer le client
+/opt/SUNWjet/bin/make_client -f ${target_template}
+
+
+
+
+
+
+
+
+
+
+
+
+
+####################################
+# sur le client
+####################################
+
+
+##### booter le client en pxe et laisser mouliner
+
+##### ouvrir une session utilisateur (ca permet en plus de tester la configuration reseau et le ldap); attention clavier QWERTY !!!
+
+##### passer root
+su -
+
+##### configuration du clavier belge
+gunzip -c ~betorma/src-pkg/belgian_kbd.tgz | tar tvf -
+/usr/sbin/eeprom keyboard-layout=Belgian
+/usr/sbin/eeprom kbd-type=Belgian
+
+##### configuration de cfengine
+tar xvf ~betorma/tmp/cf_keys_valerian.tar
+/var/cfengine/bin/cfagent --no-splay
+
+##### autoriser l'utilisation de vnc (dans le fichier /usr/dt/config/Xaccess)
+#*                      # grant service to all remote displays                          -----> ligne a decommenter
+*               CHOOSER BROADCAST       #any indirect host can get a chooser            -----> ligne a commenter
+
+##### redemarrage du client
+init 6
+
+##### ouvrir une session utilisateur
+
+##### passer root
+su -
+
+##### verifier le client, et corriger les eventuels problemes
+/home/admin/bin/check_host.sh 
+
+##### configurer le mot de passe root tel qu'il est dans la fichier server_list
+

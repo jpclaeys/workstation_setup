@@ -1,0 +1,85 @@
+					Power OFF		Power ON		
+Host	Env	Location	Usage	GO	Power Off	Check IPMI	Power On	Comment	State
+abel	Development	MER 04/453 (CC)	cellar-rdfng		TODO				
+anakin	Production	EUFO 03/465 (CC)							
+aragorn	Test	MER 04/453 (CC)	DB		TODO				
+argon	Production	MER 04/453 (CC)	KVM	Pas en service	TODO				
+ariel	Development	MER 04/453 (CC)	HADOOP		TODO				
+aries	Reception	MER 04/453 (CC)	IDOL		TODO				
+bernoulli	Production	MER 04/453 (CC)	RAC		TODO				
+betty	Development	MER 04/453 (CC)	HADOOP		TODO				
+bilbo	Production	MER 04/453 (CC)	RAC		TODO				
+bonacieux	Production	MER 04/453 (CC)	BKP		TODO				
+bootes	Production	MER 04/453 (CC)	IDOL		TODO				
+bromine	Production	MER 04/453 (CC)	KVM		TODO				
+carla	Development	MER 04/453 (CC)	HADOOP		TODO				
+cauchy	Test	MER 04/453 (CC)	RAC		TODO				
+celeborn	Test	EUFO 03/465 (CC)							
+cepheus	Reception	MER 04/453 (CC)	IDOL		TODO				
+chakotay	Production	EUFO 03/465 (CC)	KVM						
+chewbacca	Production	MER 04/453 (CC)	IDOL		TODO				
+chlorine	Production	EUFO 03/465 (CC)	KVM						
+chromium	Test	MER 04/453 (CC)	KVM		TODO				
+deathstar	Production	EUFO 03/465 (CC)							
+dirac	Test	MER 04/453 (CC)	RAC		TODO				
+donna	Development	MER 04/453 (CC)	HADOOP		TODO				
+draco	Production	MER 04/453 (CC)	IDOL		TODO				
+elrond	Production	EUFO 03/465 (CC)							
+eridanus	Reception	EUFO 03/465 (CC)							
+erika	Development	MER 04/453 (CC)	HADOOP		TODO				
+ewok	Production	MER 04/453 (CC)	IDOL		TODO				
+fedra	Development	MER 04/453 (CC)	HADOOP		TODO				
+fermat	Production	EUFO 03/465 (CC)							
+fluorine	Production	MER 04/453 (CC)	KVM		TODO				
+fornax	Production	EUFO 03/465 (CC)							
+fred	Test	EUFO 03/465 (CC)							
+frodo	Production	EUFO 03/465 (CC)							
+galadriel	Test	MER 04/453 (CC)	RAC		TODO				
+galilei	Test	EUFO 03/465 (CC)							
+gandalf	Production	EUFO 03/465 (CC)							
+garcimore	Test	MER 04/453 (CC)	DB		TODO				
+gemini	Reception	EUFO 03/465 (CC)							
+gimli	Test	EUFO 03/465 (CC)							
+ginger	Test	MER 04/453 (CC)	RAC		TODO				
+greta	Test	MER 04/453 (CC)			TODO				
+han	Production	MER 04/453 (CC)	IDOL		TODO				
+hilbert	Reception	EUFO 03/465 (CC)							
+hydra	Production	EUFO 03/465 (CC)							
+iodine	Production	EUFO 03/465 (CC)	KVM						
+jabba	Production	EUFO 03/465 (CC)							
+janeway	Production	MER 04/453 (CC)	KVM		TODO				
+jedi	Reception	MER 04/453 (CC)	RAC		TODO				
+kes	Production	MER 04/453 (CC)	RAC		TODO			Ne pas redemarrer	
+krypton	Production	EUFO 03/465 (CC)	KVM	Pas en service					
+laforge	Test	EUFO 03/465 (CC)	KVM						
+lando	Production	EUFO 03/465 (CC)							
+legolas	Production	MER 04/453 (CC)	DB		TODO				
+leia	Production	MER 04/453 (CC)	IDOL		TODO				
+luke	Production	MER 04/453 (CC)	IDOL		TODO				
+merry	Test	MER 04/453 (CC)	RAC		TODO				
+neelix	Production	EUFO 03/465 (CC)							
+neon	Production	EUFO 03/465 (CC)	KVM	Pas en service					
+obiwan	Production	MER 04/453 (CC)	IDOL		TODO				
+padawan	Production	EUFO 03/465 (CC)							
+palladium	Test	EUFO 03/465 (CC)	KVM						
+palpatine	Production	EUFO 03/465 (CC)							
+picard	Test	MER 04/453 (CC)	KVM		TODO				
+pippin	Test	EUFO 03/465 (CC)	RAC						
+r2d2	Production	MER 04/453 (CC)	IDOL		TODO				
+richelieu	Production	EUFO 03/465 (CC)							
+riker	Test	MER 04/453 (CC)	KVM		TODO				
+sidious	Production	EUFO 03/465 (CC)							
+sith	Test	EUFO 03/465 (CC)							
+skywalker	Test	MER 04/453 (CC)	RAC		TODO				
+solo	Test	EUFO 03/465 (CC)							
+spectrum1	Production	MER 04/453 (CC)	DNS		TODO				
+spectrum2	Production	EUFO 03/465 (CC)							
+thorin	Production	MER 04/453 (CC)	DB		TODO				
+titanium	Test	MER 04/453 (CC)	KVM		TODO				
+torres	Production	MER 04/453 (CC)	KVM		TODO				
+tuvok	Production	EUFO 03/465 (CC)	KVM						
+vader	Production	EUFO 03/465 (CC)							
+vanadium	Test	EUFO 03/465 (CC)	KVM						
+worf	Test	EUFO 03/465 (CC)	KVM						
+xenon	Production	MER 04/453 (CC)	KVM	Pas en service	TODO				
+yoda	Production	MER 04/453 (CC)	IDOL		TODO				

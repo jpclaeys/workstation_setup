@@ -1,0 +1,121 @@
+# copie label
+
+prtvtoc /dev/rdsk/c1t0d0s2 | fmthard -s - /dev/rdsk/c1t1d0s2
+
+
+# convertir a sliced
+
+root@doc # format -e 
+Searching for disks...done
+
+
+AVAILABLE DISK SELECTIONS:
+       0. c0t600A0B800019E59A00003D28440CE653d0 <SUN-CSM100_R_FC-0612 cyl 46078 alt 2 hd 128 sec 64>
+          /scsi_vhci/ssd@g600a0b800019e59a00003d28440ce653
+       1. c0t600A0B800019E59A00003D844609F883d0 <SUN-CSM100_R_FC-0619-80.00GB>
+          /scsi_vhci/ssd@g600a0b800019e59a00003d844609f883
+       2. c0t600A0B800019E59A0000400347BE301Dd0 <SUN-CSM100_R_FC-0619 cyl 10238 alt 2 hd 64 sec 64>
+          /scsi_vhci/ssd@g600a0b800019e59a0000400347be301d
+       3. c0t600A0B800019E59A0000400447BE3D4Fd0 <SUN-CSM100_R_FC-0619 cyl 15358 alt 2 hd 64 sec 64>
+          /scsi_vhci/ssd@g600a0b800019e59a0000400447be3d4f
+       4. c0t600A0B800019E59A0000400647BE464Fd0 <SUN-CSM100_R_FC-0619 cyl 30718 alt 2 hd 64 sec 64>
+          /scsi_vhci/ssd@g600a0b800019e59a0000400647be464f
+       5. c0t600A0B800019E591000018DD47BE3174d0 <SUN-CSM100_R_FC-0619 cyl 30718 alt 2 hd 64 sec 64>
+          /scsi_vhci/ssd@g600a0b800019e591000018dd47be3174
+       6. c0t600A0B800019E591000018DE47BE42D8d0 <SUN-CSM100_R_FC-0619 cyl 30718 alt 2 hd 64 sec 64>
+          /scsi_vhci/ssd@g600a0b800019e591000018de47be42d8
+       7. c0t600A0B800019E5910000161E4609F89Cd0 <SUN-CSM100_R_FC-0619-60.00GB>
+          /scsi_vhci/ssd@g600a0b800019e5910000161e4609f89c
+       8. c0t600A0B800019E5910000159F44EA7F82d0 <SUN-CSM100_R_FC-0612 cyl 33278 alt 2 hd 128 sec 64>
+          /scsi_vhci/ssd@g600a0b800019e5910000159f44ea7f82
+       9. c4t0d0 <SUN72G cyl 14087 alt 2 hd 24 sec 424>
+          /pci@7d,700000/pci@1/scsi@2/sd@0,0
+      10. c4t1d0 <HITACHI-DK32EJ72NSUN72G-PQ08 cyl 14087 alt 2 hd 24 sec 424>
+          /pci@7d,700000/pci@1/scsi@2/sd@1,0
+      11. c4t2d0 <HITACHI-DK32EJ72NSUN72G-PQ08-68.37GB>
+          /pci@7d,700000/pci@1/scsi@2/sd@2,0
+Specify disk (enter its number): 11
+selecting c4t2d0
+[disk formatted]
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        repair     - repair a defective sector
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        inquiry    - show vendor, product and revision
+        scsi       - independent SCSI mode selects
+        cache      - enable, disable or query SCSI disk cache
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> label
+[0] SMI Label
+[1] EFI Label
+Specify Label type[1]: 0
+Warning: This disk has an EFI label. Changing to SMI label will erase all
+current partitions.
+Continue? y
+Auto configuration via format.dat[no]? 
+Auto configuration via generic SCSI-2[no]? 
+format> ve
+Warning: Primary label on disk appears to be different from
+current label.
+
+Warning: Check the current partitioning and 'label' the disk or use the
+         'backup' command.
+
+Primary label contents:
+
+Volume name = <        >
+ascii name  = <SUN72G  cyl 14087 alt 2 hd 24 sec 424>
+pcyl        = 14089
+ncyl        = 14087
+acyl        =    2
+nhead       =   24
+nsect       =  424
+Part      Tag    Flag     Cylinders         Size            Blocks
+  0       root    wm       0 -    25      129.19MB    (26/0/0)       264576
+  1       swap    wu      26 -    51      129.19MB    (26/0/0)       264576
+  2     backup    wu       0 - 14086       68.35GB    (14087/0/0) 143349312
+  3 unassigned    wm       0                0         (0/0/0)             0
+  4 unassigned    wm       0                0         (0/0/0)             0
+  5 unassigned    wm       0                0         (0/0/0)             0
+  6        usr    wm      52 - 14086       68.10GB    (14035/0/0) 142820160
+  7 unassigned    wm       0                0         (0/0/0)             0
+
+#### Initialyse rootdisk
+/usr/lib/vxvm/bin/vxdisksetup -i c4t2d0 format=sliced
+
+##### Add rootdisk to rootdg
+vxdg -g bootdg adddisk rootbkp=c4t2d0s2
+
+### Reload conf
+vxdctl enable
+
+
+#### Mirroring
+vxassist -b -g bootdg mirror rootvol alloc=rootbkp
+vxassist -b -g bootdg mirror swapvol alloc=rootbkp
+vxassist -b -g bootdg mirror var alloc=rootbkp
+vxassist -b -g bootdg mirror export alloc=rootbkp
+
+###### New disk is bootable
+vxbootsetup rootbkp
+
+# Confirmation
+root@doc 9:37 [~] prtconf -pvv | grep root
+        diag-device:  'vx-rootdisk vx-rootmirror'
+        boot-device:  'vx-rootdisk vx-rootmirror'
+        vx-rootbkp:  '/pci@7d,700000/pci@1/scsi@2/disk@2,0:a'
+        vx-rootdisk:  '/pci@7d,700000/pci@1/scsi@2/disk@0,0:a'
+        vx-rootmirror:  '/pci@7d,700000/pci@1/scsi@2/disk@1,0:a'
+

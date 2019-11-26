@@ -1,0 +1,523 @@
+###### Check bootdevice/ bootdiag /diag-level
+### Atention avec zsh donnent des erreurs
+#### Atention il y a pas d'diag-level sur quelque machines
+eeprom diag-level=min
+eeprom diag-switch?=false
+eeprom auto-boot?=false
+####Doit etre le meme devices
+eeprom boot-device
+eeprom diag-device
+
+
+# On change les parametres
+cp -p /etc/system /etc/system.BEFORE_EMC
+cp -p /etc/system /etc/system.AFTER_EMC
+cat <<EOF >> /etc/system.AFTER_EMC
+***** EMC
+forceload: drv/ssd
+set fcp:ssfcp_enable_auto_configuration=1
+set ssd:ssd_max_throttle=20
+set ssd:ssd_io_time=0x78
+set scsi_options=0x7F8
+EOF
+
+cp -p /etc/system.AFTER_EMC /etc/system
+diff /etc/system.AFTER_EMC /etc/system
+
+
+#### BOOT
+init 6
+# On constate
+mdb -k
+Loading modules: [ unix krtld genunix dtrace specfs ufs sd pcisch sgsbbc ssd fcp fctl ql
+c ip sctp usba wrsm nca crypto lofs zfs random nfs logindmux ptm md cpc wrsmd fcip sppp
+ipc ]
+> ssfcp_enable_auto_configuration/D
+ssfcp_enable_auto_configuration:
+ssfcp_enable_auto_configuration:1
+> ssd_max_throttle/D
+ssd_max_throttle:
+ssd_max_throttle:               20
+> ssd_io_time/D
+ssd_io_time:
+ssd_io_time:    120
+> scsi_options/D
+scsi_options:
+scsi_options:   2040
+> $q
+
+# Amener les patches
+mkdir -p /var/tmp/PATCHES
+scp -r trassch@vespa:/cdrom/opoce_patching/s10 /var/tmp/PATCHES
+scp -r trassch@vespa:/cdrom/opoce_patching/vxvm41/bundle1/s10 /var/tmp/PATCHES
+scp -r trassch@vespa:/cdrom/opoce_patching/vxvm41/bundle2/s10 /var/tmp/PATCHES
+
+# On constate les volumes et leurs plexes qu'on a sur leur diskgroup
+vxprint -g rootdg -ht 
+# On detache les plexes
+/etc/vx/bin/vxbootsetup -g rootdg rootmirror
+vxplex -g rootdg dis rootvol-02
+vxplex -g rootdg dis swapvol-02 
+vxplex -g rootdg dis var-02
+vxdtcl enable
+
+
+# on decroche le disque
+
+init 0
+reset all
+===> decroche le disque
+# on verifie 
+probe-scsi-all
+
+# PATCHING
+init s
+# on verifie
+who -r
+
+cd /var/tmp/PATCHES/s10/bundle1
+showrev -p | grep 120900-04
+Patch: 122660-07 Obsoletes: 122658-04, 122662-05, 123418-02, 123420-02, 123422-03 Requires: 124204-01, 122640-02, 121133-02, 118833-33, 120900-04, 118731-01 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWzoneu
+Patch: 122660-08 Obsoletes: 122658-04, 122662-05, 123418-02, 123420-02, 123422-03 Requires: 118731-01, 118833-33, 120900-04, 121133-02, 122640-02, 124204-01 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWzoneu
+Patch: 120900-04 Obsoletes: 121266-01 Requires:  Incompatibles:  Packages: SUNWcsr, SUNWzoneu, SUNWdtrc
+Patch: 121133-02 Obsoletes: 121333-03 Requires: 120900-04 Incompatibles:  Packages: SUNWcsr, SUNWzoneu
+Patch: 122637-01 Obsoletes:  Requires: 120900-04 Incompatibles:  Packages: SUNWcsr
+
+showrev -p | grep 121133-02
+Patch: 122660-07 Obsoletes: 122658-04, 122662-05, 123418-02, 123420-02, 123422-03 Requires: 124204-01, 122640-02, 121133-02, 118833-33, 120900-04, 118731-01 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWzoneu
+Patch: 122660-08 Obsoletes: 122658-04, 122662-05, 123418-02, 123420-02, 123422-03 Requires: 118731-01, 118833-33, 120900-04, 121133-02, 122640-02, 124204-01 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWzoneu
+Patch: 121133-02 Obsoletes: 121333-03 Requires: 120900-04 Incompatibles:  Packages: SUNWcsr, SUNWzoneu
+Patch: 119254-32 Obsoletes: 119015-03 Requires: 121133-02 Incompatibles:  Packages: SUNWswmt, SUNWpkgcmdsu
+Patch: 119254-36 Obsoletes: 119015-03 Requires: 121133-02 Incompatibles:  Packages: SUNWswmt, SUNWpkgcmdsu
+
+unzip 119254_5.zip
+patchadd 119254-52
+
+showrev -p | grep 119042-10
+Patch: 119042-10 Obsoletes:  Requires:  Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWcsd, SUNWtnamr, SUNWkrbr, SUNWtnetr, SUNWocfr, SUNWvolr, SUNWnfscr, SUNWgssc, SUNWypr, SUNWnisr, SUNWzoner, SUNWmdr, SUNWbsr, SUNWdhcsr, SUNWaccr, SUNWkdcr, SUNWatfsr, SUNWbnur, SUNWcnsr, SUNWpcr, SUNWpsr, SUNWnfssr, SUNWntpr, SUNWefcr, SUNWpiclr, SUNWftpr, SUNWrcapr, SUNWrcmdr, SUNWslpr, SUNWsndmr, SUNWsshdr
+
+showrev -p | grep 119578-30
+Patch: 119578-30 Obsoletes: 119330-01, 119331-01, 119559-01, 119576-01, 120635-02, 122396-01 Requires:  Incompatibles:  Packages: SUNWcsu, SUNWcsl, SUNWckr, SUNWhea, SUNWfmd, SUNWarc
+
+showrev -p | grep 118918-24
+Patch: 118918-24 Obsoletes: 116781-02, 119012-03, 121282-02, 121284-02, 121292-01, 121473-01, 121476-01, 121478-01, 121786-01, 123444-01 Requires:  Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWcsl, SUNWcnetr, SUNWckr, SUNWcar, SUNWcakr, SUNWhea, SUNWcslr, SUNWmdb, SUNWmdbr
+
+cd /var/tmp/PATCHES/vxvm41/bundle1/s10
+showrev -p | grep 120900-04
+Patch: 122660-07 Obsoletes: 122658-04, 122662-05, 123418-02, 123420-02, 123422-03 Requires: 124204-01, 122640-02, 121133-02, 118833-33, 120900-04, 118731-01 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWzoneu
+Patch: 122660-08 Obsoletes: 122658-04, 122662-05, 123418-02, 123420-02, 123422-03 Requires: 118731-01, 118833-33, 120900-04, 121133-02, 122640-02, 124204-01 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWzoneu
+Patch: 120900-04 Obsoletes: 121266-01 Requires:  Incompatibles:  Packages: SUNWcsr, SUNWzoneu, SUNWdtrc
+Patch: 121133-02 Obsoletes: 121333-03 Requires: 120900-04 Incompatibles:  Packages: SUNWcsr, SUNWzoneu
+Patch: 122637-01 Obsoletes:  Requires: 120900-04 Incompatibles:  Packages: SUNWcsr
+
+showrev -p | grep 121133-02
+Patch: 122660-07 Obsoletes: 122658-04, 122662-05, 123418-02, 123420-02, 123422-03 Requires: 124204-01, 122640-02, 121133-02, 118833-33, 120900-04, 118731-01 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWzoneu
+Patch: 122660-08 Obsoletes: 122658-04, 122662-05, 123418-02, 123420-02, 123422-03 Requires: 118731-01, 118833-33, 120900-04, 121133-02, 122640-02, 124204-01 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWzoneu
+Patch: 121133-02 Obsoletes: 121333-03 Requires: 120900-04 Incompatibles:  Packages: SUNWcsr, SUNWzoneu
+Patch: 119254-52 Obsoletes: 119015-03 Requires: 121133-02 Incompatibles:  Packages: SUNWinstall-patch-utils-root, SUNWswmt, SUNWpkgcmdsu
+Patch: 119254-32 Obsoletes: 119015-03 Requires: 121133-02 Incompatibles:  Packages: SUNWswmt, SUNWpkgcmdsu
+Patch: 119254-36 Obsoletes: 119015-03 Requires: 121133-02 Incompatibles:  Packages: SUNWswmt, SUNWpkgcmdsu
+
+showrev -p | grep 119254-52
+Patch: 119254-52 Obsoletes: 119015-03 Requires: 121133-02 Incompatibles:  Packages: SUNWinstall-patch-utils-root, SUNWswmt, SUNWpkgcmdsu
+
+
+unzip 117080-07
+patchadd 117080-07
+
+# REBOOT
+init 0
+boot -s
+
+####PATCHING
+cd /var/tmp/PATCHES/s10/bundle2
+
+showrev -p | grep 118833-36
+Patch: 118833-36 Obsoletes: 118822-30, 118348-01, 118868-01, 120996-02, 121298-01, 119712-04, 119852-03, 119943-01, 119984-03, 120052-03, 120196-02, 121000-05, 117170-01, 117461-08, 118370-04, 118375-07, 118852-07, 118874-02, 118911-01, 118913-02, 118927-
+
+patchadd 120584-02
+Validating patches...
+
+Loading patches installed on the system...
+
+Done!
+
+Loading patches requested to install.
+
+Done!
+
+The following requested patches have packages not installed on the system
+Package VRTSfrvmc from directory VRTSfrvmc in patch 120584-02 is not installed on the system. Changes for package VRTSfrvmc will not be applied to the system.
+Package VRTSjavmc from directory VRTSjavmc in patch 120584-02 is not installed on the system. Changes for package VRTSjavmc will not be applied to the system.
+Package VRTSzhvmc from directory VRTSzhvmc in patch 120584-02 is not installed on the system. Changes for package VRTSzhvmc will not be applied to the system.
+Package VRTSfrvmm from directory VRTSfrvmm in patch 120584-02 is not installed on the system. Changes for package VRTSfrvmm will not be applied to the system.
+Package VRTSjavmm from directory VRTSjavmm in patch 120584-02 is not installed on the system. Changes for package VRTSjavmm will not be applied to the system.
+Package VRTSzhvmm from directory VRTSzhvmm in patch 120584-02 is not installed on the system. Changes for package VRTSzhvmm will not be applied to the system.
+
+Checking patches that you specified for installation.
+
+Done!
+
+
+The following requested patches will not be installed because
+the packages they patch are not installed on this system.
+
+           0 Packages from patch 120584-02 are not installed on the system.
+
+
+
+
+No patches to install.
+
+
+cd /var/tmp/PATCHES/s10/bundle3/
+
+patchadd -p | egrep "^Patch: " | cut -c8-17 > /tmp/patch_DA.txt
+
+for i in `cat patch_or`; do echo -n " $i: "; grep $i /tmp/patch_DA.txt;done
+
+# unzip
+for i in `ls -1 *.zip `
+do
+unzip -o  $i
+done
+
+#patchadd
+for i in `cat patch_a_inst | tr "\n" "\t"`
+do
+patchadd $i
+done
+
+# On verifie si ce sont installes
+
+patchadd -p | egrep "^Patch: " | cut -c8-17 > /tmp/patch_DA.txt
+
+for i in `cat patch_or`; do echo -n " $i: "; grep $i /tmp/patch_DA.txt;done
+
+####REBOOT
+init 0
+boot -s
+
+cd /var/tmp/PATCHES/s10/bundle4/
+
+patchadd -p | egrep "^Patch: " | cut -c8-17 > /tmp/patch_DA.txt
+
+root@hannibal # grep 122640-05 /tmp/patch_DA.txt
+122640-05
+
+====================================================================================================================
+un nouveau jour se leve
+=====================================================================================================================
+
+mount -F nfs coppola:/xchange/Patches_2008 /mnt
+cd /var/tmp/PATCHES
+cp /mnt/readme/hannibal .
+patchadd -p | egrep "^Patch: " | cut -c8-17 > /tmp/patchs.txt
+#grep -v "^\#" hannibal | sed '/^$/d' > /tmp/patches_a_appliquer
+egrep ^1 hannibal  > /tmp/patches_a_appliquer
+for i in `cat /tmp/patches_a_appliquer `; do echo -n " $i : "; grep $i /tmp/patchs.txt || echo "PAS"; done
+for i in `cat /tmp/patches_a_appliquer `; do grep $i /tmp/patchs.txt || cp /mnt/all_zip/${i}.zip /var/tmp/PATCHES/
+; done
+
+
+for i in `ls -1 *.zip`; do unzip -o $i; done
+mv hannibal hannibal.orig
+for i in `cat patches_a_appliquer `; do grep $i /tmp/patchs.txt || echo $i >> hannibal ; done
+
+cp /mnt/extra_patches/125547-02.zip .
+unzip -o 125547-02.zip
+
+export TERM=vt220
+vi hannibal
+patchadd 120584-02
+#####reboot
+init 0
+boot -s
+patchadd 125547-02
+patchadd 120011-14
+#####reboot
+init 0
+boot -rs
+
+
+
+# Prerequis de 125547-02
+cp /mnt/extra_patches/122660-10.zip .
+unzip -o 122660-10.zip
+
+
+=======================
+log
+=====================
+
+root@hannibal # patchadd 122660-10
+Validating patches...
+
+Loading patches installed on the system...
+
+Done!
+
+Loading patches requested to install.
+
+Done!
+
+Checking patches that you specified for installation.
+
+Done!
+
+
+Approved patches will be installed in this order:
+
+122660-10
+
+
+Checking installed patches...
+Verifying sufficient filesystem capacity (dry run method)...
+Installing patch packages...
+
+Patch 122660-10 has been successfully installed.
+See /var/sadm/patch/122660-10/log for details
+
+Patch packages installed:
+  SUNWcsr
+  SUNWcsu
+  SUNWzoneu
+
+
+root@hannibal # patchadd 125547-02
+Validating patches...
+
+Loading patches installed on the system...
+
+Done!
+
+Loading patches requested to install.
+
+Done!
+
+Checking patches that you specified for installation.
+
+Done!
+
+
+Approved patches will be installed in this order:
+
+125547-02
+
+
+Checking installed patches...
+Executing prepatch script...
+Verifying sufficient filesystem capacity (dry run method)...
+Installing patch packages...
+
+Patch 125547-02 has been successfully installed.
+See /var/sadm/patch/125547-02/log for details
+
+Patch packages installed:
+  SUNWcsr
+
+
+root@hannibal # patchadd 120011-14
+Validating patches...
+
+Loading patches installed on the system...
+
+Done!
+
+Loading patches requested to install.
+
+Version of package SUNWcakr from directory SUNWcakr.v in patch 120011-14 differs from the package installed on the system.
+Version of package SUNWcar from directory SUNWcar.v in patch 120011-14 differs from the package installed on the system.
+Version of package SUNWcpc from directory SUNWcpc.v in patch 120011-14 differs from the package installed on the system.
+Version of package SUNWkvm from directory SUNWkvm.v in patch 120011-14 differs from the package installed on the system.
+Version of package SUNWcakr from directory SUNWcakr.us in patch 120011-14 differs from the package installed on the system.
+Version of package SUNWcar from directory SUNWcar.us in patch 120011-14 differs from the package installed on the system.
+Version of package SUNWcpc from directory SUNWcpc.us in patch 120011-14 differs from the package installed on the system.
+Version of package SUNWefc from directory SUNWefc.us in patch 120011-14 differs from the package installed on the system.
+Version of package SUNWkvm from directory SUNWkvm.us in patch 120011-14 differs from the package installed on the system.
+Done!
+
+The following requested patches have packages not installed on the system
+Package SUNWcart200 from directory SUNWcart200.v in patch 120011-14 is not installed on the system. Changes for package SUNWcart200 will not be applied to the system.
+Package SUNWcpr from directory SUNWcpr.u in patch 120011-14 is not installed on the system. Changes for package SUNWcpr will not be applied to the system.
+Package SUNWcti2 from directory SUNWcti2.u in patch 120011-14 is not installed on the system. Changes for package SUNWcti2 will not be applied to the system.
+Package SUNWdcsr from directory SUNWdcsr in patch 120011-14 is not installed on the system. Changes for package SUNWdcsr will not be applied to the system.
+Package SUNWdcsu from directory SUNWdcsu in patch 120011-14 is not installed on the system. Changes for package SUNWdcsu will not be applied to the system.
+Package SUNWdrcr from directory SUNWdrcr.u in patch 120011-14 is not installed on the system. Changes for package SUNWdrcr will not be applied to the system.
+Package SUNWdrr from directory SUNWdrr.u in patch 120011-14 is not installed on the system. Changes for package SUNWdrr will not be applied to the system.
+Package SUNWdscpr from directory SUNWdscpr.u in patch 120011-14 is not installed on the system. Changes for package SUNWdscpr will not be applied to the system.
+Package SUNWfruip from directory SUNWfruip.u in patch 120011-14 is not installed on the system. Changes for package SUNWfruip will not be applied to the system.
+Package SUNWidn from directory SUNWidn.u in patch 120011-14 is not installed on the system. Changes for package SUNWidn will not be applied to the system.
+Package SUNWiopc from directory SUNWiopc.v in patch 120011-14 is not installed on the system. Changes for package SUNWiopc will not be applied to the system.
+Package SUNWkvmt200 from directory SUNWkvmt200.v in patch 120011-14 is not installed on the system. Changes for package SUNWkvmt200 will not be applied to the system.
+Package SUNWldomr from directory SUNWldomr.v in patch 120011-14 is not installed on the system. Changes for package SUNWldomr will not be applied to the system.
+Package SUNWldomu from directory SUNWldomu.v in patch 120011-14 is not installed on the system. Changes for package SUNWldomu will not be applied to the system.
+Package SUNWpcmci from directory SUNWpcmci in patch 120011-14 is not installed on the system. Changes for package SUNWpcmci will not be applied to the system.
+Package SUNWpmu from directory SUNWpmu in patch 120011-14 is not installed on the system. Changes for package SUNWpmu will not be applied to the system.
+Package SUNWsckmr from directory SUNWsckmr in patch 120011-14 is not installed on the system. Changes for package SUNWsckmr will not be applied to the system.
+Package SUNWus from directory SUNWus.u in patch 120011-14 is not installed on the system. Changes for package SUNWus will not be applied to the system.
+Package SUNWust1 from directory SUNWust1.v in patch 120011-14 is not installed on the system. Changes for package SUNWust1 will not be applied to the system.
+Package SUNWdrr from directory SUNWdrr.us in patch 120011-14 is not installed on the system. Changes for package SUNWdrr will not be applied to the system.
+Package FJSVcpcu from directory FJSVcpcu in patch 120011-14 is not installed on the system. Changes for package FJSVcpcu will not be applied to the system.
+Package FJSVhea from directory FJSVhea in patch 120011-14 is not installed on the system. Changes for package FJSVhea will not be applied to the system.
+Package FJSVmdb from directory FJSVmdb in patch 120011-14 is not installed on the system. Changes for package FJSVmdb will not be applied to the system.
+Package FJSVmdbr from directory FJSVmdbr in patch 120011-14 is not installed on the system. Changes for package FJSVmdbr will not be applied to the system.
+Package FJSVpiclu from directory FJSVpiclu in patch 120011-14 is not installed on the system. Changes for package FJSVpiclu will not be applied to the system.
+
+Checking patches that you specified for installation.
+
+Done!
+
+
+Approved patches will be installed in this order:
+
+120011-14
+
+
+Checking installed patches...
+Executing prepatch script...
+Verifying sufficient filesystem capacity (dry run method)...
+Installing patch packages...
+
+Patch 120011-14 has been successfully installed.
+See /var/run/.patchSafeMode/root/var/sadm/patch/120011-14/log for details
+
+Patch packages installed:
+  SUNWarc
+  SUNWarcr
+  SUNWatfsu
+  SUNWauda
+  SUNWaudh
+  SUNWaudit
+  SUNWbart
+  SUNWbcp
+  SUNWbtool
+  SUNWcakr
+  SUNWcar
+  SUNWckr
+  SUNWcnetr
+  SUNWcpc
+  SUNWcpcu
+  SUNWcsd
+  SUNWcsl
+  SUNWcslr
+  SUNWcsr
+  SUNWcsu
+  SUNWdfbh
+  SUNWdhcm
+  SUNWdhcsu
+  SUNWdmgtu
+  SUNWdoc
+  SUNWdtrc
+  SUNWdtrp
+  SUNWefc
+  SUNWefcl
+  SUNWefcr
+  SUNWerid
+  SUNWesu
+  SUNWfmd
+  SUNWfss
+  SUNWftdur
+  SUNWftduu
+  SUNWhea
+  SUNWib
+  SUNWintgige
+  SUNWipfh
+  SUNWipfr
+  SUNWipfu
+  SUNWippcore
+  SUNWipplr
+  SUNWipplu
+  SUNWixgb
+  SUNWkdcu
+  SUNWkey
+  SUNWkrbu
+  SUNWkvm
+  SUNWlibsasl
+  SUNWlldap
+  SUNWmdb
+  SUNWmdbr
+  SUNWmdr
+  SUNWmdu
+  SUNWncar
+  SUNWnfsckr
+  SUNWnfscu
+  SUNWnfssu
+  SUNWnisu
+  SUNWntpu
+  SUNWopenssl-include
+  SUNWopenssl-libraries
+  SUNWpapi
+  SUNWpcu
+  SUNWperl584core
+  SUNWperl584usr
+  SUNWpiclu
+  SUNWpl5u
+  SUNWpool
+  SUNWpoolr
+  SUNWppm
+  SUNWpppdu
+  SUNWpsm-lpd
+  SUNWpsu
+  SUNWqos
+  SUNWrcapr
+  SUNWrcapu
+  SUNWrcmdc
+  SUNWrge
+  SUNWroute
+  SUNWsadmi
+  SUNWscpu
+  SUNWses
+  SUNWslpu
+  SUNWsmapi
+  SUNWsndmr
+  SUNWsndmu
+  SUNWsra
+  SUNWssad
+  SUNWsshcu
+  SUNWsshdu
+  SUNWsshu
+  SUNWtavor
+  SUNWtecla
+  SUNWtoo
+  SUNWudapltr
+  SUNWudapltu
+  SUNWuksp
+  SUNWuprl
+  SUNWusb
+  SUNWusbu
+  SUNWvolu
+  SUNWwbsup
+  SUNWwrsm
+  SUNWxcu4
+  SUNWxge
+  SUNWypu
+  SUNWzfskr
+  SUNWzfsr
+  SUNWzfsu
+  SUNWzoner
+  SUNWzoneu
+
+
+========================================================================
+
+{
+cd /var/tmp/PATCHES/
+showrev -p | egrep "^Patch: "| cut -c8-17 >/tmp/patchs.txt
+export FILE="`uname -n`"
+for patch in `cat $FILE | grep 1 | sed 's/patchadd //g'`;
+do
+grep $patch /tmp/patchs.txt >/dev/null
+  if [ $? -eq 0 ];then
+    echo " $patch: OK"
+  else
+    echo " $patch: NOT INSTALLED"
+  fi
+done
+}
+
+ 120584-02: NOT INSTALLED
+ 122660-10: OK
+ 125547-02: OK
+ 120011-14: OK
+

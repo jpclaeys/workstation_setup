@@ -1,0 +1,296 @@
+############################################################
+# reconfiguration des noms de controlleurs
+############################################################
+
+
+#
+# le serveur aphrodite fait parti d'un cluster; j'ai prefere faire cette operation en mode non-cluster
+#
+
+
+0[130426/170905]root@aphrodite# echo | format
+Searching for disks...done
+
+
+AVAILABLE DISK SELECTIONS:
+       0. c0t60000970000292603453533031423135d0 <EMC-SYMMETRIX-5874-33.97GB>
+          /scsi_vhci/ssd@g60000970000292603453533031423135
+       1. c0t60000970000292602560533031423135d0 <EMC-SYMMETRIX-5874-33.97GB>
+          /scsi_vhci/ssd@g60000970000292602560533031423135
+       2. c1t0d0 <SUN146G cyl 14087 alt 2 hd 24 sec 848>  solaris
+          /pci@400/pci@0/pci@8/scsi@0/sd@0,0
+       3. c1t1d0 <SUN146G cyl 14087 alt 2 hd 24 sec 848>  solaris
+          /pci@400/pci@0/pci@8/scsi@0/sd@1,0
+       4. c1t2d0 <SUN146G cyl 14087 alt 2 hd 24 sec 848>
+          /pci@400/pci@0/pci@8/scsi@0/sd@2,0
+       5. c1t3d0 <SUN146G cyl 14087 alt 2 hd 24 sec 848>
+          /pci@400/pci@0/pci@8/scsi@0/sd@3,0
+Specify disk (enter its number): Specify disk (enter its number): 
+
+
+
+0[130426/171119]root@aphrodite# luxadm -e offline /dev/rdsk/c0t60000970000292602560533031423135d0s2
+0[130426/171128]root@aphrodite# luxadm -e offline /dev/rdsk/c0t60000970000292603453533031423135d0s2
+0[130426/171134]root@aphrodite# devfsadm -Cv
+
+1[130426/171156]root@aphrodite# cd /dev/cfg
+0[130426/171159]root@aphrodite# ls -l
+total 13
+lrwxrwxrwx   1 root     root          45 Apr 26 16:41 c0 -> ../../devices/pci@400/pci@0/pci@8/scsi@0:scsi
+lrwxrwxrwx   1 root     root          45 Apr 26 17:08 c1 -> ../../devices/pci@400/pci@0/pci@8/scsi@0:scsi
+lrwxrwxrwx   1 root     root          54 Apr 26 16:51 c2 -> ../../devices/pci@400/pci@0/pci@d/SUNW,qlc@0/fp@0,0:fc
+lrwxrwxrwx   1 root     root          54 Apr 26 17:08 c3 -> ../../devices/pci@400/pci@0/pci@9/SUNW,qlc@0/fp@0,0:fc
+drwxr-xr-x   2 root     root           5 Dec  3 08:42 usb0
+drwxr-xr-x   2 root     root           4 Dec  3 08:42 usb1
+drwxr-xr-x   2 root     root          11 Dec  3 08:42 usb2
+
+
+0[130426/171206]root@aphrodite# rm c1
+0[130426/171211]root@aphrodite# mv c2 c1
+0[130426/171216]root@aphrodite# mv c3 c2
+0[130426/171219]root@aphrodite# ls -l 
+total 12
+lrwxrwxrwx   1 root     root          45 Apr 26 16:41 c0 -> ../../devices/pci@400/pci@0/pci@8/scsi@0:scsi
+lrwxrwxrwx   1 root     root          54 Apr 26 16:51 c1 -> ../../devices/pci@400/pci@0/pci@d/SUNW,qlc@0/fp@0,0:fc
+lrwxrwxrwx   1 root     root          54 Apr 26 17:08 c2 -> ../../devices/pci@400/pci@0/pci@9/SUNW,qlc@0/fp@0,0:fc
+drwxr-xr-x   2 root     root           5 Dec  3 08:42 usb0
+drwxr-xr-x   2 root     root           4 Dec  3 08:42 usb1
+drwxr-xr-x   2 root     root          11 Dec  3 08:42 usb2
+
+0[130426/171227]root@aphrodite# touch /reconfigure
+
+
+
+
+
+init 6
+
+
+
+0[130426/171850]root@aphrodite# echo | format
+Searching for disks...done
+
+
+AVAILABLE DISK SELECTIONS:
+       0. c1t0d0 <SUN146G cyl 14087 alt 2 hd 24 sec 848>  solaris
+          /pci@400/pci@0/pci@8/scsi@0/sd@0,0
+       1. c1t1d0 <SUN146G cyl 14087 alt 2 hd 24 sec 848>  solaris
+          /pci@400/pci@0/pci@8/scsi@0/sd@1,0
+       2. c1t2d0 <SUN146G cyl 14087 alt 2 hd 24 sec 848>
+          /pci@400/pci@0/pci@8/scsi@0/sd@2,0
+       3. c1t3d0 <SUN146G cyl 14087 alt 2 hd 24 sec 848>
+          /pci@400/pci@0/pci@8/scsi@0/sd@3,0
+       4. c3t60000970000292602560533031423135d0 <EMC-SYMMETRIX-5874-33.97GB>
+          /scsi_vhci/ssd@g60000970000292602560533031423135
+       5. c3t60000970000292603453533031423135d0 <EMC-SYMMETRIX-5874-33.97GB>
+          /scsi_vhci/ssd@g60000970000292603453533031423135
+Specify disk (enter its number): Specify disk (enter its number): 
+
+
+
+
+
+############################################################
+##### dans le cas d'un cluster, avec les noeuds qui n' etais pas en mode cluster durant la modification des nom de controlleurs
+
+0[130426/172108]root@aphrodite# cluster status
+cluster:  (C152734) This node is not in cluster mode.
+
+0[130426/172110]root@apollon# cluster status
+cluster:  (C152734) This node is not in cluster mode.
+
+
+
+1[130426/171854]root@aphrodite# init 0
+1[130426/172003]root@apollon# init 0
+
+
+{0} ok boot			# sur les 2 noeuds du cluster
+
+
+0[130426/172903]root@aphrodite# svcs -xv | wc -l
+       0
+0[130426/172924]root@apollon# svcs -xv | wc -l
+       0
+
+
+
+
+
+
+
+
+
+
+
+0[130426/172941]root@aphrodite# cldev status 
+
+=== Cluster DID Devices ===
+
+Device Instance             Node                Status
+---------------             ----                ------
+/dev/did/rdsk/d1            aphrodite           Unmonitored
+
+/dev/did/rdsk/d2            aphrodite           Unmonitored
+
+/dev/did/rdsk/d3            aphrodite           Unmonitored
+
+/dev/did/rdsk/d4            aphrodite           Unmonitored
+
+/dev/did/rdsk/d5            apollon             Unmonitored
+
+/dev/did/rdsk/d6            apollon             Unmonitored
+
+/dev/did/rdsk/d7            apollon             Unmonitored
+
+/dev/did/rdsk/d8            apollon             Unmonitored
+
+
+##### status unmonitord normal, ce sont les disks locaux
+
+
+
+0[130426/173037]root@aphrodite# devfsadm -Cv
+devfsadm[2904]: verbose: SUNW_port_link: port monitor ttymon0 added
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/0 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/1 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/2 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/3 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/4 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/5 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/6 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/7 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/8 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/9 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/10 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/11 added to sacadm
+devfsadm[2904]: verbose: SUNW_port_link: /dev/term/12 added to sacadm
+0[130426/173047]root@aphrodite# cfgadm -al
+Ap_Id                          Type         Receptacle   Occupant     Condition
+c1                             fc-fabric    connected    configured   unknown
+c1                             scsi-sas     connected    configured   unknown
+c1::dsk/c1t0d0                 disk         connected    configured   unknown
+c1::dsk/c1t1d0                 disk         connected    configured   unknown
+c1::dsk/c1t2d0                 disk         connected    configured   unknown
+c1::dsk/c1t3d0                 disk         connected    configured   unknown
+c1::202700a0b8266772           disk         connected    unconfigured unknown
+c1::5000097408280120           unknown      connected    configured   unknown
+c1::500009740835f520           unknown      connected    configured   unknown
+c1::500601663ea02f4a           disk         connected    unconfigured unknown
+c1::500601663ea02f5e           disk         connected    unconfigured unknown
+c1::5006016e3ea02f4a           disk         connected    unconfigured unknown
+c1::5006016e3ea02f5e           disk         connected    unconfigured unknown
+c2                             fc-fabric    connected    configured   unknown
+c2::202600a0b8266772           disk         connected    unconfigured unknown
+c2::500009740828011c           unknown      connected    configured   unknown
+c2::500009740835f51c           unknown      connected    configured   unknown
+c2::500601643ea02f4a           disk         connected    unconfigured unknown
+c2::500601643ea02f5e           disk         connected    unconfigured unknown
+c2::5006016c3ea02f4a           disk         connected    unconfigured unknown
+c2::5006016c3ea02f5e           disk         connected    unconfigured unknown
+
+
+0[130426/172927]root@apollon# devfsadm -Cv
+devfsadm[2829]: verbose: SUNW_port_link: port monitor ttymon0 added
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/0 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/1 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/2 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/3 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/4 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/5 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/6 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/7 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/8 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/9 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/10 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/11 added to sacadm
+devfsadm[2829]: verbose: SUNW_port_link: /dev/term/12 added to sacadm
+0[130426/173054]root@apollon# cfgadm -al
+Ap_Id                          Type         Receptacle   Occupant     Condition
+c0                             scsi-sas     connected    configured   unknown
+c0::dsk/c0t0d0                 disk         connected    configured   unknown
+c0::dsk/c0t1d0                 disk         connected    configured   unknown
+c0::dsk/c0t2d0                 disk         connected    configured   unknown
+c0::dsk/c0t3d0                 disk         connected    configured   unknown
+c1                             fc-fabric    connected    configured   unknown
+c1::202600a0b8266772           disk         connected    unconfigured unknown
+c1::500009740828011c           unknown      connected    configured   unknown
+c1::500009740835f51c           unknown      connected    configured   unknown
+c1::500601643ea02f4a           disk         connected    unconfigured unknown
+c1::500601643ea02f5e           disk         connected    unconfigured unknown
+c1::5006016c3ea02f4a           disk         connected    unconfigured unknown
+c1::5006016c3ea02f5e           disk         connected    unconfigured unknown
+c2                             fc-fabric    connected    configured   unknown
+c2::202700a0b8266772           disk         connected    unconfigured unknown
+c2::5000097408280120           unknown      connected    configured   unknown
+c2::500009740835f520           unknown      connected    configured   unknown
+c2::500601663ea02f4a           disk         connected    unconfigured unknown
+c2::500601663ea02f5e           disk         connected    unconfigured unknown
+c2::5006016e3ea02f4a           disk         connected    unconfigured unknown
+c2::5006016e3ea02f5e           disk         connected    unconfigured unknown
+
+
+0[130426/173056]root@aphrodite# /home/betorma/bin/luxadm_carlo -z
+/dev/rdsk/c3t60000970000292603453533031423135d0s2 ==> 500009740835f51c 85 500009740835f520 85  []
+/dev/rdsk/c3t60000970000292602560533031423135d0s2 ==> 500009740828011c 85 5000097408280120 85  []
+
+0[130426/173100]root@apollon# /home/betorma/bin/luxadm_carlo -z
+/dev/rdsk/c3t60000970000292603453533031423135d0s2 ==> 500009740835f51c 85 500009740835f520 85  []
+/dev/rdsk/c3t60000970000292602560533031423135d0s2 ==> 500009740828011c 85 5000097408280120 85  []
+
+
+
+0[130426/173143]root@aphrodite# cldev populate
+Configuring DID devices
+did instance 9 created.
+did subpath aphrodite:/dev/rdsk/c3t60000970000292602560533031423135d0 created for instance 9.
+did instance 10 created.
+did subpath aphrodite:/dev/rdsk/c3t60000970000292603453533031423135d0 created for instance 10.
+Configuring the /dev/global directory (global devices)
+obtaining access to all attached disks
+
+
+3[130426/173227]root@aphrodite# cldev status
+
+=== Cluster DID Devices ===
+
+Device Instance             Node                Status
+---------------             ----                ------
+/dev/did/rdsk/d1            aphrodite           Unmonitored
+
+/dev/did/rdsk/d10           aphrodite           Ok
+                            apollon             Ok
+
+/dev/did/rdsk/d2            aphrodite           Unmonitored
+
+/dev/did/rdsk/d3            aphrodite           Unmonitored
+
+/dev/did/rdsk/d4            aphrodite           Unmonitored
+
+/dev/did/rdsk/d5            apollon             Unmonitored
+
+/dev/did/rdsk/d6            apollon             Unmonitored
+
+/dev/did/rdsk/d7            apollon             Unmonitored
+
+/dev/did/rdsk/d8            apollon             Unmonitored
+
+/dev/did/rdsk/d9            aphrodite           Ok
+                            apollon             Ok
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

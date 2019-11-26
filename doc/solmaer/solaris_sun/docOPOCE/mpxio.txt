@@ -1,0 +1,1 @@
+luxadm -e port |perl -nae '$F[1] eq "CONNECTED" and print "$F[0]\n"' |xargs luxadm -e forcelip

@@ -1,0 +1,4 @@
+# forcer le boot en 100m
+ok boot /pci@1f,2000/pci@1/network@0:speed=100,duplex=full,
+ok devalias net /pci@1f,2000/pci@1/network@0:speed=100,duplex=full,
+ok boot net

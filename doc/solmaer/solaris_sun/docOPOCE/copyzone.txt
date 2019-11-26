@@ -1,0 +1,302 @@
+export zname=temp4 profile='drp' name=temp4 ip=158.167.99.132 interface=ce4
+
+cat <<EOT >>/tmp/${zname}.cfg
+create -b
+set zonepath=/zones/${zname}
+set autoboot=true
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${ip}
+set physical=${interface}
+end
+add attr
+set name=comment
+set type=string
+set value="Zone ${zname}"
+end
+EOT
+
+
+cat <<EOT >/tmp/${zname}.sysidcfg
+name_service=LDAP { domain_name=opoce.cec.eu.int profile=${profile} profile_server=158.167.96.18 proxy_dn="cn=proxyagent,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int" proxy_password="#!proxy#!" }
+root_password=boajrOmU7GFmY
+system_locale=C
+timeserver=158.167.96.18
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${name} ip_address=${ip} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOT
+
+
+zonecfg -z ${zname} -f /tmp/${zname}.cfg
+
+zonecfg -z ${zname} info
+
+zoneadm -z ${zname} install
+zoneadm list -vic
+cp /tmp/${zname}.sysidcfg  /zones/${zname}/root/etc/sysidcfg
+
+cat <<EOT >  /zones/${zname}/root/etc/inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+cat <<EOF > /zones/${zname}/root/etc/resolv.conf
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOF
+
+cat <<EOF > /zones/${zname}/root/etc/hosts.allow
+all:@admin
+sendmail:all
+EOF
+
+touch /zones/${zname}/root/etc/notrouter
+
+zoneadm -z ${zname} boot
+zlogin -C temp4
+
+cd /zones/sagapx_tz/
+find root -local -mount -name sadm -prune  -o  -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print'  |sort > /tmp/sagapx_tz.lst
+
+cd /zones/sagapx_tz/temp4
+find root -local -mount -name sadm -prune  -o  -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print'  |sort > /tmp/temp4.lst
+
+
+tar cf - nsr|(cd ../temp4/root; tar xf - )
+tar cf - var/cfengine|(cd ../temp4/root; tar xf - )
+tar cf - etc/dt/appconfig/types/C |(cd ../temp4/root; tar xf - )
+tar cf - opt/OPrsync|(cd ../temp4/root; tar xf - )
+tar cf - opt/OPbb4|(cd ../temp4/root; tar xf - )
+
+/etc/nodename ===> changer le hostname
+
+cp gescomx /zones/sagapx_tz/temp4/root/var/spool/cron/crontabs
+
+cp sag /zones/sagapx_tz/temp4/root/var/spool/cron/crontabs
+
+diff root /zones/sagapx_tz/temp4/root/var/spool/cron/crontabs/root
+
+
+grep Sagapx project >> /zones/sagapx_tz/temp4/root/etc/project
+grep Gescomx project >> /zones/sagapx_tz/temp4/root/etc/project
+
+diff project /zones/sagapx_tz/temp4/root/etc/project
+
+
+egrep "\:304|\:424" passwd >> /zones/sagapx_tz/temp4/root/etc/passwd
+
+foreach i in sag gescomx w_gescomx buteani dorchjo laureol scarcpa logica
+do
+egrep "^${i}\:" shadow >>/zones/sagapx_tz/temp4/root/etc/shadow
+done
+
+foreach i in sag gescomx w_gescomx buteani dorchjo laureol scarcpa logica
+do
+egrep "^${i}\:" group >>/zones/sagapx_tz/temp4/root/etc/group
+done
+
+foreach i in sag gescomx w_gescomx buteani dorchjo laureol scarcpa logica sattihe petittr crochph copinem
+do
+egrep "^${i}\:" user_attr >>/zones/sagapx_tz/temp4/root/etc/user_attr
+done
+
+grep applications\/gescomx auto_home >> /zones/sagapx_tz/temp4/root/etc/auto_home
+
+diff vfstab /zones/sagapx_tz/temp4/root/etc/vfstab
+diff inittab /zones/sagapx_tz/temp4/root/etc/inittab
+
+cp syslog.conf /zones/sagapx_tz/temp4/root/etc/syslog.conf
+
+cp logadm.conf /zones/sagapx_tz/temp4/root/etc/logadm.conf
+
+cp /zones/sagapx_tz/temp4/root/etc/nsswitch.conf /zones/sagapx_tz/temp4/root/etc/nsswitch.conf.orig
+cp nsswitch.conf /zones/sagapx_tz/temp4/root/etc/nsswitch.conf
+
+cp shells /zones/gescomx_pz/temp4/root/etc
+
+cp default/init /zones/sagapx_tz/temp4/root/etc/default/init
+cd inet
+echo "158.167.227.155       sagapx_tz" >> /zones/sagapx_tz/temp4/root/etc/inet/hosts
+echo "158.167.227.155 opsrv155" >> /zones/sagapx_tz/temp4/root/etc/inet/hosts
+
+cd inet
+
+
+foreach i in cfengine nswgescomx apx-acceptor apx-httpcnc apx-ajp12cnc ndv22srv
+do
+egrep "^${i}" services >> /zones/sagapx_tz/temp4/root/etc/inet/services
+done
+
+
+cd  ../security
+
+grep Gescomx prof_attr >> /zones/sagapx_tz/temp4/root/etc/security/prof_attr
+grep Sagapx prof_attr >> /zones/sagapx_tz/temp4/root/etc/security/prof_attr
+
+grep Sagapx exec_attr >> /zones/sagapx_tz/temp4/root/etc/security/exec_attr
+
+ cd ../sma/snmp
+
+cd ../../ssh
+
+
+tar cf - ssh|(cd ../../temp4/root/etc; tar xf - )
+
+cd acct
+
+cp holidays /zones/sagapx_tz/temp4/root/etc/acct/holidays
+
+cd mail
+
+cp generics-domain /zones/sagapx_tz/temp4/root/etc/mail/
+cp generics.in /zones/sagapx_tz/temp4/root/etc/mail/
+cp mailertable.* /zones/sagapx_tz/temp4/root/etc/mail/
+cp sendmail.cf /zones/sagapx_tz/temp4/root/etc/mail/
+cp submit.cf /zones/sagapx_tz/temp4/root/etc/mail/
+
+cp networker /zones/sagapx_tz/temp4/root/etc/init.d
+cp cfengine /zones/sagapx_tz/temp4/root/etc/init.d
+
+cp initd_lib.pl /zones/sagapx_tz/temp4/root/etc/init.d/
+cp bbrun /zones/gescomx_pz/temp4/root/etc/init.d/
+
+ln -s bbrun ../rc3.d/S95bbrun
+
+# 
+ln -s ../init.d/networker K05networker
+ln -s ../init.d/networker S95networker
+
+
+cp -p printers.conf /zones/sagapx_tz/temp4/root/etc/
+
+cd /zones/sagapx_tz/temp4/root
+
+touch /zones/gescomx_pz/temp4/root/etc/notrouter
+cp hosts.allow /zones/gescomx_pz/temp4/root/etc/hosts.allow
+cp hosts.deny /zones/gescomx_pz/temp4/root/etc/hosts.deny
+cp /zones/gescomx_pz/root/var/sma_snmp/snmpd.conf /zones/gescomx_pz/temp4/root/var/sma_snmp/snmpd.conf
+cp ipnodes /zones/gescomx_pz/temp4/root/etc/inet/
+cp samba /zones/gescomx_pz/temp4/root/etc/init.d
+cp -r webconsole /zones/gescomx_pz/temp4/root/etc/opt/
+cp webconsole /zones/gescomx_pz/temp4/root/etc/init.d
+
+
+svccfg export gescomx > /var/tmp/manifest_gescomx.xml
+cp manifest_gescomx.xml /zones/sagapx_tz/temp4/root/var/tmp
+
+
+### il faut se rappeler de ftphosts et ftpservers
+
+#############Comparaison
+foreach z in gescomx_pz
+do
+echo $z
+zonename=${z}
+zonepath=/zones/$zonename
+cd $zonepath
+find root -local -mount -type f |perl -ne 'm{(root/\.)|(root/etc/\.)|(root/etc/rc.\.d/.*samba)|(root/var/saf)|(root/var/sadm)|(root/var/svc)|(root/nsr)|(root/var/log)|(root/var/adm)|(root/etc/webconsole)|(root/export)|(root/etc/quagga)|(root/etc/apache)|(root/opt/VRTS)|(root/etc/svc)|(root/var/webconsole)|(root/var/apache)|(root/etc/dt/appconfig/types/C)|(root/var/cfengine)|(root/opt/OPbb4)|(root/opt/OPrsync)|(root/applications)}||print'|xargs -n1 sum | sort -k 3 >/tmp/${zonename}_sum.lst
+done
+
+foreach z in gescomx_pz
+do
+echo $z
+zonename=${z}
+zonepath=/zones/$zonename/temp4
+cd $zonepath
+find root -local -mount -type f |perl -ne 'm{(root/\.)|(root/etc/\.)|(root/etc/rc.\.d/.*samba)|(root/var/saf)|(root/var/sadm)|(root/var/svc)|(root/nsr)|(root/var/log)|(root/var/adm)|(root/etc/webconsole)|(root/export)|(root/etc/quagga)|(root/etc/apache)|(root/opt/VRTS)|(root/etc/svc)|(root/var/webconsole)|(root/var/apache)|(root/etc/dt/appconfig/types/C)|(root/var/cfengine)|(root/opt/OPbb4)|(root/opt/OPrsync)|(root/applications)}||print'|xargs -n1 sum | sort -k 3
+> /tmp/${zonename}_temp4_sum.lst
+done
+
+
+foreach z in cups_pz
+do
+echo $z
+zonename=${z}
+zonepath=/zones/$zonename
+cd $zonepath
+find root -local -mount -type f |perl -ne 'm{(root/\.)|(root/etc/\.)|(root/etc/rc.\.d/.*samba)|(root/var/saf)|(root/var/sadm)|(root/var/svc)|(root/nsr)|(root/var/log)|(root/var/adm)|(root/etc/webconsole)|(root/export)|(root/etc/quagga)|(root/etc/apache)|(root/opt/VRTS)|(root/etc/svc)|(root/var/webconsole)|(root/var/apache)|(root/etc/dt/appconfig/types/C)|(root/var/cfengine)|(root/opt/OPbb4)|(root/opt/OPrsync)|(root/applications)}||print'|xargs -n1 sum | sort -k 3
+>/tmp/${zonename}_sum.lst
+done
+
+foreach z in cups_pz
+do
+echo $z
+zonename=${z}
+zonepath=/zones/$zonename/temp4
+cd $zonepath
+find root -local -mount -type f |perl -ne 'm{(root/\.)|(root/etc/\.)|(root/etc/rc.\.d/.*samba)|(root/var/saf)|(root/var/sadm)|(root/var/svc)|(root/nsr)|(root/var/log)|(root/var/adm)|(root/etc/webconsole)|(root/export)|(root/etc/quagga)|(root/etc/apache)|(root/opt/VRTS)|(root/etc/svc)|(root/var/webconsole)|(root/var/apache)|(root/etc/dt/appconfig/types/C)|(root/var/cfengine)|(root/opt/OPbb4)|(root/opt/OPrsync)|(root/applications)}||print'|xargs -n1 sum | sort -k 3
+> /tmp/${zonename}_temp4_sum.lst
+done
+
+
+mkdir -p applications/gescomx/adadata
+mkdir -p applications/gescomx/adaexp
+mkdir -p applications/gescomx/users
+mkdir -p applications/gescomx/xchange
+
+
+umount -f /zones/sagapx_tz
+
+vxdg deport sagapx
+
+vxdisk -o alldgs list
+vxdctl enable
+vxdg import sagapx
+vxvol -g sagapx startall
+
+mount /dev/vx/dsk/sagapx/vzone /zones/sagapx_tz
+
+cp sagapx_tz.xml /net/coppola.opoce.cec.eu.int/xchange/sol10u4upgr
+
+
+# Se rappeler des fichiers de /var/opt/oracle
+
+# Et scripts sur rc.d de demarrage de bb
+==================================================================
+
+# pour celles qui ont zpool a nfs 4
+zpool upgrade dw
+
+zpool export dw
+# apres
+zpool import dw
+#####################################################################
+
+1) arret applications
+2) arret zone
+3) deport les dg
+4) import les dg
+5) demarrer les volumes
+5.1) ajouter la/les lignes sur vfstab et faire le mount
+6) copier entrees d'index de zones
+7) copier le xml des zones
+8) changer les entrees de la carte reseau dans le fichier des zones
+8.1) faire un backup d'ancien zone et deplacer les fichiers du temp4 sur la nouvelle zone
+9) demarrer les zones
+10) attendre et constater que tout marche logue dans les zones
+10.1) constater que le bb est demarre et que le client networker aussi
+11) verifier sur bb et verifier le /var/adm/messages
+12) demander Emanuel pour qu'il verifie aussi

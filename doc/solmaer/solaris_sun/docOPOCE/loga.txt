@@ -1,0 +1,94 @@
+groupadd -g 30461 loga
+/usr/sbin/roleadd -c "LogAnalizer User" -g loga -u 30461 -s /bin/pfksh -d /home/loga loga
+
+
+root@kerberos 12:29 [webapps] vi /etc/auto_home
+"/etc/auto_home" 14 lines, 472 characters
+# Home directory map for automounter
+#
++auto_home
+oracle          $HOST:/u01/home/&
+dba             $HOST:/u01/home/&
+rootdba         $HOST:/export/users/&
+ojsuser         $HOST:/export/users/&
+ojs             $HOST:/applications/ojs/users/&
+wood            $HOST:/applications/wood/users/&
+w_ojs           $HOST:/applications/ojs/users/&
+ftpjost         $HOST:/applications/wood/ftpusers/&
+jos_statistic   $HOST:/applications/ojs/users/&
+diraa           $HOST:/applications/diraa/users/&
+loga            $HOST:/applications/diraa/users/&
+
+automount
+
+oot@kerberos 11:34 [tomcat] vi /etc/user_attr
+"/etc/user_attr" [Read only] 34 lines, 1318 characters
+# Copyright (c) 1999 by Sun Microsystems, Inc. All rights reserved.::::
+#::::
+# /etc/user_attr::::
+#::::
+# user attributes. see user_attr(4)::::
+#::::
+#pragma ident   "@(#)user_attr  1.2     99/07/14 SMI"::::
+#::::
+root::::type=normal;auths=solaris.*,solaris.grant;profiles=All
+rootdba::::type=role;profiles=Primary Administrator
+oracle::::type=role;profiles=All
+dba::::type=role;profiles=All
+ojs::::type=role;profiles=Ojs,All
+diraa::::type=role;profiles=Diraa,All
+maurist::::type=normal;roles=oracle,rootdba,dba,diraa
+crochph::::type=normal;roles=oracle,rootdba,dba,diraa
+webservd::::type=role;profiles=All
+zachacy::::type=normal;roles=ojs,oracle,w_ojs,wood
+ojsuser::::type=normal;roles=ojs
+wood::::type=role;profiles=Wood,All
+w_ojs::::type=role;profiles=Ojs,All
+zadraju::::type=normal;roles=wood,w_ojs,ojs
+klaerpa::::type=normal;roles=wood,w_ojs,ojs
+sattihe::::type=normal;roles=wood,w_ojs,ojs
+pierrph::::type=normal;roles=wood,w_ojs,ojs
+lafarpa::::type=normal;roles=wood,w_ojs,ojs,loga,diraa
+valleje::::type=normal;roles=wood
+ciurlel::::type=normal;roles=oracle,dba,ojs,diraa,rootdba
+betorma::::type=normal;roles=wood,w_ojs,ojs
+warinlo::::type=normal;roles=wood,w_ojs,ojs
+oubecmo::::type=normal;roles=wood,w_ojs,ojs
+ferrear::::type=normal;roles=ojs
+schifan::::type=normal;roles=oracle
+loga::::type=role;profiles=Diraa,All
+
+
+root@kerberos 11:35 [tomcat] vi /etc/project
+system:0::::
+user.root:1::::
+noproject:2::::
+default:3::::
+group.staff:10::::
+ojs:1220:OJS:ojs,root:ojs:
+user.ojs:1220::::
+ojs.web:1221:OJS:ojs,root:ojs:
+ojs.app:1222:OJS:ojs,root:ojs:
+ojs.dba:1223:OJS:ojs,oracle,root:dba:
+ojs.woodweb:1224:OJS:ojs,w_ojs,root:ojs:
+ojs.wood:1225:OJS:ojs,w_ojs,root:ojs:
+ojs.conv:1226:OJS:ojs:ojs:
+ojs.distrib:1227:OJS:ojs:ojs:
+user.wood:1007::::
+wood:1007::Wood:wood,root:wood:
+wood.app:1008:Wood:wood,root:wood:
+wood.web:1009:Wood:wood,root:wood:
+diraa:1370:DIRAA:diraa:diraa:
+user.diraa:1370::::
+diraa.app:1371:DIRAA:diraa,root:diraa:
+diraa.dba:1372:DIRAA:diraa,oracle:dba:
+diraa.loga:1373:DIRAA LogAnalizer:loga,root:loga:
+
+/applications/diraa/users/system/init.d/diraa_loga
+
+
+setfacl -m user:loga:rwx,mask:rwx conf
+setfacl -m d:user:loga:rwx,d:u::rwx,d:g::r-x,d:o:r-x,d:mask:rwx conf
+getfacl conf | setfacl -f - logs
+getfacl conf | setfacl -f - work
+

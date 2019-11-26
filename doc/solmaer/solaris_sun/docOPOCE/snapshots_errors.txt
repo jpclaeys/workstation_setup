@@ -1,0 +1,9 @@
+# Fouille dans les logs
+#####zeus
+ls -l /nsr/logs/snapshot*             ====> generalement il s'agit des problemes d'espace
+
+# Vire les backups
+df -h | grep 100 
+df -h | grep snapshot
+/applications/planpubli/snapshot/backing-store   ===> rm des backups ( voir la taille avant )
+

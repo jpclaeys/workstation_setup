@@ -1,0 +1,6 @@
+##### when the Windows server responds to DHCP requests instead of Satellite DHCP
+Ctr-b
+dhcp net0
+kernel http://foreman.opoce.cec.eu.int/unattended/gPXE
+boot
+

@@ -1,0 +1,189 @@
+zonecfg -z seicr_tz export > /tmp/seicr.cfg
+
+root@bart # vi /tmp/develop.cfg
+"/tmp/develop.cfg" 27 lines, 380 characters
+create -b
+set zonepath=/zones/develop_tz
+set autoboot=true
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=158.167.99.181
+set physical=ce0
+end
+add attr
+set name=comment
+set type=string
+set value="Zone develop_tz"
+end
+add dataset
+set name=develop/applications
+end
+~
+~
+~
+~
+~
+~
+~
+~
+~
+"/tmp/develop.cfg" 27 lines, 389 character
+
+
+
+root@bart # zonecfg -z develop_tz -f /tmp/develop.cfg
+root@bart # zoneadm list
+global
+seibud_tz
+seicr_tz
+root@bart # zoneadm list -v
+  ID NAME             STATUS         PATH
+   0 global           running        /
+   1 seibud_tz        running        /zones/seibud_tz
+   2 seicr_tz         running        /zones/seicr_tz
+root@bart # zoneadm list -vic
+  ID NAME             STATUS         PATH
+   0 global           running        /
+   1 seibud_tz        running        /zones/seibud_tz
+   2 seicr_tz         running        /zones/seicr_tz
+   - develop_tz       configured     /zones/develop_tz
+
+root@bart # zpool create -f -m /zpool/develop develop c4t60020F2000010C61407D3EF9000B8059d0
+root@bart # zpool status
+  pool: develop
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        develop                                  ONLINE       0     0     0
+          c4t60020F2000010C61407D3EF9000B8059d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+  pool: seibud
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        seibud                                   ONLINE       0     0     0
+          c4t60020F2000010C61407D3F0500068086d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+  pool: seicr
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        seicr                                    ONLINE       0     0     0
+          c4t60020F2000010C614056EDE00002A785d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+root@bart # zfs create develop/zone
+root@bart # zfs set mountpoint=/zones/develop_tz develop/zone
+root@bart # zfs set mountpoint=/applications/develop develop/applications
+root@bart # zonecfg -z develop_tz info
+zonename: develop_tz
+zonepath: /zones/develop_tz
+autoboot: true
+pool:
+limitpriv:
+inherit-pkg-dir:
+        dir: /lib
+inherit-pkg-dir:
+        dir: /platform
+inherit-pkg-dir:
+        dir: /sbin
+inherit-pkg-dir:
+        dir: /usr
+net:
+        address: 158.167.99.181
+        physical: ce0
+attr:
+        name: comment
+        type: string
+        value: "Zone develop_tz"
+dataset:
+        name: develop/applications
+root@bart # zoneadm -z develop_tz install
+Preparing to install zone <develop_tz>.
+Creating list of files to copy from the global zone.
+Copying <2716> files to the zone.
+Initializing zone product registry.
+Determining zone package initialization order.
+Preparing to initialize <1003> packages on the zone.
+.................
+
+root@bart # zoneadm -z develop_tz boot
+root@bart # zoneadm list -ivc
+  ID NAME             STATUS         PATH
+   0 global           running        /
+   1 seibud_tz        running        /zones/seibud_tz
+   2 seicr_tz         running        /zones/seicr_tz
+   3 develop_tz       running        /zones/develop_tz
+root@bart # zlogin -C develop_tz
+[Connected to zone 'develop_tz' console]
+
+
+        For more information about how the NFS version 4 default domain
+        name is derived and its impact, refer to the man pages for nfs(4)
+        and nfsmapid(1m), and the System Administration Guide: Network
+        Services.
+
+
+
+
+rebooting system due to change(s) in /etc/default/init
+
+
+
+[NOTICE: Zone rebooting]
+
+
+SunOS Release 5.10 Version Generic_125100-10 64-bit
+Copyright 1983-2006 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+Hostname: develop_tz
+
+develop_tz console login: rootFeb 13 10:07:30 develop_tz sendmail[11790]: My unqualified host name (develop_tz) unknown; sleeping for retry
+
+Password:
+Feb 13 10:07:45 develop_tz login: ROOT LOGIN /dev/console
+Sun Microsystems Inc.   SunOS 5.10      Generic January 2005
+
+
+
+################snapshots ( reorgani dans une disque plus petite )
+zfs snapshot -r develop@20080903
+zpool create develop_r c4t600A0B800026676A00000B8548BE269Bd0
+zlogin develop_tz init 0
+zfs send develop/applications@20080903  | zfs recv develop_r/applications
+zfs send develop/zone@20080903 | zfs recv develop_r/zone
+zfs unmount /zpool/develop
+zfs unmount /zones/develop_tz
+zfs set mountpoint=/zones/develop_tz develop_r/zone
+zfs set mountpoint=/applications/develop develop_r/applications
+zpool export develop
+zpool export develop_r
+zpool import develop_r develop
+zoneadm -z develop_tz boot
+
+# property zoned
+zfs get zoned
+zfs set zoned=off  cordiscms_t/applications
+

@@ -1,0 +1,9 @@
+# monter une tape specifique
+nsrjb -l -f /dev/rmt/2cbn  B00848
+# unload une tape specifique
+nsrjb -u B00848
+# unload une tape d'une drive
+nsrjb -u -f /dev/rmt/2cbn B00848
+nsrjb -u -f /dev/rmt/2cbn 
+# unload une tape d'une drive et l'inserer sur un slot
+nsrjb -u -f /dev/rmt/2cbn -S 75

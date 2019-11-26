@@ -1,0 +1,12 @@
+ldaplist ou=people | cut -d , -f 1 | sort -u | egrep -v '(maurise|opsys_ux|tquest)' | sed 's/^dn.*\=//' | sed '/^$/d' | tr "\n" "\t" > /tmp/automount.list
+
+foreach i in `cat /tmp/automount.list`
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: automountKey=$i,automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: automountInformation
+automountInformation: -soft opsrv020:/applications/NFS-SRV/users/\&
+EOF
+done
+

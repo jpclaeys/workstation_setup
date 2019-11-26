@@ -1,0 +1,8 @@
+ndd -set /dev/bge0 adv_1000fdx_cap 0 
+ndd -set /dev/bge0 adv_1000hdx_cap 0 
+ndd -set /dev/bge0 adv_100fdx_cap 1 
+ndd -set /dev/bge0 adv_100hdx_cap 0 
+ndd -set /dev/bge0 adv_10fdx_cap 0 
+ndd -set /dev/bge0 adv_10hdx_cap 0 
+ndd -set /dev/bge0 adv_autoneg_cap 0 
+

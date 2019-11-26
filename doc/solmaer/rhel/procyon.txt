@@ -1,0 +1,355 @@
+#####################################################################################################################################
+# apres une reinstallation a partir du cd
+#####################################################################################################################################
+
+
+##############################
+##### ifcfg-eth0
+cp -p /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0.`dte +%Y%m%d`
+
+cat <<EOF >/etc/sysconfig/network-scripts/ifcfg-eth0 
+DEVICE=eth0
+HWADDR=f0:4d:a2:38:40:82
+NM_CONTROLLED=yes
+ONBOOT=yes
+BOOTPROTO=none
+TYPE=Ethernet
+IPADDR=158.167.99.29
+NETMASK=255.255.0.0
+DNS1=158.167.99.8
+DNS2=158.167.99.7
+GATEWAY=158.167.96.1
+IPV6INIT=no
+USERCTL=no
+EOF
+
+
+##############################
+##### network
+
+cp -p  /etc/sysconfig/network /etc/sysconfig/network.`date +%Y%m%d`
+cat <<EOF >/etc/sysconfig/network
+HOSTNAME=procyon
+NETWORKING=yes
+GATEWAY=158.167.96.1
+EOF
+
+
+##############################
+##### /etc/hosts
+
+hostanme=procyon
+ip=158.167.99.29
+cp -p /etc/hosts /etc/hosts.`date +%Y%m%d`
+echo "${ip} ${hostanme}" >>/etc/hosts
+
+
+##############################
+##### dns
+
+cp -p /etc/resolv.conf /etc/resolv.conf.$date
+cat <<EOF >/etc/resolv.conf
+nameserver 158.167.99.8
+nameserver 158.167.99.7
+search opoce.cec.eu.int
+EOF
+
+
+##############################
+##### autofs
+
+cp /etc/auto.master /etc/auto.master.${date}
+cat <<EOF >/etc/auto.master 
++auto_master
+/net            -hosts          -nosuid,nobrowse,intr
+/home           auto.home       -nobrowse
+/misc           /etc/auto.misc
+EOF
+
+cp /etc/auto.home /etc/auto.home.${date}
+cat <<EOT >/etc/auto.home
+*       -fstype=nfs4,soft,rw,intr,fsc   opsrv020:/applications/nfs-srv/export/&
+EOT
+
+/etc/init.d/autofs restart
+
+
+##############################
+##### ldap
+
+cp -p /etc/openldap/ldap.conf /etc/openldap/ldap.conf.`date +%Y%m%d`
+cat <<EOF >>/etc/openldap/ldap.conf
+URI ldap://158.167.99.7/ ldap://158.167.99.8/
+BASE dc=opoce,dc=cec,dc=eu,dc=int
+TLS_CACERTDIR /etc/openldap/cacerts
+EOF
+
+#ou: authconfig --enablemd5 --enableshadow --enableldap --enableldapauth --ldapserver=158.167.99.7,158.167.99.8 --ldapbasedn=dc=opoce,dc=cec,dc=eu,dc=int --update
+
+
+##############################
+##### /etc/nsswitch.conf
+
+cp -p /etc/nsswitch.conf /etc/nsswitch.conf.`dte +%Y%m%d`
+cat <<EOF >/etc/nsswitch.conf 
+passwd:     files ldap
+shadow:     files ldap
+group:      files ldap
+hosts:      files ldap dns
+bootparams: files ldap
+ethers:     files ldap
+netmasks:   files ldap
+networks:   files ldap
+protocols:  files ldap
+rpc:        files ldap
+services:   files ldap
+netgroup:   ldap
+automount:  files ldap
+aliases:    files ldap
+EOF
+
+
+##############################
+##### rmpforge
+
+rpm -Uhv rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+
+
+
+
+              proxy_username username to use for proxy
+
+              proxy_password password for this proxy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+########################################################################################################################################################
+# installation par kickstart
+########################################################################################################################################################
+
+
+export VIRTUAL=no
+export SERVER=procyon
+export IPSERVER=158.167.99.29
+export MACSERVER=F0:4D:A2:38:40:82
+export OPrange=255.255.0.0
+export OPgtw=158.167.96.1
+export DOMAINNAME=opoce.cec.eu.int
+export DISKSERVER=hda 			##### 'hda' for workstation 'sda' for vmware 'cciss/c0d0' for HP proliant
+export HEXASERVER=$(echo $IPSERVER|perl -ne 'printf("%X",$_) foreach split /\./;'; ) 
+export RHELVERSION=RHEL_5u6_x86_64
+
+###### COPY pxelinux.0 FOR PXEBOOT INSTALLATION ######
+#In case of a new rhel release
+
+###### CREATE JET TEMPLATE AND CLIENT FOR REDHAT ######
+cd /opt/*jet*/Templates
+../bin/make_template -f -A i86pc -o redhat -O $RHELVERSION -E $MACSERVER $SERVER base_config
+../bin/make_client -f $SERVER
+
+
+#### verify
+cat /tftpboot/pxelinux.cfg/$HEXASERVER ### check name server
+
+##### kickstart specifique pour procyon
+cat <<EOF >/opt/SUNWjet/Clients/${SERVER}/kickstart.cfg 
+# installation 
+install
+text
+nfs --server=158.167.99.56 --dir=/export/install/media/RHEL_5u6_x86_64
+bootloader --append="quiet panic=10" --location mbr 
+reboot
+
+# network
+network --bootproto=static --device=eth0 --ip=158.167.99.29 --gateway=158.167.96.1 --nameserver=158.167.99.7,158.167.99.8 --netmask=255.255.0.0 --hostname=procyon.opoce.cec.eu.int --noipv6
+
+# disk
+zerombr
+clearpart --all
+partition /boot --fstype=ext3 --size=250 --ondisk=hda
+partition pv.001 --size=100 --grow --ondisk=hda
+volgroup rootvg pv.001 
+logvol / --vgname=rootvg --fstype=ext3 --size=20448 --name=root
+logvol /var --vgname=rootvg --fstype=ext3 --size=10240 --name=var
+logvol swap --vgname=rootvg --fstype=swap --size=4096 --name=swap
+
+# security
+selinux --disabled
+firewall --disabled
+rootpw --iscrypted $1$gtXmQvSD$hdYCwSpfYmDXGvrfkl.0Z.
+key --skip
+authconfig --enablemd5 --enableshadow --enableldap --enableldapauth --ldapserver=158.167.99.7,158.167.99.8 --ldapbasedn=dc=opoce,dc=cec,dc=eu,dc=int
+
+# other configuration
+keyboard be-latin1
+lang en_US
+timezone --utc Europe/Luxembourg
+xconfig --defaultdesktop=gnome --startxonboot --resolution=1024x768 --depth=24
+
+# packages
+%packages
+@ gnome-desktop
+@ authoring-and-publishing
+@ editors
+@ graphical-internet
+@ graphics
+@ office
+@ sound-and-video
+@ text-internet
+@ dns-server
+@ ftp-server
+@ legacy-network-server
+@ mail-server
+@ mysql
+@ network-server
+@ printing
+@ server-cfg
+@ smb-server
+@ sql-server
+@ web-server
+@ admin-tools
+@ base
+@ base-x
+@ openfabrics-enterprise-distribution
+@ system-tools
+@ development-libs
+@ development-tools
+strace
+rdesktop.x86_64
+
+# pre-script execution
+%pre
+
+# post-script execution
+%post 
+
+EOF
+
+
+########################################################################################################################################################
+# post-install
+########################################################################################################################################################
+
+
+##### autofs
+
+cp /etc/auto.master /etc/auto.master.${date}
+
+cat <<EOF >/etc/auto.master 
++auto_master
+/net            -hosts          -nosuid,nobrowse,intr
+/home           auto.home       -nobrowse
+/misc           /etc/auto.misc
+EOF
+
+cat <<EOT >/etc/auto.home
+*       -fstype=nfs4,soft,rw,intr,fsc   opsrv020:/applications/nfs-srv/export/&
+EOT
+
+/etc/init.d/autofs restart
+
+
+##### packages
+
+cat <<EOF >/etc/yum.repos.d/opoce.repo
+[opoce-supplementary]
+name=OPOCE Supplementary Package for RHEL 5u6
+baseurl=file:///net/remus/export/install/linux
+enabled=0
+gpgcheck=0
+[opoce-rhel5u6-server]
+name=RHEL 5u6 X86_64 Server
+baseurl=file:///net/remus/export/install/media/RHEL_5u6_x86_64
+enabled=0
+gpgcheck=0
+[opoce-rhel5u6-VT]
+name=RHEL 5u6 X86_64 Server
+baseurl=file:///net/remus/export/install/media/RHEL_5u6_x86_64/VT
+enabled=0
+gpgcheck=0
+EOF
+
+
+##### dns
+
+cp -p /etc/resolv.conf /etc/resolv.conf.$date
+cat <<EOF
+domain opoce.cec.eu.int
+nameserver 158.167.99.8
+nameserver 158.167.99.7
+search opoce.cec.eu.int
+EOF
+
+
+########################################################################################################################################################
+# rpmforge
+########################################################################################################################################################
+
+export dist=el5
+export arch=`uname -i`
+
+cd
+cd download
+wget http://packages.sw.be/rpmforge-release/rpmforge-release-0.5.2-2.$dist.rf.$arch.rpm
+rpm -Uhv rpmforge-release-0.5.2-2.$dist.rf.$arch.rpm
+
+########################################################################################################################################################
+# installation de virtualbox
+########################################################################################################################################################
+
+cd /etc/yum.repos.d
+wget http://download.virtualbox.org/virtualbox/rpm/rhel/virtualbox.repo
+
+perl -i -pe 's/^enabled=1$/enabled=0/' virtualbox.repo
+
+yum --enablerepo rpmforge install dkms
+
+#yum groupinstall "Development Tools"
+#yum install kernel-devel
+
+yum --enablerepo virtualbox search virtualbox
+yum --enablerepo virtualbox install VirtualBox-4.0.x86_64
+  --> Missing Dependency: libSDL-1.2.so.0()(64bit) is needed by package VirtualBox-4.0-4.0.6_71344_rhel5-1.x86_64 (virtualbox)
+
+---------------------------------------------------------------------------------------------
+
+usermod -G vboxusers username
+
+or use the GUI Users and Groups tool. 
+
+
+

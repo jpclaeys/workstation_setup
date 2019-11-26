@@ -1,0 +1,37 @@
+#######################################################
+# redemarrage de eNotice
+#######################################################
+
+##### connexion au server simap
+ssh hades
+su -
+
+##### se placer dans le repertoire init.d de l'appli
+cd /applications/simap/users/system/init.d
+
+##### arret de simap_app
+./simap_app stop
+
+##### arret de simap_jway
+./simap_jway stop
+
+##### verifier la presence de process
+./simap_jway show
+./simap_app show
+
+##### faire un killhard si des process persistent apres environ 1 min...
+./simap_jway killhard
+./simap_app killhard
+
+##### redemarrage de simap_app
+./simap_app start
+
+##### redemarrage de simap_jway
+./simap_jway start
+
+##### verif 
+./simap_jway show
+./simap_app show
+
+##### test sur...
+http://simap.europa.eu/enotice/

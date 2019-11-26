@@ -1,0 +1,2 @@
+# plus d'info sur les hbas
+fcinfo hba-port

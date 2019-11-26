@@ -1,0 +1,259 @@
+
+"dc" (Domain Component)
+"DN" (Distinguished Name). Le DN est le nom complet de l'élément
+"RDN"(Relative Distinguished Name). le RDN est le nom relatif de l'élément
+
+dans "udi" : cn (common name), user name, password....
+
+"sub" : l'action est effectuée récursivement à partir de la base spécifiée sur la totalité de l'arborescence.
+
+"one" : l'action est effectuée sur les fils directs, c'est-à-dire un seul niveau inférieur par rapport à la base spécifiée. Pour notre arbre de la COGIP, au niveau le plus haut "dc=cogip,dc=fr", on aurait pour la portée ONE "ou=users,dc=cogip,dc=fr" et "ou=groups,dc=cogip,dc=fr".
+
+"base" : l'action est effectuée uniquement sur la base spécifiée. Une recherche sur "dc=cogip,dc=fr" avec la portée BASE renverrait cette entrée uniquement.
+
+
+Classes d'objets : ex : o, ou, dc, person ..
+
+Les classes d'objets permettent de regrouper les objets de même type, un objet peut appartenir à plusieurs classes en même temps.
+
+0pocE123!
+
+prod :
+*******
+
+ldapsearch -x -D "cn=directory manager,dc=opoce,dc=cec,dc=eu,dc=int" -W -H ldap://ldap1-pk uid=bortodi
+
+
+
+test :
+******
+ldapsearch -x -D "cn=directory manager,dc=opoce,dc=cec,dc=eu,dc=int" -W -H ldap://ldap-tk uid=bortodi
+
+
+
+
+
+
+ldapsearch -x -H ldaps://identity.op.aws.cloud.tech.ec.europa.eu/ uid=bortodi
+ldapsearch -x uid=bortodi
+
+ipa migrate-ds --bind-dn="cn=Directory Manager,dc=opoce,dc=cec,dc=eu,dc=int" --with-compat ldap://spider
+
+
+ -x        Use simple authentication instead of SASL.
+-D binddn  Use the Distinguished Name binddn to bind to the LDAP directory.  For SASL binds, the server is  expected  to  ignore
+              this value.
+
+-W     Prompt for simple authentication.  This is used instead of specifying the password on the command line.
+
+
+-H ldapuri
+              Specify  URI(s)  referring  to the ldap server(s); a list of URI, separated by whitespace or commas is expected; only
+              the protocol/host/port fields are allowed.  As an exception, if no host/port is specified, but a DN  is,  the  DN  is
+              used  to  look  up the corresponding host(s) using the DNS SRV records, according to RFC 2782.  The DN must be a non-
+              empty sequence of AVAs whose attribute type is "dc" (domain component), and must be escaped according to RFC 2396.
+
+
+
+
+
+       -Y mech
+              Specify the SASL mechanism to be used for authentication. If it's not specified, the program  will  choose  the  best
+              mechanism the server knows.
+
+
+
+ldapsearch -x -D "CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int" -W -H ldap:// uid=bortodi
+
+----------------------------------------------------------
+
+
+export :
+********
+
+slapcat -n 2 -l ./annuaire.ldif
+slapcat -n 0 -l ./config.ldif
+
+import :
+********
+
+slapadd -c -n 2 -l ./annuaire.ldif
+
+-F pour specifier le chemin des fichiers si besoin ( -F /usr/local/etc/slapd.d )
+-c pour continuer en cas d'erreur
+
+
+
+
+
+----------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+/usr/local/etc/openldap/slapd.conf
+rootdn		"cn=Manager,dc=opoce,dc=cec,dc=eu,dc=int"
+
+
+
+
+
+
+
+ldapsearch -x -D "CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int" -W -H ldap:// uid=bortodi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ldapsearch -x -h ldap-tk -b "uid=bortodi,dc=opoce,dc=cec,dc=eu,dc=int"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ldapsearch -x -h ldap-tk  uid=bortodi
+ldapsearch -x -h ldap-tk -b "dc=opoce,dc=cec,dc=eu,dc=int"
+
+ldapsearch -x -h ldap-tk -b "dc=opoce,dc=cec,dc=eu,dc=int" -s sub "uid=bortodi"
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+For example, using a LDAP server IP of 10.1.0.7 and a base of dc=hurr,dc=org, you could search using a simple anonymous bind and with mandatory TLS to confirm LDAP server connectivity using ldapsearch.
+
+        ldapsearch -x -ZZ -H ldap://10.1.0.7 -b dc=hurr,dc=org
+
+Using the same information, now try communicating without TLS
+
+        ldapsearch -x -H ldap://10.1.0.7 -b dc=hurr,dc=org
+
+
+
+ldapsearch -h ldap1-pk -b "dc=opoce,dc=cec,dc=eu,dc=int" -s sub "objectclass=*"
+
+ldap1-pk
+
+ldapvi -h ldap1-pk -D "cn=directory manager,dc=opoce,dc=cec,dc=eu,dc=int"
+
+
+
+ldapsearch -D "cn=directory manager" -w password -p 389 -h ldap1-pk -b "dc=opoce,dc=cec,dc=eu,dc=int" -s sub "cn=babs jensen"
+ldapsearch -D "cn=directory manager" -w password -p 389 -h ldap1-pk -b "dc=opoce,dc=cec,dc=eu,dc=int" -s sub "(objectclass=*)"
+
+
+
+
+
+
+[root@ldap-tk ~]# history | grep ldapsearch
+  104  ldapsearch -x -h ldap-tk  uid=cherrol
+  106  ldapsearch -x ou=People -s one
+  289  ldapsearch -x -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  290  ldapsearch -x -b dc=opoce,dc=cec,dc=eu,dc=int
+  291  ldapsearch -x -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  294  ldapsearch -x -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  298  ldapsearch -x -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  306  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  309  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  314  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  319  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  321  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  325  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int uid=oracle
+  326  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  327  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory
+  328  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory -LLL
+  336  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory -LLL
+  337  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted
+  338  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted uid
+  339  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted uid | grep -v dn
+  340  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted uid | grep uid
+  341  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted uid | grep uid | grep -v dn:
+  342  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted uid | grep uid | grep -v dn: | wc -l
+  353  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  391  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  419  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  485  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int
+  486  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int uid=bertoje
+  488  ldapsearch -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int uid=bertoje
+  499  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted uid | grep uid | grep -v dn: | wc -l
+  530  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted uid | grep uid | grep -v dn: | wc -l
+  531  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted uid
+  532  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int businessCategory=unsorted
+  566  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int '(&(objectclass=posixaccount)(uidNumber=30*))'
+  568  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int '(&(objectclass=posixaccount)(uid=bertoje))'
+  569  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int '(&(objectclass=posixaccount)(uidNumber=30235))'
+  570  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int '(&(objectclass=posixaccount)(uidNumber=30235*))'
+  571  ldapsearch -LLL -x -h ldap-tk -b ou=standard,dc=opoce,dc=cec,dc=eu,dc=int '(&(objectclass=posixaccount)(uidNumber>30235))'
+
+
+
+
+
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: dc=testdidier,dc=lan
+
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN: cn=didier,dc=testdidier,dc=lan1
+-
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: {SSHA}nvVGJhbDP7bbzbQYZRYziViztKDcvfko
+
+
+ldapsearch -x -D cn=didier,dc=testdidier,dc=lan1 -b dc=testdidier,dc=lan1 -W

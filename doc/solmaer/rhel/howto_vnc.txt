@@ -1,0 +1,24 @@
+##########################################################################################################################################
+# configuration du serveur vnc
+##########################################################################################################################################
+
+##### creation du mot de passe vnc
+% vncpasswd
+
+##### configration du serveur vnc
+# cat <<EOF >/etc/sysconfig/vncservers
+VNCSERVERS="1:betorma"
+VNCSERVERARGS[1]="-geometry 1024x768 -depth 24 -nolisten tcp -nohttpd"
+EOF
+
+##### demarrage automatique du server
+# chkconfig vncserver on
+
+##### lancer le serveur
+# service vncserver start
+
+##### personnaliser vnc
+% vi ~/.vnc/xstartup
+
+##### pour le lancer
+/usr/bin/vncviewer procyon:1

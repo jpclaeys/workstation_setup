@@ -1,0 +1,133 @@
+################################################################################################
+#####
+##### add SRU on repository
+#####
+
+
+
+0[150409/140807]root@aiserver-pz# zfs snapshot -r aiserver-pz-data_applications@sru_11_2_8_5_0
+0[150409/140857]root@aiserver-pz# zfs list -t snapshot
+NAME                                                          USED  AVAIL  REFER  MOUNTPOINT
+aiserver-pz-data_applications@sru_11_2_8_5_0                     0      -    31K  -
+aiserver-pz-data_applications/ai@sru_11_2_8_5_0                  0      -  2.40G  -
+aiserver-pz-data_applications/ips@sru_11_2_8_5_0                 0      -    67K  -
+aiserver-pz-data_applications/ips/emc@before_5.5.0.4          221K      -  30.5M  -
+aiserver-pz-data_applications/ips/emc@sru_11_2_8_5_0             0      -  43.6M  -
+aiserver-pz-data_applications/ips/sc4.2@sru_11_2_8_5_0           0      -   647M  -
+aiserver-pz-data_applications/ips/solaris_11@sru_11_2_8_5_0      0      -  11.7G  -
+aiserver-pz-data_applications/oraagent@sru_11_2_8_5_0            0      -    31K  -
+rpool/ROOT/solaris@install                                   17.8M      -   698M  -
+rpool/ROOT/solaris/var@install                               12.7M      -  47.6M  -
+
+
+
+0[150409/142619]root@aiserver-pz# cd /net/opsrv082/xchange/reumose/SRU
+0[150409/142930]root@aiserver-pz# 
+0[150409/142938]root@aiserver-pz# ./install-repo.ksh -d /applications/ips/repo/solaris_11/
+Using p20772079_1100_SOLARIS64 files for sol-11_2_8_5_0-incr-repo download.
+IPS repository exists at destination /applications/ips/repo/solaris_11/
+Current version: 0.175.2.2.0.7.0
+Do you want to add to this repository? (y/n)[n]: y
+Uncompressing p20772079_1100_SOLARIS64_1of2.zip...done.
+Uncompressing p20772079_1100_SOLARIS64_2of2.zip...done.
+Repository can be found in /applications/ips/repo/solaris_11/.
+Initiating repository rebuild.
+0[150409/152652]root@aiserver-pz# 
+
+
+
+1[150409/154420]betorma@lava% pkg search  solaris/entire
+INDEX      ACTION VALUE          PACKAGE
+pkg.fmri   set    solaris/entire pkg:/entire@0.5.11-0.175.2.2.0.7.0
+pkg.fmri   set    solaris/entire pkg:/entire@0.5.11-0.175.2.8.0.5.0
+0[150409/154435]betorma@lava% 
+
+
+
+
+
+
+
+
+################################################################################################
+#####
+##### update ha-cluster repository
+#####
+
+
+0[150409/160148]root@aiserver-pz# zfs snapshot -r aiserver-pz-data_applications@osc-4_2_3_3_0
+0[150409/160151]root@aiserver-pz# zfs list -t snapshot                                       
+NAME                                                          USED  AVAIL  REFER  MOUNTPOINT
+aiserver-pz-data_applications@sru_11_2_8_5_0                     0      -    31K  -
+aiserver-pz-data_applications@osc-4_2_3_3_0                      0      -    31K  -
+aiserver-pz-data_applications/ai@sru_11_2_8_5_0               269K      -  2.40G  -
+aiserver-pz-data_applications/ai@osc-4_2_3_3_0                   0      -  2.40G  -
+aiserver-pz-data_applications/ips@sru_11_2_8_5_0                 0      -    67K  -
+aiserver-pz-data_applications/ips@osc-4_2_3_3_0                  0      -    67K  -
+aiserver-pz-data_applications/ips/emc@before_5.5.0.4          221K      -  30.5M  -
+aiserver-pz-data_applications/ips/emc@sru_11_2_8_5_0             0      -  43.6M  -
+aiserver-pz-data_applications/ips/emc@osc-4_2_3_3_0              0      -  43.6M  -
+aiserver-pz-data_applications/ips/sc4.2@sru_11_2_8_5_0           0      -   647M  -
+aiserver-pz-data_applications/ips/sc4.2@osc-4_2_3_3_0            0      -   647M  -
+aiserver-pz-data_applications/ips/solaris_11@sru_11_2_8_5_0   910M      -  11.7G  -
+aiserver-pz-data_applications/ips/solaris_11@osc-4_2_3_3_0       0      -  15.3G  -
+aiserver-pz-data_applications/oraagent@sru_11_2_8_5_0            0      -    31K  -
+aiserver-pz-data_applications/oraagent@osc-4_2_3_3_0             0      -    31K  -
+rpool/ROOT/solaris@install                                   17.8M      -   698M  -
+rpool/ROOT/solaris/var@install                               12.7M      -  47.6M  -
+0[150409/160157]root@aiserver-pz# 
+
+
+
+0[150409/160157]root@aiserver-pz# pwd                                           
+/net/opsrv082/xchange/reumose/OSC
+
+
+
+0[150409/160438]root@aiserver-pz# lofiadm -a ./osc-4_2_3_3_0-repo-incr.iso
+/dev/lofi/1
+0[150409/160456]root@aiserver-pz# mount -o ro -F hsfs /dev/lofi/1 /mnt
+1[150409/162146]root@aiserver-pz# ls /mnt
+Copyright                    README                       repo                         THIRDPARTYLICENSEREADME.txt
+
+
+
+0[150409/162147]root@aiserver-pz# pkgrecv -s file:///mnt/repo -d /applications/ips/repo/sc4.2 '*'
+Processing packages for publisher ha-cluster ...
+Retrieving and evaluating 23 package(s)...
+PROCESS                                         ITEMS    GET (MB)   SEND (MB)
+Completed                                       13/13 362.7/362.7 549.1/549.1
+0[150409/163421]root@aiserver-pz# 
+
+
+
+
+0[150409/163421]root@aiserver-pz# pkgrepo rebuild -s /applications/ips/repo/sc4.2
+Initiating repository rebuild.
+0[150409/163934]root@aiserver-pz# 
+
+
+
+0[150409/164003]root@aiserver-pz# svcadm restart svc:/application/pkg/server:ha-cluster
+0[150409/164013]root@aiserver-pz# svcs svc:/application/pkg/server:ha-cluster          
+STATE          STIME    FMRI
+online         16:40:16 svc:/application/pkg/server:ha-cluster
+0[150409/164020]root@aiserver-pz# 
+
+
+
+
+
+
+
+0[150409/161657]betorma@lava%  scinstall -pv | head -1
+Oracle Solaris Cluster 4.2.1.3.0 for Solaris 11 sparc
+
+
+0[150409/165118]betorma@lava% pkg search ha-cluster-data-services-full
+INDEX      ACTION VALUE                                                             PACKAGE
+pkg.fmri   set    ha-cluster/ha-cluster/group-package/ha-cluster-data-services-full pkg:/ha-cluster/group-package/ha-cluster-data-services-full@4.2-0.30.1
+0[150409/165141]betorma@lava% 
+
+
+

@@ -1,0 +1,1 @@
+/applications/nagios/users/nagios/etc/init.d/nagios checkconfig

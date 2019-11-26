@@ -1,0 +1,5 @@
+# solaris 9
+logadm -p now /var/adm/messages
+# solaris 10
+newsyslog
+

@@ -1,0 +1,11 @@
+
+
+bortodi@opvmwsbkps2:[~] $ arp | grep af
+bkp-cportaldiff3-pk.opo  ether   52:54:00:01:00:af   C                     eth1
+bkp-opdns001.opoce.cec.  ether   52:54:00:01:00:af   C                     eth1
+
+
+bkp-cportaldiff4-pk.opo  ether   52:54:00:01:00:b1   C                     eth1
+bkp-pmki-dk.opoce.cec.e  ether   52:54:00:01:00:b1   C                     eth1
+
+ip link set eth1 address 52:54:00:01:00:B0

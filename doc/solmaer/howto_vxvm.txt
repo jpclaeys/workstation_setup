@@ -1,0 +1,621 @@
+###############################################################################################
+# ajout d'un disk a un diskgroup
+# agrandissement d'un file system
+# creation d'un nouveau fs vxvm
+# remplacer un disque dans un mirroir veritas
+# suppression d'un disk group veritas, ainsi que les volumes, disk, ... a l'interieur
+###############################################################################################
+
+
+###############################################################################################
+# ajout d'un disk a un diskgroup
+###############################################################################################
+
+##### verifier la visibilite du disk
+/usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))'
+
+##### recupere le nom du disk
+export disk=c4t600A0B800026676A000015BE4BB2A07Bd0
+
+##### labelise le disk
+format -d ${disk} <<EOT
+label
+y
+verify
+q
+EOT
+
+##### rafraichit la configuration de vx
+vxconfigd -k
+
+##### liste les disk vx
+vxdisk -e list
+
+##### dg dans lequel ajouter $disk
+export dg=diraa
+
+##### recupere le nom du device
+export device=fabric_3
+
+##### donne le nom au disk vx
+export disk=gnole_3
+
+##### initialise le disque
+echo /usr/lib/vxvm/bin/vxdisksetup -i ${device} format=sliced
+
+##### verification
+vxdisk -e list
+
+##### ajout du disk au dg
+vxdg -g ${dg} adddisk ${disk}=${device}
+
+##### verification
+vxdisk -e list
+
+
+###############################################################################################
+# agrandissement d'un file system
+###############################################################################################
+
+
+##### enregistre le fs a agrandir
+export fs=''
+
+##### etat du fs avant agrandissement
+df -k ${fs}
+
+##### lister les disk group
+vxdisk -e list
+
+##### enregistrer le nom du disk group
+export diskgroup=''
+
+##### lister les volumes du disk group
+vxprint -g ${diskgroup}
+
+##### enregistrer le nom du volume a agrandir
+export volume=''
+
+##### voir l'espace libre sur le disk group
+#vxassist -g ${diskgroup} maxsize
+vxdg -g ${diskgroup} free
+
+##### enregistre le nom du disk sur lequel prendre ${size}
+export disk=''
+
+##### enregistrer la taille a donner au fs
+export size=''
+
+##### agrandissement du volume
+echo vxassist -g ${diskgroup} -b growby ${volume} ${size} alloc=${disk}
+
+##### verification
+vxprint -g ${diskgroup} | grep ${volume}
+
+##### enregistre la nouvelle tailla a donner au fs
+size=`vxprint -g ${diskgroup} | grep "^v  ${volume}" | awk -F' ' '{print $5}'`
+echo "${size}"
+
+##### agrandissement du FS
+echo /usr/lib/vxvm/bin/vxresize -x -g ${diskgroup} ${volume} ${size}
+
+##### etat du fs apres agrandissement
+df -k ${fs}
+
+####################################################################################################
+# creation d'un nouveau disk group
+####################################################################################################
+
+
+##### disk pour le dg
+/home/betorma/bin/luxadm_carlo | grep 600A0B800026676A000016714C1F0DA5
+path: /dev/rdsk/c8t600A0B800026676A000016714C1F0DA5d0s2 ==> stor: 202600a0b8266772 lun 10 stor: 202700a0b8266772 lun 10 
+
+export sys_disk=c8t600A0B800026676A000016714C1F0DA5d0
+
+format -d ${sys_disk} <<EOT
+label
+y
+verify
+q
+EOT
+
+##### rafraichissement de la config vx
+vxconfigd -k
+
+##### verif
+vxdisk -e list 
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME   
+c4t0d0s2     auto      rootdisk      rootdg       online       c4t0d0s2    
+c4t1d0s2     auto      rootmirror    rootdg       online       c4t1d0s2    
+c4t2d0s2     auto      -             -            online       c4t2d0s2    
+fabric_6     auto      gnole_14      simap        online       c8t600A0B80002667720000138C4AAF0B08d0s2
+fabric_8     auto      -             -            online       c8t600A0B800026676A000016714C1F0DA5d0s2
+fabric_15    auto      gnole_5       eub          online       c8t600A0B8000266772000010FE4A0BE506d0s2
+fabric_20    auto      gnole_7       minos        online       c8t600A0B8000266772000011024A0BE66Ed0s2
+fabric_21    auto      gnole_4       arceldd      online       c8t600A0B8000266772000010FC4A0BE490d0s2
+fabric_22    auto      gnole_3       arcel        online       c8t600A0B800026676A00000FFD4A0BDE7Dd0s2
+fabric_25    auto      gnole_9       r11          online       c8t600A0B8000266772000011064A0BE896d0s2
+fabric_27    auto      gnole_1       ceres        online       c8t600A0B800026676A00000B8D48BF7A9Fd0s2
+fabric_32    auto      gnole_8       oemagent     online       c8t600A0B8000266772000011044A0BE758d0s2
+fabric_37    auto      gnole_2       jiradg       online       c8t600A0B800026677200000C5748BF7EF0d0s2
+
+##### initialisation du disk
+export dg=wiki
+export device=fabric_8
+export disk=gnole_10
+
+echo /usr/lib/vxvm/bin/vxdisksetup -i ${device} format=sliced
+
+##### verif
+vxdisk list   
+DEVICE       TYPE            DISK         GROUP        STATUS
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t1d0s2     auto:sliced     rootmirror   rootdg       online
+c4t2d0s2     auto:sliced     -            -            online
+fabric_6     auto:cdsdisk    gnole_14     simap        online
+fabric_8     auto:sliced     -            -            online
+fabric_15    auto:sliced     gnole_5      eub          online
+fabric_20    auto:sliced     gnole_7      minos        online
+fabric_21    auto:sliced     gnole_4      arceldd      online
+fabric_22    auto:sliced     gnole_3      arcel        online
+fabric_25    auto:sliced     gnole_9      r11          online
+fabric_27    auto:sliced     gnole_1      ceres        online
+fabric_32    auto:sliced     gnole_8      oemagent     online
+fabric_37    auto:cdsdisk    gnole_2      jiradg       online
+
+
+##### creation du dg
+vxdg init ${dg} ${disk}=${device}
+VxVM vxdg ERROR V-5-1-6478 Device fabric_8 cannot be added to a CDS disk group
+##### or
+vxdg init ${dg} ${disk}=${device} cds=off 
+
+##### verif
+vxdisk -e list | grep ${dg}
+fabric_8     auto      gnole_10      wiki         online       c8t600A0B800026676A000016714C1F0DA5d0s2
+
+####################################################################################################
+# creation d'un nouveau fs vxvm
+####################################################################################################
+
+
+##### lister les disk group
+vxdisk -e list
+
+##### recupere le nom du dg
+export dg=
+
+##### lister les volumes du disk group
+vxprint -g ${dg}
+
+##### voir l'espace libre sur le disk group
+#vxassist -g ${dg} maxsize
+vxdg -g ${dg} free
+
+##### si l'espace n'est pas suffisant, ajouter un noueveau disk au diskgroup
+
+##### variables
+export volume=
+export size=
+export disk=
+
+##### creer le volume
+vxassist -b -g ${dg} make ${volume} ${size} alloc=${disk}
+
+##### verification
+vxprint -g ${dg} -v ${volume}
+
+##### creation du fs
+newfs /dev/vx/rdsk/${dg}/${volume}
+
+##### ajout du nouveau volume dans vfstab
+cp -p /etc/vfstab /etc/vfstab.`date +%Y%m%d`
+echo "/dev/vx/dsk/${dg}/${volume}        /dev/vx/rdsk/${dg}/${volume}      /zones/${dg}        ufs    3       yes     -" >>/etc/vfstab
+
+
+########################################################################
+# remplacer un disque dans un mirroir veritas
+########################################################################
+
+
+##### list des disk veritas
+root@happy # vxdisk -e list
+DEVICE       TYPE            DISK         GROUP        STATUS
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t1d0s2     auto:sliced     rootmirror   rootdg       online
+c4t2d0s2     auto:sliced     -            -            online
+fabric_15    auto:cdsdisk    tordboyaux_4  planpubli    online
+fabric_17    auto:cdsdisk    tordboyaux_0  acfv3        online
+fabric_18    auto:cdsdisk    tordboyaux_3  planpubli    online
+fabric_24    auto:cdsdisk    tordboyaux_2  happy        online
+fabric_26    auto:cdsdisk    tordboyaux_5  planpubli    online
+fabric_27    auto:cdsdisk    tordboyaux_1  acfv4        online
+
+
+##### disk a enlever
+root@happy # export device_to_remove=c4t1d0s2
+
+
+##### etat du dg avant d'enlever le mirroir
+root@happy # export dg=rootdg
+
+root@happy # vxprint -g rootdg
+TY NAME         ASSOC        KSTATE   LENGTH   PLOFFS   STATE    TUTIL0  PUTIL0
+dg rootdg       rootdg       -        -        -        -        -       -
+
+dm rootdisk     c4t0d0s2     -        143328960 -       -        -       -
+dm rootmirror   c4t1d0s2     -        143328960 -       -        -       -
+
+v  rootvol      root         ENABLED  16780224 -        ACTIVE   -       -
+pl rootvol-01   rootvol      ENABLED  16780224 -        ACTIVE   -       -
+sd rootdisk-01  rootvol-01   ENABLED  16780224 0        -        -       -
+pl rootvol-03   rootvol      ENABLED  16780224 -        ACTIVE   -       -
+sd rootbkp-01   rootvol-03   ENABLED  16780224 0        -        -       -
+
+v  swapvol      swap         ENABLED  33540096 -        ACTIVE   -       -
+pl swapvol-01   swapvol      ENABLED  33540096 -        ACTIVE   -       -
+sd rootdisk-02  swapvol-01   ENABLED  33540096 0        -        -       -
+pl swapvol-03   swapvol      ENABLED  33540096 -        ACTIVE   -       -
+sd rootbkp-02   swapvol-03   ENABLED  33540096 0        -        -       -
+
+v  var          fsgen        ENABLED  16780224 -        ACTIVE   -       -
+pl var-01       var          ENABLED  16780224 -        ACTIVE   -       -
+sd rootdisk-03  var-01       ENABLED  16780224 0        -        -       -
+pl var-03       var          ENABLED  16780224 -        ACTIVE   -       -
+sd rootbkp-03   var-03       ENABLED  16780224 0        -        -       -
+
+v  vexport      fsgen        ENABLED  20971520 -        ACTIVE   -       -
+pl vexport-01   vexport      ENABLED  20972736 -        ACTIVE   -       -
+sd rootdisk-04  vexport-01   ENABLED  20972736 0        -        -       -
+pl vexport-03   vexport      ENABLED  20972736 -        ACTIVE   -       -
+sd rootbkp-04   vexport-03   ENABLED  20972736 0        -        -       -
+
+v  voraagent    fsgen        ENABLED  4194304  -        ACTIVE   -       -
+pl voraagent-01 voraagent    ENABLED  4202688  -        ACTIVE   -       -
+sd rootdisk-05  voraagent-01 ENABLED  4202688  0        -        -       -
+pl voraagent-03 voraagent    ENABLED  4202688  -        ACTIVE   -       -
+sd rootbkp-05   voraagent-03 ENABLED  4202688  0        -        -       -
+
+
+##### on enleve le mirroir sur les volumes de $device_to_remove
+root@happy # export disk_to_remove=rootmirror
+
+root@happy # {
+vxprint -g ${dg} | grep '^v' | awk '{print $2}' | while read volume
+do
+	echo vxassist -g ${dg} remove mirror ${volume} \\\!${device_to_remove}
+done
+}
+vxassist -g rootdg remove mirror rootvol \!c4t1d0s2
+vxassist -g rootdg remove mirror swapvol \!c4t1d0s2
+vxassist -g rootdg remove mirror var \!c4t1d0s2
+vxassist -g rootdg remove mirror vexport \!c4t1d0s2
+vxassist -g rootdg remove mirror voraagent \!c4t1d0s2
+
+
+##### verification apres avoir enlever le mirroir
+root@happy # vxprint -g ${dg}
+TY NAME         ASSOC        KSTATE   LENGTH   PLOFFS   STATE    TUTIL0  PUTIL0
+dg rootdg       rootdg       -        -        -        -        -       -
+
+dm rootdisk     c4t0d0s2     -        143328960 -       -        -       -
+dm rootmirror   c4t1d0s2     -        143328960 -       FAILING  -       -
+
+v  rootvol      root         ENABLED  16780224 -        ACTIVE   -       -
+pl rootvol-01   rootvol      ENABLED  16780224 -        ACTIVE   -       -
+sd rootdisk-01  rootvol-01   ENABLED  16780224 0        -        -       -
+
+v  swapvol      swap         ENABLED  33540096 -        ACTIVE   -       -
+pl swapvol-01   swapvol      ENABLED  33540096 -        ACTIVE   -       -
+sd rootdisk-02  swapvol-01   ENABLED  33540096 0        -        -       -
+
+v  var          fsgen        ENABLED  16780224 -        ACTIVE   -       -
+pl var-01       var          ENABLED  16780224 -        ACTIVE   -       -
+sd rootdisk-03  var-01       ENABLED  16780224 0        -        -       -
+
+v  vexport      fsgen        ENABLED  20971520 -        ACTIVE   -       -
+pl vexport-01   vexport      ENABLED  20972736 -        ACTIVE   -       -
+sd rootdisk-04  vexport-01   ENABLED  20972736 0        -        -       -
+
+v  voraagent    fsgen        ENABLED  4194304  -        ACTIVE   -       -
+pl voraagent-01 voraagent    ENABLED  4202688  -        ACTIVE   -       -
+sd rootdisk-05  voraagent-01 ENABLED  4202688  0        -        -       -
+
+
+##### enlever $disk_to_remove de $dg
+root@happy # vxdg -g ${dg} rmdisk ${disk_to_remove}
+
+root@happy # vxdisk list
+DEVICE       TYPE            DISK         GROUP        STATUS
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t1d0s2     auto:sliced     -            -            online
+c4t2d0s2     auto:sliced     -            -            online
+fabric_15    auto:cdsdisk    tordboyaux_4  planpubli    online
+fabric_17    auto:cdsdisk    tordboyaux_0  acfv3        online
+fabric_18    auto:cdsdisk    tordboyaux_3  planpubli    online
+fabric_24    auto:cdsdisk    tordboyaux_2  happy        online
+fabric_26    auto:cdsdisk    tordboyaux_5  planpubli    online
+fabric_27    auto:cdsdisk    tordboyaux_1  acfv4        online
+
+root@happy # /etc/vx/bin/vxdiskunsetup ${device_to_remove}
+
+root@happy # vxdisk -e offline c4t1d0s2 ${device_to_remove}
+root@happy # luxadm -e offline /dev/dsk/${device_to_remove}
+root@happy # vxconfigd -k
+
+root@happy # vxdisk list
+DEVICE       TYPE            DISK         GROUP        STATUS
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t2d0s2     auto:sliced     -            -            online
+fabric_15    auto:cdsdisk    tordboyaux_4  planpubli    online
+fabric_17    auto:cdsdisk    tordboyaux_0  acfv3        online
+fabric_18    auto:cdsdisk    tordboyaux_3  planpubli    online
+fabric_24    auto:cdsdisk    tordboyaux_2  happy        online
+fabric_26    auto:cdsdisk    tordboyaux_5  planpubli    online
+fabric_27    auto:cdsdisk    tordboyaux_1  acfv4        online
+
+
+##### ajout du nouveau disk dans le dg
+root@happy # export device_to_mirror=c4t2d0s2
+root@happy # /usr/lib/vxvm/bin/vxdisksetup -i ${device_to_mirror} format=sliced
+root@happy # vxdg -g ${dg} adddisk rootmirror=${device_to_mirror}
+root@happy # vxdisk list                                                
+DEVICE       TYPE            DISK         GROUP        STATUS
+c4t0d0s2     auto:sliced     rootdisk     rootdg       online
+c4t2d0s2     auto:sliced     rootmirror   rootdg       online
+fabric_15    auto:cdsdisk    tordboyaux_4  planpubli    online
+fabric_17    auto:cdsdisk    tordboyaux_0  acfv3        online
+fabric_18    auto:cdsdisk    tordboyaux_3  planpubli    online
+fabric_24    auto:cdsdisk    tordboyaux_2  happy        online
+fabric_26    auto:cdsdisk    tordboyaux_5  planpubli    online
+fabric_27    auto:cdsdisk    tordboyaux_1  acfv4        online
+
+
+##### mirror de chaque volume de rootdisk vers $device_to_mirror
+root@happy # {
+vxprint -g ${dg} | grep '^v' | awk '{print $2}' | while read volume
+do
+	echo vxassist -b -g ${dg} mirror ${volume} alloc=rootmirror
+done
+}
+
+vxassist -b -g rootdg mirror rootvol alloc=rootmirror
+vxassist -b -g rootdg mirror swapvol alloc=rootmirror
+vxassist -b -g rootdg mirror var alloc=rootmirror
+vxassist -b -g rootdg mirror vexport alloc=rootmirror
+vxassist -b -g rootdg mirror voraagent alloc=rootmirror
+
+##### pour suivre l'avancement du mororring
+root@happy # vxtask list
+
+##### rendre $device_to_mirror bootable
+root@happy # /etc/vx/bin/vxbootsetup ${device_to_mirror}
+
+##### verif les path des disk de boot
+root@happy # ls -l /dev/dsk/c4t0d0s0            
+lrwxrwxrwx   1 root     root          49 Jul 18  2006 /dev/dsk/c4t0d0s0 -> ../../devices/pci@9d,700000/pci@1/scsi@2/sd@0,0:a
+root@happy # ls -l /dev/dsk/c4t2d0s0
+lrwxrwxrwx   1 root     root          49 Aug  7  2008 /dev/dsk/c4t2d0s0 -> ../../devices/pci@9d,700000/pci@1/scsi@2/sd@2,0:a
+
+##### verifier les valeurs nvram 
+root@happy # eeprom | grep root
+diag-device=vx-rootdisk vx-rootmirror
+boot-device=vx-rootdisk vx-rootmirror
+nvramrc=devalias net /pci@9d,700000/pci@1/network@0 devalias vx-rootdisk /pci@9d,700000/pci@1/scsi@2/disk@0,0:a d devalias vx-rootmirror /pci@9d,700000/pci@1/scsi@2/disk@2,0:a
+
+
+########################################################################################################################
+# suppression d'un disk group veritas, ainsi que les volumes, disk, ... a l'interieur
+########################################################################################################################
+
+##### liste des dg
+% vxdisk list
+
+##### nom du disque group
+% export dg=
+
+##### detaille du dg
+% vxprint -g ${dg}
+
+##### supprime les volumes du dg
+% {
+vxprint -g ${dg} | grep '^v' | awk '{print $2}' | while read vol
+do
+	echo vxassist -g $dg remove volume $vol
+done
+}
+
+##### verification
+% vxprint -g ${dg}
+
+##### a garder pour plus tard...
+##### deconfigurer les disk de la config veritas
+% {
+vxprint -g ${dg} | grep '^dm' | awk '{print $3}' | while read disk
+do
+	echo /usr/lib/vxvm/bin/vxdiskunsetup $disk
+	echo vxdisk offline $disk
+done
+}
+
+##### suppression des disques du dg
+% {
+vxprint -g ${dg} | grep '^dm' | awk '{print $2}' | while read disk
+do
+	echo vxdg -g ${dg} rmdisk  $disk
+done
+}
+
+###### verif (le dernier disque du dg ne peut etre supprimer)
+% vxprint -g ${dg}
+
+##### suppression du dg
+% echo vxdg destroy ${dg}
+
+##### verif
+% vxdisk list 
+
+##### executer les commandes precedement conservees pour deconfigurer les disques anciennement utilises par le dg
+
+##### verif
+% vxdisk -e list
+
+##### mis offline des disque (au niveau solaris)
+% {
+vxdisk -e list | grep offline | awk '{print $6}' | while read disk
+do	
+	/home/betorma/bin/luxadm_carlo | egrep $disk
+	echo luxadm -e offline /dev/rdsk/$disk
+done
+}
+
+% /home/betorma/bin/luxadm_carlo
+
+
+##### mis a jour de /dev*
+% devfsadm -Cv
+
+##### rafraichissement de la config veritas
+% vxconfigd -k
+
+##### verif
+% vxdisk list
+
+
+
+########################################################################################################################
+# corriger le probleme d'un disk failed dans un mirroir
+########################################################################################################################
+
+##### le probleme
+
+root@minos# vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME   
+c0t0d0s2     auto      rootdisk      rootdg       online       c0t0d0s2    
+c0t1d0s2     auto      rootmirror    rootdg       online       c0t1d0s2    
+c0t2d0s2     auto      -             -            online       c0t2d0s2    
+fabric_11    auto      -             -            error        c4t600A0B800019E59A00004BAD4DD9A4EBd0s2
+fabric_12    auto      -             -            error        c4t600A0B800019E591000024EC4DD9A852d0s2
+fabric_13    auto      stamper_3     r11          online       c4t600A0B800018A8D800007BF04DD9AEE2d0s2
+fabric_50    auto      -             -            error        c4t600A0B800019E591000024ED4DD9A864d0s2
+fabric_51    auto      stamper_1     wiki         online       c4t600A0B800018AC1D000052444DD9AB2Bd0s2
+fabric_52    auto      stamper_0     minos        online       c4t600A0B800018A8D800007BEF4DD9AECAd0s2
+-            -         absynthe_3   r11          failed was:fabric_50
+-            -         absynthe_0   minos        failed was:fabric_12
+-            -         absynthe_1   wiki         failed was:fabric_11
+
+
+##### corriger le pb du dg minos, par exemple
+
+root@minos# vxprint -g minos
+TY NAME         ASSOC        KSTATE   LENGTH   PLOFFS   STATE    TUTIL0  PUTIL0
+dg minos        minos        -        -        -        -        -       -
+
+dm absynthe_0   -            -        -        -        NODEVICE -       -
+dm stamper_0    fabric_52    -        20955136 -        FAILING  -       -
+
+v  vu01         fsgen        ENABLED  16777216 -        ACTIVE   -       -
+pl vu01-01      vu01         DISABLED 16777216 -        NODEVICE -       -
+sd absynthe_0-01 vu01-01     DISABLED 16777216 0        NODEVICE -       -
+pl vu01-03      vu01         ENABLED  16777216 -        ACTIVE   -       -
+sd stamper_0-01 vu01-03      ENABLED  16777216 0        -        -       -
+
+
+
+export DG=minos
+export VOL=vu01
+export PLEX=vu01-01
+export VMDISK=absynthe_0
+export DISK=fabric_12
+{
+echo "vxplex -g $DG dis ${PLEX}"
+echo "vxedit -pr -g $DG rm ${PLEX}"
+echo "vxdg -g $DG rmdisk ${VMDISK}"
+echo "/usr/lib/vxvm/bin/vxdiskunsetup -C ${DISK}"
+echo "/usr/lib/vxvm/bin/vxdisksetup -i ${DISK} format=sliced"
+echo "vxdg -g $DG adddisk ${VMDISK}=${DISK}"
+echo "vxassist -b -g $DG mirror ${VOL} alloc=${VMDISK}"
+echo "vxprint -g ${DG}"
+echo "vxtask list"
+echo "vxdctl enable"
+echo "#cldev refresh"
+echo
+}
+
+
+
+
+root@minos# vxprint -g minos
+TY NAME         ASSOC        KSTATE   LENGTH   PLOFFS   STATE    TUTIL0  PUTIL0
+dg minos        minos        -        -        -        -        -       -
+
+dm absynthe_0   fabric_12    -        20955136 -        -        -       -
+dm stamper_0    fabric_52    -        20955136 -        FAILING  -       -
+
+v  vu01         fsgen        ENABLED  16777216 -        ACTIVE   -       -
+pl vu01-01      vu01         ENABLED  16777216 -        ACTIVE   -       -
+sd absynthe_0-01 vu01-01     ENABLED  16777216 0        -        -       -
+pl vu01-03      vu01         ENABLED  16777216 -        ACTIVE   -       -
+sd stamper_0-01 vu01-03      ENABLED  16777216 0        -        -       -
+
+
+root@minos# vxdisk -e list  
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME   
+c0t0d0s2     auto      rootdisk      rootdg       online       c0t0d0s2    
+c0t1d0s2     auto      rootmirror    rootdg       online       c0t1d0s2    
+c0t2d0s2     auto      -             -            online       c0t2d0s2    
+fabric_11    auto      -             -            online       c4t600A0B800019E59A00004BAD4DD9A4EBd0s2
+fabric_12    auto      absynthe_0    minos        online       c4t600A0B800019E591000024EC4DD9A852d0s2
+fabric_13    auto      stamper_3     r11          online       c4t600A0B800018A8D800007BF04DD9AEE2d0s2
+fabric_50    auto      -             -            online       c4t600A0B800019E591000024ED4DD9A864d0s2
+fabric_51    auto      stamper_1     wiki         online       c4t600A0B800018AC1D000052444DD9AB2Bd0s2
+fabric_52    auto      stamper_0     minos        online       c4t600A0B800018A8D800007BEF4DD9AECAd0s2
+-            -         absynthe_3   r11          failed was:fabric_50
+-            -         absynthe_1   wiki         failed was:fabric_11
+
+
+########################################################################################################################
+# corriger le probleme d'un disk 'online failing'
+########################################################################################################################
+
+root@minos# vxdisk list                 
+DEVICE       TYPE            DISK         GROUP        STATUS
+c0t0d0s2     auto:sliced     rootdisk     rootdg       online
+c0t1d0s2     auto:sliced     rootmirror   rootdg       online
+c0t2d0s2     auto:none       -            -            online invalid
+fabric_11    auto:sliced     absynthe_1   wiki         online
+fabric_12    auto:sliced     absynthe_0   minos        online
+fabric_13    auto:sliced     stamper_3    r11          online failing
+fabric_50    auto:sliced     absynthe_3   r11          online
+fabric_51    auto:sliced     stamper_1    wiki         online
+fabric_52    auto:sliced     stamper_0    minos        online failing
+
+
+export DG=minos
+export DISK=stamper_0
+vxedit -g ${DG} set failing=off ${DISK} 
+
+[110629/150112]root@minos# vxdisk list                              
+DEVICE       TYPE            DISK         GROUP        STATUS
+c0t0d0s2     auto:sliced     rootdisk     rootdg       online
+c0t1d0s2     auto:sliced     rootmirror   rootdg       online
+c0t2d0s2     auto:none       -            -            online invalid
+fabric_11    auto:sliced     absynthe_1   wiki         online
+fabric_12    auto:sliced     absynthe_0   minos        online
+fabric_13    auto:sliced     stamper_3    r11          online failing
+fabric_50    auto:sliced     absynthe_3   r11          online
+fabric_51    auto:sliced     stamper_1    wiki         online
+fabric_52    auto:sliced     stamper_0    minos        online
+
+
+
+
+
+
+
+
+
+
+
+

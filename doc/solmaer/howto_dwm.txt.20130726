@@ -1,0 +1,54 @@
+##### download
+
+% wget http://dl.suckless.org/dwm/dwm-6.0.tar.gz
+
+
+##### extract 
+
+% /usr/sfw/bin/gtar xzf dwm-6.0.tar.gz 
+
+
+##### customization
+
+% cp -p config.mk config.mk.orig
+% cp config.def.h config.h
+% cp config.h config.h.orig
+
+% diff config.h config.h.orig 
+38c38
+< #define MODKEY Mod4Mask
+---
+> #define MODKEY Mod1Mask
+
+
+% diff config.mk config.mk.orig 
+7c7
+< PREFIX = /home/betorma/applications/x86/5.10/dwm-6.0
+---
+> PREFIX = /usr/local
+33c33
+< CC = gcc
+---
+> CC = cc
+
+
+
+##### install
+
+% mkdir /home/betorma/applications/x86/5.10/dwm-6.0
+% export PATH=$PATH:/usr/ccs/bin:/usr/sfw/bin
+% make clean install            
+cleaning
+dwm build options:
+CFLAGS   = -std=c99 -pedantic -Wall -Os -I. -I/usr/include -I/usr/X11R6/include -DVERSION="6.0" -DXINERAMA
+LDFLAGS  = -s -L/usr/lib -lc -L/usr/X11R6/lib -lX11 -L/usr/X11R6/lib -lXinerama
+CC       = gcc
+CC dwm.c
+CC -o dwm
+installing executable file to /home/betorma/applications/x86/5.10/dwm-6.0/bin
+installing manual page to /home/betorma/applications/x86/5.10/dwm-6.0/share/man/man1
+
+% echo '/home/betorma/applications/x86/5.10/dwm-6.0/bin/dwm' >~/.xinitrc
+
+ | grep GB
+

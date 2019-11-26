@@ -1,0 +1,175 @@
+sf25k01-sc0% showplatform 
+Domain configurations:
+======================
+Domain ID   Domain Tag        Solaris Nodename       Domain Status
+A           zeus              zeus                   Running Solaris
+B           poseidon          poseidon               Running Solaris
+C           happy             happy                  Running Solaris
+D           doc               doc                    Running Solaris
+E           sneezy            sneezy                 Running Solaris
+F           grumpy            grumpy                 Running Solaris
+G           helios            helios                 Running Solaris
+H           hermes            hermes                 Running Solaris
+I           nemesis           nemesis                Running Solaris
+J           dopey             dopey                  Running Solaris
+K           homer             homer                  Running Solaris
+L           -                 -                      Powered Off
+M           -                 -                      Powered Off
+N           -                 -                      Powered Off
+O           -                 -                      Powered Off
+P           -                 -                      Powered Off
+Q           -                 -                      Powered Off
+R           -                 -                      Keyswitch Standby
+
+
+sf25k01-sc0% showboards -d R
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB10        On     V3CPU           Assigned      Unknown       R
+
+
+sf25k01-sc0% showboards -d nemesis
+Retrieving board information. Please wait.
+.....................
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB13        On     V3CPU           Active        Passed        nemesis
+IO13        On     HPCI+           Active        Passed        nemesis
+IO14        On     HPCI+           Active        Passed        nemesis
+
+sf25k01-sc0% showboards -d helios
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB9         On     V3CPU           Active        Passed        helios
+SB14        On     V3CPU           Active        Passed        helios
+IO9         On     HPCI+           Active        Passed        helios
+IO10        On     HPCI+           Active        Passed        helios
+
+####################################################################################################################################################
+13:48/nemesis@root # eeprom "auto-boot?=false"
+13:48/nemesis@root # init 0
+
+13:50/helios@root # eeprom "auto-boot?=false"
+13:50/helios@root # init 0
+
+sf25k01-sc0% setkeyswitch -d nemesis off
+Current virtual key switch position is "ON".
+Are you sure you want to change to the "OFF" position (yes/no)? y
+Domain is down.
+
+
+sf25k01-sc0% setkeyswitch -d helios off
+Current virtual key switch position is "ON".
+Are you sure you want to change to the "OFF" position (yes/no)? y
+Domain is down.
+
+Domain ID   Domain Tag        Solaris Nodename       Domain Status
+A           zeus              zeus                   Running Solaris
+B           poseidon          poseidon               Running Solaris
+C           happy             happy                  Running Solaris
+D           doc               doc                    Running Solaris
+E           sneezy            sneezy                 Running Solaris
+F           grumpy            grumpy                 Running Solaris
+G           helios            -                      Powered Off
+H           hermes            hermes                 Running Solaris
+I           nemesis           -                      Powered Off
+J           dopey             dopey                  Running Solaris
+K           homer             homer                  Running Solaris
+L           -                 -                      Powered Off
+M           -                 -                      Powered Off
+N           -                 -                      Powered Off
+O           -                 -                      Powered Off
+P           -                 -                      Powered Off
+Q           -                 -                      Powered Off
+R           -                 -                      Keyswitch Standb
+
+
+
+sf25k01-sc0% moveboard -d helios SB10 
+Domain: G is not running.  You can only "configure" a component into a
+running domain. Would you like to "assign" the component instead  (yes/no)? yes
+SB10 unassigned from domain: R
+SB10 assigned to domain: G
+
+sf25k01-sc0% showboards -d helios
+Retrieving board information. Please wait.
+..................
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB9         Off    V3CPU           Assigned      Unknown       helios
+SB10        On     V3CPU           Assigned      Unknown       helios
+SB14        Off    V3CPU           Assigned      Unknown       helios
+IO9         Off    HPCI+           Assigned      Unknown       helios
+IO10        Off    HPCI+           Assigned      Unknown       helios
+
+sf25k01-sc0% showboards -d r     
+Retrieving board information. Please wait.
+..................
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+
+sf25k01-sc0% moveboard -d nemesis SB14
+Domain: I is not running.  You can only "configure" a component into a
+running domain. Would you like to "assign" the component instead  (yes/no)? yes
+SB14 unassigned from domain: G
+SB14 assigned to domain: I
+
+sf25k01-sc0% showboards -d nemesis    
+Retrieving board information. Please wait.
+...................
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB13        Off    V3CPU           Assigned      Unknown       nemesis
+SB14        Off    V3CPU           Assigned      Unknown       nemesis
+IO13        Off    HPCI+           Assigned      Unknown       nemesis
+IO14        Off    HPCI+           Assigned      Unknown       nemesis
+
+sf25k01-sc0% showboards -d helios
+Retrieving board information. Please wait.
+................
+Location    Pwr    Type of Board   Board Status  Test Status   Domain
+--------    ---    -------------   ------------  -----------   ------
+SB9         Off    V3CPU           Assigned      Unknown       helios
+SB10        On     V3CPU           Assigned      Unknown       helios
+IO9         Off    HPCI+           Assigned      Unknown       helios
+IO10        Off    HPCI+           Assigned      Unknown       helios
+
+
+sf25k01-sc0% setkeyswitch -d nemesis on
+sf25k01-sc0% console -d nemesis
+sf25k01-sc0% setenv auto-boot? true
+sf25k01-sc0% boot
+
+sf25k01-sc0% setkeyswitch -d helios on
+sf25k01-sc0% console -d helios
+sf25k01-sc0% setenv auto-boot? true
+sf25k01-sc0% boot
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,111 @@
+zpool  create -f -m /zpool/flukpe_s flukpe_s mirror c1t0d0s3 c1t1d0s3
+zpool  create -f -m /zpool/kk kk mirror c4t600A0B800026676A000009984816D095d0 c4t600A0B8000266772000009F94816D562d0
+zpool  create -f -m /zpool/kk kk c4t600A0B800026676A000009984816D095d0 
+zpool  attach kk c4t600A0B800026676A000009984816D095d0 c4t600A0B8000266772000009F94816D562d0
+zpool  detach kk c4t600A0B800026676A000009984816D095d0
+zpool  detach kk  c4t600A0B800026676A000009984816D095d0 
+
+# 133143.50
+zpool  attach develop c8t60020F2000010C61407D3EF9000B8059d0 c8t600A0B800026676A000009AD4817F9DBd0
+zpool  attach seibud c8t60020F2000010C61407D3F0500068086d0 c8t600A0B800026677200000A124817FF44d0
+zpool  attach seicr c8t60020F2000010C614056EDE00002A785d0 c8t600A0B800026676A000009B14817FC63d0
+
+zpool  detach develop c8t600A0B800026676A000009AD4817F9DBd0
+zpool  detach seibud c8t600A0B800026677200000A124817FF44d0
+zpool  detach seicr c8t600A0B800026676A000009B14817FC63d0
+
+zpool  attach seibud c8t60020F2000010C61407D3F0500068086d0 c8t600A0B800026677200000A124817FF44d0
+zpool  attach seicr c8t60020F2000010C614056EDE00002A785d0 c8t600A0B800026676A000009B14817FC63d0
+
+zpool import  10196632435246171248
+
+zoneadm -z seibud_tz halt
+zoneadm -z seicr_tz halt
+zpool status
+zpool detach develop c8t60020F2000010C61407D3EF9000B8059d0
+zpool detach seibud c8t60020F2000010C61407D3F0500068086d0
+zpool detach seicr c8t60020F2000010C614056EDE00002A785d0
+zpool export seibud
+zpool export seicr
+zpool import seibud
+zpool import seicr
+
+# Adding a disk
+zpool add planjo c8t6006048000028746190453594D303243d0
+
+# Histoire de ce qu'on avait fait
+zpool history seibud
+History for 'seibud':
+2008-04-21.11:29:14 zpool upgrade seibud
+2008-04-21.14:15:05 zpool export seibud
+2008-04-21.14:17:41 zpool import seibud
+2008-04-21.14:23:57 zpool export seibud
+2008-04-21.14:28:33 zpool import 10196632435246171248
+2008-04-21.14:40:38 zpool export seibud
+2008-04-21.14:41:09 zpool import seibud
+2008-04-21.15:55:19 zpool export seibud
+2008-04-21.15:55:57 zpool import 10196632435246171248
+2008-04-30.14:36:16 zpool attach seibud c8t60020F2000010C61407D3F0500068086d0 c8t600A0B800026677200000A124817FF44d0
+2008-04-30.17:39:06 zpool detach seibud c8t600A0B800026677200000A124817FF44d0
+2008-04-30.17:56:45 zpool export seibud
+2008-04-30.18:16:29 zpool import 10196632435246171248
+2008-04-30.18:25:08 zpool attach seibud c8t60020F2000010C61407D3F0500068086d0 c8t600A0B800026677200000A124817FF44d0
+2008-05-02.14:10:06 zpool export seibud
+2008-05-02.14:35:30 zpool import 10196632435246171248
+2008-05-02.14:36:14 zpool detach seibud c8t60020F2000010C61407D3F0500068086d0
+2008-05-02.14:40:00 zpool export seibud
+2008-05-02.14:54:56 zpool import seibud
+
+#histoire de planjo sur homer
+History for 'planjo':
+2008-05-22.12:40:08 zpool create -m /zpool/planjo planjo c4t600A0B800019E59100001B544834CF2Ad0
+2008-05-27.11:40:48 zfs create -o mountpoint=/applications/planjo planjo/applications
+2008-05-27.11:42:06 zfs create -o mountpoint=/applications/planjo/docdata planjo/applications/docdata
+2008-05-27.11:42:09 zfs create -o mountpoint=/applications/planjo/orabin planjo/applications/orabin
+2008-05-27.11:42:11 zfs create -o mountpoint=/applications/planjo/oradata planjo/applications/oradata
+2008-05-27.11:42:14 zfs create -o mountpoint=/applications/planjo/oralog planjo/applications/oralog
+2008-05-27.11:42:19 zfs create -o mountpoint=/applications/planjo/users planjo/applications/users
+2008-05-27.11:42:24 zfs create -o mountpoint=/applications/planjo/xchange planjo/applications/xchange
+
+# raidz
+zpool create dlib raidz c1t2d0 c2t2d0 c3t2d0 c4t2d0 
+zpool create dlib raidz2 c1t2d0 c2t2d0 c3t2d0 c4t2d0 
+
+# DLIB - THUMPER
+zpool create -m /zpool/dlib  dlib raidz c1t2d0 c2t2d0 c3t2d0 c4t2d0 c5t2d0 spare c0t2d0
+zpool create -m /zpool/dlib  dlib raidz2 c0t2d0 c1t2d0 c2t2d0 c3t2d0 c4t2d0 c5t2d0 spare c2t0d0
+zpool create -m /zpool/pool  pool raidz c1t2d0 c2t2d0 c3t2d0 c4t2d0 c5t2d0 raidz c0t3d0 c1t3d0 c2t3d0 c3t3d0 c4t3d0 raidz c1t4d0 c2t4d0 c3t4d0 c4t4d0 c5t4d0 raidz c0t5d0 c1t5d0 c2t5d0 c3t5d0 c4t5d0 raidz c1t6d0 c2t6d0 c3t6d0 c4t6d0 c5t6d0 raidz c0t7d0 c1t7d0 c2t7d0 c3t7d0 c4t7d0 spare c0t2d0 c5t3d0
+zpool create -m /zpool/pool  pool raidz c0t2d0 c1t2d0 c2t2d0 c3t2d0 c4t2d0 c5t2d0 raidz c0t3d0 c1t3d0 c2t3d0 c3t3d0 c4t3d0 c5t3d0 raidz c0t4d0 c1t4d0 c2t4d0 c3t4d0 c4t4d0 c5t4d0 raidz c0t5d0 c1t5d0 c2t5d0 c3t5d0 c4t5d0 c5t5d0 raidz c0t6d0 c1t6d0 c2t6d0 c3t6d0 c4t6d0 c5t6d0 raidz c0t7d0 c1t7d0 c2t7d0 c3t7d0 c4t7d0 c5t7d0 spare c2t0d0 c3t0d0
+
+
+zpool create -f -m /zpool/pool  pool raidz c0t2d0 c1t2d0 c2t2d0 c3t2d0 c4t2d0 c5t2d0 c5t0d0 raidz c0t3d0 c1t3d0 c2t3d0 c3t3d0 c4t3d0 c5t3d0 c4t0d0 raidz c0t4d0 c1t4d0 c2t4d0 c3t4d0 c4t4d0 c5t4d0 c3t0d0 raidz c0t5d0 c1t5d0 c2t5d0 c3t5d0 c4t5d0 c5t5d0 c2t0d0 raidz c0t6d0 c1t6d0 c2t6d0 c3t6d0 c4t6d0 c5t6d0 c5t1d0 raidz c0t7d0 c1t7d0 c2t7d0 c3t7d0 c4t7d0 c5t7d0 c4t1d0 spare c2t1d0 c3t1d0
+
+#zpool set autoreplace=on dlib
+#zpool set failmode=continue dlib
+zpool set autoreplace=on pool
+zpool set failmode=continue pool
+zfs create -o mountpoint=/zpool/pool/dlib pool/dlib
+zfs create -o mountpoint=/applications/dlib pool/dlib/applications
+zfs create -o mountpoint=/applications/dlib/data pool/dlib/applications/data
+zfs create -o mountpoint=/applications/dlib/users pool/dlib/applications/users
+zfs set quota=10G pool/dlib/applications/users
+zfs set sharesmb=on pool/dlib/applications/data
+
+echo zfs_nocacheflush/W0t1 | mdb -kw
+echo zfs_vdev_max_pending/W0t20 | mdb -kw
+cp -p /etc/system /etc/system.20090320
+echo "set zfs:zfs_nocacheflush = 1 " >> /etc/system
+echo "set zfs:zfs_vdev_max_pending = 20 " >> /etc/system
+
+#lors de la charge:
+echo zfs_prefetch_disable/W0t1 | mdb -kw
+
+cp -p /etc/services /etc/services.20090320
+echo "swat	901/tcp" >> /etc/services
+cp -p /etc/inetd.conf /etc/inetd.conf.20090320
+echo "swat stream tcp nowait root /usr/sfw/swat swat" >> /etc/inetd.conf
+
+
+
+zfs set sharenfs=on dlib/applications/data01
+zfs set sharenfs="rw,anon=0" dlib/applications/data01

@@ -1,0 +1,118 @@
+
+
+[root@midgard ~]# multipath -ll | grep mpath -A6
+mpatha (360000970000296700060533030353635) dm-9 EMC,SYMMETRIX
+size=1.5T features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 1:0:0:3  sdd  8:48    active ready running
+  |- 1:0:1:3  sdaz 67:48   active ready running
+  |- 2:0:0:3  sdfp 130:176 active ready running
+  `- 2:0:2:3  sdiv 135:240 active ready running
+
+
+
+fedorafs1-recover-pk_t1_data11
+
+
+
+[root@kheops ~]# multipath -ll | grep 360000970000296700069533030353635 -A6
+mpatha (360000970000296700069533030353635) dm-133 EMC,SYMMETRIX
+size=1.5T features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 1:0:3:3  sdy  65:128  active ready running
+  |- 2:0:3:3  sdbg 67:160  active ready running
+  |- 1:0:2:3  sdx  65:112  active ready running
+  `- 2:0:1:3  sdbf 67:144  active ready running
+
+
+
+
+
+virsh attach-device fedorafs1-recover-pk /home/bortodi/kvm/newdisk.xml --persistent 
+
+/dev/mapper/data_date6-main
+
+resourcectl -fa switch -v -r fedorafs1-recover-pk
+
+
+
+
+fedorafs1-recover-pk
+fedorafs2-recover-pk
+fedorafs3-recover-pk
+fedorafs4-recover-pk
+
+
+
+
+
+
+opvmwscelfo1 ->  opvmwscelfo32
+1 mercier
+2 eufo
+
+
+
+***
+stop puppet sur FO servers
+********
+
+sed -i 's/opsvc100/opsvc172/g' /etc/auto_direct 
+sed -i 's/opsvc101/opsvc173/g' /etc/auto_direct 
+sed -i 's/opsvc102/opsvc174/g' /etc/auto_direct 
+sed -i 's/opsvc103/opsvc175/g' /etc/auto_direct
+
+
+service autofs restart
+
+
+
+
+switch + update 6.9 :
+*********
+
+resourcectl -fa switch -v -r cellarbo-pk
+
+resourcectl -fa switch -v -r fedorafs1-pk
+resourcectl -fa switch -v -r fedorafs2-pk
+resourcectl -fa switch -v -r fedorafs3-pk
+resourcectl -fa switch -v -r fedorafs4-pk
+
+
+cellarbo-pk
+fedorafs1-pk
+fedorafs2-pk
+fedorafs3-pk
+fedorafs4-pk
+
+
+
+
+
+
+sed -i 's/opsvc172/opsvc100/g' /etc/auto_direct
+sed -i 's/opsvc173/opsvc101/g' /etc/auto_direct
+sed -i 's/opsvc174/opsvc102/g' /etc/auto_direct
+sed -i 's/opsvc175/opsvc103/g' /etc/auto_direct
+
+
+
+
+
+[root@fedorafs1-recover-pk ~]# disklist=(`lvdisplay | grep 'LV Path'| grep -v root | awk '{print $3}'`)
+[root@fedorafs1-recover-pk ~]# for disk in ${disklist[@]}; do umount $disk; done
+
+for disk in ${disklist[@]}; do mount $disk; done
+
+for disk in ${disklist[@]}; do echo $disk; done
+
+
+cat /etc/mtab | grep opsvc10*
+
+
+
+
+
+
+
+

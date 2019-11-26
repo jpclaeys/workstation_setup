@@ -1,0 +1,8 @@
+export http_proxy="158.169.9.13:8012"
+export ftp_proxy="158.169.9.13:8012"
+username=xoplxxx
+password=xxxxxx
+
+url=http://ftp.gnome.org/pub/GNOME/sources/evince/2.27/evince-2.27.4.tar.gz
+
+/usr/sfw/bin/wget --proxy=on --proxy-user=${username} --proxy-passwd=${password} ${url}

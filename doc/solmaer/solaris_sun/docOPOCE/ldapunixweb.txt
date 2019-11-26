@@ -1,0 +1,320 @@
+# verify presence of users and list the groups in whicjh the user is member
+uid=sengeda
+foreach u in ${uid}
+do
+echo  "$u ==> \
+$(ldapsearch -h camel  -b 'ou=People,dc=opoce,dc=cec,dc=eu,dc=int' uid=$u dn)\
+$(ldapsearch -h camel  -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' 'uniqueMember= uid='$u',ou=People,dc=opoce,dc=cec,dc=eu,dc=int' dn)"
+done
+
+# add user
+foreach u in ${uid}
+do
+ldapsearch -h ad -p 389 -r -D 'cn=usr-ldap-auth,ou=users,ou=service-system,ou=_service accounts,ou=publications,dc=publications,dc=win'  -b "OU=Publications
+Units,OU=Publications,DC=publications,DC=win" -w Ld@p@uth3d  "sAMAccountName=$u" sAMAccountName sn cn givenName|perl -n00e 'm{^CN=.*?\n(cn=.*?\n)\s*(sn=.*?\n)\s*(givenName=.*?)\s*sAMAccountName=(.*?)\s+}s  and do {print qq{dn: uid=@{[lc($4)]},ou=People,dc=opoce,dc=cec,dc=eu,dc=int\nuid=@{[lc($4)]}\n${3}\nobjectClass: top\nobjectClass: person\nobjectClass: inetorgperson\n$1$2userPassword: {CRYPT}@{[crypt(lc($4),$4)]}\n\n}}'|perl -pe 's/(=)|(: )/: /' |ldapadd -D "cn=Directory Manager" -w vademecum -h camel -p 389
+done
+
+# add a user to a specific group
+(export  group=procat  login=appadko
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: uniqueMember
+uniqueMember: uid=$login,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+)
+(export  group=bkp_oper  login=sengeda
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: uniqueMember
+uniqueMember: uid=$login,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+)
+
+(export  group=wood_oper  login=sengeda
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: uniqueMember
+uniqueMember: uid=$login,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+)
+
+###########################################
+##########################################
+############################################
+
+# delete a user from a sepcified group
+foreach login in weylani
+do
+export  group=procat
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: uniqueMember
+uniqueMember: uid=$login,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+done
+
+# delete the user entry from ldap
+foreach u in weylani
+do
+ldapdelete -v -D "cn=Directory Manager" -w vademecum -h camel -p 389 "uid=$u,ou=People,dc=opoce,dc=cec,dc=eu,dc=int"
+done
+
+##############################################
+
+
+# reset  passwords for some users
+foreach uid in zeimecl
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: userPassword
+userPassword: $uid
+EOT
+done
+
+the user has been created
+user: sampeal
+the passwd is the same as the login
+the passwd should be changed asap using following url:  http://opsrv078/public-cgi/passwd.cgi
+
+
+#############################################
+
+
+###################################################
+
+
+foreach u in sevilsi
+do
+echo  "$u ==> \
+$(ldapsearch -h camel  -b 'ou=People,dc=opoce,dc=cec,dc=eu,dc=int' uid=$u dn)\
+$(ldapsearch -h camel  -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' 'uniqueMember= uid='$u',ou=People,dc=opoce,dc=cec,dc=eu,dc=int' dn)"
+done
+
+# J'ai du la chercher sur tout l'arbre le deuxieme ldapsearch marchait pas
+
+foreach login in sevilsi
+do
+export  group=procat
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: uniqueMember
+uniqueMember: uid=$login,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+done
+
+foreach u in sevilsi
+do
+ldapdelete -v -D "cn=Directory Manager" -w vademecum -h camel -p 389 "uid=$u,ou=People,dc=opoce,dc=cec,dc=eu,dc=int"
+done
+
+
+utilisateur=iacuzju
+
+foreach u in $utilisateur
+do
+echo  "$u ==> \
+$(ldapsearch -h camel  -b 'ou=People,dc=opoce,dc=cec,dc=eu,dc=int' uid=$u dn)\
+$(ldapsearch -h camel  -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' 'uniqueMember= uid='$u',ou=People,dc=opoce,dc=cec,dc=eu,dc=int' dn)"
+done
+
+# Avec iacuzju on a du le crecher sur OU=Publications et pas sur OU=PublicationsUnit
+foreach u in $utilisateur 
+do 
+ldapsearch -h ad -p 389 -r -D 'cn=usr-ldap-auth,ou=users,ou=service-system,ou=_service accounts,ou=publications,dc=publications,dc=win'  -b "OU=Publications,DC=publications,DC=win" -w Ld@p@uth3d  "sAMAccountName=$u" sAMAccountName sn cn givenName|perl -n00e 'm{^CN=.*?\n(cn=.*?\n)\s*(sn=.*?\n)\s*(givenName=.*?)\s*sAMAccountName=(.*?)\s+}s  and do {print qq{dn: uid=@{[lc($4)]},ou=People,dc=opoce,dc=cec,dc=eu,dc=int\nuid=@{[lc($4)]}\n${3}\nobjectClass: top\nobjectClass: person\nobjectClass: inetorgperson\n$1$2userPassword: {CRYPT}@{[crypt(lc($4),$4)]}\n\n}}'|perl -pe 's/(=)|(: )/: /' |ldapadd -D "cn=Directory Manager" -w vademecum -h camel -p 389
+done
+
+
+(export  group=procat  login=$utilisateur
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: uniqueMember
+uniqueMember: uid=$login,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+)
+
+foreach login in $utilisateur
+do
+export  group=procat
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: uniqueMember
+uniqueMember: uid=$login,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+done
+
+foreach u in $utilisateur 
+do
+ldapdelete -v -D "cn=Directory Manager" -w vademecum -h camel -p 389 "uid=$u,ou=People,dc=opoce,dc=cec,dc=eu,dc=int"
+done
+
+
+foreach uid in meyerpa
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: userPassword
+userPassword: $uid
+EOT
+done
+
+# des hosts
+(export  h=opsrv009 ip=158.167.227.9 d='(sneezy) lex04 test'
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=$h,ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: description
+description: $d
+EOT
+)
+# des hosts ( changer ip )
+(export  h=thor ip=158.167.99.159 
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=$h,ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: ipHostNumber
+ipHostNumber: $ip
+EOT
+)
+
+# voir users
+ldaplist -l passwd
+
+# PASSWD CHANGE 0U=PEOPLE
+foreach uid in meyerpa
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: userPassword
+userPassword: $uid
+EOT
+done
+
+
+# Voir les arbres de camel
+
+ldapsearch -h camel  -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' "objectClass=*" dn
+
+
+##################################################################
+# wood_oper
+################################################################
+
+utilisateur=urbanst
+(export  group=wood_oper login=$utilisateur
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: uniqueMember
+uniqueMember: uid=$login,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+)
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=lsateam,ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+rfc822mailMember: sengeda
+mgrpRFC822MailMember: sengeda
+EOT
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=lsateam,ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: rfc822mailMember
+rfc822mailMember: lantema
+EOT
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=lsateam,ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: mgrpRFC822MailMember
+mgrpRFC822MailMember: lantema
+EOT
+
+
+##########################################################################
+# modif opsrv
+opsrv=opsrv031
+ip=158.167.98.31
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=${opsrv},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: ipHostNumber
+ipHostNumber: ${ip}
+EOT
+#delete host
+server=larrd
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=${server},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: delete
+EOT
+
+opsrv=oprsv031
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=${opsrv},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: delete
+EOT
+
+opsrv=specserv
+ip=158.167.96.83
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=${opsrv},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: ipHostNumber
+ipHostNumber: ${ip}
+EOT
+#add host
+opsrv=opsrv031
+ldapadd -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=${opsrv},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+objectClass: top
+objectClass: device
+objectClass: iphost
+ipHostNumber: 158.167.98.31
+cn: ${opsrv}
+EOT
+
+server=larrd
+ldapadd -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=${server},ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+objectClass: top
+objectClass: device
+objectClass: iphost
+ipHostNumber: 158.167.227.136
+cn: ${server}
+EOT
+
+#search
+ldapsearch -b  "ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int" -h kirk   "cn=opsrv031"
+
+ldapmodify -D "cn=Directory Manager" -w vademecum -h camel -p 389 <<EOT
+dn: cn=wood_oper,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: uniqueMember
+uniqueMember: uid=barssyl,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+
+foreach uid in trassch
+do
+ldapmodify -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: uid=$uid,ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: userPassword
+userPassword: 
+EOT
+done
+
+foreach u in ${uid}
+do
+ldapsearch -h ad -p 389 -r -D 'cn=usr-ldap-auth,ou=users,ou=service-system,ou=_service accounts,ou=publications,dc=publications,dc=win'  -b "OU=Publications Units,OU=Publications,DC=publications,DC=win" -w Ld@p@uth3d  "sAMAccountName=$u" sAMAccountName sn cn givenName
+done

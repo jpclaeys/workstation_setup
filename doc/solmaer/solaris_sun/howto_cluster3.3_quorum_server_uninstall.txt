@@ -1,0 +1,35 @@
+####################################################################################
+# uninstall quorum server
+####################################################################################
+
+
+root@mcqueen# ps -ef | grep scqs
+    root   245   244   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/seymour_skinner -i seymour_skinner -p 8
+    root   244     1   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/seymour_skinner -i seymour_skinner -p 8
+    root   286   285   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/guido_ramone -i guido_ramone -p 8952
+    root   285     1   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/guido_ramone -i guido_ramone -p 8952
+    root   268     1   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/burns_smithers -i burns_smithers -p 890
+    root   269   268   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/burns_smithers -i burns_smithers -p 890
+    root   272     1   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/martin_mack -i martin_mack -p 8904
+    root   273   272   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/martin_mack -i martin_mack -p 8904
+    root   277     1   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/persee_pegase -i persee_pegase -p 8951
+    root   278   277   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/persee_pegase -i persee_pegase -p 8951
+    root   289     1   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/hercule_heracles -i hercule_heracles -p
+    root   290   289   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/hercule_heracles -i hercule_heracles -p
+    root   294     1   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/mercure_minerve -i mercure_minerve -p 8
+    root   296   294   0   Apr 25 ?           0:00 /usr/cluster/lib/sc/scqsd -d /var/scqsd/mercure_minerve -i mercure_minerve -p 8
+    root 25359 25304   0 17:10:46 pts/9       0:00 grep scqs
+root@mcqueen# 
+
+
+root@mcqueen# clqs stop +
+root@mcqueen# ps -ef | grep scqs
+    root 26079 25655   0 17:17:22 pts/11      0:00 grep scqs
+root@mcqueen# 
+
+
+root@mcqueen# cd  /var/sadm/prod/SUNWentsyssc33u1
+root@mcqueen# ./uninstall 
+
+root@mcqueen# rm -r /var/scqsd/ /etc/scqsd/           
+

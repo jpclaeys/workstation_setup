@@ -1,0 +1,23 @@
+####################################################################################################
+#
+# description: 	configuration d'un acces samba sur alambic, accessible depuis oppc162 et opsun12
+# date creation: 	21/10/2009
+# date maj: 		n/a
+#
+####################################################################################################
+
+
+alambic@root % cp -p /etc/sfw/smb.conf /etc/sfw/smb.conf.`date +%Y%m%d%H%M`
+alambic@root % vi /etc/sfw/smb.conf 
+---snip---
+[mb]
+   comment = XCHANGE_MB 
+   path = /xchange/mb
+   browseable = yes
+   locking = yes
+   hosts deny = ALL
+   hosts allow = oppc162.opoce.cec.eu.int opsun12.opoce.cec.eu.int
+   guest ok = yes
+   inherit owner = yes
+   print ok = no
+---snip---

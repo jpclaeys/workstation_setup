@@ -1,0 +1,1 @@
+DISPLAY=mccoy:0.0 /usr/openwin/bin/xterm -sb -sl 2000 &

@@ -1,0 +1,165 @@
+###### Check bootdevice/ bootdiag /diag-level
+### Atention avec zsh donnent des erreurs 
+#### Atention il y a pas d'diag-level sur quelque machines
+eeprom diag-level=min
+eeprom diag-switch?=false
+eeprom auto-boot?=false
+####Doit etre le meme devices
+eeprom boot-device
+eeprom diag-device
+
+# On change les parametres
+cp -p /etc/system /etc/system.BEFORE_EMC
+cp -p /etc/system /etc/system.AFTER_EMC
+cat <<EOF >> /etc/system.AFTER_EMC
+***** EMC
+forceload: drv/ssd
+set fcp:ssfcp_enable_auto_configuration=1
+set ssd:ssd_max_throttle=20
+set ssd:ssd_io_time=0x78
+set scsi_options=0x7F8
+EOF
+
+cp -p /etc/system.AFTER_EMC /etc/system
+diff /etc/system.AFTER_EMC /etc/system
+
+# On amene les patches
+mkdir -p /var/tmp/PATCHES/vxvm41
+scp -r trassch@vespa:/cdrom/opoce_patching/s9 /var/tmp/PATCHES
+scp -r trassch@vespa:/cdrom/opoce_patching/vxvm41/bu ndle1/non_s10  /var/tmp/PATCHES/vxvm41
+
+#####BOOT
+init 6
+
+# On constate les patches
+mdb -k
+Loading modules: [ unix krtld genunix dtrace specfs ufs sd pcisch sgsbbc ssd fcp fctl qlc ip sctp usba wrsm nca crypto lofs zfs random nfs logindmux ptm md cpc wrsmd fcip sppp ipc ]
+> ssfcp_enable_auto_configuration/D
+ssfcp_enable_auto_configuration:
+ssfcp_enable_auto_configuration:1
+> ssd_max_throttle/D
+ssd_max_throttle:
+ssd_max_throttle:               20
+> ssd_io_time/D
+ssd_io_time:
+ssd_io_time:    120
+> scsi_options/D
+scsi_options:
+scsi_options:   2040
+> $q
+
+
+# On constate les volumes et leurs plexes qu'on a sur leur diskgroup
+vxprint -g rootdg -ht 
+# On fait le dis des plexes
+/etc/vx/bin/vxbootsetup -g rootdg rootmirror
+# On verifie
+root@looping 19:53 [vx] prtvtoc /dev/dsk/c1t0d0s2
+* /dev/dsk/c1t0d0s2 partition map
+*
+* Dimensions:
+*     512 bytes/sector
+*     107 sectors/track
+*      27 tracks/cylinder
+*    2889 sectors/cylinder
+*   24622 cylinders
+*   24620 accessible cylinders
+*
+* Flags:
+*   1: unmountable
+*  10: read-only
+*
+* Unallocated space:
+*       First     Sector    Last
+*       Sector     Count    Sector
+*           0      2889      2888
+*    16779312 18446744073692778082      5777
+*    71127180 18446744073655203748  16779311
+*    50337936  20789244  71127179
+*
+*                          First     Sector    Last
+* Partition  Tag  Flags    Sector     Count    Sector  Mount Directory
+       0      2    00   16779312  16779312  33558623
+       1      3    01       5778  16773534  16779311
+       2      5    00          0  71127180  71127179
+       3     15    01       2889      2889      5777
+       4     14    01       5778  71121402  71127179
+       5      7    00   33558624  16779312  50337935
+
+
+# Dis les plexes
+vxplex -g rootdg dis rootvol-02
+vxplex -g rootdg dis swapvol-02
+vxplex -g rootdg dis var-02
+vxdctl enable
+
+# Init SingleUser
+init s
+# On constate
+who -r
+
+###########PATCHING
+cd bundle1/
+
+root@looping # showrev -p | grep 112233-12
+Patch: 112233-12 Obsoletes: 114400-03, 114408-01, 113361-08, 112653-04, 112687-02, 112701-02, 112902-12, 112903-03, 114760-02, 114977-01, 112736-03, 115243-01, 112737-03, 113150-03, 113156-01, 113158-01, 113159-01, 113163-01, 113714-01, 113740-04, 113963-01, 113218-09, 114382-01, 114384-02, 113578-01, 112840-03, 112841-10, 113219-01, 113325-01, 113445-04, 113489-05, 113571-03, 114226-01, 114360-01, 114390-01, 114391-01, 114392-01, 114418-03, 114466-04, 114863-01, 115245-01, 115246-01, 115499-01, 115496-01, 112904-12, 112967-05, 113449-04, 113453-06, 116233-01, 116433-01, 112961-01, 113024-09, 113030-02, 113223-02, 113275-02, 113454-14, 113538-11, 113577-01, 114118-02, 115244-01, 114359-02, 114385-03, 114393-03, 114394-02, 114474-01, 114487-01, 115169-01, 115242-01, 115251-02, 116057-04, 116074-01 Requires:  Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWcsl, SUNWkvm, SUNWcar, SUNWnisu, SUNWcarx, SUNWcsxu, SUNWcpc, SUNWcpcx, SUNWcslx, SUNWefcx, SUNWdrcrx, SUNWdrr, SUNWdrrx, SUNWpiclu, SUNWidn, SUNWidnx, SUNWnfscr, SUNWusx, SUNWwrsax, SUNWwrsmx, SUNWwrsdx, SUNWwrsux, SUNWmdb, SUNWmdbx, SUNWncar, SUNWncarx, SUNWncau, SUNWncaux, SUNWnfscx, SUNWpd, SUNWpdx, SUNWhea, SUNWarc, SUNWarcx, SUNWcstl, SUNWcstlx, SUNWefclx, SUNWefcux, SUNWfss, SUNWfssx, SUNWged, SUNWgedu, SUNWgedx
+
+cd ../bundle2
+showrev -p | grep 117171-17
+Patch: 117171-17 Obsoletes: 112971-05, 115539-03, 113328-02, 116672-02, 112975-04 Requires: 112233-12 Incompatibles:  Packages: SUNWcsu, SUNWcsr, SUNWcar, SUNWcarx, SUNWcsxu, SUNWcpc, SUNWcpcx, SUNWhea
+
+cd ..
+cd ..
+cd vxvm41/
+cd non_s10/
+======================================================================================================
+un autre essai
+
+========================================================================================
+
+
+
+mount -F nfs coppola:/xchange/Patches_2008 /mnt
+cd /var/tmp/PATCHES
+patchadd -p | egrep "^Patch: " | cut -c8-17 > /tmp/patchs.txt
+grep -v "^\#" looping | sed '/^$/d' > /tmp/patches_a_appliquer
+for i in `cat /tmp/patches_a_appliquer `; do echo -n " $i : "; grep $i /tmp/patchs.txt || echo "PAS"; done
+for i in `cat /tmp/patches_a_appliquer `; do grep $i /tmp/patchs.txt || cp /mnt/Patches_2008/all_zip/${i}.zip /var/tmp/PATCHES/ ; done
+
+for i in `ls -1 *.zip`; do unzip -o $i; done
+for i in `cat patches_a_appliquer `; do grep $i /tmp/patchs.txt || echo $i >> looping2 ; done
+
+# On edite le fichier de ce qu'on va vraiment installer en regardant le fichier originel du support
+export TERM=vt220
+vi looping2
+patchadd 120584-02
+####REBOOT
+init 0
+boot -s
+118558-39
+patchadd 120584-02
+###REBOOT
+init 0
+boot -rs
+patchadd 113277-58
+###REBOOT
+init 0
+boot -rs
+
+#####log
+root@looping # patchadd 120584-02
+
+Checking installed patches...
+One or more patch packages included in
+120584-02 are not installed on this system.
+
+Patchadd is terminating.
+
+root@looping # cd extra_patches/
+root@looping # ls -l
+total 186
+-rwxr--r--   1 nobody   root       94529 Apr  2 14:29 113713-01.zip
+root@looping # cp 113713-01.zip /var/tmp/PATCHES/
+
+
+

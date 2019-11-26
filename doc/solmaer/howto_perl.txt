@@ -1,0 +1,19 @@
+################################################################################################
+# compilation de module DBI et pilote mysql
+################################################################################################
+
+cd /home/betorma/download/DBI-1.616
+perl Makefile.PL PREFIX=/home/betorma/devel/perl/modules
+/opt/solstudio12.2/bin/dmake
+/opt/solstudio12.2/bin/dmake install
+
+cd /home/betorma/download/DBD-mysql-4.018
+perl Makefile.PL PREFIX=/home/betorma/devel/perl/modules
+/opt/solstudio12.2/bin/dmake
+/opt/solstudio12.2/bin/dmake install
+
+
+##### dans le scipt perl
+use lib "/home/betorma/devel/perl/modules";
+use lib "/home/betorma/devel/perl/modules/lib/site_perl/5.8.4/i86pc-solaris-64int"
+use DBI;

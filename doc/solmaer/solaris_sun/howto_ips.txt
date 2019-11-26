@@ -1,0 +1,346 @@
+#############################################################################
+#
+# update an IPS repository
+#
+#############################################################################
+
+
+
+##### download the patch set as new image repository on oracle web site
+
+0[180326/141825]root@aiserver-pz# pwd
+/tmp
+0[180326/141830]root@aiserver-pz# ls -l p27440247_430_SOLARIS64.zip 
+-rw-r--r--   1 root     root     414027586 Mar 26 14:18 p27440247_430_SOLARIS64.zip
+0[180326/141831]root@aiserver-pz# 
+0[180326/141843]root@aiserver-pz# unzip p27440247_430_SOLARIS64.zip 
+Archive:  p27440247_430_SOLARIS64.zip
+  inflating: osc-4_3_10_1_0-repo-incr.iso  
+  inflating: readme_osc4.3.10.1.0.html  
+  inflating: readme_osc4.3.10.1.0.txt  
+0[180326/141959]root@aiserver-pz# 
+
+
+
+
+
+##### mount iso file
+
+mount -F hsfs /tmp/osc-4_3_10_1_0-repo-incr.iso /mnt
+
+
+
+
+
+##### check the release
+  
+pkg info -g /mnt/repo/ ha-cluster/system/core
+
+0[180326/143215]root@aiserver-pz# pkg info -g /mnt/repo/ ha-cluster/system/core
+          Name: ha-cluster/system/core
+       Summary: Oracle Solaris Cluster software
+   Description: Oracle Solaris Cluster software
+      Category: System/HA Cluster
+         State: Not installed
+     Publisher: ha-cluster
+       Version: 4.3 (Oracle Solaris Cluster 4.3.10.1.0)
+ Build Release: 5.11
+        Branch: 10.1.0
+Packaging Date: January 25, 2018 12:19:11 AM 
+          Size: 67.05 MB
+          FMRI: pkg://ha-cluster/ha-cluster/system/core@4.3,5.11-10.1.0:20180125T001911Z
+0[180326/143225]root@aiserver-pz# 
+
+
+
+
+
+
+##### create zfs dataset for the new repository
+##### (because it's not a full repository iso, but a incremental; so we can keep the base release, and have the new release)
+
+zfs snapshot rpool/applications/ips/osc_4_3_10008@for_update
+zfs send rpool/applications/ips/osc_4_3_10008@for_update | zfs recv -F rpool/applications/ips/osc_4_3_10_1_0
+zfs set atime=off rpool/applications/ips/osc_4_3_10_1_0
+zfs set mountpoint=/applications/ips/osc_4_3_10_1_0 rpool/applications/ips/osc_4_3_10_1_0
+zfs destroy rpool/applications/ips/osc_4_3_10008@for_update
+zfs destroy rpool/applications/ips/osc_4_3_10_1_0@for_update
+
+
+
+
+
+##### update and rebuild the new repository 
+
+pkgrecv -s file:///mnt/repo -d /applications/ips/osc_4_3_10_1_0 '*' 
+pkgrepo rebuild -s /applications/ips/osc_4_3_10_1_0
+#pkgrepo -s /export/repoSolaris11 refresh
+
+umount /mnt
+
+
+
+
+
+##### check
+
+pkgrepo info -s  /applications/ips/osc_4_3_10_1_0
+
+0[180326/150702]root@aiserver-pz# pkgrepo info -s  /applications/ips/osc_4_3_10_1_0
+PUBLISHER  PACKAGES STATUS           UPDATED
+ha-cluster 118      online           2018-03-26T13:06:46.307676Z
+0[180326/150713]root@aiserver-pz# 
+
+
+
+
+
+##### configure smf service
+
+svccfg -s application/pkg/server add osc_4_3_10_1_0
+svccfg -s application/pkg/server:osc_4_3_10_1_0 setprop pkg/inst_root=/applications/ips/osc_4_3_10_1_0
+svccfg -s application/pkg/server:osc_4_3_10_1_0 setprop pkg/readonly=true
+svccfg -s application/pkg/server:osc_4_3_10_1_0 setprop pkg/port=10013
+
+svcadm refresh application/pkg/server:osc_4_3_10_1_0
+svcadm enable application/pkg/server:osc_4_3_10_1_0
+
+svcs application/pkg/server:osc_4_3_10_1_0
+
+
+
+
+
+##### on a client, before the repository createion
+
+0[180326/144557]root@neo# pkg search  ha-cluster/system/core
+INDEX      ACTION VALUE                        PACKAGE
+optional   depend ha-cluster/system/core@4.1-8 pkg:/system/zones@0.5.11-0.175.3.3.0.2.0
+exclude    depend ha-cluster/system/core@4.3   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-0.30.0
+exclude    depend ha-cluster/system/core@4.3   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-1.2.0
+exclude    depend ha-cluster/system/core@4.3   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-sa@4.2-0.30.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.2-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/availability-suite@4.2-0.30.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.2-0.30.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.2-1.2.0
+require    depend ha-cluster/system/core@4.1   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-0.30.0
+require    depend ha-cluster/system/core@4.1   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-1.2.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.2-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/storage/zfssa-gcclient@1.0.0-1
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/srdf@4.2-0.30.0
+require    depend ha-cluster/system/core@4.1   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.2-0.30.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/storage/zfssa-gcclient@1.0.0-1
+exclude    depend ha-cluster/system/core@4.4   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+exclude    depend ha-cluster/system/core@4.4   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+optional   depend ha-cluster/system/core@4.2   pkg:/ha-cluster/system/manager@4.3-0.24.0
+optional   depend ha-cluster/system/core@4.2   pkg:/ha-cluster/system/manager@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/locale@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-sa@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/srdf@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/timesten@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.3-2.3.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/group-package/ha-cluster-framework-minimal@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/availability-suite@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/smf-proxy@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-sa@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/obiee@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/peoplesoft@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/storage/zfssa-gcclient@1.0.2-1
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.3-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/logical-hostname@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/availability-suite@4.3-1.2.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/gds@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/derby@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/telemetry@4.3-1.1.0
+require    depend ha-cluster/system/core@4.2   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+require    depend ha-cluster/system/core@4.2   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/gds2@4.3-0.24.0
+exclude    depend ha-cluster/system/core@4.4   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+exclude    depend ha-cluster/system/core@4.4   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+optional   depend ha-cluster/system/core@4.2   pkg:/ha-cluster/system/manager@4.3-0.24.0
+optional   depend ha-cluster/system/core@4.2   pkg:/ha-cluster/system/manager@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/locale@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-sa@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/srdf@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/timesten@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.3-2.3.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/group-package/ha-cluster-framework-minimal@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/availability-suite@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/smf-proxy@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-sa@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/obiee@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/peoplesoft@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/storage/zfssa-gcclient@1.0.2-1
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.3-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/logical-hostname@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/availability-suite@4.3-1.2.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/gds@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/derby@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/telemetry@4.3-1.1.0
+require    depend ha-cluster/system/core@4.2   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+require    depend ha-cluster/system/core@4.2   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/gds2@4.3-0.24.0
+0[180326/144620]root@neo# 
+
+
+
+
+
+##### on a client, after the repository createion
+
+0[180326/152508]root@neo# pkg publisher
+PUBLISHER                   TYPE     STATUS P LOCATION
+solaris                     origin   online F http://aiserver-pz.opoce.cec.eu.int:10001/
+solaris                     origin   online F http://aiserver-pz.opoce.cec.eu.int:10002/
+solaris                     origin   online F http://aiserver-pz.opoce.cec.eu.int:10003/
+solaris                     origin   online F http://aiserver-pz.opoce.cec.eu.int:10007/
+ha-cluster                  origin   online F http://aiserver-pz.opoce.cec.eu.int:10004/
+ha-cluster                  origin   online F http://aiserver-pz.opoce.cec.eu.int:10008/
+ha-cluster                  origin   online F http://aiserver-pz.opoce.cec.eu.int:10011/
+0[180326/152509]root@neo# pkg set-publisher -g http://aiserver-pz.opoce.cec.eu.int:10013 ha-cluster
+0[180326/152536]root@neo# pkg publisher
+PUBLISHER                   TYPE     STATUS P LOCATION
+solaris                     origin   online F http://aiserver-pz.opoce.cec.eu.int:10001/
+solaris                     origin   online F http://aiserver-pz.opoce.cec.eu.int:10002/
+solaris                     origin   online F http://aiserver-pz.opoce.cec.eu.int:10003/
+solaris                     origin   online F http://aiserver-pz.opoce.cec.eu.int:10007/
+ha-cluster                  origin   online F http://aiserver-pz.opoce.cec.eu.int:10004/
+ha-cluster                  origin   online F http://aiserver-pz.opoce.cec.eu.int:10008/
+ha-cluster                  origin   online F http://aiserver-pz.opoce.cec.eu.int:10011/
+ha-cluster                  origin   online F http://aiserver-pz.opoce.cec.eu.int:10013/
+0[180326/152538]root@neo# 
+
+
+0[180326/152538]root@neo# pkg search  ha-cluster/system/core
+INDEX      ACTION VALUE                        PACKAGE
+optional   depend ha-cluster/system/core@4.1-8 pkg:/system/zones@0.5.11-0.175.3.3.0.2.0
+exclude    depend ha-cluster/system/core@4.3   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-0.30.0
+exclude    depend ha-cluster/system/core@4.3   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-1.2.0
+exclude    depend ha-cluster/system/core@4.3   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-sa@4.2-0.30.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.2-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/availability-suite@4.2-0.30.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.2-0.30.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.2-1.2.0
+require    depend ha-cluster/system/core@4.1   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-0.30.0
+require    depend ha-cluster/system/core@4.1   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-1.2.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.2-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/storage/zfssa-gcclient@1.0.0-1
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/srdf@4.2-0.30.0
+require    depend ha-cluster/system/core@4.1   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.2-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.2-0.30.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/storage/zfssa-gcclient@1.0.0-1
+exclude    depend ha-cluster/system/core@4.4   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+exclude    depend ha-cluster/system/core@4.4   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+optional   depend ha-cluster/system/core@4.2   pkg:/ha-cluster/system/manager@4.3-0.24.0
+optional   depend ha-cluster/system/core@4.2   pkg:/ha-cluster/system/manager@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/locale@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-sa@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/srdf@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/timesten@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.3-2.3.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/group-package/ha-cluster-framework-minimal@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/availability-suite@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/smf-proxy@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-sa@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/obiee@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/data-service/peoplesoft@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/storage/zfssa-gcclient@1.0.2-1
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/geo-framework@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.3-2.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/logical-hostname@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/availability-suite@4.3-1.2.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/gds@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/data-guard@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-0.24.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/derby@4.3-1.1.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/telemetry@4.3-1.1.0
+require    depend ha-cluster/system/core@4.2   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+require    depend ha-cluster/system/core@4.2   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+require    depend ha-cluster/system/core       pkg:/ha-cluster/ha-service/gds2@4.3-0.24.0
+exclude    depend ha-cluster/system/core@4.4   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+exclude    depend ha-cluster/system/core@4.4   pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+optional   depend ha-cluster/system/core@4.2   pkg:/ha-cluster/system/manager@4.3-0.24.0
+INDEX       ACTION VALUE                             PACKAGE
+optional    depend ha-cluster/system/core@4.2        pkg:/ha-cluster/system/manager@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/locale@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-sa@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/srdf@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/data-service/timesten@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/geo-framework@4.3-2.3.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/group-package/ha-cluster-framework-minimal@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/availability-suite@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/smf-proxy@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-sa@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/data-service/obiee@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/data-service/peoplesoft@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/storage/zfssa-gcclient@1.0.2-1
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/geo-framework@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/data-guard@4.3-2.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/logical-hostname@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/availability-suite@4.3-1.2.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/gds@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/data-guard@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/derby@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/telemetry@4.3-1.1.0
+require     depend ha-cluster/system/core@4.2        pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+require     depend ha-cluster/system/core@4.2        pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/gds2@4.3-0.24.0
+exclude     depend ha-cluster/system/core@4.4        pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+exclude     depend ha-cluster/system/core@4.4        pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+exclude     depend ha-cluster/system/core@4.4        pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-10.1.0
+incorporate depend ha-cluster/system/core@4.3-10.1.0 pkg:/ha-cluster/group-package/ha-cluster-incorporation@4.3-10.1.0
+optional    depend ha-cluster/system/core@4.2        pkg:/ha-cluster/system/manager@4.3-10.1.0
+optional    depend ha-cluster/system/core@4.2        pkg:/ha-cluster/system/manager@4.3-0.24.0
+optional    depend ha-cluster/system/core@4.2        pkg:/ha-cluster/system/manager@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/data-guard@4.3-2.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-9.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/logical-hostname@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/gds@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/data-guard@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/telemetry@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/availability-suite@4.3-1.2.0
+require     depend ha-cluster/system/core@4.2        pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/storage/zfssa-gcclient@1.1.0-11
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-sa@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/derby@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/data-guard@4.3-10.1.0
+require     depend ha-cluster/system/core@4.2        pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-2.3.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/gds2@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/locale@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/srdf@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/service/management/slm@4.3-3.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/data-service/timesten@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-snapshot@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/data-service/peoplesoft@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/geo-framework@4.3-2.3.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/geo-framework@4.3-9.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-sa@4.3-9.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/group-package/ha-cluster-framework-minimal@4.3-0.24.0
+require     depend ha-cluster/system/core@4.2        pkg:/ha-cluster/group-package/ha-cluster-geo-incorporation@4.3-10.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/storage/zfssa-gcclient@1.0.2-1
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/availability-suite@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/srdf@4.3-6.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/ha-service/smf-proxy@4.3-1.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/replication/zfs-sa@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/storage/svm-mediator@4.3-4.1.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/data-service/obiee@4.3-0.24.0
+require     depend ha-cluster/system/core            pkg:/ha-cluster/geo/geo-framework@4.3-0.24.0
+0[180326/152723]root@neo# 
+
+
+

@@ -1,0 +1,385 @@
+ 	Size	Lun	Master Device	 	Replica Device
+Zone 	Requested	Type	Real	Dec	Hexa	Host	Device	Array	Replication	Host	Device	Array
+cellarmain-pz-ASM	400	H16.86G	404.64	134	86	Persee/Pegase	0E05	SYM_3453	HostBased	Persee/Pegase	0E05	SYM_2560
+#####################################################################################################################
+
+
+
+#########################################################
+##### on both cluster nodes
+
+##### variables
+
+export tmp_folder=/home/betorma/tmp
+export zone=cellarmain-tz
+export lun_list=' 16 | 17 '		# separation: '<space><lunid><space>|<space><lunid><space>|...'
+export date=`date +%Y%m%d%H%M`
+echo $date
+
+
+##### check lun visibility
+
+/home/betorma/bin/luxadm_carlo| egrep "$lun_list"
+
+
+#########################################################
+##### on primary node of the zone
+
+
+##### get lun list
+
+/home/betorma/bin/luxadm_carlo| egrep "$lun_list" >${tmp_folder}/asm_${zone}.txt
+cat ${tmp_folder}/asm_${zone}.txt
+
+0[141010/102640]root@skinner# cat ${tmp_folder}/asm_${zone}.txt
+path: /dev/rdsk/c3t60060160481032006AD133B18E4FE411d0s2 ==> stor: 500601673ea02f5e lun 17 stor: 500601653ea02f5e lun 17 stor: 5006016d3ea02f5e lun 17 stor: 5006016f3ea02f5e lun 17 
+path: /dev/rdsk/c3t6006016017602D00BED773F78D4FE411d0s2 ==> stor: 5006016d3ea02f4a lun 16 stor: 500601673ea02f4a lun 16 stor: 500601653ea02f4a lun 16 stor: 5006016f3ea02f4a lun 16 
+path: /dev/rdsk/c3t6006016017602D00C0D773F78D4FE411d0s2 ==> stor: 500601653ea02f4a lun 17 stor: 500601673ea02f4a lun 17 stor: 5006016f3ea02f4a lun 17 stor: 5006016d3ea02f4a lun 17 
+path: /dev/rdsk/c3t600601604810320068D133B18E4FE411d0s2 ==> stor: 500601673ea02f5e lun 16 stor: 500601653ea02f5e lun 16 stor: 5006016d3ea02f5e lun 16 stor: 5006016f3ea02f5e lun 16 
+
+
+##### get disk list
+
+cat ${tmp_folder}/asm_${zone}.txt | awk '{print $2}' | awk -F'/' '{print $4}' | sed -e 's/s2$//' >${tmp_folder}/asm_disk_list.txt  
+cat ${tmp_folder}/asm_disk_list.txt
+
+0[141010/102644]root@skinner# cat ${tmp_folder}/asm_disk_list.txt
+c3t60060160481032006AD133B18E4FE411d0
+c3t6006016017602D00BED773F78D4FE411d0
+c3t6006016017602D00C0D773F78D4FE411d0
+c3t600601604810320068D133B18E4FE411d0
+
+
+##### update cluster device configuration
+
+cldev populate
+cldev status -s fail
+
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt
+
+
+
+0[141010/102603]root@skinner# cldev populate
+Configuring DID devices
+did instance 7 created.
+did subpath skinner:/dev/rdsk/c3t6006016017602D00C0D773F78D4FE411d0 created for instance 7.
+did instance 8 created.
+did subpath skinner:/dev/rdsk/c3t600601604810320068D133B18E4FE411d0 created for instance 8.
+did instance 9 created.
+did subpath skinner:/dev/rdsk/c3t60060160481032006AD133B18E4FE411d0 created for instance 9.
+did instance 11 created.
+did subpath skinner:/dev/rdsk/c3t6006016017602D00BED773F78D4FE411d0 created for instance 11.
+Configuring the /dev/global directory (global devices)
+obtaining access to all attached disks
+
+
+0[141010/102652]root@skinner# cldev status -s fail
+
+=== Cluster DID Devices ===
+
+Device Instance               Node              Status
+---------------               ----              ------
+0[141010/102708]root@skinner# 
+
+
+
+
+0[141010/102708]root@skinner# cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt
+d7                  skinner:/dev/rdsk/c3t6006016017602D00C0D773F78D4FE411d0
+d7                  seymour:/dev/rdsk/c3t6006016017602D00C0D773F78D4FE411d0
+d8                  skinner:/dev/rdsk/c3t600601604810320068D133B18E4FE411d0
+d8                  seymour:/dev/rdsk/c3t600601604810320068D133B18E4FE411d0
+d9                  skinner:/dev/rdsk/c3t60060160481032006AD133B18E4FE411d0
+d9                  seymour:/dev/rdsk/c3t60060160481032006AD133B18E4FE411d0
+d11                 skinner:/dev/rdsk/c3t6006016017602D00BED773F78D4FE411d0
+d11                 seymour:/dev/rdsk/c3t6006016017602D00BED773F78D4FE411d0
+
+
+
+#####  add did to zone
+
+cp -p /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date} 
+
+
+# show/check before execute
+
+{
+echo "zonecfg -z ${zone} <<EOT" 
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	echo "add device"
+	echo "set match=/dev/did/*dsk/${did}s*"
+	echo "end"
+done
+echo verify
+echo commit
+echo exit
+echo EOT
+}
+
+0[141010/102742]root@skinner# {
+cursh> echo "zonecfg -z ${zone} <<EOT" 
+cursh> cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+cursh pipe pipe pipe pipe while> do
+cursh pipe pipe pipe pipe while>        echo "add device"
+cursh pipe pipe pipe pipe while>        echo "set match=/dev/did/*dsk/${did}s*"
+cursh pipe pipe pipe pipe while>        echo "end"
+cursh pipe pipe pipe pipe while> done
+cursh> echo verify
+cursh> echo commit
+cursh> echo exit
+cursh> echo EOT
+cursh> }
+zonecfg -z cellarmain-tz <<EOT
+add device
+set match=/dev/did/*dsk/d7s*
+end
+add device
+set match=/dev/did/*dsk/d8s*
+end
+add device
+set match=/dev/did/*dsk/d9s*
+end
+add device
+set match=/dev/did/*dsk/d11s*
+end
+verify
+commit
+exit
+EOT
+0[141010/102803]root@skinner# 
+
+
+
+
+
+
+# execute
+{
+zonecfg -z ${zone} <<EOT
+`cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	echo "add device"
+	echo "set match=/dev/did/*dsk/${did}s*"
+	echo "end"
+done`
+verify
+commit
+exit
+EOT
+}
+
+
+
+
+# check
+diff /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date} 
+
+
+
+
+##### add disk to the zone
+
+mkdir -p /zones/${zone}/dev/did/dsk
+mkdir -p /zones/${zone}/dev/did/rdsk
+
+
+# show/check before execute
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+\w+\s+\w+\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "mknod /zones/$ENV{zone}/dev/did/$4/$5 $1 $2 $3\n"}'
+done
+}
+
+
+
+# execute
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+\w+\s+\w+\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {`mknod /zones/$ENV{zone}/dev/did/$4/$5 $1 $2 $3`}'
+done
+}
+
+
+# check
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -l /zones/${zone}/dev/did/*dsk/${did}*
+done
+}
+
+
+
+
+
+##### change right acces to device files
+
+
+# show/check before execute
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+\w+\s+\w+\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "chmod u=rw,g=,o= /zones/$ENV{zone}/dev/did/$4/$5\n"}'
+done
+}
+
+
+
+
+# execute
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+\w+\s+\w+\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {`chmod u=rw,g=,o= /zones/$ENV{zone}/dev/did/$4/$5`}'
+done
+}
+
+
+# check
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -l /zones/${zone}/dev/did/*dsk/${did}*
+done
+}
+
+
+
+
+##### change owner to device files
+
+
+# show/check before execute
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+\w+\s+\w+\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "chown oracle:dba /zones/$ENV{zone}/dev/did/$4/$5\n"}'
+done
+}
+
+
+
+
+
+# execute
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+\w+\s+\w+\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {`chown oracle:dba /zones/$ENV{zone}/dev/did/$4/$5`}'
+done
+}
+
+
+
+
+
+
+# check
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -l /zones/${zone}/dev/did/*dsk/${did}*
+done
+}
+
+
+
+
+##### create partition with 3 first blocks reserved for asm
+
+
+{
+cat ${tmp_folder}/asm_disk_list.txt | while read disk
+do
+	echo "########## ${disk}"
+	dd if=/dev/zero of=/dev/rdsk/${disk} count=1
+	echo
+done
+}
+
+
+{
+cat ${tmp_folder}/asm_disk_list.txt | while read disk
+do
+	echo "########## ${disk}"
+	/home/betorma/bin/format_s0.sh --asm ${disk}
+	echo
+done
+}
+
+
+{
+cat ${tmp_folder}/asm_disk_list.txt | while read disk
+do
+	echo "##### ${disk}"
+	format -d ${disk} <<EOT
+verify
+quit
+EOT
+done
+}| egrep '#####|  0        usr|  2     backup'
+
+
+
+
+
+
+##### update configuration zone on the secondary cluster node
+
+
+cd /etc/zones 
+tar cpf ${tmp_folder}/${zone}.xml.tar ${zone}.xml
+
+
+# change to the secondary node
+
+
+cd /etc/zones 
+tar xpf ${tmp_folder}/${zone}.xml.tar
+
+
+
+
+##### provide lun list to dba team
+
+rm ${tmp_folder}/asm_disk_list_for_dba.txt
+
+
+# on each node, one after one
+{
+/home/betorma/bin/storage_info.pl -A > tee /home/betorma/tmp/storage_info_`uname -n`.out
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	grep " $did " /home/betorma/tmp/storage_info_`uname -n`.out
+done
+} >>${tmp_folder}/asm_disk_list_for_dba.txt
+
+
+
+
+
+
+cat ${tmp_folder}/asm_disk_list_for_dba.txt | mailx betorma
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

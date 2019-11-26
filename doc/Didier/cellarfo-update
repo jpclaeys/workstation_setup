@@ -1,0 +1,53 @@
+
+ansible-playbook -i /home/bortodi/ansible/ansible-op-tools/hosts  yumupdates.yml
+
+ansible-playbook -i /home/bortodi/ansible/ansible-op-tools/hosts  vmware-tools.yml
+
+
+opvmwscelfo1
+opvmwscelfo3
+opvmwscelfo5
+opvmwscelfo7
+opvmwscelfo9
+
+
+
+opvmwscelfo11
+opvmwscelfo13
+opvmwscelfo15
+
+opvmwscelfo17 opsvc152
+opvmwscelfo19 opsvc152
+opvmwscelfo21 opsvc156
+opvmwscelfo23 opsvc158
+
+opvmwscelfo25 opsvc160
+
+opvmwscelfo27 opsvc162
+opvmwscelfo29 opsvc164
+
+
+
+
+
+
+
+
+opvmwscelfo2 opsvc013 ok
+opvmwscelfo4 opsvc015 ok
+opvmwscelfo6 opsvc017 ok
+opvmwscelfo8 opsvc019 ok
+opvmwscelfo10 ok
+opvmwscelfo12 opsvc033 ok
+opvmwscelfo14 opsvc149 ok
+opvmwscelfo16 opsvc151 ok
+
+
+opvmwscelfo18	opsvc153 ok
+opvmwscelfo20	opsvc155 ok
+opvmwscelfo22	opsvc157 ok
+
+opvmwscelfo24	opsvc159 ok
+opvmwscelfo26	opsvc161 ok
+opvmwscelfo28	opsvc163 ok
+opvmwscelfo30	opsvc165 ok

@@ -1,0 +1,62 @@
+pkgadd -d m4-1.4.10-sol10-sparc-local
+pkgadd -d indent-2.2.9-sol10-sparc-local
+pkgadd -d ncurses-5.6-sol10-sparc-local
+pkgadd -d libiconv-1.11-sol10-sparc-local
+pkgadd -d autoconf-2.60-sol10-sparc-local
+pkgadd -d automake-1.10.1-sol10-sparc-local
+pkgadd -d flex-2.5.33-sol10-sparc-local
+pkgadd -d bison-2.3-sol10-sparc-local
+pkgadd -d  texinfo-4.11-sol10-sparc-local
+pkgadd -d gcc-3.4.6-sol10-sparc-local
+pkgadd -d libgcc-3.4.6-sol10-sparc-local
+pkgadd -d make-3.81-sol10-sparc-local
+export CC=gcc
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export PATH=/usr/local/bin:$PATH
+ 
+#PATH=/opt/SUNWspro/bin:/usr/local/bin:/usr/local/ssl/bin:$PATH; export PATH
+#export CC=cc
+
+
+./configure --prefix=/applications/lark/users/system/apache-2.2.8 \
+--enable-cache \
+--enable-dav \
+--enable-dav-fs \
+--enable-dav-lock \
+--enable-headers \
+--enable-info \
+--enable-expires \
+--enable-ext-filter \
+--enable-disk-cache \
+--enable-file-cache \
+--enable-mem-cache \
+--enable-mime-magic \
+--enable-proxy \
+--enable-proxy-http \
+--enable-proxy-connect --enable-proxy-ftp \
+--enable-rewrite  \
+--enable-so \
+--enable-unique-id \
+--enable-usertrack \
+--enable-vhost-alias \
+--enable-cgi \
+--enable-distcache \
+--enable-logio \
+--enable-ext-filter \
+--enable-mods-shared="all"  
+
+#php
+
+./configure --prefix=/applications/lark/users/system/php-5.2.5 \
+--enable-fastcgi \
+--with-mysql=/applications/lark/users/system/mysql \
+--with-apxs2=/applications/lark/users/system/apache/bin/apxs \
+--with-zlib \
+--with-zlib-dir=/usr/local/lib \
+--with-curl=/usr/local 
+
+
+#perl
+/applications/lark/users/system/perl5.8.8/bin/perl Makefile.PL MP_APXS=/applications/lark/users/system/apache/bin/apxs
+make
+make install

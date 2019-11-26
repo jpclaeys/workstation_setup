@@ -1,0 +1,296 @@
+##############################################################################################################
+##### remove lun
+
+
+##### select lun to remove
+
+export wwn=360000970000292603453533032413634
+export device_name=`multipath -ll $wwn | head -1 | awk '{print $1}'`
+
+multipath -ll $device_name
+/home/admin/bin/storage/storage_info.pl| grep $device_name
+
+
+##### stop I/O an unmount corresponding fs
+
+##### remove lv associated
+
+##### remove vg associeted
+
+##### remove pv associeted
+
+echo pvremove /dev/mapper/$device_name  
+
+
+##### remove disk
+
+
+
+multipath -l $device_name | tail -n +4 | awk '{print $3}' | xargs echo | perl -ne 'chomp; print "export dev_list=\"$_\"\n"'
+multipath -f $device_name
+for dev in $dev_list; do echo "echo 1 > /sys/block/${dev}/device/delete"; done
+
+
+
+
+##############################################################################################################
+##### refresh
+
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+
+##############################################################################################################
+##### remove failed path status because SAN path has been renoved
+
+
+root@jabba# multipath -l 360000970000292602560533033343532
+mpathf (360000970000292602560533033343532) dm-16 EMC,SYMMETRIX
+size=101G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 1:0:0:6  sdu  65:64  failed undef running
+  |- 0:0:0:6  sdi  8:128  failed undef running
+  |- 0:0:2:6  sdat 66:208 active undef running
+  |- 0:0:3:6  sdbg 67:160 active undef running
+  |- 0:0:4:6  sdbt 68:112 active undef running
+  |- 1:0:1:6  sdcg 69:64  active undef running
+  |- 1:0:2:6  sdct 70:16  active undef running
+  |- 0:0:1:6  sdag 66:0   active undef running
+  |- 1:0:3:6  sddg 70:224 active undef running
+  `- 1:0:4:6  sddt 71:176 active undef running
+
+
+
+root@jabba# multipath -l 360000970000292602560533033343532 | grep failed 
+  |- 1:0:0:6  sdu  65:64  failed undef running
+  |- 0:0:0:6  sdi  8:128  failed undef running
+0[140910/154226]root@jabba# 
+
+
+
+root@jabba# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+root@jabba# echo 1 > /sys/block/sdu/device/delete 
+root@jabba# echo 1 > /sys/block/sdi/device/delete 
+root@jabba# multipath -l 360000970000292602560533033343532 | grep failed | wc -l
+0
+
+root@jabba# multipath -l 360000970000292602560533033343532
+mpathf (360000970000292602560533033343532) dm-16 EMC,SYMMETRIX
+size=101G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:2:6  sdat 66:208 active undef running
+  |- 0:0:3:6  sdbg 67:160 active undef running
+  |- 0:0:4:6  sdbt 68:112 active undef running
+  |- 1:0:1:6  sdcg 69:64  active undef running
+  |- 1:0:2:6  sdct 70:16  active undef running
+  |- 0:0:1:6  sdag 66:0   active undef running
+  |- 1:0:3:6  sddg 70:224 active undef running
+  `- 1:0:4:6  sddt 71:176 active undef running
+
+
+
+
+##### loop version
+
+multipath -l | grep failed | awk '{print $3}' | while read dev; do echo 1 >/sys/block/${dev}/device/delete; done
+
+
+
+##############################################################################################################
+##### add new SAN path for lun
+
+
+
+0[140910/161551]root@padawan# multipath -l 360000970000292602560533033344143
+mpathf (360000970000292602560533033344143) dm-16 EMC,SYMMETRIX
+size=101G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:0:6  sdi 8:128 active undef running
+  `- 1:0:0:6  sdr 65:16 active undef running
+0[140910/161633]root@padawan# 
+
+0[140910/161633]root@padawan# for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+
+
+0[140910/161646]root@padawan# multipath -l 360000970000292602560533033344143                                     
+mpathf (360000970000292602560533033344143) dm-16 EMC,SYMMETRIX
+size=101G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:0:6  sdi  8:128  active undef running
+  |- 1:0:0:6  sdr  65:16  active undef running
+  |- 0:0:2:6  sdak 66:64  active undef running
+  |- 0:0:3:6  sdau 66:224 active undef running
+  |- 0:0:1:6  sdaa 65:160 active undef running
+  |- 0:0:4:6  sdbe 67:128 active undef running
+  |- 1:0:1:6  sdbo 68:32  active undef running
+  |- 1:0:2:6  sdby 68:192 active undef running
+  |- 1:0:3:6  sdci 69:96  active undef running
+  `- 1:0:4:6  sdcs 70:0   active undef running
+0[140910/161650]root@padawan# 
+
+
+
+multipath -l | grep running | wc | grep running | awk '{print $3}' | while read dev; do echo echo 1 >/sys/block/${dev}/device/resca
+
+
+
+
+##############################################################################################################
+##### rename default binding
+ 
+export date=`date +%Y%m%d%H%M`
+cp -p /etc/multipath/bindings /etc/multipath/bindings.$date
+
+pvs
+0[140912/100312]root@leia# pvs
+  PV                                           VG               Fmt  Attr PSize   PFree  
+  /dev/mapper/mer_vmax3453_t2_et_backup1       eurlex_backup_et lvm2 a--  203.79g      0 
+  /dev/mapper/mer_vmax3453_t2_fr_backup1       eurlex_backup_fr lvm2 a--  203.79g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data10 eurlex_data_etvg lvm2 a--  101.15g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data11 eurlex_data_ltvg lvm2 a--  101.15g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data17 eurlex_data_frvg lvm2 a--  202.30g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data18 eurlex_data_ltvg lvm2 a--  202.30g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data4  eurlex_data_etvg lvm2 a--  202.30g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data9  eurlex_data_frvg lvm2 a--  101.15g      0 
+  /dev/mapper/mer_vmax3453_t2_lt_backup1       eurlex_backup_lt lvm2 a--  203.79g      0 
+  /dev/mapper/mer_vmax3453_t2_users_data0      eurlex_usersvg   lvm2 a--  101.89g  36.89g
+  /dev/mapper/mpatha                           eurlex_data_gavg lvm2 a--  101.15g      0 
+  /dev/mapper/mpathb                           eurlex_data_gavg lvm2 a--  202.30g      0 
+  /dev/mapper/mpathc                           eurlex_backup_ga lvm2 a--  203.79g      0 
+  /dev/sdao2                                   rootvg           lvm2 a--  279.16g 199.66g
+0[140912/100412]root@leia# 
+
+##### some examples:
+# mer_vmax3453_t1_ga_data2
+# mer_vmax3453_t2_et_backup1
+
+
+vi /etc/multipath/bindings
+diff /etc/multipath/bindings /etc/multipath/bindings.$date 
+service multipathd reload
+pvs
+
+##### some examples:
+# mer_vmax3453_t1_ga_data2
+# mer_vmax3453_t2_et_backup1
+
+
+
+0[140912/100850]root@leia# diff /etc/multipath/bindings /etc/multipath/bindings.$date 
+36,38c36,38
+< mer_vmax3453_t1_ga_data1 360000970000292603453533033343845
+< mer_vmax3453_t1_ga_data2 360000970000292603453533032433133
+< mer_vmax3453_t2_ga_backup1 360000970000292603453533031304344
+---
+> mpatha 360000970000292603453533033343845
+> mpathb 360000970000292603453533032433133
+> mpathc 360000970000292603453533031304344
+1[140912/100854]root@leia# 
+
+
+
+0[140912/100933]root@leia# pvs                      
+  PV                                           VG               Fmt  Attr PSize   PFree  
+  /dev/mapper/mer_vmax3453_t1_ga_data1         eurlex_data_gavg lvm2 a--  101.15g      0 
+  /dev/mapper/mer_vmax3453_t1_ga_data2         eurlex_data_gavg lvm2 a--  202.30g      0 
+  /dev/mapper/mer_vmax3453_t2_et_backup1       eurlex_backup_et lvm2 a--  203.79g      0 
+  /dev/mapper/mer_vmax3453_t2_fr_backup1       eurlex_backup_fr lvm2 a--  203.79g      0 
+  /dev/mapper/mer_vmax3453_t2_ga_backup1       eurlex_backup_ga lvm2 a--  203.79g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data10 eurlex_data_etvg lvm2 a--  101.15g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data11 eurlex_data_ltvg lvm2 a--  101.15g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data17 eurlex_data_frvg lvm2 a--  202.30g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data18 eurlex_data_ltvg lvm2 a--  202.30g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data4  eurlex_data_etvg lvm2 a--  202.30g      0 
+  /dev/mapper/mer_vmax3453_t2_idol15-pk_data9  eurlex_data_frvg lvm2 a--  101.15g      0 
+  /dev/mapper/mer_vmax3453_t2_lt_backup1       eurlex_backup_lt lvm2 a--  203.79g      0 
+  /dev/mapper/mer_vmax3453_t2_users_data0      eurlex_usersvg   lvm2 a--  101.89g  36.89g
+  /dev/sdao2                                   rootvg           lvm2 a--  279.16g 199.66g
+0[140912/100935]root@leia# 
+
+
+##############################################################################################################
+##### clear old friendly name
+
+export tmp_folder=/home/betorma/tmp
+export date=`date +%Y%m%d%H%M`
+
+cp -p /etc/multipath/bindings /etc/multipath/bindings.$date
+
+egrep -v '^#' /etc/multipath/bindings | awk '{print $2}' | while read disk; do n=`multipath -l $disk | wc -l`; if [[ $n == 0 ]]; then echo $disk; fi; done | tee ${tmp_folder}/multilpath_clean.txt
+egrep -vf ${tmp_folder}/multilpath_clean.txt /etc/multipath/bindings >${tmp_folder}/bindings.new
+mv ${tmp_folder}/bindings.new /etc/multipath/bindings
+
+diff /etc/multipath/bindings /etc/multipath/bindings.$date
+
+
+##############################################################################################################
+##### multipath binding for idol servers, based on lvm physical volume name
+##### 
+##### beta
+
+export date=`date +%Y%m%d%H%M`
+cp -p /etc/multipath/bindings /etc/multipath/bindings.$date
+
+
+export site=mer
+export array=vmax3453		
+#or
+export site=euf
+export array=vmax2560	
+
+
+
+
+### remove lines begining with mpathX
+vi /etc/multipath/bindings 
+
+multipath -r
+
+echo "#####" >>/etc/multipath/bindings 
+
+pvs
+pvs | grep -v '^  PV' | sort >/home/betorma/tmp/pvs.out
+
+
+{
+cat /etc/multipath/bindings | grep ^mpath | awk '{print $1}' | while read mpath
+do
+	grep $mpath /home/betorma/tmp/pvs.out /etc/multipath/bindings | perl -ne 'chomp; print'
+	echo
+done 
+} | awk '{print $2" "$3" "$9}' | perl -ne '
+	s:/dev/mapper/::;
+	print "$& -- $ENV{site}_$ENV{array}_t1_$1_data\n" if(m{mpath.+\seurlex_data_(..)vg\s+.*});
+' | awk '{print $5" "$3}' | sort >>/etc/multipath/bindings 
+
+
+
+{
+cat /etc/multipath/bindings | grep ^mpath | awk '{print $1}' | while read mpath
+do
+	grep $mpath /home/betorma/tmp/pvs.out /etc/multipath/bindings | perl -ne 'chomp; print'
+	echo
+done 
+} | awk '{print $2" "$3" "$9}' | perl -ne '
+	s:/dev/mapper/::;
+	print "$& -- $ENV{site}_$ENV{array}_t2_$1_backup\n" if(m{mpath.+\seurlex_backup_(..)\s.*});
+' | awk '{print $5" "$3}' | sort >>/etc/multipath/bindings 
+
+
+
+
+# check and increment the number after the name
+vi /etc/multipath/bindings 
+
+
+multipath -r
+multipath -l | grep dm-
+
+# check the matching between PV and VG
+pvs
+
+
+  /dev/mapper/euf_vmax2560_t1_es_data1    eurlex_backup_es lvm2 a--  203.79g      0 
+  /dev/mapper/euf_vmax2560_t2_es_backup1  eurlex_data_esvg lvm2 a--  101.15g      0 
+  /dev/mapper/mpathc                      eurlex_data_esvg lvm2 a--  202.30g      0 
+
+
+

@@ -1,0 +1,100 @@
+# mot de passe arrayservice
+deep:/:<2>sun
+Password:
+sun: commands enabled
+deep:/:<3>disk unbypass u1d09 path 0
+usage:  disk version  <drives>
+        disk download <drives> <filename>
+
+deep:/:<4>
+deep:/:<4>
+deep:/:<4>.disk unbypass u1d09 path 0
+pass
+deep:/:<5>fru
+fru: Command not found
+deep:/:<6>fru stat
+CTLR    STATUS   STATE       ROLE        PARTNER    TEMP
+------  -------  ----------  ----------  -------    ----
+u1ctr   ready    enabled     master      u2ctr      28
+u2ctr   ready    enabled     alt master  u1ctr      30
+
+DISK    STATUS   STATE       ROLE        PORT1      PORT2      TEMP  VOLUME
+------  -------  ----------  ----------  ---------  ---------  ----  ------
+u1d01   ready    enabled     data disk   ready      ready      26    v0
+u1d02   ready    enabled     data disk   ready      ready      29    v0
+u1d03   ready    enabled     data disk   ready      ready      28    v0
+u1d04   ready    enabled     data disk   ready      ready      28    v0
+u1d05   ready    enabled     data disk   ready      ready      28    v0
+u1d06   ready    enabled     data disk   ready      ready      25    v0
+u1d07   ready    enabled     data disk   ready      ready      28    v0
+u1d08   ready    enabled     data disk   ready      ready      29    v0
+u1d09   ready    enabled     standby     ready      ready      29    v0
+u2d01   ready    enabled     data disk   ready      ready      31    v2
+u2d02   ready    enabled     data disk   ready      ready      31    v2
+u2d03   ready    enabled     data disk   ready      ready      41    v2
+u2d04   ready    enabled     data disk   ready      ready      31    v2
+u2d05   ready    enabled     data disk   ready      ready      27    v2
+u2d06   ready    enabled     data disk   ready      ready      31    v2
+u2d07   ready    enabled     data disk   ready      ready      26    v2
+u2d08   ready    enabled     data disk   ready      ready      31    v2
+u2d09   ready    enabled     standby     bypass     ready      24    v2
+
+LOOP    STATUS   STATE       MODE        CABLE1    LB  CABLE2    LB  TEMP
+------  -------  ----------  -------     --------- --  --------- --  ----
+u1l1    ready    enabled     master      -         -   installed 11  24
+u1l2    ready    enabled     slave       -         -   installed 10  25
+u2l1    ready    enabled     master      installed 11  -         -   26
+u2l2    ready    enabled     slave       installed 10  -         -   27
+
+POWER   STATUS   STATE       SOURCE  OUTPUT  BATTERY  TEMP    FAN1    FAN2
+------  -------  ---------   ------  ------  -------  ------  ------  ------
+u1pcu1  ready    enabled     line    normal  normal   normal  normal  normal
+u1pcu2  ready    enabled     line    normal  normal   normal  normal  normal
+u2pcu1  ready    enabled     line    normal  normal   normal  normal  normal
+u2pcu2  ready    enabled     line    normal  normal   normal  normal  normal
+deep:/:<7>.disk unbypass u1d09 path 0
+pass
+deep:/:<8>.disk unbypass u2d09 path 0
+pass
+deep:/:<9>fru stat
+CTLR    STATUS   STATE       ROLE        PARTNER    TEMP
+------  -------  ----------  ----------  -------    ----
+u1ctr   ready    enabled     master      u2ctr      28
+u2ctr   ready    enabled     alt master  u1ctr      30
+
+DISK    STATUS   STATE       ROLE        PORT1      PORT2      TEMP  VOLUME
+------  -------  ----------  ----------  ---------  ---------  ----  ------
+u1d01   ready    enabled     data disk   ready      ready      26    v0
+u1d02   ready    enabled     data disk   ready      ready      29    v0
+u1d03   ready    enabled     data disk   ready      ready      28    v0
+u1d04   ready    enabled     data disk   ready      ready      28    v0
+u1d05   ready    enabled     data disk   ready      ready      28    v0
+u1d06   ready    enabled     data disk   ready      ready      25    v0
+u1d07   ready    enabled     data disk   ready      ready      28    v0
+u1d08   ready    enabled     data disk   ready      ready      29    v0
+u1d09   ready    enabled     standby     ready      ready      29    v0
+u2d01   ready    enabled     data disk   ready      ready      31    v2
+u2d02   ready    enabled     data disk   ready      ready      31    v2
+u2d03   ready    enabled     data disk   ready      ready      41    v2
+u2d04   ready    enabled     data disk   ready      ready      31    v2
+u2d05   ready    enabled     data disk   ready      ready      27    v2
+u2d06   ready    enabled     data disk   ready      ready      31    v2
+u2d07   ready    enabled     data disk   ready      ready      26    v2
+u2d08   ready    enabled     data disk   ready      ready      31    v2
+u2d09   ready    enabled     standby     ready      ready      24    v2
+
+LOOP    STATUS   STATE       MODE        CABLE1    LB  CABLE2    LB  TEMP
+------  -------  ----------  -------     --------- --  --------- --  ----
+u1l1    ready    enabled     master      -         -   installed 11  24
+u1l2    ready    enabled     slave       -         -   installed 10  25
+u2l1    ready    enabled     master      installed 11  -         -   26
+u2l2    ready    enabled     slave       installed 10  -         -   27
+
+POWER   STATUS   STATE       SOURCE  OUTPUT  BATTERY  TEMP    FAN1    FAN2
+------  -------  ---------   ------  ------  -------  ------  ------  ------
+u1pcu1  ready    enabled     line    normal  normal   normal  normal  normal
+u1pcu2  ready    enabled     line    normal  normal   normal  normal  normal
+u2pcu1  ready    enabled     line    normal  normal   normal  normal  normal
+u2pcu2  ready    enabled     line    normal  normal   normal  normal  normal
+deep:/:<10>
+

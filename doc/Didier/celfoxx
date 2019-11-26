@@ -1,0 +1,22 @@
+
+
+
+yum update --exclude packetbeat,logstash,rubygem-json
+
+
+
+pour ODP PROD :
+yum update --exclude rubygem-json,postgresql*
+
+
+appserver
+
+[root@qccoord-tk B3]# nslookup appserver
+Server:		158.167.97.163
+Address:	158.167.97.163#53
+
+Non-authoritative answer:
+appserver.opoce.cec.eu.int	canonical name = vdm-apps-1.opoce.cec.eu.int.
+Name:	vdm-apps-1.opoce.cec.eu.int
+Address: 10.10.10.34
+

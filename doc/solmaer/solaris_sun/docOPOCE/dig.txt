@@ -1,0 +1,4 @@
+dig opsrv158.opoce.cec.eu.int any
+dig -x 158.167.227.158
+dig opoce.cec.eu.int axfr
+

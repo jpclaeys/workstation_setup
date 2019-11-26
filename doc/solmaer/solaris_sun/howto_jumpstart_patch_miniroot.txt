@@ -1,0 +1,19 @@
+##############################################################################
+# ajout d'un pilote pour e1000g dans le miniroot d'une image jumpstart
+##############################################################################
+
+##### download du patch 124631-24 sur sunsolve
+
+##### sauvgarde du miniroot
+cp x86.miniroot x86.miniroot_before_patch
+
+##### decompresser le miniroot de l'image
+cd /export/install/media/Solaris_10_u7_x86/boot
+/boot/solaris/bin/root_archive unpack x86.miniroot unpacked
+
+##### se placer dans le repertoire ou se trouve le patch
+cd ~/download
+
+##### patcher le miniroot decompresse
+patchadd -C /export/install/media/Solaris_10_u7_x86/boot/unpacked 124631-25 
+

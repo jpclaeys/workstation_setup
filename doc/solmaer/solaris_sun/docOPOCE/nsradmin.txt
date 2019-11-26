@@ -1,0 +1,475 @@
+# montrer l'heure de demarrage de bkps
+nsradmin -i - <<EOT
+show start time
+print type: NSR Group;
+EOT
+
+# voir et editer d'un seul coup un client backup
+
+nsradmin -c "type:NSR client;name: fecarabos"
+
+# creer un client avec nsradmin
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+opsrv188;RMAN PROCATS2 SUR PROCATX_TZ;root@coppola,oracle@coppola;Rman_Test_Full_01,Rman_Test_Incr_01,Rman_Test_Logs_01;RMAN:PROCATS2:appl:procatsuivi2:redo_keep:100
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","savesets"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                    save set: @{[join( "," , map({qq{"$_"}} split(/\s*,\s*/, $c{savesets})))]};
+               remote access: $c{remote_access};
+              backup command: saverman.pl;
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+opsrv186;RMAN POUR CERES_TZ;root@coppola,oracle@coppola
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+               remote access: $c{remote_access};
+              backup command: saverman.pl;
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+grid_tz;ZONE GRID_TZ SUR THOR;root@grid_tz;UnixTest,Unix_Servers;Solaris 10 zones with compression
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+opmerscn201;MACHINE WIN PROD;adm-schreem@*,adm-hensoch@*,adm-sacreca@*,adm-desonlu@*;Win2000;NT with compression directives
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int, $c{client_name}.publications.win;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+marpa;MACHINE WIN 2000;adm-schreem@*,adm-hensoch@*,adm-sacreca@*,adm-desonlu@*,SYS-EXCH-BACKUP@marpa;W2K9940B;NT with compression directives
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int, $c{client_name}.publications.win;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+opmersdpm01;MACHINE WIN PROD;adm-schreem@*,adm-hensoch@*,adm-sacreca@*,adm-desonlu@*;Win2000;NT with compression directives
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int, $c{client_name}.publications.win;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+
+nsradmin -i - <<EOT
+show retention policy
+show browse policy
+show name
+print type: NSR client;
+retention policy: Day;
+EOT
+
+
+nsradmin -i - <<EOT | grep name\: | wc -l
+show name
+print type: NSR client;
+directive: Solaris 10 zones with compression
+EOT
+
+
+for i in `cat /tmp/kk`
+do
+nsradmin -i - <<EOT
+show name
+show directive
+print type: NSR client;
+name: ${i};
+EOT
+done
+
+
+nsradmin -i - <<EOT
+show name
+show backup command
+print type: NSR client;
+directive: Solaris 10 zones with compression;
+directive: Solaris_10 with compression directives;
+directive: Unix standard directives;
+directive: Unix with compression directives;
+EOT
+
+nsradmin -i - <<EOT
+show name
+show backup command
+print type: NSR client;
+directive: Solaris*,Unix*;
+EOT
+
+nsradmin -i - <<EOT
+show name
+show backup command
+print type: NSR client;
+directive: Solaris*,Unix*;
+backup command: ^$;
+EOT
+
+nsradmin -i - <<EOT | sed '/^$/d'  |wc -l
+show name
+print type: NSR client;
+group: Win2000;
+EOT
+
+nsradmin -i - <<EOT 
+show name
+print type: NSR client;
+group: Unix_Servers_2;
+EOT
+
+nsradmin -i - <<EOT | sed '/^$/d'  |wc -l
+show name
+print type: NSR client;
+remote access: adm-besohbe@*;
+EOT
+
+# update des clients
+nsradmin -i - <<EOT
+print type: NSR client;name: grumpy
+update group: Unix_Servers;
+EOT
+
+nsradmin -i - <<EOT
+print type: NSR client;name: oppc122
+update remote access: adm-besohbe@*;
+EOT
+
+nsradmin -i - <<EOT
+print type: NSR client;name: opsrv003
+update group: Rman_Prod_Full_01,Rman_Prod_Logs_01;
+EOT
+
+
+# pour les zones des gws
+export temp=temp2 # roma
+export temp=temp6 # camel
+export temp=temp7 # oprvp
+export temp=temp3 # opgtw
+export descr=ROMA
+export descr=CAMEL
+export descr=OPRVP
+export descr=OPGTW
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+${temp};FUTURE ZONE ${descr};root@{temp};UnixTest;Solaris 10 zones with compression
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+dlib_pz;ZONE DLIB_PZ SUR NEMESIS;root@dlib_pz;Unix_Servers;Solaris 10 zones with compression
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+######################################
+# GATEWAYS
+export node=karamazov
+export node=odile
+export node=emile
+export node=grimaldi
+export node=mireille
+export node=martoni
+export gw="EXTERNE"
+export gw="INTERNE"
+export gw="CORDISCMS"
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+${node};GATEWAY ${gw};root@${node};Unix_Servers;Solaris_10 with compression directives
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+# ajoute marge
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+marge;EX STANLEY contient anninter_dz;root@marge;UnixTest,Unix_Servers;Unix with compression directives
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+# ajoute anninter_tz
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+anninter_tz;ZONE ANNINTER_TZ SUR GRUMPY;root@anninter_tz;UnixTest,Unix_Servers;Solaris 10 zones with compression
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+opsrv162;RMAN ANN TEST anninter_tz ( grumpy );root@coppola,oracle@coppola,oracle@opsrv162,oracle@anninter_tz,root@opsrv162;Rman_Test_Full_01,Rman_Test_Incr_01,Rman_Test_Logs_01;RMAN:ANN:appl:anninter:redo_keep:100
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","savesets"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                    save set: @{[join( "," , map({qq{"$_"}} split(/\s*,\s*/, $c{savesets})))]};
+               remote access: $c{remote_access};
+              backup command: saverman.pl;
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+alambic;Serveur NAS zfs;root@alambic;Unix_Servers;Solaris_10 with compression directives
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+for i in odile grimaldi karamazov emile roma opgtw oprvp camel
+do
+nsradmin -i - <<EOT
+show name
+show group
+print type: NSR client;name: $i
+EOT
+done > /var/tmp/bkp_gws.out
+
+for i in odile grimaldi karamazov emile roma opgtw oprvp camel
+do
+nsradmin -i - <<EOT
+show name
+print type: NSR client;name: $i
+update group: UnixTest
+EOT
+done
+
+for i in odile emile karamazov grimaldi
+do
+nohup savegrp -c $i -l full Unix_Servers &
+done 
+nohup savegrp -c roma -l full Unix_Servers_2 &
+nohup savegrp -c opgtw -l full Unix_Dmz &
+for i in oprvp camel
+do
+nohup savegrp -c $i -l full Unix_CC &
+done
+
+
+
+nsradmin -i - <<EOT
+show save set
+print type: NSR client;name: roma
+EOT
+
+export ma=hannibal
+nsradmin -i - <<EOT
+show name
+show group
+show remote access
+print type: NSR client;name: $ma
+EOT
+
+export ma=hannibal
+nsradmin -i - <<EOT
+show name
+show group
+print type: NSR client;name: $ma
+update group: UnixTest, Unix_Servers
+EOT
+
+export ma=hannibal
+nsradmin -i - <<EOT
+show name
+show group
+show remote access
+print type: NSR client;name: $ma
+update remote access: root\@hannibal
+EOT
+
+

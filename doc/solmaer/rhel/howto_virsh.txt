@@ -1,0 +1,94 @@
+###########################################################################
+##### create a snapshot
+
+0[171004/173218]betorma@banta$ virsh snapshot-create-as --domain myserver --name 'initial' --description 'snapshot just after the installation' --disk-only --diskspec vda,file=/vm/kvm/myserver/myserver_initial.snap
+error: Operation not supported: live disk snapshot not supported with this QEMU binary
+
+[root@myserver ~]# init 6
+
+1[171004/173317]betorma@banta$ virsh snapshot-create-as --domain myserver --name 'initial' --description 'snapshot just after the installation' --disk-only --diskspec vda,file=/vm/kvm/myserver/myserver_initial.snap 
+Domain snapshot initial created
+
+
+0[171004/173438]betorma@banta$ virsh snapshot-list myserver
+ Name                 Creation Time             State
+------------------------------------------------------------
+ initial              2017-10-04 17:33:56 +0200 shutoff
+
+0[171004/173450]betorma@banta$ 
+
+
+
+
+
+
+
+
+###########################################################################
+##### snapshot size
+
+
+
+0[171004/173726]betorma@banta$ qemu-img info /vm/kvm/myserver/myserver_initial.snap 
+image: /vm/kvm/myserver/myserver_initial.snap
+file format: qcow2
+virtual size: 30G (32212254720 bytes)
+disk size: 196K
+cluster_size: 65536
+backing file: /vm/kvm/myserver/myserver_00.img
+backing file format: qcow2
+Format specific information:
+    compat: 1.1
+    lazy refcounts: false
+0[171004/173905]betorma@banta$ 
+
+
+0[171004/173935]betorma@banta$ virsh start myserver
+Domain myserver started
+
+
+
+0[171004/173905]betorma@banta$ qemu-img info /vm/kvm/myserver/myserver_initial.snap 
+image: /vm/kvm/myserver/myserver_initial.snap
+file format: qcow2
+virtual size: 30G (32212254720 bytes)
+disk size: 7.2M
+cluster_size: 65536
+backing file: /vm/kvm/myserver/myserver_00.img
+backing file format: qcow2
+Format specific information:
+    compat: 1.1
+    lazy refcounts: false
+0[171004/174134]betorma@banta$ 
+
+
+
+
+[root@myserver ~]# yum update
+Transaction Summary
+=================================================================================================================================================
+Install   11 Packages (+30 Dependent packages)
+Upgrade  190 Packages
+Total download size: 213 M
+
+
+
+
+
+
+0[171004/174556]betorma@banta$ qemu-img info /vm/kvm/myserver/myserver_initial.snap 
+image: /vm/kvm/myserver/myserver_initial.snap
+file format: qcow2
+virtual size: 30G (32212254720 bytes)
+disk size: 3.0G
+cluster_size: 65536
+backing file: /vm/kvm/myserver/myserver_00.img
+backing file format: qcow2
+Format specific information:
+    compat: 1.1
+    lazy refcounts: false
+0[171004/175157]betorma@banta$ 
+
+
+
+

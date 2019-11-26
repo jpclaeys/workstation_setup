@@ -1,0 +1,28 @@
+0[180129/115339]betorma@banta$ xinput 
+⎡ Virtual core pointer                          id=2    [master pointer  (3)]
+⎜   ↳ Virtual core XTEST pointer                id=4    [slave  pointer  (2)]
+⎜   ↳ HID 1267:0103                             id=10   [slave  pointer  (2)]
+⎜   ↳ Logitech USB Optical Mouse                id=11   [slave  pointer  (2)]
+⎣ Virtual core keyboard                         id=3    [master keyboard (2)]
+    ↳ Virtual core XTEST keyboard               id=5    [slave  keyboard (3)]
+    ↳ Power Button                              id=6    [slave  keyboard (3)]
+    ↳ Video Bus                                 id=7    [slave  keyboard (3)]
+    ↳ Power Button                              id=8    [slave  keyboard (3)]
+    ↳ HID 1267:0103                             id=9    [slave  keyboard (3)]
+0[180129/115341]betorma@banta$ 
+
+
+
+
+
+0[180129/115407]betorma@banta$ xinput list-props 'Logitech USB Optical Mouse'| egrep 'Deceleration|Scaling'
+        Device Accel Constant Deceleration (261):       1.000000
+        Device Accel Adaptive Deceleration (262):       1.000000
+        Device Accel Velocity Scaling (263):    10.000000
+0[180129/115437]betorma@banta$ 
+
+
+
+
+0[180129/115535]betorma@banta$ xinput --set-prop "Logitech USB Optical Mouse" "Device Accel Constant Deceleration" 1.3
+

@@ -1,0 +1,6 @@
+# Voir la config projects
+projects -l
+# Regarder le setting kernel pour un de ces projects
+prctl -i project 1512
+# Voir les shm/sem par projet:
+ipcs -mibJ

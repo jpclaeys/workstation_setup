@@ -1,0 +1,795 @@
+# virer le noued de tous les ressources groupes du cluster
+export no=mireille
+clrg remove-node -n ${no} +
+# verification
+clrg status
+# constater
+cldg show -v | grep Node
+# effacer le noeud des devices groups
+cldg remove-node -n ${no}  dsk/d4
+cldg remove-node -n ${no}  dsk/d5
+cldg remove-node -n ${no}  dsk/d6
+cldg remove-node -n ${no}  dsk/d7
+# on peut virer les devices locaux a jack, mais ca vont reapparaitre des qu'on fait un cldg populate
+cldg delete dsk/d1
+cldg delete dsk/d2
+cldg delete dsk/d3
+cldg delete dsk/d4
+# boot sans la couche cluster
+sync; sync; init 0
+boot -x
+# virer le noeud:
+# depuis le meme noeud
+export no=mireille
+clnode remove ${no}
+# depuis l'autre noeud:
+export no=mireille
+clq disable ${no}
+# virer les interconnects de jack: 
+clintr disable ${no}:e1000g2,switch1@1
+clintr disable ${no}:e1000g3,switch2@1
+clintr remove ${no}:e1000g2,switch1@1
+clintr remove ${no}:e1000g3,switch2@1
+clintr show
+
+#preparer le template de client ( release a installer, eiscd, vxvm )
+# ajouter la mac de jack  au /etc/ethers de romulus
+# ajouter l'ip au /etc/hosts de romulus ( pas necessaire )
+export no=mireille
+ls -l /opt/SUNWjet/Templates/${no}
+#creer le client ( jumpstart )
+/opt/SUNWjet/bin/make_client -f ${no} 
+# changer nfs4_domain a dynamic dans sysidcfg
+cd /opt/SUNWjet/Clients/${no}
+
+#virer les partitions
+devalias 
+nvalias jump /pci@1f,700000/network@2
+nvalias jump100 /pci@1f,700000/network@2:speed=100,duplex=full,
+nvstore
+boot jump -s
+echo | format
+fmthard -s /dev/null /dev/rdsk/c1t0d0s2
+fmthard -s /dev/null /dev/rdsk/c1t1d0s2
+halt
+
+# installer
+boot jump - install nowin
+
+#postinstall
+# il est probable de rencontrer problemes avec le miroir rootdisk VxVM
+more /etc/release
+# verif niveau patch kernel (eiscd):
+uname -a
+cd /var/opt/sun/jet
+grep -i eis jumpstart_install.log
+grep -i error jumpstart_install.log
+grep -i fail jumpstart_install.log
+
+# SVM
+# miroirs:
+prtvtoc /dev/rdsk/c1t0d0s2 | fmthard -s - /dev/rdsk/c1t1d0s2
+metainit  d12 1 1 /dev/rdsk/c1t1d0s0
+metainit  d22 1 1 /dev/rdsk/c1t1d0s1
+metainit  d32 1 1 /dev/rdsk/c1t1d0s6
+metattach d20 d22
+metattach d30 d32
+metattach d10 d12
+installboot /usr/platform/`uname -i`/lib/fs/ufs/bootblk /dev/rdsk/c1t1d0s2
+# ajoute de metadb au deuxieme disque
+metadb -a -c3 /dev/rdsk/c1t1d0s7
+# on attend que les miroirs soient finis et on reboot
+sync; sync ; lockfs -fa ; init 0
+# ajouter le miroir aux variables de l'obp
+nvalias rootmirror /pci@0/pci@0/pci@2/scsi@0/disk@1,0
+nvstore
+setenv boot-device rootdisk rootmirror jump
+# tester le miroir
+boot rootmirror
+
+
+# post-inst:
+echo "opoce.cec.eu.int" >/etc/defaultdomain
+perl -pi -e 's:2008:2009:' /etc/acct/holidays
+mkdir -p /var/cores/
+coreadm -i /var/cores/%f_%p_%u_%g.core
+
+cd /etc
+cat >resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOT
+
+cat <<EOT >  inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+# cfengine
+
+# Il faut copier la cle dans infra-srv:/var/cfengine/ppkeys
+# Ensuite:
+/var/cfengine/bin/cfagent --no-splay
+
+#LDAP
+# copier les fichiers config ldap d'une autre machine qui soit au meme endroit physique
+cp /var/ldap/ldap_client_* /net/opsrv190/xchange/
+# sur la machine:
+cp /net/opsrv190/xchange/ldap_client_* /var/ldap/
+chown root:sys /var/ldap/*
+svcadm disable svc:/network/ldap/client:default
+svcadm enable svc:/network/ldap/client:default
+# verif:
+ldaplist
+# Verification des autohomes:
+svcs autofs
+ls -l /home/trassch
+
+#PATCH FIRMWARE
+# copier patch au /var/tmp
+unzip /home/trassch/tmp/136932-10.zip -d /var/tmp
+# Prerequis:Faut-il installer l'outil sysfwdownload. On peut le telecharger d'ici:
+http://www.sun.com/download/products.xml?id=4705863e
+unzip /home/trassch/tmp/Sun_System_Firmware_Download_Utility-1.5.0-RR.zip -d /var/tmp
+cd /var/tmp/Sun_System_Firmware_Download_Utility-1.5.0-RR/Product
+pkgadd -d .
+cd /var/tmp/136932-10
+/usr/platform/sun4v/sbin/sysfwdownload  Sun_System_Firmware-7_1_8_a-SPARC_Enterprise_T5120+T5220.pkg
+sync ; sync ; init 0
+set /SP/users/root cli_mode=alom
+# apres ca, il faut se loguer de nouveau
+poweroff
+showkeyswitch
+# ca doit etre NORMAL
+flashupdate -s 127.0.0.1
+resetsc
+# On revient en mode ilom
+userclimode root default
+# 0n se relogue
+# verification
+start /SYS
+start /SP/console
+# on se logue et on verifie
+prtconf -V
+
+
+# LEGATO:
+# installer:
+cd /net/osiris/export/software/Networker/Networker_7.4_sp2/
+cp nw742_solaris_64.tar.gz /var/tmp/
+cd /var/tmp/
+gunzip -c nw742_solaris_64.tar.gz | tar xvf -
+pkgadd -d . LGTOclnt
+# repondre:
+/nsr
+coppola
+y
+y
+# LEGATO ORACLE:
+# Prendre la librairie:libnwora.so d'une machine ou ca marche
+# ( dont la version doit etre 4.2 )
+ls -l /lib/libnwora.so
+-rw-r--r--   1 root     bin      1465056 Apr 15  2005 /lib/libnwora.so
+cp /net/opsrv190/xchange/libnwora.so /lib
+what /lib/libnwora.so
+/lib/libnwora.so:
+         Module Name:  NetWorker Module for Oracle
+         Module Vers:  4.2
+         Product:      NetWorker
+         Release:      LNMs_2004.Build.273
+         Build number: 273
+         Build date:   Thu Apr 14 19:10:43 2005
+         Build arch.:  solaris7w
+         Build info:   DBG=0,OPT=-O3 -fno-strict-aliasing
+# Faire un lien de ce fichier sur /usr/lib:
+ln -s /lib/libnwora.so /usr/lib/libnwora.so
+ls -l /usr/lib/libnwora.so
+# Prendre le script backup des DBAs d'ou ca marche: /usr/sbin/saverman
+ls -l /usr/sbin/saverman.pl
+-rwxr-xr-x   1 root     root        7741 Dec  2 13:04 /usr/sbin/saverman.pl*
+cp /net/opsrv190/xchange/saverman.pl /usr/sbin/
+
+#ECC:
+# ECC agent
+# Renseigner Mathias de cette nouvelle installation car il doit installer aussi un autre agent apres d'avoir installe le master agent
+cd /net/osiris/export/software/EMC2/master-agent/ecc600.cd1/
+./install_master.sh  /net/osiris/export/software/EMC2/master-agent/ecc600.cd1
+# reponses:
+/usr/ecc
+N
+pythagore
+5799
+5798
+Y
+Y
+
+/etc/init.d/eccmad start
+# constater que les parametres EMC sont dans /etc/system
+
+# mpxio: ( rebooter apres )
+stmsboot -e -D fp
+# repondre
+y
+n
+sync; sync; init 6
+
+# rsync
+cp /home/leidial/pkgs/OPrsync_3.0.2_sparc_10u4.tar.bz2 /opt
+cd /opt
+bunzip2 -c OPrsync_3.0.2_sparc_10u4.tar.bz2 | tar xvf -
+\rm /opt/OPrsync_3.0.2_sparc_10u4.tar.bz2
+# Ajout dans /.profile-EIS
+
+#       Synchronization binaries:
+#
+if [ -d /opt/OPrsync/bin ]
+then
+    PATH=${PATH}:/opt/OPrsync/bin
+    MANPATH=${MANPATH}:/opt/OPrsync/share/man
+fi
+#
+
+# ftp denial
+echo 'deny * *.*.*.* ' > /etc/ftpd/ftphosts
+
+# test mail
+ls | mailx -s `uname -n` christian.trassens@ext.publications.europa.eu
+
+# test snmp ( depuis orwell )
+/usr/sfw/bin/snmpdf -c specOPOCE -v 1 jack
+snmpwalk -c specOPOCE -v2c jack
+
+# test boot
+
+# regarder si le service sma ( snmp ) est up:
+svcs "*sma*"
+# regarder que les services snmp par default sont down:
+svcs "*snmp*"
+svcs "*dmi*"
+# constater aussi avec nagios que ca marche
+
+# verifier quels sont les services qui marchent pas. Ca doit etre que le printer
+svcs -x
+
+# Checkings
+/home/admin/bin/check_host.sh
+
+
+
+#########################################
+# Cluster:
+#############################################
+# Installer le soft
+unzip /net/osiris.opoce.cec.eu.int/export/software/suncluster_3_2u2-ga-solaris-sparc.zip -d /var/tmp
+export DISPLAY=vespa:0
+/var/tmp/Solaris_sparc/installer
+
+# Installer les patches qui viennent dans le dernier eiscd disponible
+cd /net/romulus/export/patches/Quark/eiscd/31MAR09/patch/SunCluster/3.2/10
+mkdir -p /var/tmp/eiscd
+cp * /var/tmp/eiscd
+cd /var/tmp/eiscd
+for i in `ls *.zip`
+do
+unzip -o ${i}
+done
+\rm *.zip
+cp patch_order patch.ksh
+# Ajouter patchadd
+vi patch.ksh    
+chmod +x patch.ksh
+./patch.ksh
+
+# Interconnects
+dladm show-dev
+export re=bge2
+export re=bge3
+ifconfig ${re} plumb
+snoop -d ${re} &
+ping -s 224.0.0.1 > /dev/null
+# si on voit des packages multicast, c'est bon
+kill %1
+ifconfig ${re} unplumb
+
+# FS global
+# on partitionne le slice 5 en 40g
+format c1t0d0
+# repliquer la conf
+prtvtoc /dev/rdsk/c1t0d0s2 | fmthard -s - /dev/rdsk/c1t1d0s2
+# SVM du FS global:
+metainit d41 1 1 c1t0d0s5
+metainit d42 1 1 c1t1d0s5
+metainit d40 -m d41
+metattach d40 d42
+metainit d50 -p d40 512m
+echo y | newfs -i 4096 /dev/md/rdsk/d50
+cp -p /etc/vfstab /etc/vfstab.20080916
+echo "/dev/md/dsk/d50        /dev/md/rdsk/d50        /globaldevices  ufs     2       yes     -" >> /etc/vfstab
+mkdir /globaldevices
+mount /globaldevices
+
+
+# Configuration cluster
+scinstall
+# On cree le cluster avec un seul noeud mais sans ajouter averell
+# On pourra pas ajouter le quorum apres car on a installe un noeud
+
+# On passe le setup-standard de l'eiscd apres l'install cluster a cause d'un bogue qui enleve les services tag
+# Et installer l'outil ACT
+cd  /net/romulus/export/patches/Quark/eiscd/27JAN09/install
+./setup-standard.sh
+# Installer que l'ACT:
+# reponses:
+y
+/opt/CTEact
+y
+lsateam@infra-srv.opoce.cec.eu.int
+y
+y
+
+
+# On lui passe les conseils de la doc eiscd:
+cp -p /etc/system /etc/system.20090420
+cat >> /etc/system <<EOF
+set sd:sd_io_time=30
+set scsi_reset_delay=500
+EOF
+
+# mpxio ( ca doit etre fausse )
+grep auto /kernel/drv/scsi_vhci.conf
+
+# cacao
+# verifier que la version cacao est >= 2.2
+cacaoadm -V
+/usr/sbin/cacaoadm status
+
+# webconsole:
+svccfg
+svc:> select system/webconsole
+svc:/system/webconsole> setprop options/tcp_listen=true
+svc:/system/webconsole> listprop options/tcp_listen
+options/tcp_listen  boolean  true
+svc:/system/webconsole> quit
+svcadm refresh webconsole
+svcprop /system/webconsole:console | grep tcp_listen
+# ce dossier est un lien et il faut le recopier
+\rm -rf /usr/cluster/lib/SunClusterManager/WEB-INF/classes/ds
+cp -r /usr/cluster/lib/ds /usr/cluster/lib/SunClusterManager/WEB-INF/classes/
+# restarter la webconsole
+/usr/sbin/smcwebserver restart
+
+#rpcbind
+# ca doit etre false
+svcprop network/rpc/bind:default | grep local_only
+
+#pour virer des messages qui puissent y arriver:
+svcs "*pools*"
+svcadm enable pools/dynamic
+svcs "*pools*"
+
+#disques internes:
+export no="mireille martoni"
+clnode set -p reboot_on_path_failure=enabled ${no}
+scdidadm -L
+# unmonitor des disques internes:
+cldev unmonitor d1
+cldev unmonitor d2
+cldev unmonitor d3
+
+# bougue sccheck
+# verifier si ca marche:
+sccheck -v 2 -s4
+# si ca plante, virer les entres "sds" et "vxfsextended" du fichier conf de sccheck:
+vi /usr/cluster/lib/sccheck/explorer_args.cluster
+# constater que le scsnapshot est installe
+ls -l /usr/cluster/bin/scsnapshot
+
+# ntp:
+# on verifier le TIMEZONE. Ca doit etre MET
+more /etc/TIMEZONE
+svcs "*ntp*"
+ls -l /etc/inet/ntp.conf
+svcadm enable ntp
+svcs "*ntp*"
+
+# local-mac-address
+# ca doit etre true
+eeprom | grep local-mac-address
+
+# checkings name_to_major
+# on note ceci a cote car ca devra etre egal pour le 2eme noued:
+grep did /etc/name_to_major
+grep ^md /etc/name_to_major
+
+# constater qu'on a le default router sette
+more /etc/defaultrouter
+
+# nsswitch
+# eliminer "cluster" comme choix de resolution de noms
+vi /etc/nsswitch.conf
+
+# hosts et netmasks
+# ca doit etre un lien du fichier hosts
+ls -l /etc/inet/ipnodes
+# et cai,c'est pour eviter un bougue avec ipmp
+
+cat >> /etc/inet/ipnodes <<EOF
+#############Cluster EISCD
+172.16.0.129    clusternode1-priv-physical1
+172.16.1.1      clusternode1-priv-physical2
+172.16.4.1      clusternode1-priv
+172.16.0.130    clusternode2-priv-physical1
+172.16.1.2      clusternode2-priv-physical2
+172.16.4.2      clusternode2-priv
+EOF
+
+cat >> /etc/netmasks <<EOF
+172.16.0.128    255.255.255.128
+172.16.1.0      255.255.255.128
+172.16.4.0      255.255.254.0
+EOF
+
+
+# checkings ip
+# ca doit etre 0
+ndd /dev/ip ip_strict_dst_multihoming
+
+# setter les disques internes en autogen et localonly
+scdidadm -L
+cldg set -p localonly=true  dsk/d1
+cldg set -p localonly=true  dsk/d2
+cldg set -p localonly=true  dsk/d3
+cldg set -p autogen=true  dsk/d1
+cldg set -p autogen=true  dsk/d2
+cldg set -p autogen=true  dsk/d3
+cldg show -v
+
+# Conseils eiscd crontab
+# remuer les frequences en 5 m de ces trois jobs
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/eventlog
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/DS
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/commandlog
+
+crontab -e
+
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/eventlog
+25 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/DS
+30 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/commandlog
+
+
+# copier le script metacheck qui vient avec l'eiscd aux path des commandes SVM ( /usr/sbin )
+cp /net/romulus/export/patches/Quark/eiscd/31MAR09/tools/MISC/SVM/metacheck.ksh  /usr/sbin
+# ajouter-le au crontab de root
+crontab -e
+0 5 * * 0 /usr/sbin/metacheck.ksh lsateam@infra-srv.opoce.cec.eu.int > /dev/null 2>&1
+# changer le script pour que ca envoie des mails. il y a une variable
+# verifier que ca a permission d'execution
+ls -l /usr/sbin/metacheck.ksh
+
+# conf ipmp
+# demander a Kevin une address pour configurer l'ipmp. On fait link-probe ipmp mais on en a toutefois besoin.
+cp -p /etc/hosts /etc/hosts.20090422
+export no=mireille
+echo "158.167.99.70     ${no}-ipmp" >> /etc/hosts
+echo "158.167.226.145   ${no}-vlan170-ipmp" >> /etc/hosts
+cp -p /etc/hostname.e1000g0 /etc/__hostname.e1000g0
+echo "${no}  netmask + broadcast + group vlan1 up" > /etc/hostname.e1000g1000
+echo "${no}-ipmp  netmask + broadcast + deprecated group vlan1 up" > /etc/hostname.e1000g1001
+echo "${no}-vlan170-ipmp  netmask + broadcast + group vlan170 up" > /etc/hostname.e1000g170000
+echo "${no}-vlan170-ipmp2  netmask + broadcast + deprecated group vlan170 up" > /etc/hostname.e1000g170001
+# et le netmask de ce vlan
+echo "158.167.226.128 255.255.255.224" >> /etc/netmasks
+
+# ca doit etre online
+svcs "*multipath*"
+# verifier que ca affiche yes
+grep TRACK_INTERFACES_ONLY_WITH_GROUPS /etc/default/mpathd
+
+# disques:
+# casser miroir de zones de martoni
+# regarder avant ou se trouve le quorum
+# des martoni
+clq status
+export zp=cordiscms_p
+zpool detach ${zp} c4t6006048000028775112853594D304638d0
+export zp=cordiscms_t
+zpool detach ${zp} c4t6006048000028775112853594D353141d0
+# enlever ces deux devices du framework cluster
+# c'est pour enlever la reservation scsi
+cldg remove-device -d d7 dsk/d7
+cldg remove-device -d d6 dsk/d6
+cldg delete dsk/d7
+cldg delete dsk/d6
+# faire que les luns soient pas visibles pour martoni
+luxadm -e offline /dev/rdsk/c4t6006048000028775112853594D304638d0s2
+luxadm -e offline /dev/rdsk/c4t6006048000028775112853594D353141d0s2
+# rafraichir la couche framework cluster
+cldev clear
+cldev refresh
+cldev populate
+# ca doit pas afficher martoni pour ces devices et unknown pour mireille
+cldev status -v
+
+
+# zones:
+# depuis martoni
+export no=mireille
+mkdir -p /net/opsrv190/xchange/${no}
+export zo=cordiscms_pz
+export zo=cordiscms_tz
+zonecfg -z ${zo} export  > /net/opsrv190/xchange/${no}/${zo}.cfg
+
+# depuis mireille
+# avant de lancer le zonecfg suivant, changer les fichiers .cfg avec des addresses temporels
+export no=mireille
+export zo=cordiscms_pz
+export zo=cordiscms_tz
+zonecfg -z ${zo} -f /net/opsrv190/xchange/${no}/${zo}.cfg
+zoneadm list -ivc
+
+# zpools et zones ( continuation ):
+export zo=cordiscms_pz
+export zp=cordiscms_prod
+zpool create -f -m /zpool/${zo} ${zp} c4t6006048000028775112853594D304638d0
+export zo=cordiscms_tz
+export zp=cordiscms_test
+zpool create -f -m /zpool/${zo} ${zp} c4t6006048000028775112853594D353141d0
+# pour chacun:
+zfs create ${zp}/zone
+zfs set mountpoint=/zones/${zo} ${zp}/zone
+
+
+export zo=cordiscms_pz
+export zo=cordiscms_tz
+chmod 700 /zones/${zo}
+zoneadm -z ${zo} install
+# verifs de possibles erreurs:
+grep -i err /zones/${zo}/root/var/sadm/system/logs/install_log
+grep -i warn /zones/${zo}/root/var/sadm/system/logs/install_log
+
+# Cluster: ressources groups et ressources:
+# enregistrement de ressource qu'on utilisera
+clrt register SUNW.HAStoragePlus
+clrt register SUNW.gds
+
+
+export rg=cordiscms_prod-rg
+export rg=cordiscms_test-rg
+clrg create ${rg}
+clrg online -M  ${rg}
+
+export rg=cordiscms_prod-rg
+export rs=cordiscms_prod-zfs
+export zp=cordiscms_prod
+
+# Creer ressource storage
+clrs create -g ${rg} -t SUNW.HAStoragePlus -p zpools=${zp} ${rs}
+
+
+export rg=cordiscms_test-rg
+export rs=cordiscms_test-zfs
+export zp=cordiscms_test
+
+# Creer ressource storage
+clrs create -g ${rg} -t SUNW.HAStoragePlus -p zpools=${zp} ${rs}
+
+
+
+# Configuration fichier pour creer la ressource zone
+export rs=cordiscms_prod-rs
+export rs2=cordiscms_prod-zfs
+export rg=cordiscms_prod-rg
+export zo=cordiscms_pz
+
+export rs=cordiscms_test-rs
+export rs2=cordiscms_test-zfs
+export rg=cordiscms_test-rg
+export zo=cordiscms_tz
+cat > /opt/SUNWsczone/sczbt/util/${rs} <<EOF
+RS=${rs}
+RG=${rg}
+PARAMETERDIR=/etc/zoneagentparams
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=${rs2}
+Zonename="${zo}"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOF
+
+mkdir -p /etc/zoneagentparams
+/opt/SUNWsczone/sczbt/util/sczbt_register -f /opt/SUNWsczone/sczbt/util/${rs}
+
+export zo=cordiscms_pz
+export rs=cordiscms_prod-rs
+export zo=cordiscms_tz
+export rs=cordiscms_test-rs
+# copier les scripts de demarrage de la ressource
+cp /etc/zoneagentparams/cordiscms_*sh /net/opsrv190/xchange/mireille/
+cp /net/opsrv190/xchange/mireille/cordiscms*.sh /etc/zoneagentparams/
+clrs set -p Start_command="/etc/zoneagentparams/${zo}.sh start" ${rs}
+clrs set -p Stop_command="/etc/zoneagentparams/${zo}.sh stop" ${rs}
+
+
+clrs enable +
+
+# rebooter pour que ca prenne les changements ipmp et des cartes reseau
+mv /etc/hostname.e1000g0 /etc/__hostname.e1000g0
+sync;sync;lockfs -fa; init 6
+
+# copie des donnees:
+#### Apres avec le vlan tagging en fonctionnement
+#### donc on s'en sert d'alambic pour passer les donnees
+# depuis martoni
+zfs snapshot cordiscms_p/applications@migration
+zfs snapshot cordiscms_t/applications@migration
+zfs send cordiscms_p/applications@migration | gzip > /net/opsrv190/xchange/mireille/cordiscms_p_app.gzip
+zfs send cordiscms_t/applications@migration | gzip > /net/opsrv190/xchange/mireille/cordiscms_t_app.gzip
+# lendemain
+zfs snapshot cordiscms_p/applications@migration20090718
+zfs snapshot cordiscms_t/applications@migration20090718
+zfs send -i cordiscms_p/applications@migration cordiscms_p/applications@migration20090718 | gzip > /net/opsrv190/xchange/mireille/cordiscms_p_app.20090518.gzip
+zfs send -i cordiscms_t/applications@migration cordiscms_t/applications@migration20090718 | gzip > /net/opsrv190/xchange/mireille/cordiscms_t_app.20090518.gzip
+# depuis mireille
+gunzip -c /net/opsrv190/xchange/mireille/cordiscms_p_app.gzip | zfs recv cordiscms_prod/applications
+gunzip -c /net/opsrv190/xchange/mireille/cordiscms_t_app.gzip | zfs recv cordiscms_test/applications
+# lendemain
+gunzip -c /net/opsrv190/xchange/mireille/cordiscms_p_app.20090518.gzip | zfs recv -F cordiscms_prod/applications
+gunzip -c /net/opsrv190/xchange/mireille/cordiscms_t_app.20090518.gzip | zfs recv -F cordiscms_test/applications
+
+zfs set mountpoint=/applications/cordiscms ${zp}/applications
+
+# Fichiers conf
+export zo=cordiscms_tz
+export zo=cordiscms_pz
+zlogin ${zo} pkgchk  2> /var/tmp/pkgchk.out.martoni
+grep ERROR /zones/${zo}/root/var/tmp/pkgchk.out
+
+mkdir -p /net/opsrv190/xchange/mireille/${zo}/
+cd /zones/${zo}/root/
+tar cf /net/opsrv190/xchange/mireille/${zo}/nsr.tar nsr
+tar cf /net/opsrv190/xchange/mireille/${zo}/cfengine.tar var/cfengine 
+tar cf /net/opsrv190/xchange/mireille/${zo}/mail.tar etc/mail
+# install Sun Studio 12 sur cordiscms_tz
+# regarder si ca est sur romulus ou sur osiris sinon:
+http://developers.sun.com/sunstudio/downloads/thankyou.jsp?submit=%A0FREE+Download%A0%BB%A0
+export zo=cordiscms_tz
+zlogin ${zo}
+cp /net/remus/export/software/SunStudio12ml-solaris-sparc-200709-pkg.tar.bz2 /var/tmp
+cd /var/tmp
+bunzip2 -c SunStudio12ml-solaris-sparc-200709-pkg.tar.bz2 | tar xvf -
+./installer
+
+cp -p ./etc/init.d/networker /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/auto_home /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/nsswitch.conf /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/defaultdomain /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/pam.conf /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/resolv.conf /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/hosts.allow /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/hosts.deny /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/inet/hosts  /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/nodename /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/acct/holidays /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/syslog.conf /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/logadm.conf /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/ssh/ssh_host* /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/default/init /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/sma/snmp/snmpd.conf /net/opsrv190/xchange/mireille/${zo}
+# pas de nouveaux utilisateurs,donc on copie
+cp -p ./etc/passwd /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/shadow /net/opsrv190/xchange/mireille/${zo}/
+cp -p ./etc/group /net/opsrv190/xchange/mireille/${zo}/
+
+# Ajoutes:
+egrep "(cordiscms|opsys_ux)" ./etc/user_attr > /net/opsrv190/xchange/mireille/${zo}/user_attr
+egrep -i "(cordiscms|opsys_ux)" etc/security/prof_attr > /net/opsrv190/xchange/mireille/${zo}/prof_attr
+egrep -i "(cordiscms|opsys_ux)" ./etc/security/exec_attr > /net/opsrv190/xchange/mireille/${zo}/exec_attr
+
+# depuis mireille
+export zo=cordiscms_tz
+export zo=cordiscms_pz
+zlogin ${zo} pkgchk 2> /var/tmp/pkgchk.out.mireille
+cd /zones/${zo}/root
+tar xf /net/opsrv190/xchange/mireille/${zo}/nsr.tar 
+tar xf /net/opsrv190/xchange/mireille/${zo}/cfengine.tar 
+tar xf /net/opsrv190/xchange/mireille/${zo}/mail.tar 
+cp /net/opsrv190/xchange/mireille/${zo}/networker ./etc/init.d
+cp /net/opsrv190/xchange/mireille/${zo}/auto_home ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/nsswitch.conf ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/defaultdomain ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/pam.conf ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/resolv.conf ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/hosts.allow ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/hosts.deny ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/hosts ./etc/inet/
+cp /net/opsrv190/xchange/mireille/${zo}/nodename  ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/holidays  ./etc/acct/
+cp /net/opsrv190/xchange/mireille/${zo}/syslog.conf  ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/logadm.conf  ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/ssh_host*  ./etc/ssh/
+cp /net/opsrv190/xchange/mireille/${zo}/init  ./etc/default/
+cp /net/opsrv190/xchange/mireille/${zo}/passwd  ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/shadow ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/group ./etc/
+cp /net/opsrv190/xchange/mireille/${zo}/snmpd.conf ./etc/sma/snmp/
+cat /net/opsrv190/xchange/mireille/${zo}/user_attr >> ./etc/user_attr
+cat /net/opsrv190/xchange/mireille/${zo}/prof_attr >> ./etc/security/prof_attr
+cat /net/opsrv190/xchange/mireille/${zo}/prof_attr >> ./etc/security/exec_attr
+
+
+# liens
+cd etc/rc2.d 
+ln -s /etc/init.d/networker S95networker
+cd ../../etc/rc0.d 
+ln -s /etc/init.d/networker K05networker
+
+# depuis martoni
+cd /zones/${zo}/root
+find . -local -mount -name sadm -prune  -o -name "applications*" -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /var/tmp/${zo}.root
+
+# depuis mireille
+cd /zones/${zo}/root
+find . -local -mount -name sadm -prune  -o -name "applications*" -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /net/opsrv190/xchange/mireille/${zo}.root.u06
+
+#depuis martoni
+diff -u /var/tmp/${zo}.root /net/opsrv190/xchange/mireille/${zo}.root.u06 > /var/tmp/diffs.${zo}
+grep "^\-" /var/tmp/diffs.${zo} | more
+
+# demarrer les nouvelles zones sur mireille
+# depuis mireille
+clrg offline +
+export zp=cordiscms_prod
+export zp=cordiscms_test
+zpool import ${zp}
+zfs set mountpoint=/applications/cordiscms cordiscms_prod/applications
+# ca peut afficher un warning. 
+zfs set mountpoint=/applications/cordiscms cordiscms_test/applications
+# ajouter les addresses au fichier hosts
+cat >> /etc/hosts <<EOF
+158.167.226.151 cordiscms_tz
+158.167.226.152 cordiscms_pz
+EOF
+
+# changer les ip
+export zo=cordiscms_pz
+export zo=cordiscms_tz
+vi /etc/zones/${zo}.xml
+vi /etc/zoneagentparams/${zo}.sh
+# depuis martoni
+clrg offline +
+clrg status
+# depuis mireille
+clrg online +
+# snmp
+svcadm disable svc:/application/management/dmi:default
+svcadm disable svc:/application/management/snmpdx:default
+svcs "*sma*"
+
+
+# une fois que c'est bon
+# depuis martoni
+clrs disable +
+clrg unmanage +
+sync ; sync ; lockfs -fa ; init 6
+zpool status
+export zp=cordiscms_t
+export zp=cordiscms_p
+zpool export ${zp}
+luxadm -e offline /dev/rdsk/c4t60060480000290103312533030354143d0s2
+luxadm -e offline /dev/rdsk/c4t60060480000290103312533030354232d0s2
+

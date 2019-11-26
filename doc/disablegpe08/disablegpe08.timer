@@ -1,0 +1,10 @@
+[Unit]
+Description=Runs disablegpe08 script one minute after boot
+
+[Timer]
+# Time to wait after booting before activation
+OnBootSec=1min
+Unit=disablegpe08.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,65 @@
+
+
+opvmwspsmq01 - pas de communication - snmp restarted 			--> OK
+orvmwspsqp02 - pas de communication - snmp restarted 			--> OK
+orvmwsidol50 - pas de communication - snmp restarted 			--> OK
+opvmwsdefa1  - pas de communication - snmp restarted 			--> OK
+bkpnws04-pk  - pas de communication - snmp restarted 			--> OK
+fermat		- espace disque faible -				--> ok de dba pour delete des files
+opvmwsbkp06	- espace disque faible - 				--> clean des fichiers temporaire de yum
+khephren	- espace disque faible -				--> clean des fichiers temporaire corosync
+picard		- espace disque faible sur /				--> clean de /nsr/logs
+otvmwsodp01	- espace disque faible -				--> clean des logs dans /applications/ecodp/logs/httpd
+worf		- espace disque fabible sur / 				--> clean de /nsr/logs
+riker		- espace disque fabible sur / 				--> clean de /nsr/logs
+otvmwspsqp02    - espace disque fabible sur / 				--> clean de /nsr/logs
+orvmwscelbo1	CRITICAL : /applications/cellar/xchange 100% used 	--> equipe int test a fait le necessaire
+otvmwscelbo1	CRITICAL : /applications/cellar/xchange 100% used 	--> equipe int test a fait le necessaire
+otvmwsjir02	CRITICAL : /applications/jira/users 100% used 		--> equipe int test a fait le necessaire
+idol7-rk	- espace disque fabible sur /tmp			--> restart de atop
+laforge	        - espace disque fabible sur / 	-			--> clean de /nsr/logs	
+satellite-pk  - pas de communication - snmp restarted 			--> OK	
+cauchy		- espace disque fabible sur /u01   			--> move /u01/home/oracle/tmp /apex_5.1.1_en.zip vers /root , comme bkp
+otvmwsdefa1     - espace disque fabible sur /usr  			--> remove de jdk1.8.0_102
+orvmwsdefa1     - espace disque fabible sur /usr  			--> remove de jdk1.8.0_102
+formexweb-euf-tk - espace disque faible 				--> equipe int test a fait le necessaire
+
+
+infra2-tk	- espace faible mais tout de meme 63 GB avail
+/dev/mapper/logs-syslog
+                      717G  655G   63G  92% /applications/syslog-ng
+
+
+
+
+
+
+
+
+
+
+
+********************************************************
+/dev/mapper/rootp-oraagent
+                      2.9G  2.6G  160M  95% /u01/home/oraagent
+
+[root@fermat log]# pwd
+/u01/home/oraagent/agent13c/agent_inst/sysman/log
+							->mail fait a DBA
+Ok delete des heapdumps
+
+*********************************************************
+
+opvmwsbkp06
+Clean des anciens cache de YUM
+
+/dev/mapper/root-var  1.5G  860M  544M  62% /var
+
+*********************************************************
+khephren
+/dev/mapper/rootp-var                                  3.0G  562M  2.5G  19% /var
+delete des fichiers temporaires : /var/lib/corosync/fdata-2017-09-30T06:00:23-14920
+pwd : 
+
+
+bkpnws04-pk

@@ -1,0 +1,11 @@
+##### r/s    w/s   kr/s   kw/s wait actv wsvc_t asvc_t  %w  %b device
+
+##### iostat pour toutes les luns d'un zpool
+zpool=cellarmain2-pz
+iostat -cpnx `zpool status $zpool | perl -ne 'print "$1 " if(m{\s+(c\dt.{32}d0)\s+ONLINE\s+\d+})'` 1 
+
+##### iostat avec timestamp
+iostat -xn 1  | perl -ne 'print time . $_;' >/home/betorma/export/iostat_heracles.out
+tail -f /home/betorma/export/iostat_heracles.out | perl -ne '@list=split; $date=`/home/betorma/bin/timestamp2date.pl $list[0]`; chomp $date; print "$date $_"'
+
+

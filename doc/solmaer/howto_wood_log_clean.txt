@@ -1,0 +1,34 @@
+###################################################################################
+# compresser les log d'un utilisateur wood par rapport a une date
+###################################################################################
+
+
+##### appli et utilisateur wood
+export appli=eub2
+export w_user=w_eub2
+
+##### voir les fichiers a compresser
+ls /applications/${appli}/users/${w_user}/queues/*/LOG/*_log_????_??_??
+
+##### date des logs a compresser
+export date="2009_08_0?"
+
+##### etat du fs avant compression
+df -k /applications/${appli}/users/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/procat/vusers
+                     50333184 44758567 5274405    90%    /applications/procat/users
+##### compression
+gzip -v9 /applications/${appli}/users/${w_user}/queues/*/LOG/*_log_${date}
+
+##### compression sur anubis
+#cmd=/opt/security/bin/gunzip
+#${cmd} -v9 /applications/${appli}/users/${w_user}/queues/*/LOG/*_log_${date}
+
+##### etat du fs apres compression
+df -k /applications/${appli}/users/
+
+
+
+
+

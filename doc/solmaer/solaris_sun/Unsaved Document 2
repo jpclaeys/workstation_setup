@@ -1,0 +1,300 @@
+#####
+##### sur kusha solaris c est installe sur le disk suivant;
+#####
+0[150210/165446]root@kusha# zpool status rpool
+  pool: rpool
+ state: ONLINE
+  scan: none requested
+config:
+
+        NAME                      STATE     READ WRITE CKSUM
+        rpool                     ONLINE       0     0     0
+          c2t500601683EA42F4Ad52  ONLINE       0     0     0
+
+errors: No known data errors
+0[150210/165522]root@kusha# 
+
+
+
+0[150210/164928]root@kusha# luxadm display /dev/rdsk/c2t500601683EA42F4Ad52
+DEVICE PROPERTIES for disk: /dev/rdsk/c2t500601683EA42F4Ad52
+  Vendor:               DGC     
+  Product ID:           VRAID           
+  Revision:             0532
+  Serial Num:           CKM00114100475
+  Unformatted capacity: 40960.000 MBytes
+  Write Cache:          Enabled
+  Read Cache:           Enabled
+    Minimum prefetch:   0x0
+    Maximum prefetch:   0x0
+  Device Type:          Disk device
+  Path(s):
+
+  /dev/rdsk/c1t5006016A3EA42F4Ad52s2
+  /devices/pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w5006016a3ea42f4a,34:c,raw
+    LUN path port WWN:          5006016a3ea42f4a
+    Host controller port WWN:   21000024ff414998
+    Path status:                O.K.
+  /dev/rdsk/c1t500601623EA42F4Ad52s2
+  /devices/pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w500601623ea42f4a,34:c,raw
+    LUN path port WWN:          500601623ea42f4a
+    Host controller port WWN:   21000024ff414998
+    Path status:                O.K.
+  /dev/rdsk/c2t500601603EA42F4Ad52s2
+  /devices/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w500601603ea42f4a,34:c,raw
+    LUN path port WWN:          500601603ea42f4a
+    Host controller port WWN:   21000024ff4519f0
+    Path status:                O.K.
+  /dev/rdsk/c2t500601683EA42F4Ad52s2
+  /devices/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w500601683ea42f4a,34:c,raw
+    LUN path port WWN:          500601683ea42f4a
+    Host controller port WWN:   21000024ff4519f0
+    Path status:                O.K.
+
+
+
+
+
+
+
+
+
+
+#####
+##### or ce disk est utilise par un autre zpool, celui de cportaldb-tz-db, en cours d'utilisation sur lava
+##### 
+
+  0[150210/165212]root@lava# zpool status -xv
+  pool: cportaldb-tz-db
+ state: DEGRADED
+status: One or more devices are unavailable in response to persistent errors.
+        Sufficient replicas exist for the pool to continue functioning in a
+        degraded state.
+action: Determine if the device needs to be replaced, and clear the errors
+        using 'zpool clear' or 'fmadm repaired', or replace the device
+        with 'zpool replace'.
+  scan: resilvered 15.2G in 0h2m with 0 errors on Thu Jan 15 09:38:21 2015
+config:
+
+        NAME                          STATE     READ WRITE CKSUM
+        cportaldb-tz-db               DEGRADED     0     0     0
+          mirror-0                    DEGRADED     0     0     0
+            c2t500601683EA42F5Ed51s0  ONLINE       0     0     0
+            15802436386928715271      UNAVAIL      0     0     0
+
+device details:
+
+        15802436386928715271        UNAVAIL       was /dev/dsk/c0t6006016017602D0097B0EC70BB9BE411d0s0
+        status: ZFS detected errors on this device.
+                The device has bad label or disk contents.
+           see: http://support.oracle.com/msg/ZFS-8000-D3 for recovery
+
+
+errors: No known data errors
+0[150210/165215]root@lava# 
+
+
+
+
+
+
+
+
+
+
+
+#####
+##### normalement, le zpool rpool doit utiliser le lun id 100
+#####
+
+0[150210/165419]root@kusha# luxadm probe | grep d100                          
+    Logical Path:/dev/rdsk/c1t5006016A3EA42F5Ed100s2
+    Logical Path:/dev/rdsk/c1t500601623EA42F5Ed100s2
+    Logical Path:/dev/rdsk/c2t500601603EA42F5Ed100s2
+    Logical Path:/dev/rdsk/c2t500601683EA42F5Ed100s2
+
+
+
+
+0[150210/165714]root@kusha# luxadm display /dev/rdsk/c2t500601683EA42F5Ed100s2
+DEVICE PROPERTIES for disk: /dev/rdsk/c2t500601683EA42F5Ed100s2
+  Vendor:               DGC     
+  Product ID:           VRAID           
+  Revision:             0532
+  Serial Num:           CKM00114100476
+  Unformatted capacity: 307200.000 MBytes
+  Read Cache:           Enabled
+    Minimum prefetch:   0x0
+    Maximum prefetch:   0x0
+  Device Type:          Disk device
+  Path(s):
+
+  /dev/rdsk/c2t500601683EA42F5Ed100s2
+  /devices/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w500601683ea42f5e,64:c,raw
+    LUN path port WWN:          500601683ea42f5e
+    Host controller port WWN:   21000024ff4519f0
+    Path status:                O.K.
+  /dev/rdsk/c1t5006016A3EA42F5Ed100s2
+  /devices/pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w5006016a3ea42f5e,64:c,raw
+    LUN path port WWN:          5006016a3ea42f5e
+    Host controller port WWN:   21000024ff414998
+    Path status:                O.K.
+  /dev/rdsk/c1t500601623EA42F5Ed100s2
+  /devices/pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w500601623ea42f5e,64:c,raw
+    LUN path port WWN:          500601623ea42f5e
+    Host controller port WWN:   21000024ff414998
+    Path status:                O.K.
+  /dev/rdsk/c2t500601603EA42F5Ed100s2
+  /devices/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w500601603ea42f5e,64:c,raw
+    LUN path port WWN:          500601603ea42f5e
+    Host controller port WWN:   21000024ff4519f0
+    Path status:                O.K.
+
+0[150210/165720]root@kusha# 
+
+
+
+
+
+
+
+#####
+##### je reboot le serveur, parce que j en ai besoin pour finaliser la desactivation de mpxio
+##### ensuite je corrigerai le probleme
+#####
+
+
+
+
+
+
+
+
+      /devices/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w500601683ea42f5e,64:c,raw
+      /devices/pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w5006016a3ea42f5e,64:c,raw
+      /devices/pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w500601623ea42f5e,64:c,raw
+
+      /devices/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w500601603ea42f5e,64:c,raw
+Boot device: /pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/disk@w500601683ea42f5e,64:a  File and args: 
+
+     /devices/pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w5006016a3ea42f4a,34:c,raw
+     /devices/pci@500/pci@1/pci@0/pci@0/SUNW,qlc@0/fp@0,0/ssd@w500601623ea42f4a,34:c,raw
+     /devices/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w500601603ea42f4a,34:c,raw
+     /devices/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/ssd@w500601683ea42f4a,34:c,raw
+
+
+
+
+
+
+
+
+/pci@500/pci@2/pci@0/pci@a/SUNW,qlc@0/fp@0,0/disk@w500601683ea42f4a,34:a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####
+##### j'enleve la partie defectueuse du mirroir de cportaldb-tz-db
+#####
+
+0[150210/165400]root@lava# zpool status cportaldb-tz-db
+  pool: cportaldb-tz-db
+ state: DEGRADED
+status: One or more devices are unavailable in response to persistent errors.
+        Sufficient replicas exist for the pool to continue functioning in a
+        degraded state.
+action: Determine if the device needs to be replaced, and clear the errors
+        using 'zpool clear' or 'fmadm repaired', or replace the device
+        with 'zpool replace'.
+        Run 'zpool status -v' to see device specific details.
+  scan: resilvered 15.2G in 0h2m with 0 errors on Thu Jan 15 09:38:21 2015
+config:
+
+        NAME                          STATE     READ WRITE CKSUM
+        cportaldb-tz-db               DEGRADED     0     0     0
+          mirror-0                    DEGRADED     0     0     0
+            c2t500601683EA42F5Ed51s0  ONLINE       0     0     0
+            15802436386928715271      UNAVAIL      0     0     0
+
+errors: No known data errors
+0[150210/171518]root@lava# 
+
+
+0[150210/171518]root@lava# zpool detach cportaldb-tz-db 15802436386928715271
+0[150210/171551]root@lava# zpool status cportaldb-tz-db                     
+  pool: cportaldb-tz-db
+ state: ONLINE
+  scan: resilvered 15.2G in 0h2m with 0 errors on Thu Jan 15 09:38:21 2015
+config:
+
+        NAME                        STATE     READ WRITE CKSUM
+        cportaldb-tz-db             ONLINE       0     0     0
+          c2t500601683EA42F5Ed51s0  ONLINE       0     0     0
+
+errors: No known data errors
+
+
+
+
+
+
+#####
+##### je remplace le bon mauvais disk par le bon dans le zpool rpool
+#####
+
+zpool replace rpool c2t500601683EA42F4Ad52 c2t500601683EA42F5Ed100
+
+
+
+
+
+
+#####
+##### je remet le zpool cportaldb-tz-db en mirroir
+#####
+
+
+
+zpool attach cportaldb-tz-db c2t500601683EA42F5Ed51s0 c2t500601683EA42F4Ad52s0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,9 @@
+
+nsradmin -c "type:NSR license"
+
+root@coppola 10:49 [tmp] nsradmin -s coppola
+NetWorker administration program.
+Use the "help" command for help, "visual" for full-screen mode.
+nsradmin> show status
+nsradmin> print type:nsr
+

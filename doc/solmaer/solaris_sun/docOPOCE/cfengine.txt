@@ -1,0 +1,12 @@
+#Checkings
+# Parsing
+cfagent -p
+cfagent -p -d3
+# Debug
+cfagent -d2
+# Verbose
+cfagent -v
+# Inform
+cfagent -I
+# Push from infra-srv to other hosts
+/var/cfengine/bin/cfrun

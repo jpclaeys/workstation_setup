@@ -1,0 +1,58 @@
+########################################################################
+#
+# dump opitwiki
+#
+########################################################################
+
+
+user=betorma
+password=popo
+server=http://opitwiki/doku.php?id=front_page
+target_folder=/home/betorma/export/dump/docuwiki
+
+
+mkdir -p $target_folder
+cd $target_folder
+
+wget --save-cookies cookies.txt \
+     --keep-session-cookies \
+     --post-data "user=${user}&password=${password}" \
+     --delete-after \
+     ${server}/doku.php
+
+wget --post-data "user=${user}&password=${password}" \
+     --delete-after \
+     ${server}
+
+
+
+# Now grab the page or pages we care about.
+wget --load-cookies cookies.txt $server
+
+
+wget --user $user --password $password ${server}
+
+
+
+
+wget  --no-verbose \
+      --recursive \
+      --execute robots=off \
+      --no-parent \
+      --page-requisites \
+      --convert-links \
+      --http-user="$user" \
+      --http-password="$password" \
+      --auth-no-challenge \
+      --adjust-extension \
+     ${server}/doku.php
+
+      --exclude-directories=_detail,_export \
+      --reject="feed.php*,*do=backlink.html,*do=edit*,*do=index.html,*indexer.php?id=*,*do=admin.html,*do=revisions.html,*do=media*" \
+      --directory-prefix="$PREFIX" \
+      --no-host-directories \
+     ${server}/doku.php
+
+      $ADDITIONNAL_WGET_OPTS \
+      "$PROTO://$HOST/$LOCATION"
+

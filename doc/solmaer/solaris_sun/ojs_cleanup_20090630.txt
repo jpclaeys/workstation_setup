@@ -1,0 +1,281 @@
+######################################################################
+#
+#	CLEANUP OF SEIJOS 
+#	30/06/2009
+#
+#######################################################################
+
+% df -k /applications/ojs/archive/* /applications/ojs/archive/*/arch* /applications/ojs/users/
+Filesystem           1024-blocks        Used   Available Capacity  Mounted on
+/dev/vx/dsk/ojs/vexternal
+                        52405993    42014774     9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/voriginal
+                        11529300    10502171      911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vpaper
+                        51609487    50426275      667118    99%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume
+                        18866138    18377535      299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/lofi/1             10316795    10100744      112884    99%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch01
+/dev/lofi/2             10316795     1727718     8485910    17%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+/dev/lofi/3             10316795       10260    10203368     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+/dev/lofi/4             10316795       10258    10203370     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch04
+/dev/lofi/10            10316795     2442910     7770718    24%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+/dev/lofi/5              3439482     3370406       34682    99%    /applications/ojs/archive/RESUME_TEXT/arch01
+/dev/lofi/6              3439482     1986763     1418325    59%    /applications/ojs/archive/RESUME_TEXT/arch02
+/dev/lofi/7              3439482        3602     3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch03
+/dev/lofi/8              3439482        3602     3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch04
+/dev/lofi/9              3439482        3602     3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch05
+/dev/vx/dsk/ojs/vbase
+                       109771978    98222409    10451850    91%    /applications/ojs/users
+
+
+####################################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/EXTERNAL_CONTRACTOR (N/A: fichiers trop recents)
+####################################################################################
+
+% df -k /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+
+% cd /home/ojs/SEI-JOS/data/ORIGINAL/EXTERNAL_CONTRACTOR
+
+% export documents=""
+
+% find ${documents} -local -mount -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls | perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"' >/tmp/rmext1.lst
+
+% find ${documents} -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'|tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"' | xargs -n 100 /bin/rm
+
+% for dir in ${documents}
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n ${dir} " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+% df -k /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+
+% for dir in ${documents}
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+% df -k /applications/ojs/users
+
+
+####################################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/RESUME_TEXT (09-050 -> 09-059)
+####################################################################################
+
+% cd /home/ojs/SEI-JOS/data/ORIGINAL/RESUME_TEXT
+
+% df -k /applications/ojs/archive/RESUME_TEXT/arch02
+Filesystem           1024-blocks        Used   Available Capacity  Mounted on
+/dev/lofi/6              3439482     1986763     1418325    59%    /applications/ojs/archive/RESUME_TEXT/arch02
+
+% export documents="09-05?"
+
+% du -sk ${documents} | perl -nae '$t+=$F[0]; print "$t $_"'
+104788 104788   09-050
+207574 102786   09-051
+322670 115096   09-052
+431671 109001   09-053
+536666 104995   09-054
+642350 105684   09-055
+740135 97785    09-056
+848148 108013   09-057
+974601 126453   09-058
+1085876 111275  09-059
+
+% for dir in ${documents}
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+% df -k /applications/ojs/archive/RESUME_TEXT/arch02
+/dev/lofi/6          3439482 2036300 1368788    60%    /applications/ojs/archive/RESUME_TEXT/arch02
+
+% for dir in ${documents}
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+echo "done"
+done
+
+% df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 97238689 11435570    90%    /applications/ojs/users
+
+######################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/ORIGINAL_TEXT (09-050 -> 09-069)
+######################################################################
+
+% df -k /applications/ojs/archive/ORIGINAL_TEXT/arch01
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/10         10316795 2442910 7770718    24%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+
+% cd /home/ojs/SEI-JOS/data/ORIGINAL/ORIGINAL_TEXT
+
+% export documents="09-05? 09-06?"
+
+% du -sk ${documents} | perl -nae '$t+=$F[0]; print "$t $_"'
+12801 12801     09-050
+24844 12043     09-051
+38935 14091     09-052
+51745 12810     09-053
+64397 12652     09-054
+77597 13200     09-055
+88733 11136     09-056
+101360 12627    09-057
+115426 14066    09-058
+129244 13818    09-059
+143242 13998    09-060
+156976 13734    09-061
+170994 14018    09-062
+184670 13676    09-063
+198611 13941    09-064
+215208 16597    09-065
+231490 16282    09-066
+247708 16218    09-067
+260057 12349    09-068
+274355 14298    09-069
+
+% for dir in ${documents}
+do
+arch="arch01"
+type="ORIGINAL_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+% df -k /applications/ojs/archive/ORIGINAL_TEXT/arch01
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/10         10316795 2488622 7725006    25%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+
+% for dir in ${documents}
+do
+arch="arch01"
+type="ORIGINAL_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+chmod g-s ${dir}
+echo "done"
+done
+
+% df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 97184637 11489622    90%    /applications/ojs/users
+
+
+######################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/PAPER 
+######################################################################
+
+% df -k /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vpaper
+                     51609487 50426275  667118    99%    /applications/ojs/archive/PAPER
+
+##### n/a: plus de place sur le fs d'archivage
+
+
+######################################################################
+# cleanup of /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXPORT (2009-060 -> 2009-069)
+######################################################################
+
+% df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 97189954 11484305    90%    /applications/ojs/users
+
+% export documents="2009-05? 2009-06?"
+
+% du -sk ${documents} | perl -nae '$t+=$F[0]; print "$t $_"'
+143124 143124   2009-050
+298541 155417   2009-051
+466372 167831   2009-052
+634003 167631   2009-053
+805483 171480   2009-054
+961220 155737   2009-055
+1156522 195302  2009-056
+1275437 118915  2009-057
+1358927 83490   2009-058
+1618044 259117  2009-059
+1768693 150649  2009-060
+1988832 220139  2009-061
+2138485 149653  2009-062
+2297478 158993  2009-063
+2460721 163243  2009-064
+2597408 136687  2009-065
+2810770 213362  2009-066
+2985533 174763  2009-067
+3216453 230920  2009-068
+3382895 166442  2009-069
+
+% for dir in ${documents}
+do
+echo -n $dir ":"
+tar cf - $dir |gzip -c > ${dir}.tgz
+ls -l ${dir}.tgz
+done
+
+% rm -rf ${documents}
+
+% df -k /applications/ojs/users
+root@odin # df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 94241051 14433208    87%    /applications/ojs/users
+
+######################################################################
+# final report
+######################################################################
+
+# df -k /applications/ojs/archive/* /applications/ojs/archive/*/arch* /applications/ojs/users/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vexternal
+                     52405993 42014774 9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/voriginal
+                     11529300 10502171  911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vpaper
+                     51609487 50426275  667118    99%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume
+                     18866138 18377535  299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/lofi/1          10316795 10100744  112884    99%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch01
+/dev/lofi/2          10316795 1727718 8485910    17%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+/dev/lofi/3          10316795   10260 10203368     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+/dev/lofi/4          10316795   10258 10203370     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch04
+/dev/lofi/10         10316795 2488622 7725006    25%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+/dev/lofi/5          3439482 3370406   34682    99%    /applications/ojs/archive/RESUME_TEXT/arch01
+/dev/lofi/6          3439482 2036300 1368788    60%    /applications/ojs/archive/RESUME_TEXT/arch02
+/dev/lofi/7          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch03
+/dev/lofi/8          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch04
+/dev/lofi/9          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch05
+/dev/vx/dsk/ojs/vbase
+                     109771978 94242460 14431799    87%    /applications/ojs/users
+

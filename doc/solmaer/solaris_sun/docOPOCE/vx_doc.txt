@@ -1,0 +1,314 @@
+# Validations:
+# voir les diskgroups et leur devices 
+# REMARQUE: les diskgroups regroupent les volumes qui en fait sont eux-aussi composes par plexes et subdisks
+vxdisk -e list
+# voir les diskgroups ( importes/deportes) et leur devices
+# REMARQUE: parfois, "-e" marche pas ensemble avec "-o alldgs"
+vxdisk -e -o alldgs list
+# voir la composition d'un diskgroup
+export dg=dlib
+vxprint -g ${dg}
+# cela nous donne plus d'info sur un diskgroup et ses volumes
+export dg=dlib
+vxprint -rt -g ${dg}
+# le diskgroup de disques de boot/root peut s'appeler que bootdg avant VxVM 4. 
+export dg=bootdg
+# regarder l'espace libre total en megas d'un diskgroup
+export dg=dlib 
+vxassist -g ${dg} maxsize
+# regarder l'espace libre total en megas d'un diskgroup sur un disque especifique
+export dg=dlib
+export di=DMX4000_121
+vxassist -g ${dg} maxsize alloc=${di}
+# regarder l'espace libre d'un diskgroup en blocks et par chacun de ses disques
+export dg=dlib
+vxdg -g ${dg} free
+# voir ce qui consomme en taille un diskgroup 
+# REMARQUE: Des que Veritas prend un disque, il le divise en deux. Partie publique et privee. Celle de la publique consomme le plus.
+#           Donc, ca nous donne qu'une idee approx
+export dg=dlib
+vxprint -g ${dg} -QqdF "%publen" | awk 'BEGIN {s = 0} {s += $1} END {print s/2097152, "GB"}'
+# voir des possibles erreurs de lecture et d'ecriture
+export dg=dlib
+vxstat -g ${dg} -ff
+# regarder la performance des disques ( pareil au iostat )
+export dg=dlib
+vxstat -i 10 -c 5 -s -g ${dg}
+
+# Disques:
+# initialiser un disque pour l'utiliser avec veritas
+# REMARQUE: D'abord, il faut labeliser le disque. Prendre note du device d'apres la lun
+/usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))'
+# avec le device qui s'affiche avec la commande precedente, labeliser le disque
+export de=c8t600A0B800019E59A000043CE492E1153d0
+format ${de}
+format> label
+format> q
+# faire que veritas actualise sa liste de disques en englobant le disque qu'on vient de labeliser
+vxconfigd -k
+# verifier le nom de device que veritas a donne a ce disque la
+export de=c8t600A0B800019E59A000043CE492E1153d0
+vxdisk -e list | grep ${de}
+# initialiser le disque pour veritas avec le nom de device qui s'affiche
+export de=fabric_38
+/etc/vx/bin/vxdisksetup -i ${de}
+# mirrorer un disque de root
+# REMARQUE 1: Rappel: les diskgroup de root s'appelent normalement rootdg ou bootdg
+# REMARQUE 2: les disques de rootdg sont toujours sliced
+export ds=c0t2d0
+export dg=rootdg
+/etc/vx/bin/vxdisksetup -i ${ds} format=sliced
+vxdg -g ${dg} adddisk rootmirror=${ds}
+/etc/vx/bin/vxrootmir rootmirror
+# enlever le disque du VxVM
+# REMARQUE: Lancez un vxdisk list pour voir les noms des devices selon VxVM. C'est la premier colonne a choper
+export de=fabric_34
+/etc/vx/bin/vxdiskunsetup -C ${de}
+# enlever l'etiquette du FAILING pour un disque qui a pas de problemes
+export di=gnole_7
+vxedit set failing=off ${di}
+# rafraichir l'ajout ou suppresion des disques physiques 
+vxdctl enable
+## lorsqu'on decroche des disques, c'est mieux de faire:
+vxconfigd -k
+
+# Diskgroups:
+# creer un diskgroup  avec le disque initialise
+# REMARQUE 1: verifier les disques qu'on a et leur noms qui vient dans la premiere colonne de la commande vxdisk
+# REMARQUE 2: dans l'exemple on va appeler le disque absynthe_1. Et ce nom la provient du nom de stockage et la lun allouee
+# REMARQUE 3: Par convention aussi, on appele le diskgroup de la meme maniere que le projet 
+vxdisk list
+export dg=dlib
+export de=fabric_38
+export de2=absynthe_1
+vxdg init ${dg} ${de2}=${de}
+# Si on a oublie d'initialiser le disque en tant que sliced, on peut le faire a l'heure de creer le diskgroup comme il suit:
+vxdg init ${dg} ${de2}=${de} cds=off
+# ajouter un disk a un diskgroup deja existant avec un disque deja initialise
+export dg=dlib
+export de=fabric_39
+export de2=absynthe_2
+vxdg -g ${dg} adddisk ${de2}=${de}
+# enlever le disk d'un diskgroup
+# REMARQUE: Pour accomplir ca, il faudra d'abord virer les volumes, subdisks et plexes qui sont sur le disk
+export dg=dlib
+export de=gnole_9
+vxdg -g ${dg} rmdisk ${de}
+# deporter un diskgroup pour le deplacer a une autre machine
+export dg=dlib
+vxvol -g ${dg} stopall
+vxdg deport ${dg}
+# importer le diskgroup sur une autre machine
+export dg=dlib
+vxdg import ${dg}
+vxvol -g {dg} startall
+# renommer le diskgroup
+export dg1=dlib_pz
+export dg2=dlib
+vxvol -g ${dg} stopall
+vxdg deport ${dg1}
+vxdg -n ${dg2} import ${dg}
+vxvol -g {dg} startall
+
+# Volumes:
+# sur un diskgroup existant ou deja cree, creer le volume ou on va generer le FS.
+# REMARQUE 1: On utilise par convention le prefixe "v" pour le nom du volume
+# REMARQUE 2: Pour les tailles, on peux utilise "m" pour megas, "g" pour gigas sinon sans cela veritas croit qu'il s'agit des blocks
+# REMARQUE 3: Par default, les volumes se creent concat
+export dg=dlib
+export vo=varchive09
+export ta=150g
+vxassist -g ${dg} make ${vo} ${ta}
+# pour creer le volume sur un disque precis
+# REMARQUE: On utilise la troisieme colonne du vxdisk qui correspond au nom donne par nous
+vxdisk list
+export di=absynthe_3
+vxassist -g ${dg} make ${vo} ${ta} alloc=${di}
+# creer un volume en stripe
+vxassist -g ${dg} make ${vo} ${ta} layout=stripe
+# creer un volume en miroir
+vxassist -g ${dg} make ${vo} ${ta} layout=mirror
+# creer un volume en raid5
+# REMARQUE: Pas tous les versions de Veritas viennent avec le choix du raid5
+vxassist -g ${dg} make ${vo} ${ta} layout=raid5
+# effacer un volume
+vxassist -g ${dg} remove volume ${vo}
+# mirrorer un volume deja cree
+vxassist -g ${dg} mirror ${vo}
+# mirrorer un volume en precisant le disque
+export di=gnole_4
+vxassist -g ${dg} mirror ${vo} alloc=${di}
+# avec plusieurs disques:
+export di=gnole_4,gnole_5
+vxassist -g ${dg} mirror ${vo} alloc=${di}
+# enlever le miroir
+# REMARQUE 1: Faire attention, bien qu'il semble pas logique, il faut ajouter "!" au disque et l'escaper a cause de la shell  
+# REMARQUE 2: Faire attention au nom du disque car si le nom est pas correct, VxVM en enleve toutefois un et n'importe lequel
+export di=DMX4000_10
+vxassist -g ${dg} remove mirror ${vo} \!${di}
+# agrandir le volume
+# REMARQUE 1: Etant donne qu'on a pas de licences pour retrecir la taille des volumes, on a pas de risques
+#           Pourtant, ajouter le flag "-x" qui affiche un warning si la taille donnee est plus petite que la taille actuelle
+# REMARQUE 2: Faire attention aux tailles, on peut agrandir par "g" par "m" par "k" sinon VxVM croit qu'il s'agit des blocks VxVM
+/etc/vx/bin/vxresize -x -g ${dg} ${vo} +5g
+# depanner les volumes qui sont en etat DISABLED RECOVER
+# REMARQUE: si les volumes se trouvent pas en etat DISABLED RECOVER, il faudrait les mettre pour declencher la procedure qui suit
+export dg=eurlex
+export pl=vdata-01
+export vo=vdata
+vxmend -g ${dg} fix stale ${pl}
+vxmend -g ${dg} fix clean ${pl}
+vxvol -g ${dg} start ${vo}
+
+# Misc
+# renommer des disks, volumes, plexes et subdisks
+# REMARQUE: pas le diskgroup
+export dg=dlib
+export vo1=data01
+export vo2=jurel02
+vxedit -g ${dg} rename ${vo1} ${vo2}
+export de1=DMX2000_12
+export de2=DMX4000_12
+vxedit -g ${dg} rename ${de1} ${de2}
+## verifier ce qui reste pour renommer avec l'ancien nom
+export de1=DMX2000_12
+vxprint -g ${dg} -s -e 'name~/'${de1}'/'
+# voir les licences installes
+vxlicrep
+# ajouter ou installer des licences Veritas
+# REMARQUE: On peut installer sans licences, pourtant il va en falloir pour l'utiliser
+vxlicinst
+## ou
+vxinstall
+# demarrer VxVM qu'on a installe manuellement avec pkgadd/vxlicinst
+# REMARQUE: Avant de faire ce qui suit, on doit demarrer les scripts Veritas. Par exemple, regardez si ses services sont up: svcs "*vx*"
+vxconfigd -k -m disable
+vxiod set 10
+vxdctl init
+vxdctl enable
+
+# remove volume
+vxassist -g bootdg remove volume export
+# Max available space
+vxassist -g bootdg maxsize
+# Max available space depending on layout
+vxassist -g appl maxsize layout=mirror
+# Voir layered volumes
+vxprint -rt rootvol
+# Creer une volume ( default concat )
+vxassist -g bootdg make globaldevices 20301M layout=concat
+# Creer une disque group
+vxdg init cups absynthe_10=fabric_5
+# Voir, en gb, tout le space consomme pour VX
+vxprint -AQqdF "%publen" | awk 'BEGIN {s = 0} {s += $1} END {print s/2097152, "GB"}'
+# Et le voir pour un diskgroup
+vxprint -g ceres -QqdF "%publen" | awk 'BEGIN {s = 0} {s += $1} END {print s/2097152, "GB"}'
+# Voir l'espace consomme sur des disques specifiques:
+vxprint -g dlib -d | awk '/gnole|absynthe/ { print $5}' | awk ' BEGIN {s = 0} {s += $1} END {print s/2097152, "GB"}'
+
+
+# reattach disks ( anubis )
+anubis# vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       c#t#d#_NAME
+Disk_0       sliced    rootdisk     rootdg       online       c0t10d0s2
+Disk_1       sliced    -            -            offline      c1t14d0s2
+T30_0        sliced    -            -            online       c2t1d15s2
+T30_1        sliced    -            -            online       c2t1d14s2
+T30_2        sliced    -            -            online       c2t1d13s2
+T30_3        sliced    deep_12      anubis       online       c2t1d12s2
+T30_4        sliced    deep_11      procat       online       c2t1d11s2
+T30_5        sliced    -            -            online       c2t1d10s2
+T30_6        sliced    deep_9       procat       online       c2t1d9s2
+T30_7        sliced    deep_8       anubis       online       c2t1d8s2
+T30_8        sliced    -            -            online       c2t1d7s2
+T30_9        sliced    -            -            online       c2t1d6s2
+T30_10       sliced    -            -            online       c2t1d5s2
+T30_11       sliced    -            -            online       c2t1d4s2
+T30_12       sliced    -            -            online       c2t1d3s2
+T30_13       sliced    -            -            online       c2t1d2s2
+T30_14       sliced    deep_1       cdjrec       online       c2t1d1s2
+T30_15       sliced    deep_0       cdjtp        online       c2t1d0s2
+T31_0        sliced    -            -            online       c4t2d15s2
+T31_1        sliced    -            -            online       c4t2d14s2
+T31_2        sliced    -            -            online       c4t2d13s2
+T31_3        sliced    -            -            online       c4t2d12s2
+T31_4        sliced    -            -            online       c4t2d11s2
+T31_5        sliced    -            -            online       c4t2d10s2
+T31_6        sliced    -            -            online       c4t2d9s2
+T31_7        sliced    -            -            online       c4t2d8s2
+T31_8        sliced    -            -            online       c4t2d7s2
+T31_9        sliced    -            -            online       c4t2d6s2
+T31_10       sliced    -            -            online       c4t2d5s2
+T31_11       sliced    -            -            online       c4t2d4s2
+T31_12       sliced    -            -            online       c4t2d3s2
+T31_13       sliced    -            -            online       c4t2d2s2
+T31_14       sliced    -            -            online       c4t2d1s2
+T31_15       sliced    -            -            online       c4t2d0s2
+c0t11d0s2    sliced    -            -            offline      c0t11d0s2
+c1t15d0s2    sliced    rootmirror   rootdg       online       c1t15d0s2
+-            -         scott_1      cdjrec       failed was:T31_14
+-            -         scott_11     cdjrec       failed was:T31_11
+-            -         scott_11     procat       failed was:T31_4
+-            -         scott_9      procat       failed was:T31_6
+-            -         scott_0      cdjtp        failed was:T31_15
+-            -         scott_12     anubis       failed was:T31_3
+-            -         scott_8      anubis       failed was:T31_7
+anubis# /etc/vx/bin/vxreattach
+anubis# vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       c#t#d#_NAME
+Disk_0       sliced    rootdisk     rootdg       online       c0t10d0s2
+Disk_1       sliced    -            -            offline      c1t14d0s2
+T30_0        sliced    -            -            online       c2t1d15s2
+T30_1        sliced    -            -            online       c2t1d14s2
+T30_2        sliced    -            -            online       c2t1d13s2
+T30_3        sliced    deep_12      anubis       online       c2t1d12s2
+T30_4        sliced    deep_11      procat       online       c2t1d11s2
+T30_5        sliced    -            -            online       c2t1d10s2
+T30_6        sliced    deep_9       procat       online       c2t1d9s2
+T30_7        sliced    deep_8       anubis       online       c2t1d8s2
+T30_8        sliced    -            -            online       c2t1d7s2
+T30_9        sliced    -            -            online       c2t1d6s2
+T30_10       sliced    -            -            online       c2t1d5s2
+T30_11       sliced    -            -            online       c2t1d4s2
+T30_12       sliced    -            -            online       c2t1d3s2
+T30_13       sliced    -            -            online       c2t1d2s2
+T30_14       sliced    deep_1       cdjrec       online       c2t1d1s2
+T30_15       sliced    deep_0       cdjtp        online       c2t1d0s2
+T31_0        sliced    -            -            online       c4t2d15s2
+T31_1        sliced    -            -            online       c4t2d14s2
+T31_2        sliced    -            -            online       c4t2d13s2
+T31_3        sliced    scott_12     anubis       online       c4t2d12s2
+T31_4        sliced    scott_11     procat       online       c4t2d11s2
+T31_5        sliced    -            -            online       c4t2d10s2
+T31_6        sliced    scott_9      procat       online       c4t2d9s2
+T31_7        sliced    scott_8      anubis       online       c4t2d8s2
+T31_8        sliced    -            -            online       c4t2d7s2
+T31_9        sliced    -            -            online       c4t2d6s2
+T31_10       sliced    -            -            online       c4t2d5s2
+T31_11       sliced    scott_11     cdjrec       online       c4t2d4s2
+T31_12       sliced    -            -            online       c4t2d3s2
+T31_13       sliced    -            -            online       c4t2d2s2
+T31_14       sliced    scott_1      cdjrec       online       c4t2d1s2
+T31_15       sliced    scott_0      cdjtp        online       c4t2d0s2
+c0t11d0s2    sliced    -            -            offline      c0t11d0s2
+c1t15d0s2    sliced    rootmirror   rootdg       online       c1t15d0s2
+
+# modifier la vtoc avec VxVM:
+#
+
+/etc/vx/bin/vxprtvtoc -f /tmp/vtoc /dev/vx/rdmp/emcpower0c
+
+/etc/vx/bin/vxedvtoc -f /tmp/vtoc /dev/vx/rdmp/emcpower0c 
+
+# split des diskgroups:
+oot@hades 15:09 [~] vxadm help dg
+        Usage: vxadm  [-n node_name] dg <operation> <args>
+
+Supported operations:
+        split     - split a diskgroup into two
+        join      - join two diskgroups into one
+        version   - displays the DG version
+
+For detailed usage of each operation use
+vxadm help dg <operation>
+

@@ -1,0 +1,585 @@
+(  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! en cours d'ecriture)
+
+##########################################################################
+# creation du volume group 
+##########################################################################
+
+##### variables
+% export kvm=<kvm_name>
+% export vg=<vg_name>
+
+export vg=opsview-tk
+export kvm=opsview-tk
+
+
+
+##### disk scanning
+% {
+for i in 0 1 2 3 4 5
+do
+	if [ -f /sys/class/scsi_host/host${i}/scan ]; then
+		echo "- - -" >/sys/class/scsi_host/host${i}/scan
+	fi
+done
+}
+
+##### verification
+% multipath -ll
+
+3600601602c502e003403efcd1ad6e111 dm-8 DGC,VRAID
+size=80G features='0' hwhandler='1 emc' wp=rw
+|-+- policy='round-robin 0' prio=1 status=active
+| |- 2:0:4:130 sdx        65:112 active ready  running
+| `- 4:0:5:130 sdac       65:192 active ready  running
+`-+- policy='round-robin 0' prio=0 status=enabled
+  |- 4:0:6:130 sdai       66:32  active ready  running
+  `- 2:0:6:130 sdam       66:96  active ready  running
+
+360060160da612e00f8f27cc419d6e111 dm-6 DGC,VRAID
+size=80G features='0' hwhandler='1 emc' wp=rw
+|-+- policy='round-robin 0' prio=1 status=active
+| |- 2:0:0:130 sdh        8:112  active ready  running
+| `- 4:0:0:130 sdg        8:96   active ready  running
+`-+- policy='round-robin 0' prio=0 status=enabled
+  |- 4:0:2:130 sdp        8:240  active ready  running
+  `- 2:0:2:130 sds        65:32  active ready  running
+
+
+
+
+
+
+
+
+##### creation du pv
+% pvcreate /dev/mapper/3600601602c502e003403efcd1ad6e111 /dev/mapper/360060160da612e00f8f27cc419d6e111
+
+
+
+##### creation du vg
+% vgcreate ${vg} /dev/mapper/3600601602c502e003403efcd1ad6e111 /dev/mapper/360060160da612e00f8f27cc419d6e111 
+
+
+##### creation des lv
+
+% lvcreate -L20G -m1 --alloc anywhere -n opsview-tk-system opsview-tk
+% lvcreate -L10G -m1 --alloc anywhere -n opsview-tk-applications-opsview-users opsview-tk
+% lvcreate -L10G -m1 --alloc anywhere -n opsview-tk-applications-opsview-mysqldb opsview-tk
+
+
+
+##########################################################################
+# creation de la machine virtuelle kvm
+##########################################################################
+
+##### variables
+% export kvm=<kvm_name>
+% export vg=<vg_name>
+% export tmp_dir=<tmp_dir>
+
+% export tmp_dir=/home/betorma/xchange
+
+
+##### creation de la vm
+% export DISPLAY=vespa:10
+% virt-install --connect=qemu:///system --name=${kvm} --ram=4096 --vcpus=4 --check-cpu --os-type=linux --os-variant=rhel6 --accelerate --hvm --vnc --nodisk --network bridge:br0 --pxe --keymap=en-us
+
+
+##### recuperer l'adresse mac
+% awk -F\' '/mac address/ {print $2}' /etc/libvirt/qemu/${kvm}.xml
+
+
+##### creation du client jet/kickstart sur le serveur jet
+
+% export kvm=<kvm_name>
+% export mac=52:54:00:19:b2:8e
+
+
+% cp /tftpboot/OPOCE-kickstart-conf-unattended-template.tpl /tftpboot/OPOCE-kickstart-conf-unattended-${kvm}
+% vi /tftpboot/OPOCE-kickstart-conf-unattended-${kvm}
+% /tftpboot/OPOCE-kickstart-conf-prepare.sh -f /tftpboot/OPOCE-kickstart-conf-unattended-${kvm}
+
+
+vi /opt/SUNWjet/Clients/opsview-tk/kickstart.cfg          
+
+logvol / --fstype ext4 --name=root --vgname=rootvg --size=4096
+logvol /var --fstype ext4 --name=var --vgname=rootvg --size=4096
+logvol swap --fstype swap --name=swap --vgname=rootvg --size=4096
+logvol /u01 --fstype ext4 --name=u01 --vgname=rootvg --size=4096
+logvol /u01/oraagent --fstype ext4 --name=oraagent --vgname=rootvg --size=2048
+
+
+
+
+##### installation, a nouveau sur l'host physique qui va heberger la kvm
+
+% export mac=52:54:00:19:b2:8e
+% export kvm_md=`echo ${kvm} | sed -e 's/-dk$/--dk/' -e 's/-tk$/--tk/' -e 's/-pk$/--pk/'`
+
+% virsh destroy $kvm
+% virsh undefine ${kvm}
+% virt-install --connect=qemu:///system --name=${kvm} --ram=4096 --vcpus=4 --check-cpu --os-type=linux --os-variant=rhel6 --accelerate --hvm --vnc --disk path=/dev/mapper/${kvm_md}-${kvm_md}--system,sparse=false --disk path=/dev/mapper/${kvm_md}-${kvm_md}--applications--opsview--mysqldb,sparse=false --disk path=/dev/mapper/${kvm_md}-${kvm_md}--applications--opsview--users,sparse=false --network bridge:br0 --mac=${mac} --pxe --keymap=en-us
+
+
+##### cfengine
+
+% export tmp_dir=/home/betorma/xchange
+% mkdir -p ${tmp_dir}/cfengine/ppkeys
+% rm ${tmp_dir}/cfengine/ppkeys/*
+% export ip=$(getent hosts `uname -n` | awk '{print $1}')
+% echo $ip
+% {
+for u in root opsys_ux rootdba root-int
+do
+	cp /var/cfengine/ppkeys/localhost.pub /home/betorma/xchange/cfengine/ppkeys/${u}-${ip}.pub
+done
+}
+
+##### sur le serveur cfengine
+
+% export tmp_dir=<tmp_dir>
+% export date=`date +%Y%m%d%H%M`
+
+% cp ${tmp_dir}/cfengine/ppkeys/*.pub /var/cfengine/ppkeys
+% chmod 644 /var/cfengine/ppkeys/*
+% chown root:root /var/cfengine/ppkeys/*
+
+% cp -p /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${date}
+% vi /var/cfengine/master/inputs/cf.groups
+% diff /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${date}
+
+
+##### a nouveau sur la machine virtuelle
+
+% /var/cfengine/bin/cfagent -v -q
+
+
+
+##### changer le mot de passe root
+% passwd root
+
+
+
+##### creer les fs applicatifs
+
+
+0[120730/095724]root@opsview-tk# fdisk -l | grep ^Disk
+Disk /dev/mapper/rootvg-root doesn't contain a valid partition table
+Disk /dev/mapper/rootvg-swap doesn't contain a valid partition table
+Disk /dev/mapper/rootvg-var doesn't contain a valid partition table
+Disk /dev/mapper/rootvg-u01 doesn't contain a valid partition table
+Disk /dev/mapper/rootvg-oraagent doesn't contain a valid partition table
+Disk /dev/vda: 21.5 GB, 21474836480 bytes
+Disk identifier: 0x00014bfd
+Disk /dev/vdb: 10.7 GB, 10737418240 bytes
+Disk identifier: 0x000d4216
+Disk /dev/vdc: 10.7 GB, 10737418240 bytes
+Disk identifier: 0x0009ac04
+Disk /dev/mapper/rootvg-root: 4294 MB, 4294967296 bytes
+Disk identifier: 0x00000000
+Disk /dev/mapper/rootvg-swap: 4294 MB, 4294967296 bytes
+Disk identifier: 0x00000000
+Disk /dev/mapper/rootvg-var: 4294 MB, 4294967296 bytes
+Disk identifier: 0x00000000
+Disk /dev/mapper/rootvg-u01: 4294 MB, 4294967296 bytes
+Disk identifier: 0x00000000
+Disk /dev/mapper/rootvg-oraagent: 2147 MB, 2147483648 bytes
+Disk identifier: 0x00000000
+
+
+0[120730/100033]root@opsview-tk# export vg=application-opsview-users
+export application=opsview                              
+
+##### definition du disque:
+device=/dev/vdb
+
+##### detruire la table de partition du disk
+dd if=/dev/zero of=${device} bs=512 count=1
+
+##### creation du physical volume lvm
+pvcreate -v ${device}
+
+##### liste les device pour verificqtion
+pvs
+pvdisplay
+pvscan
+
+##### creation du volume group
+vgcreate -v $vg $device
+
+##### verification
+vgdisplay $vg
+
+0[120730/100406]root@opsview-tk# vgrename application-opsview-users opsview-users-vg            
+  Volume group "application-opsview-users" successfully renamed to "opsview-users-vg"
+0[120730/100454]root@opsview-tk# export vg=opsview-users-vg
+
+0[120730/100500]root@opsview-tk# export lv=opsview-users
+
+"#### creation des logical volumes
+lvcreate -L 10G -n $lv $vg
+lvcreate -l2559 -n $lv $vg
+
+0[120730/100533]root@opsview-tk# lvcreate -L 10G -n $lv $vg
+  Volume group "opsview-users-vg" has insufficient free space (2559 extents): 2560 required.
+5[120730/100539]root@opsview-tk# lvcreate -l2559 -n $lv $vg
+  Logical volume "opsview-users" created
+
+
+##### creation du fs
+0[120730/100550]root@opsview-tk# mkfs.ext4 /dev/mapper/opsview--users--vg-opsview--users 
+mke2fs 1.41.12 (17-May-2010)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+655360 inodes, 2620416 blocks
+131020 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=2684354560
+80 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks: 
+        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632
+
+Writing inode tables: done                            
+Creating journal (32768 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+This filesystem will be automatically checked every 29 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
+
+
+
+
+##### fstab
+1[120730/100831]root@opsview-tk# mkdir -p /applications/opsview/users 
+
+cat >> /etc/fstab <<EOF
+/dev/mapper/opsview--users--vg-opsview--users  /applications/${application}/users          ext4    defaults        1 2
+EOF
+
+##### montage
+0[120730/100859]root@opsview-tk# mount /applications/opsview/users 
+0[120730/100908]root@opsview-tk# df -h /applications/${application}/users
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/opsview--users--vg-opsview--users
+                      9.9G  151M  9.2G   2% /applications/opsview/users
+0[120730/100912]root@opsview-tk# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export application=opsview
+export mountpoint=/applications/${application}/mysqldb
+export vg=opsview-mysqldb-vg
+export lv=opsview-mysqldb
+export vg_file=`echo $vg | sed -e s'/-/--/g'`
+export lv_file=`echo $lv | sed -e s'/-/--/g'`
+
+
+
+##### definition du disque:
+device=/dev/vdc
+
+##### detruire la table de partition du disk
+dd if=/dev/zero of=${device} bs=512 count=1
+
+##### creation du physical volume lvm
+pvcreate -v ${device}
+
+##### liste les device pour verificqtion
+pvs
+pvdisplay
+pvscan
+
+##### creation du volume group
+vgcreate -v $vg $device
+
+##### verification
+vgdisplay $vg
+
+##### creation des logical volumes
+lvcreate -L 10G -n $lv $vg
+lvcreate -l2559 -n $lv $vg
+
+##### creation du fs
+mkfs.ext4 /dev/mapper/${vg_file}-${lv_file}
+
+##### fstab
+mkdir -p ${mountpoint}
+cat >> /etc/fstab <<EOF
+/dev/mapper/${vg_file}-${lv_file}  ${mountpoint}          ext4    defaults        1 2
+EOF
+
+##### montage
+mount ${mountpoint}
+df -h ${mountpoint}
+
+
+
+############################################################################################################################
+# ip applicative
+############################################################################################################################
+
+export IPOPSRV=158.167.98.216
+cat >/etc/sysconfig/network-scripts/ifcfg-eth0\:0  <<EOF
+DEVICE="eth0:0"
+BOOTPROTO="static"
+IPADDR="${IPOPSRV}"
+NETMASK="255.255.252.0"
+ONBOOT="yes"
+TYPE="Ethernet"
+USERCTL=NO
+PEERDNS=NO
+EOF
+
+
+/etc/sysconfig/network-scripts/ifup eth0:0
+
+
+
+
+
+############################################################################################################################
+# creation du client unix pour la HOST
+############################################################################################################################
+
+
+
+##### sur l'host
+
+{
+export LOCATION=Mercier
+export TYPE=Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+for group in ${GROUPS}; do
+  cat >/nsr/res/${group}.res <<EOT
+type: savepnpc;
+precmd: "/bin/date";
+pstcmd: "/bin/date", "/bin/sleep 5";
+timeout: "06:00:00";
+abort precmd with group: No;
+EOT
+done
+}
+
+##### sur opbk01 
+
+
+export IP=158.167.99.65
+export HOST=opsview-tk
+export LOCATION=Mercier
+export TYPE=Test
+
+export SAVESET='/,/var'
+
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+export DIRECTIVE="Solaris_10 with compression directives"
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${HOST}" != "${CLIENT}" ]; then
+    export ALIASES="${ALIASES},${HOST},${HOST}.opoce.cec.eu.int"
+    export REMOTEACC="${REMOTEACC},root@${HOST},oracle@${HOST}"
+fi
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+
+
+
+(cat <<EOT
+#client_name;remote_access;groups;save set;directive;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${SAVESET};${DIRECTIVE};${ALIASES};${HOST};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","ss","directive","alias","HOST","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: opbk01;
+                     comment: $c{HOST} unix client;
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+                    save set: $c{ss};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: savepnpc;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+}
+created resource id 4.34.22.58.0.0.0.0.0.0.0.0.80.19.128.216.158.167.98.142(1)
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+                        type: NSR client;
+                        name: opsview-tk;
+                      server: opbk01;
+                   client id: \
+e31a7a59-00000004-50164d19-50164d18-25370021-2858c270;
+            scheduled backup: Enabled;
+                     comment: opsview-tk unix client;
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: 60days;
+            retention policy: 60days;
+                  statistics: elapsed = 183558, index size (KB) = 0, 
+                              amount used (KB) = 0, entries = 0;
+                   directive: Solaris_10 with compression directives;
+                       group: Mercier_Unix_Test;
+                    save set: /, /var;
+  Backup renamed directories: Disabled;
+          Checkpoint enabled: Disabled;
+      Checkpoint granularity: Directory;
+                    priority: 500;
+   File inactivity threshold: 0;
+File inactivity alert threshold: 0;
+               remote access: root@opsview-tk, oracle@opsview-tk, 
+                              root@restore_tz, oracle@restore_tz;
+              backup command: savepnpc;
+                        ndmp: No;
+       De-duplication backup: No;
+          Data Domain backup: No;
+              virtual client: No;
+                     aliases: opsview-tk, opsview-tk.opoce.cec.eu.int;
+                 parallelism: 4;
+ physical client parallelism: Disabled;
+               storage nodes: chronos, saturne;
+       recover storage nodes: chronos, saturne;
+         clone storage nodes: chronos, saturne;
+                  hard links: Disabled;
+             short filenames: Disabled;
+                         BMR: Disabled;
+              enabler in use: No;
+
+
+
+
+
+############################################################################################################################
+# creation du client unix pour l'application
+############################################################################################################################
+
+
+##### sur la zone
+
+{
+export LOCATION=<zone_site>   			# Mercier|EUFO
+export TYPE=<environment>         			# Prod|Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+for group in ${GROUPS}; do
+  cat >/nsr/res/${group}.res <<EOT
+type: savepnpc;
+precmd: "/bin/date";
+pstcmd: "/bin/date", "/bin/sleep 5";
+timeout: "06:00:00";
+abort precmd with group: No;
+EOT
+done
+}
+
+##### sur opbk01 ##### pour l'application
+
+
+export IP=158.167.98.216
+export ZONE=opsview-tk
+export LOCATION=Mercier
+export TYPE=Test
+
+export APPLICATION=opsview
+export SAVESET='/applications/opsview/users,/applications/opsview/mysqldb'
+
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+export DIRECTIVE="Solaris 10 zones with compression"
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+(cat <<EOT
+#client_name;remote_access;groups;save set;directive;alias;zone;appli;storage_nodes;clone_nodes
+${CLIENT};${APPLICATION};${REMOTEACC};${GROUPS};${SAVESET};${DIRECTIVE};${ALIASES};${ZONE};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","appli","remote_access","groups","ss","directive","alias","zone","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: opbk01;
+                     comment: $c{appli} on $c{zone} unix client;
+               browse policy: 60days;
+            retention policy: 60days;
+              virtual client: Yes;
+               physical host: $c{zone};
+              backup command: savepnpc -c $c{client_name};
+                       group: $c{groups};
+                    save set: $c{ss};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+

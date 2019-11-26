@@ -1,0 +1,149 @@
+################################################################################################################################################################
+# integration des homdir en cluster
+#
+# les ressources utilisees dans les futures ressources cluster doivent etre inutilisees/desactivees
+#
+################################################################################################################################################################
+
+
+################################################################################
+##### variables !!!!! a faire sur les 2 noeuds !!!!!
+
+export rgname=homedir-rg
+
+export logicalhost=opsrv020
+export rslogicalhost=${logicalhost}-lh
+
+export zpool=homedir
+export rsnamestorage=${zpool}-zfs
+
+export rssamba=${logicalhost}-smb
+
+export server_source=artemis
+export server_target=athena
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster/homedir
+mkdir -p ${tmp_dir}
+
+cp -p /etc/inet/hosts /etc/inet/hosts.`date +%Y%m%d%H%M`
+echo -e `nslookup ${logicalhost} | grep Address | grep -v 53 | awk '{print $2}'`"\t${logicalhost}" >>/etc/inet/hosts 
+
+##### positionner la nouvelle ligne a la bonne place pour ne pas avoir de probleme avec networker
+vi /etc/inet/hosts 
+
+
+################################################################################
+##### installation de SUNWscsmb !!!!! a faire sur les 2 noeuds !!!!!
+
+#cd /var/tmp
+#cp -p /net/remus/export/software/Suncluster/suncluster_3_2u2-ga-solaris-sparc.zip /var/tmp
+#unzip suncluster_3_2u2-ga-solaris-sparc.zip
+#cd Solaris_sparc/Product/sun_cluster_agents/Solaris_10/Packages
+#pkgadd -d . SUNWscsmb
+
+################################################################################
+##### creation du ressource group
+
+clrg create ${rgname}
+clrg manage ${rgname}
+clrg online ${rgname}
+clrg switch -n ${server_source} ${rgname}
+clrg status
+
+##### Il faut le register du HAStoragePlus et LogicalHostname avant de l'utiliser
+clresourcetype list
+##### clresourcetype register SUNW.HAStoragePlus
+##### clresourcetype register SUNW.LogicalHostname
+
+################################################################################
+##### creation de la ressource pour le zpool
+
+clrs create -g ${rgname} -t SUNW.HAStoragePlus -p zpools=${zpool} ${rsnamestorage}
+clrs status
+
+
+################################################################################
+##### creation de la ressource pour le logical host
+
+clreslogicalhostname create -g ${rgname} -h ${logicalhost} ${rslogicalhost}
+clrs status
+
+
+################################################################################
+##### creation de la ressource pour samba
+
+
+cat <<EOT >/opt/SUNWscsmb/util/smb_config_${logicalhost}
+##### Resource Specific Parameters
+RS=${rssamba}
+RG=${rgname}
+RS_LH=${rslogicalhost}
+RS_HAS=${rsnamestorage}
+SERVICES="smbd,nmbd"
+
+##### Common Parameters
+BINDIR=/usr/sfw/bin
+SBINDIR=/usr/sfw/sbin
+CFGDIR=/etc/sfw
+LDPATH=/usr/sfw/lib
+FMUSER=
+
+##### SMBD & NMBD Specific Parameters
+SAMBA_LOGDIR=/var/samba/log
+SAMBA_FMPASS=
+SAMBA_FMDOMAIN=
+
+##### WINBIND Specific Parameters
+WINBIND_DISCACHE=FALSE
+WINBIND_SINGLEMODE=FALSE
+
+##### Zone Specific Parameters
+RS_ZONE=
+LHOST=
+PROJECT=default
+TIMEOUT=30
+EOF
+
+/opt/SUNWscsmb/util/samba_register -f /opt/SUNWscsmb/util/smb_config_${logicalhost}
+clresource enable ${rssamba}
+
+################################################################################
+##### unmonitor des resspurces pour eviter les switch intempestifs
+
+clrs unmonitor ${rsnamestorage}
+clrs unmonitor ${rslogicalhost}
+clrs status
+
+
+################################################################################
+##### copie des fichiers de configuration
+
+##### sur <server_source>
+tar cpf ${tmp_dir}/smb.tar /etc/sfw/smb.conf /etc/sfw/private
+
+##### sur <server_taget>
+tar xpf ${tmp_dir}/smb.tar
+
+
+################################################################################
+##### test de switch
+
+echo timex clrg switch -n $server_target $rgname
+clrs status
+
+##### verfication de l'accessiblilites des homedir par nfs
+##### verfication de l'accessiblilites des homedir par samba
+
+
+echo timex clrg switch -n $server_source $rgname
+clrs status
+
+
+##### verfication de l'accessiblilites des homedir par nfs
+##### verfication de l'accessiblilites des homedir par samba
+
+
+################################################################################
+##### verification du monitoring
+
+

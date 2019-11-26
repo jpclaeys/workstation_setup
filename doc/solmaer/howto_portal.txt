@@ -1,0 +1,276 @@
+########################################################################################################################
+##### enable/disable user in Team planning module (to remove it from the combobox administration page)
+########################################################################################################################
+
+
+##### se connecte a la base
+
+cd /applications/portal/users/system/mysql_32bit/bin
+./mysql -h 127.0.0.1 -uroot -pPOr3hp portal
+
+
+
+##### lister les actifs
+
+SELECT uid FROM portal_users WHERE id IN (SELECT user_id FROM portal_tp_users WHERE actif=1 and team='system');
+
+
+
+##### enable user
+
+UPDATE portal.portal_tp_users SET actif = 1 WHERE portal_tp_users.user_id = (SELECT id FROM portal_users WHERE uid = 'cherrol' );
+
+
+##### disable user
+
+UPDATE portal.portal_tp_users SET actif = 0 WHERE portal_tp_users.user_id = (SELECT id FROM portal_users WHERE uid = 'cherrol' );
+
+
+
+
+
+
+########################################################################################################################
+##### creation d'un utilisateur dans le portail
+########################################################################################################################
+
+To do on portal test and prod:
+
+export uid=lopmarc
+export firstName=Marco
+export lastName=Rodrigues
+export team=System	# Possible values: 'Application','System','Database','Opoce','Windows'
+export tp_team=System	# Possible values: 'Application','System','Database','Admin','OS' 	- Section of the planning in which the user should appear
+
+echo "insert into portal_users values('','$uid','$firstName','$lastName','$team','','','','1','1');"|/applications/portal/users/system/mysql_32bit/bin/mysql -uroot -pPOr3hp -h 127.0.0.1 portal
+
+export id=$(echo "select id from portal_users where uid='$uid';"|/applications/portal/users/system/mysql_32bit/bin/mysql -uroot -pPOr3hp -h 127.0.0.1 -N portal)
+
+echo "insert into portal_tp_users values('' ,'$id','$tp_team','1');"|/applications/portal/users/system/mysql_32bit/bin/mysql -uroot -pPOr3hp -h 127.0.0.1 portal
+
+echo "insert into portal_users_email values('','$id','$firstName.$lastName@ext.publications.europa.eu');"|/applications/portal/users/system/mysql_32bit/bin/mysql -uroot -pPOr3hp -h 127.0.0.1 portal
+
+
+
+########################################################################################################################
+##### changer un utilisateur d'equipe dans le portail
+########################################################################################################################
+
+UPDATE portal_users SET portal_users.role='System' WHERE uid='solmaer';
+UPDATE portal_users SET portal_users.group=1 WHERE uid='solmaer';
+UPDATE portal_tp_users SET team='System' WHERE user_id=(SELECT id FROM portal_users WHERE uid='solmaer');
+
+
+
+########################################################################################################################
+##### allow somebody to manage the planning
+########################################################################################################################
+
+
+
+cd /applications/portal/users/system/mysql_32bit/bin
+./mysql -h 127.0.0.1 -uroot -pPOr3hp portal
+
+
+
+mysql> SELECT * FROM portal_groups ;
++----+-----------------+-------------------------------------------+--------+
+| id | group           | description                               | type   |
++----+-----------------+-------------------------------------------+--------+
+|  1 | system          | System group                              | global | 
+|  4 | application     | Application group                         | global | 
+|  6 | guest           | Guest group                               | global | 
+|  7 | portaladm       | Portal administrator                      | global | 
+| 57 | integration     | Integration group                         | global | 
+|  5 | admin           | Admin group                               | global | 
+| 14 | database        | DBA group                                 | global | 
+| 24 | srvreq          | srv req module                            | module | 
+| 25 | srvreqadm       | srv req module admin                      | module | 
+| 34 | opslinksadm     | Admin for operation links                 | module | 
+| 36 | unixlinksadm    | Admin for unix links                      | module | 
+| 42 | Team Plannings  | Team Plannings                            | module | 
+| 43 | tpappadmin      | Team Planning "Applications" admin group  | module | 
+| 44 | tpsystemadmin   | Team Planning "System" admin group        | module | 
+| 58 | op_fct          | OPOCE fonctionnaires groups               | global | 
+| 48 | tpdbaadmin      | Team Planning "DBA" admin group           | module | 
+| 50 | tpuseradmin     | Team Planning "User" admin group          | module | 
+| 56 | portaladmmodule | Portal Admin Module                       | module | 
+| 59 | tposadmin       | Team Planning "OS" admin group            | module | 
+| 60 | op_cc           | Opoce "CC"                                | global | 
+| 61 | windows         | Windows group                             | global | 
+| 62 | mpirequesteradm | Admin for mpi requester module            | global | 
+| 63 | workflow_user   | Has the rights to use the workflow module | module | 
+| 65 | operator        | Operator Group                            | global | 
++----+-----------------+-------------------------------------------+--------+
+24 rows in set (0.00 sec)
+
+mysql> 
+
+
+
+
+
+
+
+mysql> SELECT * FROM `portal_users` WHERE uid="ettelma";
++----+---------+------------+-----------+--------+-----------+--------+--------+-------+-------+
+| id | uid     | first_name | last_name | role   | extension | phone1 | phone2 | group | actif |
++----+---------+------------+-----------+--------+-----------+--------+--------+-------+-------+
+| 48 | ettelma | Martin     | Etteldorf | System |           |        |        | 1 63  |     1 | 
++----+---------+------------+-----------+--------+-----------+--------+--------+-------+-------+
+1 row in set (0.00 sec)
+
+mysql> 
+
+
+
+
+
+
+UPDATE portal_users SET portal_users.group='1 63 44' WHERE uid="ettelma";
+
+mysql> UPDATE portal_users SET portal_users.group='1 63 44' WHERE uid="ettelma";
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> 
+
+
+
+mysql> SELECT * FROM `portal_users` WHERE uid="ettelma";
++----+---------+------------+-----------+--------+-----------+--------+--------+---------+-------+
+| id | uid     | first_name | last_name | role   | extension | phone1 | phone2 | group   | actif |
++----+---------+------------+-----------+--------+-----------+--------+--------+---------+-------+
+| 48 | ettelma | Martin     | Etteldorf | System |           |        |        | 1 63 44 |     1 | 
++----+---------+------------+-----------+--------+-----------+--------+--------+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> 
+
+
+
+
+########################################################################################################################
+##### ajout de step dans les procedures de power off/on
+########################################################################################################################
+
+##############################
+##### version sql
+##############################
+
+##### se connecte a la base
+cd /applications/portal/users/system/mysql_32bit/bin
+./mysql -h 127.0.0.1 -uroot -pPOr3hp portal
+
+##### variables
+SET @site = 'Euroforum - Poweroff';
+SET @group = 'PREREQUIS';
+SET @procedure = 'Prerequisite Check Mirror jack averell';
+SET @step = 'encore une nouvelle step';
+
+##### verifie que le site existe
+SELECT name FROM portal_shutdown_sites WHERE name = @site;
+
+##### verifie que le group existe
+SELECT name FROM portal_shutdown_groups WHERE name = @group;
+
+##### verifie la presence d'une procedure
+SELECT name FROM portal_shutdown_procedures WHERE name = @procedure;
+
+##### recuperer la priorite du dernier element d'un group
+SET @priority = (SELECT priority FROM portal_shutdown_steps  WHERE refGroup = (SELECT id FROM portal_shutdown_groups WHERE name = @group) and refSite = (SELECT id FROM portal_shutdown_sites WHERE name = @site) ORDER BY priority DESC LIMIT 1);
+
+##### inserer la procedure dans une nouvelle step
+SET @priority = (SELECT @priority+1);
+INSERT INTO portal_shutdown_steps (name, priority, refGroup, refMachine, refProcedure, refSite) VALUES (@step, @priority, (SELECT id FROM portal_shutdown_groups WHERE name = @group), 0, (SELECT id FROM portal_shutdown_procedures WHERE name = @procedure), (SELECT id FROM portal_shutdown_sites WHERE name = @site));
+
+
+##############################
+###### version bash + sql
+##############################
+
+##### variables
+export site='Euroforum - Poweroff'
+export group='PREREQUIS'
+export procedure='none'
+export step='une autre'
+
+##### creation des variables sql et verif de l'existantce des donnees
+export test=`./mysql -h 127.0.0.1 -uroot -pPOr3hp portal <<EOF | grep -v name | wc -l
+SET @site = "${site}";
+SET @group = "${group}";
+SET @procedure = "${procedure}";
+SELECT name FROM portal_shutdown_sites WHERE name = @site;
+SELECT name FROM portal_shutdown_groups WHERE name = @group;
+SELECT name FROM portal_shutdown_procedures WHERE name = @procedure;
+EOF`
+if [ ! $test == 3 ];
+then echo "Veuillez verifier les arguments correspondant au 'site', 'group' et 'procedure'.";
+echo -e "\nL'un d'entre eux n'existe pas dans la base de donnees 'portal'.";
+exit 1;
+fi;
+
+##### recuperer la priorite du dernier element du group, puis inserer la procedure dans une nouvelle step
+./mysql -h 127.0.0.1 -uroot -pPOr3hp portal <<EOF
+SET @site = "${site}";
+SET @group = "${group}";
+SET @procedure = "${procedure}";
+SET @step = "${step}";
+SET @priority = (SELECT priority FROM portal_shutdown_steps  WHERE refGroup = (SELECT id FROM portal_shutdown_groups WHERE name = @group) and refSite = (SELECT id FROM portal_shutdown_sites WHERE name = @site) ORDER BY priority DESC LIMIT 1);
+SET @priority = (SELECT @priority+1);
+INSERT INTO portal_shutdown_steps (name, priority, refGroup, refMachine, refProcedure, refSite) VALUES (@step, @priority, (SELECT id FROM portal_shutdown_groups WHERE name = @group), 0, (SELECT id FROM portal_shutdown_procedures WHERE name = @procedure), (SELECT id FROM portal_shutdown_sites WHERE name = @site));
+EOF
+
+
+########################################################################################################################
+##### suppression de toutes les steps d'un site
+########################################################################################################################
+
+##### se connecte a la base
+cd /applications/portal/users/system/mysql_32bit/bin
+./mysql -h 127.0.0.1 -uroot -pPOr3hp portal
+
+##### choix du site
+SET @site = 'Euroforum - Poweroff';
+
+##### voir ce qui va etre supprime
+SELECT * FROM portal_shutdown_steps WHERE refSite=(SELECT id FROM portal_shutdown_sites WHERE name = @site);
+
+##### suppression
+DELETE FROM portal_shutdown_steps WHERE refSite=(SELECT id FROM portal_shutdown_sites WHERE name = @site);
+
+
+########################################################################################################################
+##### ajout d'une nouvelle zone dans les procedures de poweroff/on de portal
+########################################################################################################################
+
+##### se connecte a la base
+cd /applications/portal/users/system/mysql_32bit/bin
+./mysql -h 127.0.0.1 -uroot -pPOr3hp portal
+
+##### variables pour le poweroff
+SET @site = 'Euroforum - Poweroff';
+SET @group = 'SHUTDOWN ZONES PROD';
+SET @procedure = 'Shutdown zone';
+SET @step = 'oid_pz';
+
+##### ajout de la step
+SET @priority = (SELECT priority FROM portal_shutdown_steps  WHERE refGroup = (SELECT id FROM portal_shutdown_groups WHERE name = @group) and refSite = (SELECT id FROM portal_shutdown_sites WHERE name = @site) ORDER BY priority DESC LIMIT 1);
+SET @priority = (SELECT @priority+1);
+INSERT INTO portal_shutdown_steps (name, priority, refGroup, refMachine, refProcedure, refSite) VALUES (@step, @priority, (SELECT id FROM portal_shutdown_groups WHERE name = @group), 0, (SELECT id FROM portal_shutdown_procedures WHERE name = @procedure), (SELECT id FROM portal_shutdown_sites WHERE name = @site));
+
+##### variables pour le poweron
+SET @site = 'Euroforum - Poweron';
+SET @group = 'STARTUP ZONES PROD';
+SET @procedure = 'Startup Zone';
+SET @step = 'oid_pz';
+
+##### ajout de la step
+SET @priority = (SELECT priority FROM portal_shutdown_steps  WHERE refGroup = (SELECT id FROM portal_shutdown_groups WHERE name = @group) and refSite = (SELECT id FROM portal_shutdown_sites WHERE name = @site) ORDER BY priority DESC LIMIT 1);
+SET @priority = (SELECT @priority+1);
+INSERT INTO portal_shutdown_steps (name, priority, refGroup, refMachine, refProcedure, refSite) VALUES (@step, @priority, (SELECT id FROM portal_shutdown_groups WHERE name = @group), 0, (SELECT id FROM portal_shutdown_procedures WHERE name = @procedure), (SELECT id FROM portal_shutdown_sites WHERE name = @site));
+
+
+
+
+

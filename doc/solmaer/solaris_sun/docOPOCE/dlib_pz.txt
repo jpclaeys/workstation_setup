@@ -1,0 +1,15 @@
+# copier une semaine
+export se=52
+export ar=archive09
+/opt/OPrsync/bin/rsync -A -l -p -o -g -H -r -t -a --update   --stats --progress   /applications/dlib/data02/podl_archive/01/2008/${se} /applications/dlib/${ar}
+
+# virer dossier
+export se=52
+\rm -r /applications/dlib/data02/podl_archive/01/2008/${se}
+
+export zo=opgtw
+export do=OPGTW_BK
+/opt/OPrsync/bin/rsync -A -l -p -o -g -H -r -t -a --update  -S /zones/${zo}/root/applications/wood/queues/PODL_DELIVERY/WAIT /${do}
+
+cd  /applications/dlib/data02/podl_archive/01/2008/
+/opt/OPrsync/bin/rsync -A -l -p -o -g -H -r -t  -a   --update -R -S  ${se}/2412/*  /applications/dlib/${ar}/

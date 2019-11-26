@@ -1,0 +1,8 @@
+expire="25days"
+
+mminfo  -q 'pool="Backup 9940B",volretent < today+'"${expire}"'' -r 'volume,volretent,location' |perl -nae 'm{\s+\d\d/} && print "$F[0]\n"' | xargs echo nsrmm -y -o recyclable
+
+mminfo  -q 'pool="Clone 9940B",volretent<today' -r 'volume,volretent' |perl -nae 'm{\sundef}  && print "$F[0]\n"' |xargs echo nsrmm -y -o recyclable
+
+mminfo  -q 'pool="Clone 9940B",volretent < today+'"${expire}"'' -r 'volume,volretent,location' |perl -nae 'm{\s+\d\d/} && print "$F[0]\n"' | xargs echo nsrmm -y -o recyclable
+

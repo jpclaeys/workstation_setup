@@ -1,0 +1,42 @@
+###################################################################################
+#
+# howto configure vnc server
+#
+###################################################################################
+
+
+##### install vnc server
+yum install -y tigervnc-server
+
+
+##### create a vnc service
+display_id=11
+cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:${display_id}.service
+
+
+##### edit vnc service and change "<USER>" by your username
+vi /etc/systemd/system/vncserver@:${display_id}.service
+
+
+##### enable and start service
+systemctl daemon-reload
+systemctl enable vncserver@:${display_id}.service
+systemctl start vncserver@:${display_id}.service
+
+
+
+##### restart service
+
+systemctl restart vncserver@:${display_id}.service
+
+
+###################################################################################
+#
+# howto connect to vnc server
+#
+###################################################################################
+
+
+
+vncviewer <vncserver>:<display_id>
+

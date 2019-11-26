@@ -1,0 +1,31 @@
+
+
+recover -s (source bkp server) -c (nom de la machine source)
+
+
+
+
+To recover a directory /testdir on client mars to a new directory /newdir on client mars, type:
+
+recover -d /newdir -a /testdir
+
+
+nsradmin -p nsrexecd
+
+
+
+
+
+ping bkp-bkpnws02-pk
+
+service : networker
+
+lsof -i TCP | grep nsr
+
+
+recover
+ctrl z
+fg
+
+bortodi@bkpnws02-pk:[~] $ mminfo -c cportaldiff1-pk | grep "13/10"
+

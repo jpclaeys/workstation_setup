@@ -1,0 +1,71 @@
+
+
+[root@worf network-scripts]# lspci | grep -i ethernet
+
+
+04:00.0 Ethernet controller: Broadcom Limited NetXtreme II BCM5709 Gigabit Ethernet (rev 20)
+04:00.1 Ethernet controller: Broadcom Limited NetXtreme II BCM5709 Gigabit Ethernet (rev 20)
+
+
+0e:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+0e:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+13:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+13:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+8b:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+8b:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+90:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+90:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+
+
+ID     | Login user               | Date and time    | Action(s)      | Altered
+-------------------------------------------------------------------------------
+   112 | Marco ... <lopmarc>      | 2017-09-18 07:46 | E, I, O, U     |  324 EE
+
+
+
+[root@worf network-scripts]# cat /proc/net/dev
+Inter-|   Receive                                                |  Transmit
+ face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+    lo: 52278550   64035    0    0    0     0          0         0 52278550   64035    0    0    0     0       0          0
+  eth0: 125457829515 117521865    0    0    0     0          0      6743 36012020858 74700721    0    0    0     0       0          0
+  eth1: 38103420  548457    0    0    0     0          0      6743        0       0    0    0    0     0       0          0
+  eth2: 2768550446 32779090    0    0    0     0          0   6058550 1658404388 7346629    0    0    0     0       0          0
+  eth3: 2610185350 3090615    0    0    0     0          0     89718 1134249792  992521    0    0    0     0       0          0
+  eth4: 1965346911 28591108    0    0    0     0          0   5055036  3903774   40836    0    0    0     0       0          0
+  eth5: 524279416 2960121    0    0    0     0          0     97129 36650540487 25371275    0    0    0     0       0          0
+  eth6: 9262720604 45159800    0    0    0     0          0   6057695 11238242333 35415968    0    0    0     0       0          0
+  eth7: 139790330  956261    0    0    0     0          0     26695 71518187  528003    0    0    0     0       0          0
+  eth8: 7899361078 55504088    0    0    0     0          0   5042829 1864271877 7768580    0    0    0     0       0          0
+  eth9: 12031698  161061    0    0    0     0          0     26697  3310146   26695    0    0    0     0       0          0
+ bond0: 125495932935 118070322    0    0    0     0          0     13486 36012020858 74700721    0    0    0     0       0          0
+ bond1: 151822028 1117322    0    0    0     0          0     53392 74828333  554698    0    0    0     0       0          0
+ bond2: 3134450646 6050656    0    0    0     0          0    186847 37784482979 26363554    0    0    0     0       0          0
+ brbkp: 67360607 1002256    0    0    0     0          0         0 730012578  118433    0    0    0     0       0          0
+ bond3: 17162031455 100663548    0    0    0     0          0  11100479 13102473980 43184450    0    0    0     0       0          0
+ bond4: 4733799321 61369194    0    0    0     0          0  11113508 1662237447 7386734    0    0    0     0       0          0
+bond3.1: 1081364228 21504717    0    0    0     0          0   5367865        0       0    0    0    0     0       0          0
+   br1: 1059675397 21370289    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+bond3.220: 465168808 10078727    0    0    0     0          0    630575        0       0    0    0    0     0       0          0
+ br220: 465166279 10078680    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+bond3.222: 165632571 3570111    0    0    0     0          0    609407        0       0    0    0    0     0       0          0
+ br222: 165586116 3569519    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+bond3.227: 12714267111 47852210    0    0    0     0          0    811118 12921190520 40440555    0    0    0     0       0          0
+ br227: 336888120 7243632    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+bond4.1000: 69758198 1206589    0    0    0     0          0    625204        0       0    0    0    0     0       0          0
+br1000: 69753084 1206580    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+bond4.221: 136360024 2933941    0    0    0     0          0    613322        0       0    0    0    0     0       0          0
+ br221: 136351480 2933829    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+bond4.223: 919377235 9672029    0    0    0     0          0   1321140 1648614748 7226901    0    0    0     0       0          0
+ br223: 166167698 3531076    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+ vnet0: 5573241869 7891968    0    0    0     0          0         0 5642248586 15874664    0    0  267     0       0          0
+ vnet1: 26914425458 1826690    0    0    0     0          0         0 417209802 2996647    0    0  120     0       0          0
+ vnet2: 1070467489 4599278    0    0    0     0          0         0 1058673506 11489720    0    0    0     0       0          0
+ vnet3: 932915618  132512    0    0    0     0          0         0 130122876 1261380    0    0    0     0       0          0
+ vnet4: 1648581020 7225909    0    0    0     0          0         0 1049169132 9589280    0    0  503     0       0          0
+ vnet5: 780046578  128652    0    0    0     0          0         0 128687633 1253157    0    0    0     0       0          0
+ vnet6: 1372102984 5911854    0    0    0     0          0         0 1191271085 12668077    0    0    0     0       0          0
+ vnet7: 174996189   50977    0    0    0     0          0         0 122038105 1200922    0    0    0     0       0          0
+ vnet8: 4905094822 22029121    0    0    0     0          0         0 6798154045 29406857    0    0  260     0       0          0
+ vnet9: 6722668334  975784    0    0    0     0          0         0 2238970044 2050774    0    0    0     0       0          0
+  usb0:  137627    2110    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+

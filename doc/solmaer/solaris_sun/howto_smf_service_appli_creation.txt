@@ -1,0 +1,140 @@
+#################################################################################################
+#
+# mise en place des start/stop script smf pour une application
+#
+##################################################################################################
+
+##### existance de librairie
+
+ls -l /etc/init.d/initd_lib.pl; if [[ $? != 0 ]]; then tar xvf /home/betorma/config_files/initd_lib.pl.tar; fi
+
+
+##### variables
+export application=k4
+export oracle_instance=K4
+export xml_file=/applications/${application}/users/system/svc/manifest/${application}.xml
+
+##### creation des scripts
+
+{
+mkdir -p /applications/${application}/users/system/init.d 
+mkdir -p /applications/${application}/users/system/svc/manifest
+cd /applications/${application}/users/system/init.d 
+ln -s /etc/init.d/initd_lib.pl ${application}
+if [ -f ${xml_file} ]; then echo; echo "file ${xml_file} already exist"; fi
+}
+
+ln -s ${application} ${application}:${smf_instance}
+
+
+##### debut du fichier manifest
+
+
+{
+cat <<EOT >${xml_file}
+<?xml version='1.0'?>
+<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+<service_bundle type='manifest' name='export'>
+
+	<service name='applications/${application}' type='service' version='0'>
+	
+		<dependency name='multiuser-${application}' grouping='optional_all' restart_on='restart' type='service'>
+			<service_fmri value='svc:/milestone/multi-user'/>
+		</dependency>
+		<property_group name='general' type='framework'>
+	 		<propval name='action_authorization' type='astring' value='solaris.smf.manage.applications/${application}'/>
+			<propval name='value_authorization' type='astring' value='solaris.smf.manage.applications/${application}'/>
+		</property_group>
+
+EOT
+}
+
+
+##### instance oracle pour le manifest
+
+{
+
+cat <<EOT >>${xml_file}
+		<instance name='ora' enabled='false'>
+			<exec_method name='start' type='method' exec='/applications/${application}/users/oracle/init.d/oracle_${oracle_instance} start' timeout_seconds='60'>
+				<method_context working_directory='/applications/${application}/users/oracle' project='${application}.dba'>
+					<method_credential user='oracle' group='dba'/>
+				</method_context>
+			</exec_method>
+			<exec_method name='stop' type='method' exec='/applications/${application}/users/oracle/init.d/oracle_${oracle_instance} stop' timeout_seconds='60'>
+				<method_context working_directory='/applications/${application}/users/oracle' project='${application}.dba'>
+					<method_credential user='oracle' group='dba'/>
+				</method_context>
+			</exec_method>
+			<property_group name='startd' type='framework'>
+				<propval name='ignore_error' type='astring' value='core,signal'/>
+			</property_group>
+		</instance>
+	
+EOT
+}
+
+
+##### instance xxx pour le manifest
+
+export smf_instance=app
+export smf_user=cordiscms
+export smf_group=cordiscms
+export start_cmd="/applications/cordiscms/users/cordiscms/etc/rc.d/ica start"
+export stop_cmd="/applications/cordiscms/users/cordiscms/etc/rc.d/ica stop"
+
+{
+cat <<EOT >>${xml_file}
+		<instance name='${smf_instance}' enabled='false'>
+			<exec_method name='start' type='method' exec='${start_cmd}' timeout_seconds='60'>
+				<method_context working_directory='/applications/${application}/users/${user}' project='${application}.${smf_instance}'>
+					<method_credential user='${smf_user}' group='${smf_group}'/>
+				</method_context>
+			</exec_method>
+			<exec_method name='stop' type='method' exec='${stop_cmd}' timeout_seconds='60'>
+				<method_context working_directory='/applications/${application}/users/${user}' project='${application}.${smf_instance}'>
+					<method_credential user='${smf_user}' group='${smf_group}'/>
+				</method_context>
+			</exec_method>
+			<property_group name='startd' type='framework'>
+				<propval name='ignore_error' type='astring' value='core,signal'/>
+			</property_group>
+		</instance>
+	
+EOT
+}
+
+
+
+
+##### fin du fichier de manifest
+
+{
+cat <<EOT >>${xml_file}
+		<stability value='Evolving'/>
+		<template>
+			<common_name>
+				<loctext xml:lang='C'>${application}</loctext>
+			</common_name>
+		</template>
+	
+	</service>
+
+</service_bundle>
+EOT
+}
+
+
+##### import du manifest
+
+svccfg import /applications/${application}/users/system/svc/manifest/${application}.xml 
+
+
+##### test
+
+cd /applications/${application}/users/system/init.d
+./${application} disable
+./${application} status
+./${application} enable
+./${application} status
+

@@ -1,0 +1,718 @@
+#################################################################################################################################################
+# listes les noms de dataset zfs par hotes (en cours...)
+#################################################################################################################################################
+
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	for file in `ls ${explo}/disks/zfs/zfs_get_-rHp_all_*.out`
+	do
+		grep -s applications ${file} | awk '{print $1}' | sort -u | while read dataset
+		do
+			echo "$host;$dataset"
+		done
+	done 2>/dev/null
+done
+} 
+
+
+
+#################################################################################################################################################
+# extrait la liste des espaces zfs utilises
+#################################################################################################################################################
+
+
+export TMP_DIR=/home/betorma/tmp/
+export RESULT_FILE=${TMP_DIR}/free_space_zppol_status.txt
+export CMDB_FILE=${TMP_DIR}/cmdb_host.txt
+/home/admin/bin/getcmdb.sh host >${CMDB_FILE}
+
+{
+echo "host;env;zpool_name;used(MB);free(MB)"
+
+export EXPLO_DIR=/applications/i-status/users/i-status/latest
+
+for EXPLO in ${EXPLO_DIR}/*
+do
+
+	##### recupere le host name
+	export HOST_NAME=`echo ${EXPLO} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+
+	##### recupere environement de HOST_NAME
+	export ENV=`grep ${HOST_NAME} ${CMDB_FILE} | awk -F\; '{print $3}'`
+
+	##### traitement sur les fichiers de commande zfs
+	for FILE in `find ${EXPLO} | grep zpool_list.out`
+	do
+		grep 'no pools available' ${FILE} >/dev/null
+		if [[ $? != 0 ]]; then
+
+			##### pour chaque zpool...
+			for ZPOOL in `grep -v NAME ${FILE} | awk '{print $1}'`
+			do
+				##### ... recupere espace occupe et libre du ZPOOL
+				USED=`grep ${ZPOOL}$'[\t]used[\t]'  ${EXPLO}/disks/zfs/zfs_get_-rHp_all_${ZPOOL}.out | awk '{print $3}'`
+				USED=`echo "$USED/1024/1024" | bc`
+				AVAILABLE=`grep ${ZPOOL}$'[\t]available[\t]' ${EXPLO}/disks/zfs/zfs_get_-rHp_all_${ZPOOL}.out | awk '{print $3}'`
+				AVAILABLE=`echo "$AVAILABLE/1024/1024" | bc`
+				TOTAL_ZPOOL=`echo ${USED}+${AVAILABLE} | bc`
+	
+				##### affiche le resultat
+				echo "${HOST_NAME};${ENV};zpool;${ZPOOL};${TOTAL_ZPOOL};${AVAILABLE}"
+
+			done
+
+		fi
+		
+	done
+
+done
+} 2>/dev/null >$RESULT_FILE
+
+#################################################################################################################################################
+# extrait la liste des espaces vxvm utilises
+#################################################################################################################################################
+
+
+export TMP_DIR=/home/betorma/tmp/
+export RESULT_FILE=${TMP_DIR}/free_space_vxvm_status.txt
+export CMDB_FILE=${TMP_DIR}/cmdb_host.txt
+
+{
+/home/admin/bin/getcmdb.sh host >${CMDB_FILE}
+
+echo "host;env;dg_name;used(MB);free(MB)"
+
+export EXPLO_DIR=/applications/i-status/users/i-status/latest
+
+for EXPLO in ${EXPLO_DIR}/*
+do
+
+	##### recupere le host name
+	export HOST_NAME=`echo ${EXPLO} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+
+	##### recupere environement de HOST_NAME
+	export ENV=`grep ${HOST_NAME} ${CMDB_FILE} | awk -F\; '{print $3}'`
+	
+	for FILE in `find ${EXPLO} | grep vxdg-q-list.out`
+	do
+		
+		##### pour chaque dg...
+		for DG in `grep -v rootdg ${FILE} | awk '{print $1}'`
+		do
+			
+			##### ...calcul la taille donnee au DG
+			TOT=0
+			grep pub_len ${EXPLO}/disks/vxvm/disk_groups/vxprint-mvrGg=${DG}.out | perl -pe 's/pub_len=//g;' | while read NB;
+			do 
+				TOT=$(echo $NB + $TOT | bc)
+			done
+			TOTAL_DG=`echo $TOT/2048 | bc`
+	
+			##### ...calcul la taille dispo dans le DG
+			TOT=0
+			grep -v DISK ${EXPLO}/disks/vxvm/disk_groups/vxdg-g_free=${DG}.out  | awk '{print $5}' | while read NB;
+			do 
+				TOT=$(echo $NB + $TOT | bc)
+			done
+			TOTAL_FREE=`echo $TOT/2048 | bc`
+
+			##### affiche le resultat
+			echo "${HOST_NAME};${ENV};${DG};${TOTAL_DG};${TOTAL_FREE}"
+
+		done
+		
+	done
+
+done
+} 2>/dev/null >$RESULT_FILE
+
+
+#################################################################################################################################################
+# extrait la liste des espaces vxvm et zfs utilises
+#################################################################################################################################################
+
+
+export TMP_DIR=/home/betorma/tmp
+export RESULT_FILE=${TMP_DIR}/free_space_status.txt
+export CMDB_FILE=${TMP_DIR}/cmdb_host.txt
+
+{
+/home/admin/bin/getcmdb.sh host >${CMDB_FILE}
+
+echo "host;env;dg/zpool type;dg/zpool name;used(MB);free(MB)"
+
+export EXPLO_DIR=/applications/i-status/users/i-status/latest
+
+for EXPLO in ${EXPLO_DIR}/*
+do
+
+	##### recupere le host name
+	export HOST_NAME=`echo ${EXPLO} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+
+	##### recupere environement de HOST_NAME
+	export ENV=`grep ${HOST_NAME} ${CMDB_FILE} | awk -F\; '{print $3}'`
+
+	##### traitement sur les fichiers de commande vxvm
+	for FILE in `find ${EXPLO} | grep vxdg-q-list.out`
+	do
+		
+		##### pour chaque dg...
+		for DG in `grep -v rootdg ${FILE} | awk '{print $1}'`
+		do
+			
+			##### ...calcul la taille donnee au DG
+			export TOT=0
+			grep pub_len ${EXPLO}/disks/vxvm/disk_groups/vxprint-mvrGg=${DG}.out | perl -pe 's/pub_len=//g;' | while read NB;
+			do 
+				export TOT=`echo ${NB} + ${TOT} | bc`
+			done
+			export TOTAL_DG=`echo $TOT/2048 | bc`
+	
+			##### ...calcul la taille dispo dans le DG
+			export TOT=0
+			grep -v DISK ${EXPLO}/disks/vxvm/disk_groups/vxdg-g_free=${DG}.out  | awk '{print $5}' | while read NB;
+			do 
+				export TOT=$(echo $NB + $TOT | bc)
+			done
+			export TOTAL_FREE=`echo $TOT/2048 | bc`
+
+			##### affiche le resultat
+			echo "${HOST_NAME};${ENV};vxvm;${DG};${TOTAL_DG};${TOTAL_FREE}"
+
+		done
+
+	done
+
+	##### traitement sur les fichiers de commande zfs
+	for FILE in `find ${EXPLO} | grep zpool_list.out`
+	do
+		grep 'no pools available' ${FILE} >/dev/null
+		if [[ $? != 0 ]]; then
+
+			##### pour chaque zpool...
+			for ZPOOL in `grep -v NAME ${FILE} | awk '{print $1}'`
+			do
+				##### ... recupere espace occupe et libre du ZPOOL
+				export USED=`grep ${ZPOOL}$'[\t]used[\t]'  ${EXPLO}/disks/zfs/zfs_get_-rHp_all_${ZPOOL}.out | awk '{print $3}'`
+				export USED=`echo "$USED/1024/1024" | bc`
+				export AVAILABLE=`grep ${ZPOOL}$'[\t]available[\t]' ${EXPLO}/disks/zfs/zfs_get_-rHp_all_${ZPOOL}.out | awk '{print $3}'`
+				export AVAILABLE=`echo "$AVAILABLE/1024/1024" | bc`
+				export TOTAL_ZPOOL=`echo ${USED}+${AVAILABLE} | bc`
+	
+				##### affiche le resultat
+				echo "${HOST_NAME};${ENV};zpool;${ZPOOL};${TOTAL_ZPOOL};${AVAILABLE}"
+
+			done
+
+		fi
+		
+	done
+
+done
+} 2>/dev/null >$RESULT_FILE
+
+
+#################################################################################################################################################
+# extrait pour un package specifie les machines sur lesquelle celui-ci est installe
+#################################################################################################################################################
+
+
+{
+echo -e "\nHOST_NAME;PKGINST;PKGNAME;VERSION"
+for PACKAGE in VRTSvxvm SUNWjet
+do
+	export $PACKAGE
+	find /applications/i-status/users/i-status/latest | grep pkginfo-l.out | while read FILE
+	do
+		export HOST_NAME=`echo ${FILE} | perl -ne 'print $1 if /explorer\..*?\.(.*?)-/'`
+		perl -pe 'chomp' ${FILE} | perl -ne 'print "$ENV{HOST_NAME}; $1; $2; $3\n" while /PKGINST:\s*(.*?)\s*NAME:\s*(.*?)\s*CATEGORY:.*?VERSION:\s*(.*?)\s*BASEDIR/g' | grep ${PACKAGE}
+	done
+done
+}
+
+
+#################################################################################################################################################
+# extrait la liste des lun de chaque machines, avec le nom du storage sur lequel elle se trouve
+#################################################################################################################################################
+
+##### v1
+{
+echo "host;disk;storage"
+
+export explo_dir=/applications/i-status/users/i-status/latest
+
+for explo in ${explo_dir}/*
+do
+
+	##### recupere le host name
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+
+	##### genere la liste
+	perl -ne '
+	
+		%storage = qw(028 dmx2000 029 dmx4000 266 gnole 19E absynthe 48F tordboyaux);
+		print "$ENV{host};$1;$storage{$2}\n" if m{(c\d{1,2}t.{10}(.{3}).{19}d\d{1,2}s2)};
+
+	' ${explo}/disks/luxadm_probe.out
+	
+done
+} 2>/dev/null 
+
+
+#################################################################################################################################################
+# luxadm_carlo depuis un explorer
+#################################################################################################################################################
+
+{
+export explo_dir=/applications/i-status/users/i-status/latest
+
+for explo in ${explo_dir}/*
+do
+
+	export explo
+	##### recupere le host name
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+
+	echo 
+	echo "########################################################################################## ${host}"
+	
+	##### luxadm_carlo
+	perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `cat $ENV{explo}/disks/luxadm_display_*.out $d`}' ${explo}/disks/luxadm_probe.out | perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))' | sort -u
+
+done
+} 2>/dev/null
+
+
+
+/usr/sbin/luxadm probe |/usr/bin/perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e 'BEGIN{$zps=`zpool status`; foreach ( split(/\s+pool:\s+/, $zps)) {($po,$dev)  = $_ =~ m{^(\S+).*?\1.*?\n(.*?)\n\s*\n}s ; @devs=grep(/^c\d+t[0-9A-Dds]+/, split(/\s+/, $dev)); @devs{@devs}= ($po) x @devs;}} ($p,$d,$d0)=m{\s+(/dev/rdsk/((c.*?)(?:s2)?))\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("$p ==> ". join(" ", sort (map({m{([^,]+),(\w+)}; "$1/". hex($2)} @a))," [$devs{$d0}]\n"))' 
+
+
+perl -n0777e 'while($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `cat $ENV{explo}/disks/luxadm_display_*.out $d`}' ${explo}/disks/luxadm_probe.out |perl -n00e 'BEGIN{$zps=`zpool status`; foreach ( split(/\s+pool:\s+/, $zps)) {($po,$dev)  = $_ =~ m{^(\S+).*?\1.*?\n(.*?)\n\s*\n}s ; @devs=grep(/^c\d+t[0-9A-Dds]+/, split(/\s+/, $dev)); @devs{@devs}= ($po) x @devs;}} ($p,$d,$d0)=m{\s+(/dev/rdsk/((c.*?)(?:s2)?))\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("$p ==> ". join(" ", sort (map({m{([^,]+),(\w+)}; "$1/". hex($2)} @a))," [$devs{$d0}]\n"))' 
+
+
+
+#################################################################################################################################################
+# extrait la liste des fs des machines
+#################################################################################################################################################
+
+{
+export explo_dir=/applications/i-status/users/i-status/latest
+echo 'physical host;host;file system;type'
+
+for explo in ${explo_dir}/*
+do
+
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+
+	cat ${explo}/disks/mount-v.out | egrep 'ufs|zfs' | grep -v global | awk '{print $3";"$5}' | while read fs
+	do		
+		export fs
+		echo $fs | perl -ne 'if (m{^/zones/(.*)/root(/.*)}) {
+				print "$ENV{host};$1;$2\n"; 
+			} else {
+				print "$ENV{host};$ENV{host};$ENV{fs}\n";
+			}
+		'
+	done
+
+done
+}
+
+#################################################################################################################################################
+# extrait la liste des fs de plus d'un certain pourcentage d'occupation
+#################################################################################################################################################
+
+{
+export limite=80
+export explo_dir=/applications/i-status/users/i-status/latest/
+echo "host;file system;size;usage;%"
+
+for explo in ${explo_dir}/*
+do
+
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+
+	if [[ -e ${explo}/disks/df-klZ.out ]]
+	then
+		perl -ne '
+			@line=split(/\s+/);
+			if($line[4] > $ENV{limite}) {
+				print "$ENV{host};$line[5];$line[1];$line[2];$line[4]\n";
+			}
+		' ${explo}/disks/df-klZ.out
+	else
+		perl -ne '
+			@line=split(/\s+/);
+			if($line[4] > $ENV{limite}) {
+				print "$ENV{host};$line[5];$line[1];$line[2];$line[4]\n";
+			}
+		' ${explo}/disks/df-kl.out
+	fi
+
+done
+} >/home/betorma/tmp/fs_a_surveiller.txt 
+
+
+
+#################################################################################################################################################
+# extrait la liste des dataset zfs, ainsi que le mountpoint
+#################################################################################################################################################
+
+
+{
+export explo_dir=/applications/i-status/users/i-status/latest
+echo 'host;dataset zfs;mountpoint'
+
+for explo in ${explo_dir}/*
+do
+		export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+		cat ${explo}/disks/zfs/zfs_get_-rHp_all_*.out | grep mountpoint | perl -ne 'print "$ENV{host};$1;$3\n" if(m{(.*?)\s+(.*?)\s+(.*?)\s+(.*?)})'
+done
+} 2>/dev/null >/home/betorma/tmp/zfs_list.txt
+
+
+
+
+#################################################################################################################################################
+# recherche l'hote ou se trouve les disk (zfs) replique d'un certain hote (en cours)
+#################################################################################################################################################
+
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+export zpool=simap-tz
+export host=junon
+
+
+
+{
+for explo in ${explo_dir}/*
+do
+
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+
+	for disk in `cat ${explo}/disks/zfs/zpool_status_-v.out | egrep "c*d0" | awk '{print $1}'`
+	do
+		echo "${host};${disk}"
+	done
+done
+}
+
+#################################################################################################################################################
+# recherche l'hote ou se trouve des luns d'un stoarge specifique
+#################################################################################################################################################
+
+export storage=312
+export explo_dir=/applications/i-status/users/i-status/latest/
+
+{
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	perl -ne 'print "$ENV{host};$1\n" if(m{(/dev/rdsk/c\dt.................312............d0)})' ${explo}/disks/luxadm_display_*.out
+
+done
+} 
+
+
+
+
+#################################################################################################################################################
+# extraction pour mathias: platform, os, version os, hba type, hba firmware version, hba driver version
+#################################################################################################################################################
+
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+
+{
+echo "host;model/number of servers;operating system;os version and patch level;hba type;firmware version;driver version"	
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	export platform=`awk -F',' '{print $2}' ${explo}/sysconfig/uname-a.out`
+	export system=`grep '^System' ${explo}/sysconfig/uname-X.out | awk '{print $3}'`	
+	export release=`grep '^Release' ${explo}/sysconfig/uname-X.out | awk '{print $3}'`
+	export os_version="`head -1 ${explo}/etc/release | sed -e 's/                      //'`"
+	
+	if [ -e ${explo}/sysconfig/fcinfo.out ]
+	then
+		perl -pe 's/\n/;/' ${explo}/sysconfig/fcinfo.out | perl -ne '
+			while(m{Manufacturer: (.*?);\s+Model: (.*?);\s+Firmware Version: (.*?);.*?;\s+Driver Version: (.*?);}g) {
+				print "$ENV{host};$ENV{platform};$ENV{system} $ENV{release};$ENV{os_version};$1 $2;$3;$4\n";
+			}
+		'
+	else
+		echo "${host};${platform};${system} ${release};${os_version};unknow;unknow;unknow"
+	fi
+done
+}  >/home/betorma/tmp/hba_list.txt
+
+
+2>/home/betorma/tmp/error_hba_list.txt
+
+#################################################################################################################################################
+# liste des ports san par un luxadm
+#################################################################################################################################################
+
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	echo "##### $host"
+	cat ${explo}/disks/luxadm_-e_port.out
+	echo
+done
+} 
+
+#################################################################################################################################################
+# liste des ports san par un luxadm
+#################################################################################################################################################
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+echo 'host;storage;wwn'
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	grep 'Disk device' ${explo}/disks/luxadm_-e_dump_map_* | awk '{print $4}' | while read wwn
+	do
+		storage = ''
+		if [ $wwn = 202600a0b8266772 ]; then export storage=gnole; fi
+		if [ $wwn = 202700a0b8266772 ]; then export storage=gnole; fi
+		if [ $wwn = 201800a0b848f43a ]; then export storage=tordboyaux; fi
+		if [ $wwn = 202900a0b848f43a ]; then export storage=tordboyaux; fi
+		if [ $wwn = 200600A0B826DD65 ]; then export storage=brizard; fi
+		if [ $wwn = 200700A0B826DD66 ]; then export storage=brizard; fi
+		if [ $wwn = 200400a0b818ac1e ]; then export storage=stamper; fi
+		if [ $wwn = 200500a0b818ac1e ]; then export storage=stamper; fi
+		if [ $wwn = 200400a0b829991b ]; then export storage=peket; fi
+		if [ $wwn = 200500a0b829991c ]; then export storage=peket; fi
+		if [ $wwn = 200400a0b819e592 ]; then export storage=absynthe; fi
+		if [ $wwn = 200500a0b819e592 ]; then export storage=absynthe; fi
+		if [ $wwn = 5006048c52a80407 ]; then export storage=dmx4; fi
+		if [ $wwn = 5006048c52a80408 ]; then export storage=dmx4; fi
+		if [ $wwn = 5006048c49aef608 ]; then export storage=dmx2000; fi
+		if [ $wwn = 5006048c49aef607 ]; then export storage=dmx2000; fi
+		if [ $wwn = 5006048449aef608 ]; then export storage=dmx2000; fi
+		if [ $wwn = 5006048449aef607 ]; then export storage=dmx2000; fi
+		echo "$host;$wwn;$storage"
+	done
+done
+} 2>/dev/null
+
+
+#################################################################################################################################################
+# listes des hotes physique, avec les zones en running dessus, par site
+#################################################################################################################################################
+
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+echo 'HOST;ZONE;SITE'
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	export site=`grep ${host} /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print $5}' | awk '{print $1}'`
+	if [ -f /${explo}/sysconfig/zoneadm-list-iv.out ]
+	then
+		grep running /${explo}/sysconfig/zoneadm-list-iv.out | grep -v global | awk '{print $2}' | while read zone
+		do
+			echo -ne "${host};${zone};${site}\n"
+		done
+		if [[ `grep running /${explo}/sysconfig/zoneadm-list-iv.out | wc -l | awk '{print $1}'` == 1 ]]
+		then
+			echo -ne "${host};NA;${site}\n"
+		fi
+	else
+			echo -ne "${host};NA;${site}\n"
+	fi
+done
+} 
+
+#################################################################################################################################################
+# recherche les luns utilisees par les quorum 
+#################################################################################################################################################
+
+##### recherche dans les explorer les quorum qui ne sont pas sur des lun de tordboyaux ou du dmx4
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	if [[ -f ${explo}/cluster/config/scstat.out ]];then
+		quorum_device=`perl -ne 'print "$1\n" if(m{\s+Device votes:\s+/dev/did/rdsk/(d\d+)s2\s+1\s+1\s+Online})' ${explo}/cluster/config/scstat.out`
+		if [[ -n $quorum_device ]] && [[ -f ${explo}/cluster/did/scdidadm-L.out ]];then
+			grep "$quorum_device " ${explo}/cluster/did/scdidadm-L.out | awk '{print $2";"$3}' | sed -e 's/:/;/'
+		fi
+	fi
+done
+} | egrep -v '48F|312' | sort -t';' -k 2 |uniq
+
+
+
+
+
+
+
+
+
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+echo 'host;quorum device;lun;path ctrl;;name ctrl;site'
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	export host
+	export clq=''
+	export cldev=''
+	export ctrl=''
+	if [[ -f ${explo}/cluster/config/clq-list-v.out ]]; then
+		clq=`awk '/shared_disk/ {print $1}' ${explo}/cluster/config/clq-list-v.out`
+		if [[ -n ${clq} ]]; then
+			cldev=`grep "${clq} " ${explo}/cluster/config/cldev-list-v.out | awk -F'/' '{print $4}' | uniq`
+			ctrl=`grep -l ${cldev} ${explo}/disks/luxadm_display_*.out | perl -ne 'print "$1\n" if m{disks/luxadm_display_(.{16}).out}'`
+		fi		
+	fi
+	if [[ $ctrl == '' ]]; then storage= ; fi
+	echo "${host};${clq};${cldev};${ctrl}; ${storage}"
+done
+}
+
+
+
+
+#################################################################################################################################################
+# liste le pourcentage d'utilisation des zpool ayant un disque du vmx (sym_2560)
+#################################################################################################################################################
+
+
+export explo_dir=/applications/i-status/users/i-status/Explorer/latest
+export limit_percent=50
+echo 'HOST;ZPOOL;SIZE;%'
+{
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	if [[ -f ${explo}/disks/zfs/zpool_status_-v.out ]];then
+		perl -n0255e 'print join("\n\n", map({s/\n+//gs;$_} split(/\spool:\s/, $_))). "\n"' ${explo}/disks/zfs/zpool_status_-v.out |perl -n00e 'm{^(\S+).*c\dt.{16}2560.{12}d0}gs && print "$1\n"' | while read zpool
+		do
+			echo -n "$host;"
+			grep "^$zpool " ${explo}/disks/zfs/zpool_list.out | awk '{print $1";"$2";"$5}' | sed -e 's/\%$//'
+		done
+	fi
+done
+} | perl -ne '@list=split(/;/); print if($list[3] > $ENV{limit_percent})' | sort -t';' -r -n -k 4
+
+
+#################################################################################################################################################
+# opappexplo: liste les roles rbac 
+#################################################################################################################################################
+
+
+export explo_dir=/home/i-status/OPappExplo/latest/
+{
+echo 'HOSTNAME;USERNAME;ROLE'
+for explo in ${explo_dir}/*
+do
+	export host=`echo ${explo} | awk -F. '{print $2}'`
+	file=${explo}/host/etc/user_attr
+	if [[ -f ${file} ]]
+	then
+		perl -ne 'print "$ENV{host};$1;$2\n" if(m{^(\w.{6})::::type=normal;roles=(.*)})' $file
+	fi
+done
+} 
+
+
+#################################################################################################################################################
+# liste des releases de solaris pour migration solaris 10u10
+#################################################################################################################################################
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+echo 'HOST;RELEASE;STATUS;ZONES'
+for explo in ${explo_dir}/*
+do
+	host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	release=`grep Solaris ${explo}/etc/release| sed -e 's/Oracle Solaris/Solaris/' |awk '{print $4}'`
+	if [[ $release == 's10s_u10wos_17b' ]]; then state=ok; else state=nook; fi
+	if [[ -f ${explo}/sysconfig/zoneadm-list-cv.out ]]; then
+		zones="`cat ${explo}/sysconfig/zoneadm-list-cv.out | grep -v global | grep running | awk '{print $2}' | xargs echo`"
+		if [[ -z $zones ]]; then zones='none'; fi
+	else
+		zones='none'
+	fi
+	if [[ $release == s10* ]]; then echo "$host;$release;$state;$zones"; fi
+done
+} >/home/betorma/tmp/solaris10_u10.txt
+
+
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+echo 'HOST;ENV;COUPLE;RELEASE;STATUS;ZONES;PIVOT;DUE DATE;END DATE;COMMENT'
+for explo in ${explo_dir}/*
+do
+	host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	grep $host /home/betorma/tmp/getcmdb_host.txt | grep MER >/dev/null
+	if [[ $? == 0 ]]; then export pivot=seymour; else export pivot=skinner; fi
+	release=`grep Solaris ${explo}/etc/release| sed -e 's/Oracle Solaris/Solaris/' |awk '{print $4}'`
+	if [[ -f ${explo}/cluster/config/cluster-list-v.out ]]; then
+		export cluster=`tail -1 ${explo}/cluster/config/cluster-list-v.out`
+	else
+		export cluster=unknown
+	fi
+	if [[ $release == 's10s_u10wos_17b' ]]; then state=ok; else state=nook; fi
+	if [[ -f ${explo}/sysconfig/zoneadm-list-cv.out ]]; then
+		zones="`cat ${explo}/sysconfig/zoneadm-list-cv.out | grep -v global | grep running | awk '{print $2}'`"
+		if [[ -z $zones ]]; then zones='none'; fi
+	else
+		zones='none'
+	fi
+	echo $zones | grep 'pz$' >/dev/null
+	if [[ $? == 0 ]]; then export environment=production; else export environment=test; fi
+	if [[ $release == s10* ]]; then 
+		echo $zones| while read zone
+		do
+			echo "$host;$environment;$cluster;$release;$state;$zone;$pivot"
+		done
+	fi
+done
+} >/home/betorma/tmp/solaris10_u10.txt
+
+
+#################################################################################################################################################
+# pour chaque disk dans format.out, regarde s'il est aussi dans zpool_status_-v.out afin de determiner si un disk serait inutilise sur un serveur
+#################################################################################################################################################
+
+export explo_dir=/applications/i-status/users/i-status/latest/
+{
+echo 'HOST;CLUSTER;DISK_IN_FORMAT_CMD;PRESENT_IN_ZPOOL'
+for explo in ${explo_dir}/*
+do
+	host=`echo ${explo} | awk -F. '{print $3}' | awk -F- '{print $1}'`
+	export host
+	if [[ -f ${explo}/cluster/config/cluster-list-v.out ]]; then
+		export cluster=`tail -1 ${explo}/cluster/config/cluster-list-v.out`
+	else
+		export cluster=unknown
+	fi
+	for disk in `perl -ne 'print "$1\n" if /(c\dt.{32}d0)/' ${explo}/disks/format.out`
+	do
+		grep -i $disk ${explo}/../*/disks/zfs/zpool_status_-v.out >/dev/null
+		if [[ $? == 0 ]]; then export state=yes; else export state=no; fi
+	echo "$host;$cluster;$disk;$state"
+	done
+done
+} | grep 'no$' | tee /home/betorma/tmp/disks.txt
+	
+
+
+

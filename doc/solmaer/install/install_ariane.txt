@@ -1,0 +1,877 @@
+##########################################################################################################
+##### installation d'un hote physique
+##########################################################################################################
+
+##### remplacer ariane par le nom du serveur dans tout le fichier
+
+##### remplacer /home/betorma/xchange/backup par le nom du reprtoire a utiliser pour le stockage de certaines donnees (ex: /home/betorma/xchange/backup = /net/opsrv082/xchange/ariane_backup)
+#/home/betorma/xchange/backup = /home/betorma/xchange/backup
+
+###########################################################################################################################################################################
+##### post reinstall (si une installation est deja existante sur l'hote)
+
+export host=ariane
+export host_ip=10.199.99.34
+export tmp_folder=/home/betorma/xchange/backup/`uname -n`
+mkdir -p $tmp_folder
+
+##### faire un backup de /u01
+cd /
+tar cpf ${tmp_folder}/u01.tar u01
+
+##### faire un backup de /nsr
+cd /
+tar cpf ${tmp_folder}/nsr.tar nsr
+
+##### faire un backup des fichiers /etc/hostname.*
+cd /etc
+tar cpf ${tmp_folder}/hostname.tar hostname.*
+
+##### faire un backup de /etc/zoneagentparams (si des script particuliers y sont presents)
+cd /etc
+tar cpf ${tmp_folder}/zoneagentparams.tar zoneagentparams
+
+##### faire un backup de l'oratab
+cd /var/opt/oracle
+tar cpf ${tmp_folder}/oratab.tar oratab
+
+##### faire un backup des parametres arc cache zfs dans /etc/system
+egrep -i 'zfs|arc' /etc/system
+egrep -i 'zfs|arc' /etc/system >>${tmp_folder}/zfs_arc_cache.txt
+
+##### lancer un explorer 
+/opt/SUNWexplo/bin/explorer -w \!se61xx,\!se3k,\!se6320,\!se6920,\!t3 -e
+
+##### verifier les targets des disks
+echo | format
+
+
+##### recuperation ou configuration du serial
+sneep
+##### ou
+sneep -s "serial"
+
+##### sneep -s <serial_number>, si non definit
+sneep
+
+
+###########################################################################################################################################################################
+##### banner
+
+{0} ok setenv oem-banner ariane
+
+
+###########################################################################################################################################################################
+##### auto-boot
+ 
+{0} ok setenv auto-boot? false
+
+
+###########################################################################################################################################################################
+##### network
+
+{0} ok watch-net-all
+/pci@8,700000/network@5,1
+Internal loopback test -- succeeded.
+Link is  -- up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+...............................................................
+/pci@8,700000/pci@3/network@3
+/pci@8,700000/pci@3/network@3: link down
+
+/pci@8,700000/pci@3/network@2
+/pci@8,700000/pci@3/network@2: link down
+
+/pci@8,700000/pci@3/network@1
+/pci@8,700000/pci@3/network@1: link down
+
+/pci@8,700000/pci@3/network@0
+/pci@8,700000/pci@3/network@0: 1000 mbps full duplex link up
+Watch ethernet packets
+'.' is a good packet and 'X' is a bad packet
+Press any key to stop
+............................................................................................................
+{0} ok 
+
+{0} ok nvalias jump /pci@8,700000/pci@3/network@0
+
+{0} ok cd /pci@8,700000/pci@3/network@0
+{0} ok .properties
+
+assigned-addresses       82010010 00000000 02000000 00000000 00200000 
+                         82010030 00000000 02200000 00000000 00100000 
+d-fru-len                00000000 
+d-fru-off                0000e800 
+d-fru-dev                eeprom
+s-fru-len                00000800 
+s-fru-off                0000e000 
+s-fru-dev                eeprom
+compatible               pci100b,35.30
+                         pci100b,35
+                         pciclass,020000
+                         pciclass,0200
+                         pci108e,abba
+reg                      00010000 00000000 00000000 00000000 00000000 
+                         02010010 00000000 00000000 00000000 00200000 
+                         02010030 00000000 00000000 00000000 00100000 
+address-bits             00000030 
+max-frame-size           00004000 
+network-interface-type   ethernet
+device_type              network
+name                     network
+local-mac-address        00 14 4f 68 5c dc 
+version                  Sun Quad Gigaswift PCI-X adapter FCode 2.13 04/11/09
+phy-type                 mif
+board-model              501-6738
+model                    SUNW,pci-x-qge
+fcode-rom-offset         00000000 
+66mhz-capable 
+fast-back-to-back 
+devsel-speed             00000002 
+class-code               00020000 
+interrupts               00000001 
+                         00000002 
+                         00000003 
+                         00000004 
+latency-timer            00000040 
+cache-line-size          00000010 
+max-latency              00000040 
+min-grant                00000040 
+revision-id              00000030 
+device-id                00000035 
+vendor-id                0000100b 
+
+{0} ok setenv local-mac-address? true
+
+
+#### ON REMUS, create a jet client for ariane
+###########################################################################################################################################################################
+##### creation du client jet
+##### Dans le fichier template la version OS est la suivante: base_config_ClientOS="10_1108_SPARC"
+
+#### attention un ligne a ete ajoute dans le template afin de desactiver la registration oracle
+# disable stupid oracle registration
+base_config_sysidcfg_auto_reg=disable
+
+
+source_template=
+ethernet=''
+/opt/SUNWjet/bin/make_template -f -T ${source_template} -E ${ethernet} ariane
+egrep -v '^#|^$|""$' /opt/SUNWjet/Templates/ariane
+
+/opt/SUNWjet/bin/make_client -f ariane
+
+
+
+
+###########################################################################################################################################################################
+##### formatage des disques locaux
+
+{0} ok boot jump -s
+
+echo "part" >/tmp/format.cmd
+echo "0 " >>/tmp/format.cmd
+echo "root" >>/tmp/format.cmd
+echo "wm" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "100c" >>/tmp/format.cmd
+echo "1 " >>/tmp/format.cmd
+echo "swap" >>/tmp/format.cmd
+echo "wu" >>/tmp/format.cmd
+echo "101" >>/tmp/format.cmd
+echo "$" >>/tmp/format.cmd
+echo "3 " >>/tmp/format.cmd
+echo "unassigned" >>/tmp/format.cmd
+echo "wm" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "4 " >>/tmp/format.cmd
+echo "unassigned" >>/tmp/format.cmd
+echo "wm" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "5 " >>/tmp/format.cmd
+echo "unassigned" >>/tmp/format.cmd
+echo "wm" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "6 " >>/tmp/format.cmd
+echo "unassigned" >>/tmp/format.cmd
+echo "wm" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "7 " >>/tmp/format.cmd
+echo "unassigned" >>/tmp/format.cmd
+echo "wm" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "0" >>/tmp/format.cmd
+echo "label" >>/tmp/format.cmd
+
+format -d c0t0d0 -f /tmp/format.cmd
+format -d c0t1d0 -f /tmp/format.cmd
+
+
+##### update following the disk configuration on server
+prtvtoc /dev/rdsk/c0t0d0s0 >/tmp/vtoc
+for i in 0 1 2;do fmthard -s /tmp/vtoc /dev/rdsk/c0t${i}d0s0;done
+for i in 0 1 ;do echo yes | newfs  /dev/rdsk/c0t${i}d0s0;done
+
+
+###########################################################################################################################################################################
+##### nvramrc
+eeprom nvramrc
+
+
+#export rootdisk_device=/pci@8,600000/SUNW,qlc@4/fp@0,0/disk@0,0
+#export rootmirror_device=/pci@8,600000/SUNW,qlc@4/fp@0,0/disk@1,0
+#export network_device=/pci@8,700000/pci@3/network@0
+#export serial=0348AL00D7
+
+
+rootdisk_device=
+rootmirror_device=
+network_device=
+serial=
+
+eeprom nvramrc="devalias rootdisk ${rootdisk_device}
+devalias rootmirror ${rootmirror_device} 
+.\" ChassisSerialNumber ${serial} \" cr 
+devalias jump ${network_device}"
+
+halt 
+
+{0} ok setenv boot-device rootdisk rootmirror jump
+
+
+
+
+###########################################################################################################################################################################
+##### installation via jet
+
+{0} ok boot jump - install nowin
+
+
+###########################################################################################################################################################################
+##### version de solaris
+
+cat /etc/release
+
+uname -a
+
+
+###########################################################################################################################################################################
+##### zpool en mirroir
+
+zpool status
+
+
+###########################################################################################################################################################################
+##### eeprom
+
+eeprom nvramrc
+
+eeprom "auto-boot?=true"
+eeprom boot-device="rootdisk rootmirror jump"
+
+eeprom | grep local-mac-address | grep true
+
+
+###########################################################################################################################################################################
+###########################################################################################################################################################################
+##### desactivation de mpxio (si necessaire)
+
+
+grep auto-failback /kernel/drv/scsi_vhci.conf | grep auto-failback
+
+##### if disable
+mpathadm list mpath-support
+mpathadm modify mpath-support -a on <mpath-support>
+perl -i.`date +%Y%m%d%H%M` -pe 's/auto-failback="disable";/auto-failback="enable";/' /kernel/drv/scsi_vhci.conf
+grep auto-failback /kernel/drv/scsi_vhci.conf | grep auto-failback
+
+
+echo | format
+
+
+###########################################################################################################################################################################
+##### boot disk mirror
+
+##### disk utilise pour le boot
+prtconf -pv | grep bootpath
+
+##### installboot dans le root disque miroir
+/usr/sbin/installboot -F zfs /usr/platform/$(uname -i)/lib/fs/zfs/bootblk /dev/rdsk/c0t1d0s0
+
+##### test de boot sur le disk rootmirror
+
+init 0
+
+{1} ok boot rootmirror
+
+##### verification du disk utilise pour le boot
+prtconf -pv | grep bootpath
+
+
+
+###########################################################################################################################################################################
+##### config post-install
+
+##### configuration du mot de passe root
+passwd root
+
+##### configuration des services reseaux
+
+echo "opoce.cec.eu.int" >/etc/defaultdomain
+domainname opoce.cec.eu.int
+domainname
+
+nslookup ariane
+
+{
+cat >/var/ldap/ldap_client_cred <<EOT
+#
+# Do not edit this file manually; your changes will be lost.Please use ldapclient (1M) instead.
+#
+NS_LDAP_BINDDN= cn=proxyagent,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int
+NS_LDAP_BINDPASSWD= {NS1}135a8787c1cf6353f4
+EOT
+}
+
+{
+cat >/var/ldap/ldap_client_file <<EOT
+#
+# Do not edit this file manually; your changes will be lost.Please use ldapclient (1M) instead.
+#
+NS_LDAP_FILE_VERSION= 2.0
+NS_LDAP_SERVERS= 158.167.99.7, 158.167.99.8
+NS_LDAP_SEARCH_BASEDN= dc=opoce,dc=cec,dc=eu,dc=int
+NS_LDAP_AUTH= simple
+NS_LDAP_SEARCH_REF= FALSE
+NS_LDAP_SEARCH_SCOPE= one
+NS_LDAP_SEARCH_TIME= 30
+NS_LDAP_CACHETTL= 43200
+NS_LDAP_PROFILE= default
+NS_LDAP_CREDENTIAL_LEVEL= proxy
+NS_LDAP_BIND_TIME= 10
+EOT
+}
+
+{
+chown root:root /var/ldap/ldap_client_*
+svcadm disable svc:/network/ldap/client:default
+sleep 3
+svcadm enable svc:/network/ldap/client:default
+sleep 3
+ldaplist
+}
+
+
+{
+echo 'deny * *.*.*.*' >/etc/ftpd/ftphosts
+echo 'ftp account required pam_unix_account.so.1' >>/etc/pam.conf
+}
+
+svcadm enable ftp
+sleep 3;svcs ftp
+
+
+{
+cat >/etc/inet/ntp.conf <<EOT
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+}
+
+perl -i.orig -pe 's/^TZ=MET/TZ=Europe\/Luxembourg/' /etc/default/init 
+svcadm enable svc:/network/ntp:default
+svcs svc:/network/ntp:default
+
+cat /etc/nsswitch.conf
+
+cat /etc/defaultrouter
+
+ls -l /etc/hosts
+ls -l /etc/netmasks 
+ls -l /etc/inet/ipnodes
+
+perl -pi.orig -e 's/\s+loghost//' /etc/inet/hosts
+
+##### configurations system diverses
+mkdir -p /var/cores/
+coreadm -i /var/cores/%f_%p_%u_%g.core
+dumpadm -d /dev/zvol/dsk/rpool/dump
+ndd /dev/ip ip_strict_dst_multihoming | grep 0
+
+grep 'TRACK_INTERFACES_ONLY_WITH_GROUPS=yes' /etc/default/mpathd
+
+##### nettoyage du zpool
+zfs list | grep home
+zfs destroy rpool/export/home
+zfs list | grep home
+
+##### swap !!!!! create a volume with the same size of the physical memory
+
+# remove the actual volume, and create a new big
+#zpool list rpool
+#zfs create -V 20G rpool/swap2
+#swap -a /dev/zvol/dsk/rpool/swap2
+#swap -l
+#top
+#echo '/dev/zvol/dsk/rpool/swap2        -       -       swap    -       no      -' >>/etc/vfstab
+#cat /etc/vfstab
+
+
+####################################### FS ORACLE
+zfs create -o mountpoint=/u01 rpool/u01
+zfs create -o mountpoint=/u02 rpool/u02
+zfs create -o mountpoint=/u01/oraagent rpool/u01/oraagent
+zfs set quota=2Gb rpool/u01/oraagent
+
+df -k | egrep "u01|u02|oraagent"
+
+
+mkdir -p /u01/home/oracle
+mkdir -p /u01/home/rootdba
+mkdir -p /u02
+
+
+##### cfengine sur l'hote
+IP=$(grep $(uname -n) /etc/hosts | awk '{print $1}')
+echo $IP
+
+rm /net/opsrv082/xchange/mb/cfengine/root*.pub
+cp -p /var/cfengine/ppkeys/localhost.pub /net/opsrv082/xchange/root-${IP}.pub
+
+##### sur infra-srv, recuperer la cle cfengine de l'hote
+cd /var/cfengine/ppkeys
+mv /net/opsrv082/xchange/root-*.pub .
+chown root:root root*
+chmod 644 root*
+
+##### sur infra-srv, ajouter si necessaire le nom de l'hote a son groupe
+cd /var/cfengine/master/inputs
+cp -p cf.groups cf.groups.`date +%Y%m%d%H%M`
+vi cf.groups
+
+##### a nouveau sur l'hote
+/var/cfengine/bin/cfagent -v --no-splay
+
+#### TEST explorer release 6.8
+crontab -l # check line 00 06 * * *   /opt/SUNWexplo/bin/explorer -w \!se61xx,\!se3k,\!se6320,\!se6920,\!t3 -q -e -SR PO > /dev/null 2>&1 # SUNWexplo
+
+pkgparam SUNWexplo VERSION
+#### 6.8,REV=2011.10.20.12.53
+
+
+
+##### test mail  ==> PB SENDMAIL A VOIR
+echo 'test1' | mailx -s `uname -n` mathieu.betori@ext.publications.europa.eu
+echo 'test2' | mailx -s `uname -n` betorma
+
+
+##### eiscd
+# Finalement passer le script setup-standard.sh
+# Et installer l'outil ACT
+pkgadd -d /net/remus/export/packages/TOOLS_SUN/CTEact/8.13 CTEact 
+
+
+#Do you want to install the ACT package? [y/n]: y
+#enter base directory for install (Default /opt/CTEact) [?,q]
+#Do you wish to enable the email of panic facility [y] [y,n,?] y
+#Enter email address i.e root@aardvark :- opensystem-logs@publications.europa.eu
+#Do you want to continue with the installation of <CTEact> [y,n,?] y
+
+
+
+###### CHECK Sneep
+sneep
+####0449MM20C2
+
+
+##### agent ECC
+##cd /net/remus/export/software/EMC2/master-agent/ecc6.1
+##./install_master.sh  /net/remus/export/software/EMC2/master-agent/ecc6.1
+# reponses:
+##/usr/ecc
+##pythagore
+##5799
+##10799
+##5798
+##Y
+##Y
+##/etc/init.d/eccmad start
+
+cd /net/remus/export/software/EMC2/master-agent/current_version
+./install_native.sh /net/remus/export/software/EMC2/master-agent/current_version -s ./ecc_answers.un
+tail -2 /usr/ecc/install_native.log 
+
+/etc/init.d/eccmad start
+
+
+#### send mail to DL-INFRA-STORAGE for ECC UPDATE
+
+
+##### verifier si le nom du serveur est bien dans infra-srv:/applications/i-status/users/system/admin/explo_server_list
+##### lancer un explorer, et voir s'il est bien arrive sur infra-srv
+
+##### smf
+### resoudre pb svcs -x # service print
+svcadm disable svc:/application/print/ipp-listener:default svc:/application/print/rfc1179:default
+svcs -xv ### doit etre vide
+
+
+svccfg 
+select system/webconsole
+setprop options/tcp_listen=true
+listprop options/tcp_listen
+quit
+
+svcadm refresh webconsole
+svcprop /system/webconsole:console | grep tcp_listen | grep true
+
+svcprop network/rpc/bind:default | grep local_only | grep false
+
+svcadm disable svc:/system/filesystem/volfs:default
+
+##### monitoring
+svcadm disable svc:/application/management/sma:default
+svcadm enable svc:/application/management/sma:default
+svcadm disable svc:/application/management/snmpdx:default
+svcadm disable svc:/application/management/dmi:default
+
+##### sur nagios-pk (opsrv011): 
+/usr/bin/snmpwalk -c specOPOCE -v2c ariane
+/usr/bin/snmpdf -c specOPOCE -v2c ariane
+
+
+##### Check contenu /etc/system
+### parametre EMC
+### USB
+### paramatre oracle
+cat /etc/system
+
+
+##### s'il s'agit d'une reinstallation, recuperer les anciens paramtres d'arc cache zfs
+export tmp_folder=/home/betorma/xchange/backup/`uname -n`
+echo '****** ZFS' >>/etc/system 
+cat ${tmp_folder}/zfs_arc_cache.txt >>/etc/system 
+echo '****** END ZFS' >>/etc/system 
+
+##### sinon configurer manuellement (doit etre egale a 1/4 de la memoire physique, en octets)
+export physical_memory=`top -d1 | awk '/'^Memory:'/ {print $2}'`
+export arc_cache=$(
+top -d1 | awk '/'^Memory:'/ {print $2}' | perl -ne '
+	if(m{(\d+)(G|M)}) {
+		$size=$1; $unit=$2;
+		if($unit eq 'M') {$arc_cache=($size/4*1024*1024)}
+		if($unit eq 'G') {$arc_cache=($size/4*1024*1024*1024)}
+		print $arc_cache;
+	}
+'
+)
+
+echo $physical_memory $arc_cache
+
+cat <<EOT >>/etc/system
+****** ZFS
+* ZFS ARC cache limitation ${arc_cache} bytes => ${physical_memory}b
+set zfs:zfs_arc_max=${arc_cache}
+****** END ZFS
+EOT
+
+
+#### check
+cat /etc/system
+
+
+
+##### initd_lib.pl
+
+tar xpf /home/betorma/config_files/initd_lib.pl.tar
+
+ls -l /etc/init.d/initd_lib.pl 
+#### -rwxr-xr-x   1 root     root        7730 Sep 30  2008 /etc/init.d/initd_lib.pl
+
+
+
+##### client networker
+pkgparam LGTOclnt VERSION
+
+pkgparam LGTOman VERSION
+
+
+cd /var/tmp
+cp -p /net/remus/export/software/Networker/Oracle/nmo42_solaris_64.tar.gz /var/tmp
+gunzip /var/tmp/nmo42_solaris_64.tar.gz
+tar xvfp /var/tmp/nmo42_solaris_64.tar
+pkgadd -d /var/tmp LGTOnmo
+
+
+
+
+/usr/ccs/bin/what /lib/libnwora.so
+
+ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+ln -s /lib/libnwora.so /usr/lib/libnwora.so
+ls -l /usr/lib/libnwora.so
+### lrwxrwxrwx   1 root     root          16 Jul 15 07:45 /usr/lib/libnwora.so -> /lib/libnwora.so
+
+cp -p /net/remus/export/software/Networker/Oracle/saverman.pl /usr/sbin/saverman.pl
+chown root:root /usr/sbin/saverman.pl*
+chmod 755 /usr/sbin/saverman.pl*
+ls -l /usr/sbin/saverman.pl
+#### -rwxr-xr-x   1 root     root        7891 Jun 19  2009 /usr/sbin/saverman.pl
+
+#### oracle
+echo "rootdba::::type=role;profiles=Primary Administrator" >>/etc/user_attr
+echo "oracle::::type=role;profiles=OraAgent Management,All" >>/etc/user_attr
+
+echo "oracle     \$HOST:/u01/home/&" >>/etc/auto_home
+echo "rootdba      \$HOST:/u01/home/&" >>/etc/auto_home
+
+echo 'dba::55:oracle' >>/etc/group
+echo 'oracle:x:55:55:Oracle Role:/home/oracle:/bin/pfksh' >>/etc/passwd
+echo 'rootdba:x:20000:1:DBA Role:/home/rootdba:/bin/pfksh' >>/etc/passwd
+
+echo 'oracle:N1adVIyiQ/ufM:12577::::::' >>/etc/shadow
+echo 'rootdba:c1B14rQDdgzPY:12500::::::' >>/etc/shadow
+
+pwconv
+
+chown 55:55 /u01/home/oracle
+
+
+### on purge /var/tmp
+rm -r /var/tmp/*
+
+### on verifie /tmp ### sticky bit
+ls -alrtd /tmp
+drwxrwxrwt   7 root     sys          650 Dec 22 10:35 /tmp
+
+
+###########################################################################################################################################################################
+##### netmask et ip
+
+##### verifier le contenu du fichier /etc/inet/netmasks (install par cfengine)
+cat /etc/inet/netmasks
+
+###########################################################################################################################################################################
+#### aggregat network on the CONSOLE !!!!
+svcadm disable svc:/network/ldap/client:default ### avoid logs on console
+dladm show-dev
+
+###  
+
+dladm show-dev | awk '{print "ifconfig "$1 " unplumb"}'
+
+ifconfig -a
+
+
+dladm create-aggr -d e1000g0 -d e1000g1 1
+dladm show-aggr
+dladm modify-aggr --lacp-mode=active 1
+dladm show-link
+
+ifconfig aggr1 unplumb
+rm /etc/hostname.e1000g0 
+
+
+##### Setting VLAN
+
+##### variables a definir
+export host=`uname -n`
+export group=vlan199
+export ip=`uname -n`
+export interface=aggr1
+
+
+##### verification de la resolution de ${ip}
+getent hosts ${ip}
+
+##### plumb des interfaces
+ifconfig ${interface} plumb
+
+##### verification
+ifconfig ${interface}
+
+##### creation des fichiers de configuration des interfaces
+echo "${ip}  netmask + broadcast + up" >/etc/hostname.${interface}
+
+##### verification
+cat /etc/hostname.${interface}
+
+##### configurer les interfaces a partir des fichiers de configuration
+ifconfig ${interface} `cat /etc/hostname.${interface}`
+
+##### verification
+ifconfig ${interface}
+dladm show-aggr
+dladm show-aggr -L
+
+##### LDAP ENABLE
+svcadm enable svc:/network/ldap/client:default ### avoid logs on console
+ldaplist
+
+
+#############################################################################################################
+# autres vlan
+
+
+ifconfig -a
+
+{
+for vlan in 1 169 170 1000
+do
+	echo up >/etc/hostname.aggr${vlan}001
+	ifconfig aggr${vlan}001 plumb
+	ifconfig aggr${vlan}001 `cat /etc/hostname.aggr${vlan}001`
+done
+}
+
+
+
+
+
+
+################################################################################
+##### verification par rapport aux fichiers eventuellement precedement backupes
+
+export tmp_folder=/net/opsrv082/xchange/vince/`uname -n`
+cd /tmp
+tar xpf ${tmp_folder}/hostname.tar
+diff /etc/hostname.${interface} hostname.${interface}
+diff /etc/hostname.${interface_stanby} hostname.${interface_stanby}
+
+
+
+###########################################################################################################################################################################
+##### restauration de /u01 ou demander l'installation de l'oraagent
+
+export tmp_folder=/home/betorma/xchange/backup/`uname -n`
+cd /
+tar xpf ${tmp_folder}/u01.tar
+
+
+###########################################################################################################################################################################
+##### restauration de /nsr
+
+export tmp_folder=/home/betorma/xchange/backup/`uname -n`
+cd /
+tar xpf ${tmp_folder}/nsr.tar
+
+
+###########################################################################################################################################################################
+##### restauration de l'oratab
+
+export tmp_folder=/home/betorma/xchange/backup/`uname -n`
+mkdir -p /var/opt/oracle
+cd /var/opt/oracle
+tar xpf ${tmp_folder}/oratab.tar
+chown -R oracle:root /var/opt/oracle
+
+
+###########################################################################################################################################################################
+###### Install asr
+cd /opt
+mkdir SUNWswasr
+cd SUNWswasr
+cp /net/remus/export/software/ASR/ASRAssetBundle.2.7-20100706110230.tar .
+
+tar -xvf ASRAssetBundle.2.7-20100706110230.tar
+cd asrassetbundle/
+./asrassetmenu.sh
+
+
+Welcome to the ASR asset menu
+----------------------------------------------
+1) Check system for ASR requirements
+2) Add a trap-destination to SunMC agent
+3) Add a trap-destination to FMA agent
+4) Remove a trap-destination from SunMC agent
+5) Remove a trap-destination from FMA agent
+6) List SunMC agent trap-destinations
+7) List FMA agent trap-destinations
+8) Test event to verify ASR connectivity
+9) Exit
+
+Please enter your selection [1-9] 8
+
+
+
+#### test on asr server
+ssh opsrv112
+cd /opt/SUNWswasr/bin
+./asr
+list_asset -h  ariane
+
+
+
+###########################################################################################################################################################################
+##### ajouter ou mettre a jour la cmdb 
+
+export console=
+export domain=
+export alias=spock
+export env=
+export site=
+export host=`uname -n`
+export ip=$(getent hosts `uname -n` | awk '{print $1}')
+export release="`head -1 /etc/release | perl -pe 's/^\s+//'`"
+export uname="`uname -a`"
+
+{
+echo Nouvel host:
+echo
+echo Hotname: $host
+echo IP: $ip
+echo Alias: $alias
+echo Environment: $env
+echo Site: $site
+echo Release: $release
+echo Kernel version: $uname
+echo Console: $console
+echo Domain: $domain
+} | mailx -s "CMDB: `uname -n`" betorma
+
+
+###########################################################################################################################################################################
+##### creer ou verifier le client de backup
+### lancer un backup a partir de remus
+timex savegrp -c ariane -l full Mercier_Unix_Test
+###########################################################################################################################################################################
+##### creer ou verifier le client de monitoring
+
+
+###########################################################################################################################################################################
+##### dernieres verif
+
+init 6
+
+svcs -xv
+
+##### check_host
+/home/admin/bin/check_host.sh
+
+##### check_srv
+/home/admin/bin/check_srv.sh
+
+##### monitoring
+
+##### enlever le nom de l'hote du fichier /etc/inet/hosts du serveur Jet !!!!!!!!
+
+
+#### On test si tout est ok
+init 6
+
+
+
+
+

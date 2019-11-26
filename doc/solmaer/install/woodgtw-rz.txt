@@ -1,0 +1,1013 @@
+11#################################################################################################################
+# creation d'un zpool
+#################################################################################################################
+
+
+export zpool=woodgtw-rz
+export lun=
+
+/home/betorma/bin/luxadm_carlo| grep "lun ${lun}"
+
+export disk=
+
+echo zpool create ${zpool} ${disk}
+zpool status ${zpool}
+zpool list ${zpool}
+############################################################################################
+#
+# Installation de zone sur ZFS
+#
+############################################################################################
+#
+# prerequis:
+# - nom de la zone
+# - alias pour la zone
+# - nom de l'hote physique pour la zone
+# - l'interface reseau de l'hote physique pour la zone
+# - adresse ip pour la zone
+# - adresse ip pour l'application
+# - opsrv pour la zone
+# - nom du zpool
+#
+############################################################################################
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+##### variables
+export ZONE=woodgtw-rz
+export COMMENT_ZONE="zone de test pour wood"
+export ZONE_IP=158.167.224.200
+export ZONE_NETMASK=/26 
+export ZONE_DEFROUTER=158.167.224.254
+export SYSIDCFG_NETMASK=255.255.255.192 
+export APPLI_IP=158.167.224.199
+export APPLI_NETMASK=/26 
+export APPLI_OPSRV=opgtw005
+export INTERFACE=aggr223001
+export ZPOOL=${ZONE}-data
+export APPLICATION=wood
+export ORACLE_IS_USED=no
+export DOCUMENTUM_IS_USED=no	
+export ZONE_IS_CLUSTER_RESSOURCE=yes	
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+mkdir -p ${TMP_FOLDER}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+
+##### creation et montage du repertoire de la zone
+zfs create -o mountpoint=/zones/${ZONE} ${ZPOOL}/zone
+zfs set mountpoint=/zpool/${ZPOOL} ${ZPOOL}
+
+##### creation des file system pour l'application
+zfs create -o mountpoint=none ${ZPOOL}/applications
+zfs create -o mountpoint=none ${ZPOOL}/applications/${APPLICATION}
+zfs create -o mountpoint=/applications/${APPLICATION}/xchange ${ZPOOL}/applications/${APPLICATION}/xchange
+zfs create -o mountpoint=/applications/${APPLICATION}/users ${ZPOOL}/applications/${APPLICATION}/users
+
+##### creation des files system pour les base de donnees oracle
+{
+if [[ ${ORACLE_IS_USED} == 'yes' ]]
+then 
+	for FS in orabin oralog oradata oraflash; do
+		zfs create -o mountpoint=/applications/${APPLICATION}/${FS} ${ZPOOL}/applications/${APPLICATION}/${FS}
+	done
+fi
+zfs create -o mountpoint=/u01/oraagent ${ZPOOL}/applications/oraagent
+chown oracle:dba /u01/oraagent
+}
+
+##### creation du file system pour documentum
+{
+if [[ ${DOCUMENTUM_IS_USED} == 'yes' ]]
+then 
+	for FS in docdata; do
+		zfs create -o mountpoint=/applications/${APPLICATION}/${FS} ${ZPOOL}/applications/${APPLICATION}/${FS}
+	done
+fi
+}
+
+##### verification des file system
+zfs list -r ${ZPOOL}
+
+##### creation du fichier de configuration de la zone
+cat >${TMP_FOLDER}/${ZONE}.cfg <<EOF
+create -b
+set zonepath=/zones/${ZONE}
+set autoboot=false
+set bootargs="-m verbose"
+set limitpriv=default,proc_priocntl
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${ZONE_IP}${ZONE_NETMASK}
+set physical=${INTERFACE}
+set defrouter=${ZONE_DEFROUTER}
+end
+add net
+set address=${APPLI_IP}${APPLI_NETMASK}
+set physical=${INTERFACE}
+end
+add dataset
+set name=${ZPOOL}/applications
+end
+add attr
+set name=comment
+set type=string
+set value="${COMMENT_ZONE}"
+end
+EOF
+
+##### verification
+cat ${TMP_FOLDER}/${ZONE}.cfg
+
+##### configuration et installation de la zone
+chmod 700 /zones/${ZONE}
+zonecfg -z ${ZONE} -f ${TMP_FOLDER}/${ZONE}.cfg
+zoneadm -z ${ZONE} install
+
+##### verification des erreurs possibles
+grep -i err /zones/${ZONE}/root/var/sadm/system/logs/install_log
+
+##### /etc/sysidcfg
+cat >/zones/${ZONE}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+timeserver=158.167.99.7
+timezone=Europe/Luxembourg
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${ZONE} ip_address=${ZONE_IP} netmask=${SYSIDCFG_NETMASK} protocol_ipv6=no default_route=${ZONE_DEFROUTER}}
+EOF
+
+##### /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+touch /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+
+##### /inet/ntp.conf
+cp -p /etc/inet/ntp.conf /zones/${ZONE}/root/etc/inet/
+
+##### /etc/resolv.conf
+cp -p /etc/resolv.conf /zones/${ZONE}/root/etc/
+
+##### /etc/ftpd/ftpservers
+echo 'deny * *.*.*.*' >>/zones/${ZONE}/root/etc/ftpd/ftphosts
+
+##### /etc/nsswitch.conf
+tar cpfv /zones/${ZONE}/root/etc/nsswitch.conf.tar /etc/nsswitch.conf
+
+##### fichier de configuration du client ldap
+cp /var/ldap/ldap_client_cred /zones/${ZONE}/root/var/ldap/
+cp /var/ldap/ldap_client_file /zones/${ZONE}/root/var/ldap/
+
+##### configuration du nom de domaine
+cp -p /etc/defaultdomain /zones/${ZONE}/root/etc/
+
+##### configuration des holidays
+cp -p /etc/acct/holidays /zones/${ZONE}/root/etc/acct/holidays
+
+##### loghost et opsrv dans /etc/hosts
+cp -p /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+echo -e "${APPLI_IP}\t${APPLI_OPSRV}\t## ${APPLICATION}" >>/zones/${ZONE}/root/etc/inet/hosts
+echo -e "${ZONE_IP}\t${ZONE}" >>/zones/${ZONE}/root/etc/inet/hosts
+
+
+##### verification
+diff /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+
+##### demarrage de la zonec et onnexion a la console de la zone
+zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### changer le mot de passe root
+passwd root
+
+##### variables
+export ZONE=woodgtw-rz
+export ZONE_IP=158.167.224.200
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+
+##### enleve loghost du fichier /etc/inet/hosts
+perl -i.${DATE} -pe 's/loghost//' /etc/inet/hosts
+
+##### /etc/nsswitch.conf
+tar xvf /etc/nsswitch.conf.tar
+
+##### rafraichissement du cache dns
+svcadm restart svc:/system/name-service-cache:default
+
+##### configuration du repertoire d'accueil des core system
+coreadm -i /var/cores/%f_%p_%u_%g.core
+
+##### activation du service ldap/client
+svcadm disable svc:/network/ldap/client:default
+svcadm enable svc:/network/ldap/client:default
+
+##### tester le ldap
+ldaplist
+
+##### desactivation du webconsole
+svcadm disable svc:/system/webconsole:console
+
+##### copie de la cle cfengine
+cp -p /var/cfengine/ppkeys/localhost.pub ${TMP_FOLDER}/root-${ZONE_IP}.pub
+
+
+######################################################
+# sur le serveur cfengine
+######################################################
+
+
+##### varibales
+export ZONE=woodgtw-rz
+export ZONE_IP=158.167.224.200
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+
+##### ajout de la zone dans la configuration de cfengine (cf.groups)
+cp /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+vi /var/cfengine/master/inputs/cf.groups
+
+diff /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+
+##### import de la cle publique de la zone dans cfengine
+cp -p ${TMP_FOLDER}/root-${ZONE_IP}.pub /var/cfengine/ppkeys
+chown root:root /var/cfengine/ppkeys/*
+chmod 544 /var/cfengine/ppkeys/*
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### execution du client cfengine
+/var/cfengine/bin/cfagent -v -q
+
+
+##### redemarrage du service auto-fs
+svcadm restart svc:/system/filesystem/autofs:default
+
+##### test d'envoie d'email depuis la zone
+mailx -s "email de test depuis `/usr/bin/uname -n`" opensystem-logs@publications.europa.eu </dev/null
+
+##### arret de la zone
+init 0
+~~.
+
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+
+##### si la zone n'est pas une ressource cluster, mettre autoboot a true
+{
+if [[ ${ZONE_IS_CLUSTER_RESSOURCE} == 'no' ]]
+then
+	zonecfg -z ${ZONE} set autoboot=true
+fi
+zonecfg -z $ZONE info autoboot
+}
+
+##### demarrage de la zonec et onnexion a la console de la zone
+zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### verfication des services SMF
+svcs -xv
+
+##### verification system
+dmesg
+
+##### verification de la zone
+ls /home/admin/
+/home/admin/bin/check_host.sh
+
+##################################################################################################################################################
+# 
+# description: 	creation de l'utilisateurs applicatif, acces aux roles d'adminstration pour les equipes dba, int prod, int test
+# date creation: 	16/10/2009
+# date maj: 		11/11/2010
+#
+###################################################################################################################################################
+
+
+##### variables
+export appli_project=wood
+export appli_project_id=1007
+export appli_user=wood
+export appli_uid=42468
+export comment_appli_user="${appli_user} user for ${appli_project} project"
+export w_appli_user="w_${appli_user}"
+export w_appli_uid=
+export comment_w_appli_user="${w_appli_user} wood user for ${appli_project} project"
+export appli_group=wood
+export appli_gid=42468
+export oracle_used=no
+export documentum_used=no
+export test_used=yes
+
+##### sauvegarde des fichiers a modifier
+{
+for FILE in /etc/auto_home /etc/group /etc/passwd /etc/shadow /etc/user_attr /etc/security/exec_attr /etc/security/prof_attr /etc/project
+do
+	cp $FILE $FILE.`date +%Y%m%d%H%M`
+done
+}
+
+##### ajout des roles dba et oracle
+{
+mkdir -p /u01/home/oracle
+mkdir -p /u01/home/rootdba
+mkdir -p /u02
+echo "rootdba::::type=role;profiles=Primary Administrator" >>/etc/user_attr
+echo "oracle::::type=role;profiles=OraAgent Management,All" >>/etc/user_attr
+echo "oracle     \$HOST:/u01/home/&" >>/etc/auto_home
+echo "rootdba      \$HOST:/u01/home/&" >>/etc/auto_home
+echo 'dba::55:oracle' >>/etc/group
+echo 'oracle:x:55:55:Oracle Role:/home/oracle:/bin/pfksh' >>/etc/passwd
+echo 'rootdba:x:20000:1:DBA Role:/home/rootdba:/bin/pfksh' >>/etc/passwd
+echo 'oracle:N1adVIyiQ/ufM:12577::::::' >>/etc/shadow
+echo 'rootdba:c1B14rQDdgzPY:12500::::::' >>/etc/shadow
+pwconv
+chown 55:55 /u01/home/oracle
+}
+
+{
+if [[ ${oracle_used} == yes ]]
+then
+	for rep in orabin oradata oralog oraflash
+	do
+		if [ -d /applications/${appli_project}/$rep ]
+		then
+			chown 55:55 /applications/${appli_project}/$rep
+               ls -ld /applications/${appli_project}/$rep
+		fi
+	done
+	mkdir /var/opt/oracle
+	chown 55:55 /var/opt/oracle
+fi
+}
+
+##### creation de $appli_group
+{
+grep ^${appli_group} /etc/group
+groupadd -g ${appli_gid} ${appli_group}
+egrep "^${appli_group}|${appli_gid}" /etc/group
+}
+
+##### creation de $appli_user
+{
+grep ^${appli_user} /etc/passwd
+grep ^${appli_user} /etc/user_attr
+mkdir -p /applications/${appli_project}/users/${appli_user}
+roleadd -d /home/${appli_user} -c "${comment_appli_user}" -u ${appli_uid} -g ${appli_group} -s /bin/pfksh  ${appli_user} 
+egrep "^${appli_user}|${appli_uid}" /etc/passwd
+}
+
+##### creation de wood_group 
+{
+grep ^wood /etc/group
+groupadd -g 65535 wood
+egrep "^wood|65535" /etc/group
+}
+
+
+##### auto_home de $appli_user
+{
+echo "${appli_user}     \$HOST:/applications/${appli_project}/users/&" >> /etc/auto_home
+cat /etc/auto_home
+}
+
+##### modification des droit sur le home de $appli_user
+{
+chown ${appli_user}:${appli_group} /applications/${appli_project}/users/${appli_user}
+ls -ld /applications/${appli_project}/users/${appli_user}
+}
+
+##### changement du mot de passe de $appli_user
+passwd ${appli_user}
+
+
+
+
+##### ajout des acces pour l' equipes integration de test au role $appli_user
+{
+if [[ ${test_used} == yes ]]
+then
+	for user in maffima klaerpa lafarpa niedema holotma pierrph dotzech naratol
+	do
+		echo "${user}::::type=normal;roles=${appli_user},${w_appli_user}" >>/etc/user_attr
+	done
+fi
+cat /etc/user_attr
+}
+
+########### exec_attr
+{
+echo "${appli_project} Management:suser:cmd:::/applications/${appli_project}/users/system/init.d/*:uid=0" >>/etc/security/exec_attr
+cat /etc/security/exec_attr
+}
+
+#### /etc/security/prof_attr
+{
+echo "${appli_project} Management:::${appli_project} start/stop:auths=solaris.smf.manage.applications/${appli_project}" >>/etc/security/prof_attr
+echo "OraAgent Management:::OraAgent profile:auths=solaris.smf.manage.monitoring/oraagent" >>/etc/security/prof_attr
+cat /etc/security/prof_attr
+}
+
+####  /etc/project
+{
+cat <<EOF >/etc/project
+system:0::::
+user.root:1::::
+noproject:2::::
+default:3::::
+group.staff:10::::
+user.${appli_project}:${appli_project_id}:${appli_project}:${appli_user}:${appli_group},staff:
+${appli_project}.app:${appli_project_id%0}1:${appli_project}:${appli_user}:${appli_group},staff:
+${appli_project}.dba:${appli_project_id%0}2:${appli_project}:${appli_user},oracle:dba:process.max-file-descriptor=(basic,1024,deny);project.max-shm-memory=(priv,4294967296,deny)
+${appli_project}.wood:${appli_project_id%0}3:${appli_project}:${appli_user},${w_appli_user}:${appli_group}:
+${appli_project}.woodweb:${appli_project_id%0}4:${appli_project}:${appli_user},${w_appli_user}:${appli_group}:
+EOF
+cat /etc/project
+}
+
+##### droit sur le repertoire xchange
+
+{
+if [ -d /applications/${appli_project}/xchange ]
+then
+	chown ${appli_user}:${appli_group} /applications/${appli_project}/xchange
+	ls -ld /applications/${appli_project}/xchange
+fi
+}
+
+
+##### connexion aux roles
+{
+for users in ${appli_user} 
+
+do
+	echo "##### $users"
+	su - $users -c 'id;pwd'
+	echo	
+done
+}
+
+
+
+
+
+
+#########################################################################################################################################################
+# integration d'un zone en cluster
+#########################################################################################################################################################
+
+# resource groups et leur resources
+export rgname=woodgtw-rz-rg
+export rsnamestorage=woodgtw-rz-zfs
+export zpool=woodgtw-rz
+export zname=woodgtw-rz
+export server_source=emile
+export server_target=grimaldi
+export date=`date +%Y%m%d%H%M`
+echo $date
+
+################## POUR LE RESOURCE GROUP
+
+clrg create ${rgname}
+clrg manage ${rgname}
+clrg online ${rgname}
+clrg status
+
+
+# Il faut le register du HAStoragePlus avant de l'utiliser
+#clresourcetype register SUNW.HAStoragePlus
+#clresourcetype register SUNW.gds
+
+clresourcetype list
+
+################## POUR LE ZPOOL
+
+# resource pour le storage
+clrg switch -n ${server_source} ${rgname}
+clrs create -g ${rgname} -t SUNW.HAStoragePlus -p zpools=${zpool} ${rsnamestorage}
+clrs status
+
+
+################## POUR LA ZONE
+
+# ce qu'on change pour roma par exemple:
+# Attention: opgtw/oprvp ont pas LH donc SC_NETWORK=false
+
+
+cat <<EOT >/opt/SUNWsczone/sczbt/util/sczbt_${zname}
+RS=woodgtw-rz-rs
+RG=woodgtw-rz-rg
+PARAMETERDIR=/etc/zones
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=woodgtw-rz-zfs
+Zonename="woodgtw-rz"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOT
+
+cat /opt/SUNWsczone/sczbt/util/sczbt_${zname}
+
+################# CREATION RS ZONE
+# on copie notre scratch sur la bonne copie
+cp -p /opt/SUNWsczone/sczbt/util/sczbt_${zname} /opt/SUNWsczone/sczbt/util/sczbt_config
+cd /opt/SUNWsczone/sczbt/util
+./sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_config
+clrg status
+clrs enable woodgtw-rz-rs
+clrs status
+clrs unmonitor woodgtw-rz-rs
+clrs status
+
+######################### COPIE
+
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster
+mkdir -p $tmp_dir
+
+##### SOURCE
+
+cd /opt/SUNWsczone/sczbt/util
+tar cvfp $tmp_dir/sczbt_${zname}.tar sczbt_${zname}
+cd /etc
+tar cvfp $tmp_dir/zones.tar zones
+
+##### TARGET
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster
+export zname=woodgtw-rz
+export date=`date +%Y%m%d%H%M`
+cd /opt/SUNWsczone/sczbt/util
+tar xvfp $tmp_dir/sczbt_${zname}.tar 
+cd /etc
+cp -p zones/index zones/index.${date}
+tar xvfp $tmp_dir/zones.tar
+
+
+
+############# TEST DE SWITCH
+echo timex clrg switch -n $server_target $rgname
+clrs status
+echo timex clrg switch -n $server_source $rgname
+clrs status
+
+#### ensuite on decide ou cela doit rester :-))))
+#########################################################################################
+# ajouter une zone et son opsrv au monitoring nagios
+#########################################################################################
+
+##### variables
+export ZONE=woodgtw-rz
+#export OPSRV_ZONE=<zone_opsrv>
+#export OPSRV_ZONE_IP=158.167.224.200
+export ZONE_IP=158.167.224.200
+export OPSRV_APP=opgtw005
+export OPSRV_APP_IP=158.167.224.199
+export SITE=mercier								##### 'eufo' ou 'mercier'
+export ENVIRONMENT=test							##### 'prod'ou 'test' ou 'developpement'
+
+##### creation du fichier de config pour le monitoring de l'opsrv applicatif
+cat >/applications/nagios/users/system/nagios/etc/objects/hosts/${OPSRV_APP}.cfg <<EOF
+define host{
+        use                     solaris-host            ; Name of host template to use
+        host_name               ${OPSRV_APP}
+        alias                   ${OPSRV_APP}
+        hostgroups              ${SITE}_${ENVIRONMENT}_servers_solaris_virtualLH
+        address                 ${OPSRV_APP_IP}
+        check_command           check-host-alive
+        max_check_attempts      3
+        }
+
+EOF
+
+
+##### creation du fichier de config pour le monitoring de la zone
+cat >/applications/nagios/users/system/nagios/etc/objects/hosts/${ZONE}.cfg <<EOF
+define host{
+        use                     solaris-host            ; Name of host template to use
+        host_name               ${ZONE}
+        alias                   ${ZONE}
+        hostgroups              ${SITE}_${ENVIRONMENT}_servers_solaris_virtualZones
+        address                 ${ZONE_IP}
+        check_command           check-host-alive        
+        max_check_attempts      3
+        }
+
+EOF
+
+##### verif de la configuration de nagios
+/applications/nagios/users/system/nagios/bin/nagios -v /applications/nagios/users/system/nagios/etc/nagios.cfg | tail -5
+
+##### redemarrage de nagios
+/etc/init.d/nagios status all
+/etc/init.d/nagios stop all
+/etc/init.d/nagios status all
+/etc/init.d/nagios start all
+
+
+############################################################################################
+# envoie d'une demande par email de maj de la CMDB pour une zone
+############################################################################################
+
+
+
+export zone_name=woodgtw-rz
+export zone_ip=158.167.224.200
+export appli_opsrv=opgtw005
+export appli_opsrv_ip=158.167.224.199
+export zone_alias=container
+export host=emile
+export cluster_used=yes
+export node1=emile
+export node2=grimaldi
+export physical_mem_capping=none
+export swap_mem_capping=none
+export cpu_capping=none
+
+{
+echo "nom de la zone:\t\t\t${zone_name} (${zone_ip})"
+echo "OS version:\t\t\t\t"`head -1 /etc/release`
+echo "opsrv de l'application:\t\t${appli_opsrv} (${appli_opsrv_ip})"
+echo -ne "vlan configured:\t\t\t"
+ifconfig -a | /usr/xpg4/bin/awk -F':' '{ if (( $1 !~ /lo0/ ) && ( $1 !~ /^[[:space:]]/ )) { gsub(/[a-z]/,"",$1); if ( $1 > 999 ) { printf("%d\n", $1 / 1000); } } }' | sort -u 
+echo "alias de la zone:\t\t\t${zone_alias}"
+echo
+echo "capping cpu:\t\t\t${cpu_capping}"
+echo "capping memoire physique:\t${physical_mem_capping}"
+echo "capping swap:\t\t\t${swap_mem_capping}"
+echo
+	echo "file systems:"
+	zfs list -o name,mountpoint
+echo
+if [[ ${cluster_used} == yes ]]
+then
+	echo "primary cluster node:\t\t${node1}"
+	echo "secondary cluster node:\t\t${node2}"
+else
+	echo "hote physique:\t\t\t${host}"
+fi
+} | mailx -s "mise a jour de la cmdb: ${zone_name}" betorma
+##################################################################################################################
+# capping ressource zone
+##################################################################################################################
+
+
+export zone=woodgtw-rz
+export cpu_capping=none
+export physical_mem_capping=none
+export swap_mem_capping=none
+
+
+##### memoire
+
+{
+zonecfg -z $zone <<EOT
+add capped-memory
+set physical=${physical_mem_capping}
+set swap=${swap_mem_capping}
+end
+commit
+exit
+EOT
+}
+
+
+##### cpu
+
+{
+zonecfg -z $zone <<EOT
+add capped-cpu
+set ncpus=${cpu_capping}
+end
+commit
+exit
+EOT
+}
+
+
+##### verif 
+
+{
+zonecfg -z $zone info capped-cpu
+zonecfg -z $zone info capped-memory
+}
+
+
+##### copie de la config de la zone en cluster sur le primary node
+
+export tmp_dir=/home/betorma/xchange/zones/
+cd /etc/zones
+tar cpf ${tmp_dir}/${zone}.tar ${zone}.xml
+
+
+##### copie de la config de la zone en cluster sur le secondary node
+
+export zone=woodgtw-rz
+export tmp_dir=/home/betorma/xchange/zones/
+export date=`date +%Y%m%d`
+cd /etc/zones
+cp -p ${zone}.xml ${zone}.xml.${date}
+tar xpf ${tmp_dir}/${zone}.tar ${zone}.xml
+diff ${zone}.xml ${zone}.xml.${date}
+
+
+##### mettre a jour la cmdb
+
+{
+echo capping de la zone ${zone}:
+echo
+zonecfg -z $zone info capped-cpu
+zonecfg -z $zone info capped-memory
+} | mailx -s "capping de la zone $zone" betorma
+############################################################################################################################
+# creation du client unix pour la zone
+############################################################################################################################
+
+
+
+##### sur la zone
+
+{
+export LOCATION=mercier   				# Mercier|EUFO
+export TYPE=test         			# Prod|Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+for group in ${GROUPS}; do
+  cat >/nsr/res/${group}.res <<EOT
+type: savepnpc;
+precmd: "/bin/date";
+pstcmd: "/bin/date", "/bin/sleep 5";
+timeout: "06:00:00";
+abort precmd with group: No;
+EOT
+done
+}
+
+##### sur opbk01 
+
+
+export IP=158.167.224.200
+export ZONE=woodgtw-rz
+export LOCATION=mercier 			# Mercier|EUFO
+export TYPE=test				# Prod|Test
+
+export SAVESET='/,/u01/oraagent' 
+
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+export DIRECTIVE="Solaris 10 zones with compression"
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export ALIASES="${ALIASES},${ZONE},${ZONE}.opoce.cec.eu.int"
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+
+
+
+(cat <<EOT
+#client_name;remote_access;groups;save set;directive;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${SAVESET};${DIRECTIVE};${ALIASES};${ZONE};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","ss","directive","alias","zone","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: opbk01;
+                     comment: $c{zone} unix client;
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+                    save set: $c{ss};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: savepnpc;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+}
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+############################################################################################################################
+# creation du client unix pour l'application
+############################################################################################################################
+
+
+##### sur la zone
+
+{
+export LOCATION=mercier   			# Mercier|EUFO
+export TYPE=test         			# Prod|Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+for group in ${GROUPS}; do
+  cat >/nsr/res/${group}.res <<EOT
+type: savepnpc;
+precmd: "/bin/date";
+pstcmd: "/bin/date", "/bin/sleep 5";
+timeout: "06:00:00";
+abort precmd with group: No;
+EOT
+done
+}
+
+##### sur opbk01 ##### pour l'application
+
+
+export IP=158.167.224.199
+export ZONE=woodgtw-rz
+export LOCATION=mercier 			# Mercier|EUFO
+export TYPE=test				# Prod|Test
+
+export APPLICATION=wood
+export SAVESET='/applications/wood/orabin,/applications/wood/oradata,/applications/wood/oralog,/applications/wood/users,/applications/wood/xchange'
+
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+export DIRECTIVE="Solaris 10 zones with compression"
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+(cat <<EOT
+#client_name;remote_access;groups;save set;directive;alias;zone;appli;storage_nodes;clone_nodes
+${CLIENT};${APPLICATION};${REMOTEACC};${GROUPS};${SAVESET};${DIRECTIVE};${ALIASES};${ZONE};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","appli","remote_access","groups","ss","directive","alias","zone","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: opbk01;
+                     comment: $c{appli} on $c{zone} unix client;
+               browse policy: 60days;
+            retention policy: 60days;
+              virtual client: Yes;
+               physical host: $c{zone};
+              backup command: savepnpc -c $c{client_name};
+                       group: $c{groups};
+                    save set: $c{ss};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+
+############################################################################################################################
+# creation du client RMAN
+############################################################################################################################
+
+##### sur opbk01
+export IP=158.167.224.199
+export ZONE=woodgtw-rz
+export LOCATION=mercier   			# Mercier|EUFO
+export TYPE=test          		# Prod|Test
+export DBC=RMAN_<APPL>_<ENV>
+export DBS=RMAN:<APPL>:appl:<appl>:redo_keep:100
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+if [ "${TYPE}" = "Test" ]; then
+    export DAYS=03
+else
+    export DAYS=01
+fi
+export GROUPS="${LOCATION}_Rman_${TYPE}_Ctl_01,${LOCATION}_Rman_${TYPE}_Full_${DAYS},${LOCATION}_Rman_${TYPE}_Logs_01"
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+
+(cat <<EOT
+#client_name;remote_access;groups;dbcomment;saveset;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${DBC};"${DBS}";${ALIASES};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","dbcomment","dbsaveset","alias","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: opbk01;
+                     comment: $c{dbcomment};
+                   save set: $c{dbsaveset};
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: saverman.pl;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+
+1

@@ -1,0 +1,13 @@
+# tester la connexion
+smbclient '\\alambic\dlib' -U dlib
+# tester la connexion 2
+smbclient -L localhost
+# check des parametres
+testparm
+# requetes des share samba disponibles par le reseau
+findsmb
+# inventaires des utilisateurs:
+pdbedit -Lv 
+pdbedit -Lw
+# importer des utilisateurs du smbpasswd vers tdbsam
+pdbedit -i smbpasswd -e tdbsam

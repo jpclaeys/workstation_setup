@@ -1,0 +1,1 @@
+http://pac.opoce.cec.eu.int/pac/proxy.pac

@@ -1,0 +1,8 @@
+at "3am tomorrow" <<EOT
+heredoc> nohup savegrp -c gescomx_tz -l full UnixTest
+heredoc> EOT
+
+at 20:30 FRIday  <<EOT
+/usr/sbin/savegrp -c hermes -l full NoClone
+EOT
+

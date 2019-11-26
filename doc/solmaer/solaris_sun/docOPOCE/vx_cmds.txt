@@ -1,0 +1,219 @@
+# remove volume
+vxassist -g bootdg remove volume export
+# Max available space
+vxassist -g bootdg maxsize
+# Max available space depending on layout
+vxassist -g appl maxsize layout=mirror
+# Voir layered volumes
+vxprint -rt rootvol
+# Creer une volume ( default concat )
+vxassist -g bootdg make globaldevices 20301M layout=concat
+# Creer une disque group
+vxdg init cups absynthe_10=fabric_5
+# Voir, en gb, tout le space consomme pour VX
+vxprint -AQqdF "%publen" | awk 'BEGIN {s = 0} {s += $1} END {print s/2097152, "GB"}'
+# Et le voir pour un diskgroup
+vxprint -g ceres -QqdF "%publen" | awk 'BEGIN {s = 0} {s += $1} END {print s/2097152, "GB"}'
+
+vxdg init testdg2 c1t0d1s2
+
+VxVM vxdg ERROR V-5-1-6478 Device c1t0d1s2 cannot be added to a CDS disk group
+#Workaround:  
+#Add the cds=off argument:
+
+vxdg init testdg2 c1t0d1s2 cds=off 
+#Voir s'il y a read/writes failed
+# au niveau subdisk
+vxstat -s -ff
+vxstat -i 10 -c 5 -s -ff
+# effacer label FAILING du disk
+vxedit set failing=off rootdisk
+
+# Install vxvm
+#pkgadd de tout et apres
+#vxinstall avec les cles
+
+#virer une disque qui contient encore des choses
+vxprint -rth -g rootdg | grep DISABLED
+vxplex -g rootdg dis export-03
+vxplex -g rootdg dis rootvol-03
+vxplex -g rootdg dis swapvol-03
+vxplex -g rootdg dis var-03
+vxsd -g rootdg dis rootbkp-04
+vxsd -g rootdg dis rootbkp-03
+vxsd -g rootdg dis rootbkp-02
+vxsd -g rootdg dis rootbkp-01
+vxedit -g rootdg rm rootbkp-04
+vxedit -g rootdg rm rootbkp-03
+vxedit -g rootdg rm rootbkp-02
+vxedit -g rootdg rm rootbkp-01
+vxedit -g rootdg rm export-03
+vxedit -g rootdg rm rootvol-03
+vxedit -g rootdg rm swapvol-03
+vxedit -g rootdg rm var-03
+vxdg -g rootdg rmdisk rootbkp
+vxdctl enable
+
+# Avec dmp et tout cette merde le disksetup pour EMC devices on doit le faire sur le device VX pas sur native name
+/usr/lib/vxvm/bin/vxdisksetup -i  DMX1000_8 format=sliced
+# Effacer un volume
+vxedit -rf rm vzone
+vxassist -g appl remove volume voradata-sbudp
+vxassist -g appl remove volume voralog-sbudp
+
+# rename volume
+vxedit -g procatx -v  rename vprocatsuivi vprocatsuivi2
+
+# vxconfigd debug
+vxconfigd -x 2 -k -x log -x logfile=/tmp/vxconfigd.out
+
+# mirroir rootdg
+/etc/vx/bin/vxdisksetup -i c1t0d0 format=sliced
+
+vxdg -g rootdg adddisk bootdisk=c1t0d0
+
+/etc/vx/bin/vxmirror -g rootdg bootmirror bootdisk
+
+/etc/vx/bin/vxbootsetup -g rootdg rootdisk
+
+# jusqu'a quant on peut augmenter le volume
+
+vxassist maxgrow <volume>
+# Changer le nom d'un diskgroup
+
+root@bart 7:06 [~] umount /zones/portal_tz
+root@bart 7:06 [~] vxvol -g portaldg stopall
+root@bart 7:07 [~] vxdg -n portal deport portaldg
+root@bart 7:07 [~] vxdg import portal
+root@bart 7:07 [~] vxprint -htr -g portal
+DG NAME         NCONFIG      NLOG     MINORS   GROUP-ID
+ST NAME         STATE        DM_CNT   SPARE_CNT         APPVOL_CNT
+DM NAME         DEVICE       TYPE     PRIVLEN  PUBLEN   STATE
+RV NAME         RLINK_CNT    KSTATE   STATE    PRIMARY  DATAVOLS  SRL
+RL NAME         RVG          KSTATE   STATE    REM_HOST REM_DG    REM_RLNK
+CO NAME         CACHEVOL     KSTATE   STATE
+VT NAME         NVOLUME      KSTATE   STATE
+V  NAME         RVG/VSET/CO  KSTATE   STATE    LENGTH   READPOL   PREFPLEX UTYPE
+PL NAME         VOLUME       KSTATE   STATE    LENGTH   LAYOUT    NCOL/WID MODE
+SD NAME         PLEX         DISK     DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+SV NAME         PLEX         VOLNAME  NVOLLAYR LENGTH   [COL/]OFF AM/NM    MODE
+SC NAME         PLEX         CACHE    DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+DC NAME         PARENTVOL    LOGVOL
+SP NAME         SNAPVOL      DCO
+
+dg portal       default      default  18000    1213364270.29.bart
+
+dm gnole_03     fabric_0     auto     3839     20955136 -
+
+v  vportal_tz   -            DISABLED CLEAN    19137840 SELECT    -        fsgen
+pl vportal_tz-01 vportal_tz  DISABLED CLEAN    19137840 CONCAT    -        RW
+sd gnole_03-01  vportal_tz-01 gnole_03 0       19137840 0         fabric_0 ENA
+root@bart 7:07 [~] vxvol -g portaldg startall
+VxVM vxvol ERROR V-5-1-607 Diskgroup portaldg not found
+root@bart 7:07 [~] vxvol -g portal startall
+root@bart 7:07 [~] mount /zones/portal_tz
+mount: /dev/vx/dsk/portaldg/vportal_tz or /zones/portal_tz, no such file or directory
+root@bart 7:07 [~] vi /etc/vfstab
+"/etc/vfstab" 17 lines, 778 characters
+#device         device          mount           FS      fsck    mount   mount
+#to mount       to fsck         point           type    pass    at boot options
+#
+fd      -       /dev/fd fd      -       no      -
+/proc   -       /proc   proc    -       no      -
+/dev/vx/dsk/bootdg/swapvol      -       -       swap    -       no      nologging
+/dev/vx/dsk/bootdg/rootvol      /dev/vx/rdsk/bootdg/rootvol     /       ufs     1       no      nologging
+/dev/vx/dsk/bootdg/var  /dev/vx/rdsk/bootdg/var /var    ufs     1       no      nologging
+/devices        -       /devices        devfs   -       no      -
+ctfs    -       /system/contract        ctfs    -       no      -
+objfs   -       /system/object  objfs   -       no      -
+swap    -       /tmp    tmpfs   -       yes     -
+#NOTE: volume rootvol () encapsulated partition c0t0d0s0
+#NOTE: volume swapvol () encapsulated partition c0t0d0s1
+#NOTE: volume var () encapsulated partition c0t0d0s6
+# zone portal_tz
+/dev/vx/dsk/portal/vportal_tz /dev/vx/rdsk/portal/vportal_tz /zones/portal_tz     ufs     3       yes     logging
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+"/etc/vfstab" 17 lines, 774 characters
+root@bart 7:08 [~] mount /zones/portal_tz
+root@bart 7:08 [~] zoneadm -z portal_tz boot
+
+# renomer des disques
+vxedit -g nfs-srv rename DMX1000_36 DMX1000_30
+vxprint -g nfs-srv -s -e 'name~/DMX1000_36/'
+vxedit -g nfs-srv rename  DMX1000_36-01  DMX1000_30-01
+# remove miroir du disque DMX2000
+vxassist -g grid remove mirror vzone \!DMX2000_63
+#remove diskgroup
+vxdg destroy oratest
+#remove disk du diskgroup
+vxdg -g lama rmdisk DMX2000_44
+
+# pour ammener en etat de DISABLED RECOVER quand le disque est decroche
+/etc/vx/bin/vxreattach -c roba_8
+
+# vxprint -hrt donne DISABLED RECOVER, il faut faire
+vxmend -g eurlex fix stale vdata-01
+vxmend -g eurlex fix clean vdata-01
+vxvol -g eurlex start vdata
+
+#############################################
+# Installer une license:
+vxlicinst
+# Voir les licenses
+vxlicrep
+
+#########################################
+# Demarrer manuellement vxvm
+vxconfigd -k -m disable
+vxiod set 10
+vxdctl init
+vxdctl enable
+# tout ca doit creer le dossier temdb:
+ls -l /var/vxvm/tempdb
+
+# renomer les disques toutatis
+export dg=
+vxprint -g ${dg} -q -s -e 'name~/DMX/' | perl -nae 'm{DMX_} && print "vxedit -g '"${dg}"' rename $F[1] DMX2000_",substr($F[1],4),"\n"'
+vxdisk -e list | perl -nae '$F[3] eq "'"${dg}"'" and m{DMX_} && print "vxedit -g '"${dg}"' rename $F[2] DMX2000_",substr($F[2],4),"\n"'
+
+# import d'une copie qui vient du SRDF
+# -C fait un clear du hostid
+vxdg -tfC import orwell
+
+# mirrore disque de rootdg
+/etc/vx/bin/vxdisksetup -i c0t1d0 format=sliced
+vxdg -g bootdg adddisk rootmirror=c0t1d0
+/etc/vx/bin/vxrootmir rootmirror
+

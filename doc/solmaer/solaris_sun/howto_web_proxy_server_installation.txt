@@ -1,0 +1,193 @@
+###########################################################################
+##### installation
+
+root@rproxy2-pz# mkdir /applications/rproxy/users/system/INSTALL
+root@rproxy2-pz# cp /net/opsrv082/xchange/rproxy/sun-web-proxy-server-4.0.12-sparc.tar.gz /applications/rproxy/users/system/INSTALL
+root@rproxy2-pz# cd /applications/rproxy/users/system/INSTALL
+root@rproxy2-pz# gunzip sun-web-proxy-server-4.0.12-sparc.tar.gz
+root@rproxy2-pz# tar xf sun-web-proxy-server-4.0.12-sparc.tar
+root@rproxy2-pz# cd sun-web-proxy-server-4.0.12-sparc
+root@rproxy2-pz# ./setup
+
+Sun Java System Web Proxy Server Installation Directory
+[/opt/sun/proxyserver40] {"<" goes back, "!" exits}: /applications/rproxy/users/system/proxy4012
+
+Create Directory [Yes/No] [Yes] {"<" goes back, "!" exits} yes
+
+Select the type of Installation
+   1.  Express
+   2.  Custom
+   3.  Exit
+   What would you like to do  [1] {"<" goes back, "!" exits}? 2
+
+Please configure the settings for :
+Administration Server :
+   Admin Unix User Id [root] {"<" goes back, "!" exits}:
+   Admin User  [admin] {"<" goes back, "!" exits}: adminweb
+   Admin Password (Min. 8 Characters) :
+   Re-enter admin Password :
+   Admin Port  [8081] {"<" goes back, "!" exits}: 13681
+
+Proxy Instance Server :
+   Proxy Unix User Id  [webservd] {"<" goes back, "!" exits}: rproxy
+   Proxy Server Name  [rproxy2-pz.opoce.cec.eu.int] {"<" goes back, "!" exits}:
+   Proxy Server Port  [8080] {"<" goes back, "!" exits}:
+   Startup on Boot  [false] {"<" goes back, "!" exits}:
+
+Ready to Install
+1. Install Now
+2. Start Over
+3. Exit Installation
+   What would you like to do [1] {"<" goes back, "!" exits}? 1
+
+
+###########################################################################
+##### demarrage
+
+root@rproxy2-pz# /applications/rproxy/users/system/proxy4012/proxy-admserv/start
+Sun Java System Web Proxy Server 4.0.12 B09/29/2009 07:26
+info: CORE3016: daemon is running as super-user
+info: CORE5076: Using [Java HotSpot(TM) Server VM, Version 1.5.0_12] from [Sun Microsystems Inc.]
+info: WEB0100: Loading web module in virtual server [vs1] at [/admin-app]
+info: HTTP3072: [LS ls1] http://rproxy2-pz.opoce.cec.eu.int:13681 ready to accept requests
+startup: server started successfully
+
+
+###########################################################################
+##### config server via web gui
+
+- onglet 'Servers'
+- 'Add Server'
+- ajouter un serveur portant le nom de l'instance
+- 'Remove server' de l'instance par defaut
+
+
+###########################################################################
+##### config instance
+
+root@rproxy2-pz# cd /applications/rproxy/users/system/proxy4012/proxy-lbsrv200/config
+
+root@rproxy2-pz# diff obj.conf obj.conf.20120521
+6d5
+< Init profiling="on" fn="stats-init"
+8d6
+< 
+11,14d8
+< NameTrans fn="assign-name" name="stats-xml" from="(/stats-xml|/stats-xml/.*)"
+< NameTrans fn="assign-name" name="perf" from="/.perfdump"
+< NameTrans fn="pfx2dir" from="/obj.conf" dir="/applications/rproxy/users/system/proxy4/proxy-opsrv044/config/obj.conf" name="file"
+< NameTrans fn="virt-map" host-regex="(cellar|publications.europa.eu|cellar.opoce.cec.eu.int|cellar.publications.europa.eu)(|:80)" to-prefix="http://opsrv755:8180"
+59,66d52
+< <Object name="stats-xml">
+< Service fn="stats-xml"
+< </Object>
+< 
+< <Object name="perf">
+< Service fn="service-dump"
+< </Object>
+< 
+
+root@rproxy2-pz# ../restart
+
+
+###########################################################################
+##### custom log rotate
+
+root@rproxy2-pz# cat /applications/rproxy/users/system/proxy4012/proxy-lbsrv200/rotate 
+#!/bin/sh
+#
+# Copyright (c) 2003 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+
+# Rotates server log files
+# This can be run as a cron script
+
+#
+# the script has been modified to make it more generic and to compress (bzip2) the logfiles 
+#
+# emulate the realpath(3C) (from init_lib.sh)
+realpath () {
+  rp=""
+  if [ `/usr/bin/ls -Ld  "$1"` ]
+  then
+    rp="$1"
+    while [ -L "$rp" ]
+    do
+      rp=`/usr/bin/ls -ld $rp |/usr/bin/awk '{print $11}'`
+    done
+  else
+   # the link cannot be resolved: circular link, file not found
+   rp="no_such_file"
+   fi
+  echo $rp
+}
+
+SERVER_ROOT=`realpath $0`
+SERVER_ROOT=`/usr/bin/dirname $SERVER_ROOT`
+
+LOGDIR=${SERVER_ROOT}/logs
+PID_FILE=${SERVER_ROOT}/logs/pid
+
+LOGS='access errors'
+
+
+if test -f $PID_FILE ; then
+        kill -USR1 `cat $PID_FILE`
+        if test $? -ne 0 ; then
+                exit 1
+        fi
+        sleep 10
+        cd $LOGDIR
+        for log in $LOGS
+        do
+          for f in $log.20*[0-9][0-9][0-9][0-9] 
+            do 
+              /usr/bin/bzip2 -9 $f
+          done
+        done
+
+else
+        echo server not running
+        exit 1
+fi
+
+exit 0
+
+
+
+#
+# $Id: rotate_rproxy4,v 1.2 2006/02/15 11:15:02 reiffca Exp $ 
+#
+# $Log: rotate_rproxy4,v $
+# Revision 1.2  2006/02/15 11:15:02  reiffca
+# added feature to dynamically find the server root
+# added gzip of logfiles
+#
+# Revision 1.1  2006/02/15 10:56:09  reiffca
+# Initial revision
+#
+# 2011/03/14 betorma: replace gzip by bzip2
+#
+
+
+root@rproxy2-pz# /applications/rproxy/users/system/proxy4012/proxy-lbsrv200/rotate 
+root@rproxy2-pz# ls /applications/rproxy/users/system/proxy4012/proxy-lbsrv200/logs 
+access                   access.201205211228.bz2  errors                   errors.201205211228.bz2  pid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,69 @@
+############################################################################################################################
+# creation du client RMAN
+############################################################################################################################
+
+##### sur opbk01
+export IP=<application_ip>
+export ZONE=<zone_name>
+export LOCATION=<zone_site>   			# Mercier|EUFO
+export TYPE=<environment>          		# Prod|Test
+export DBC=RMAN_<APPL>_<ENV>
+export DBS=RMAN:<APPL>:appl:<appl>:redo_keep:100
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+if [ "${TYPE}" = "Test" ]; then
+    export DAYS=03
+else
+    export DAYS=01
+fi
+export GROUPS="${LOCATION}_Rman_${TYPE}_Ctl_01,${LOCATION}_Rman_${TYPE}_Full_${DAYS},${LOCATION}_Rman_${TYPE}_Logs_01"
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+
+(cat <<EOT
+#client_name;remote_access;groups;dbcomment;saveset;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${DBC};"${DBS}";${ALIASES};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","dbcomment","dbsaveset","alias","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: opbk01;
+                     comment: $c{dbcomment};
+                   save set: $c{dbsaveset};
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: saverman.pl;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+

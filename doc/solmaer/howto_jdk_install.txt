@@ -1,0 +1,31 @@
+#################################################################################################################
+# installation de jdk
+##################################################################################################################
+
+##### verifier l'architecture de la machine sur laquelle installer le jdk
+uname -p
+
+##### si necessaire, telecharger le jdk (self-extracting binary) qui correspond a l'architeture 
+cd /home/betorma/download
+wget 'http://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/VerifyItem-Start/jdk-6u17-solaris-sparc.sh?BundledLineItemUUID=9n9IBe.ljoUAAAElk3kacwep&OrderID=Pe5IBe.l5LkAAAElgHkacwep&ProductID=MzNIBe.oKpgAAAEkC.hn5G0y&FileName=/jdk-6u17-solaris-sparc.sh'
+
+##### variables
+export SOURCE_JDK_FOLDER=/home/betorma/download
+export APPLICATION=dcm
+export JDK_FILE=jdk-6u17-solaris-sparc.sh
+
+##### donner les doit d'execution sur ${SOURCE_JDK_FOLDER}/${JDK_FILE}
+chmod +x ${SOURCE_JDK_FOLDER}/${JDK_FILE}
+
+##### se placer dans le repertoire ou le jdk doit etre installe
+cd /applications/${APPLICATION}/users/system
+
+##### lancer l'extraction du jdk
+${SOURCE_JDK_FOLDER}/${JDK_FILE}
+
+##### creer un lien symolique 'java' vers le repertoire cree par l'extraction
+export INSTALLATION_FOLDER=`grep 'javahome=' ${SOURCE_JDK_FOLDER}/${JDK_FILE} | awk -F= '{print $2}'`
+ln -s ${INSTALLATION_FOLDER} java
+
+
+

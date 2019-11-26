@@ -1,0 +1,334 @@
+######################################################################################################################################################
+#
+# but: cloner le zpool de planpubli afin de faire un rollback de l'application, apres certains tests succeptibles de modifier l'application
+#
+######################################################################################################################################################
+
+##################################################
+##### arret de l'application
+
+0[120807/150219]root@homer# /applications/planpubli/users/system/init.d/planpubli status
+STATE          STIME    FMRI
+online         22:03:43 svc:/applications/planpubli:wood
+online         22:03:44 svc:/applications/planpubli:app
+online         22:03:44 svc:/applications/planpubli:woodweb
+online         22:03:44 svc:/applications/planpubli:xchange
+online         22:04:50 svc:/applications/planpubli:ora
+online         22:04:50 svc:/applications/planpubli:docbroker
+online         22:04:51 svc:/applications/planpubli:content_server
+online         22:04:51 svc:/applications/planpubli:web
+0[120807/150227]root@homer# 
+0[120807/150227]root@homer# 
+0[120807/150228]root@homer# /applications/planpubli/users/system/init.d/planpubli disable
+0[120807/150358]root@homer# /applications/planpubli/users/system/init.d/planpubli status
+STATE          STIME    FMRI
+disabled       15:02:32 svc:/applications/planpubli:woodweb
+disabled       15:02:34 svc:/applications/planpubli:wood
+disabled       15:02:35 svc:/applications/planpubli:xchange
+disabled       15:02:35 svc:/applications/planpubli:app
+disabled       15:02:36 svc:/applications/planpubli:web
+disabled       15:02:57 svc:/applications/planpubli:content_server
+disabled       15:02:58 svc:/applications/planpubli:docbroker
+disabled       15:03:34 svc:/applications/planpubli:ora
+
+
+##################################################
+##### desactivation du demarrage de l'application apres backup
+
+0[120807/150514]root@homer# diff /nsr/scripts/snapshot.ksh /nsr/scripts/snapshot.ksh.20120807 
+39c39
+<                 echo betorma /applications/planpubli/users/system/init.d/planpubli start ||\
+---
+>                 /applications/planpubli/users/system/init.d/planpubli start ||\
+
+##################################################
+##### volumetrie des 2 zpools
+
+1[120807/150537]root@homer# zpool list | grep plan
+planpubli       566G   425G   140G    75%  ONLINE  -
+planpubli_bkp   496G  79.5K   496G     0%  ONLINE  -
+
+##################################################
+##### creation d'un snapshot zfs necessaire a la synchronisation
+
+0[120807/150554]root@homer# zfs snapshot -r planpubli@20120807_pre_stress_tests 
+0[120807/150650]root@homer# zfs list -r planpubli
+NAME                                               USED  AVAIL  REFER  MOUNTPOINT
+planpubli                                          425G   131G    21K  none
+planpubli@20120807_pre_stress_tests                   0      -    21K  -
+planpubli/applications                              21K   131G    21K  none
+planpubli/applications@20120807_pre_stress_tests      0      -    21K  -
+planpubli/orabin                                  4.49G   131G  4.49G  /applications/planpubli/orabin
+planpubli/orabin@20120807_pre_stress_tests            0      -  4.49G  -
+planpubli/oradata                                 70.8G   131G  70.8G  /applications/planpubli/oradata
+planpubli/oradata@20120807_pre_stress_tests           0      -  70.8G  -
+planpubli/oraflash                                  22K   131G    22K  /applications/planpubli/oraflash
+planpubli/oraflash@20120807_pre_stress_tests          0      -    22K  -
+planpubli/oralog                                  56.5M   131G  56.5M  /applications/planpubli/oralog
+planpubli/oralog@20120807_pre_stress_tests            0      -  56.5M  -
+planpubli/storage_01                               336G   131G   336G  /applications/planpubli/storage_01
+planpubli/storage_01@20120807_pre_stress_tests        0      -   336G  -
+planpubli/storage_02                                21K   131G    21K  /applications/planpubli/storage_02
+planpubli/storage_02@20120807_pre_stress_tests        0      -    21K  -
+planpubli/users                                   12.2G   131G  12.2G  /applications/planpubli/users
+planpubli/users@20120807_pre_stress_tests             0      -  12.2G  -
+planpubli/xchange                                 1.84G   131G  1.84G  /applications/planpubli/xchange
+planpubli/xchange@20120807_pre_stress_tests           0      -  1.84G  -
+
+
+##################################################
+##### synchronisation du zpool planpubli vers le zpool planpubli_bkp
+
+1[120807/150926]root@homer# timex zfs send -R planpubli@20120807_pre_stress_tests | zfs receive -Fd planpubli_bkp 
+real     1:41:32.48
+user           0.02
+sys      1:12:46.06
+
+
+
+##################################################
+##### verification de la volumetrie des file systems synchronises
+
+0[120807/181405]root@homer# zfs list -r -t filesystem planpubli planpubli_bkp
+NAME                         USED  AVAIL  REFER  MOUNTPOINT
+planpubli                    425G   131G    21K  none
+planpubli/applications        21K   131G    21K  none
+planpubli/orabin            4.49G   131G  4.49G  /applications/planpubli/orabin
+planpubli/oradata           70.8G   131G  70.8G  /applications/planpubli/oradata
+planpubli/oraflash            22K   131G    22K  /applications/planpubli/oraflash
+planpubli/oralog            56.5M   131G  56.5M  /applications/planpubli/oralog
+planpubli/storage_01         336G   131G   336G  /applications/planpubli/storage_01
+planpubli/storage_02          21K   131G    21K  /applications/planpubli/storage_02
+planpubli/users             12.2G   131G  12.2G  /applications/planpubli/users
+planpubli/xchange           1.84G   131G  1.84G  /applications/planpubli/xchange
+planpubli_bkp                425G  62.8G    21K  none
+planpubli_bkp/applications    21K  62.8G    21K  none
+planpubli_bkp/orabin        4.49G  62.8G  4.49G  /applications/planpubli/orabin
+planpubli_bkp/oradata       70.8G  62.8G  70.8G  /applications/planpubli/oradata
+planpubli_bkp/oraflash        21K  62.8G    21K  /applications/planpubli/oraflash
+planpubli_bkp/oralog        56.5M  62.8G  56.5M  /applications/planpubli/oralog
+planpubli_bkp/storage_01     336G  62.8G   336G  /applications/planpubli/storage_01
+planpubli_bkp/storage_02      21K  62.8G    21K  /applications/planpubli/storage_02
+planpubli_bkp/users         12.2G  62.8G  12.2G  /applications/planpubli/users
+planpubli_bkp/xchange       1.84G  62.8G  1.84G  /applications/planpubli/xchange
+
+
+0[120807/181414]root@homer# zpool list planpubli planpubli_bkp 
+NAME            SIZE   USED  AVAIL    CAP  HEALTH  ALTROOT
+planpubli       566G   425G   140G    75%  ONLINE  -
+planpubli_bkp   496G   425G  70.6G    85%  ONLINE  -
+
+
+##################################################
+##### verification des dataset backupes
+
+0[120808/101244]root@homer# mminfo -s opbk01 -c opsrv234 -t '1 days ago' -r 'client,level,ssid,cloneid,totalsize,savetime(16),sscomp(16),ssflags,sumflags,volume,name'
+ client      lvl ssid         clone id      total  date     time   ss completed  ssflags fl volume        name
+opsrv234    full 3324081270 1344369748 3018696776  08/07/12 22:01  08/07/12 22:32 vF    cb E00046         /applications/planpubli/orabin/.zfs/snapshot/cold_backup
+opsrv234    full 3340858481 1344369747   22020128  08/07/12 22:01  08/07/12 22:03 vF    cb E00046         /applications/planpubli/oralog/.zfs/snapshot/cold_backup
+opsrv234    full 3290526840 1344369748 8826557236  08/07/12 22:01  08/07/12 23:56 vF    cb E00046         /applications/planpubli/users/.zfs/snapshot/cold_backup
+opsrv234    full 3256972411 1344369748       2916  08/07/12 22:01  08/07/12 22:03 vF    cb E00046         /applications/planpubli/oraflash/.zfs/snapshot/cold_backup
+opsrv234    full 3659625556 1344369747 313756048452 08/07/12 22:01 08/08/12 05:15 vF    tb E00046         /applications/planpubli/storage_01/.zfs/snapshot/cold_backup
+opsrv234    full 3676402771 1344369747 14191924520 08/07/12 22:01  08/07/12 22:40 vF    cb E00087         /applications/planpubli/oradata/.zfs/snapshot/cold_backup
+opsrv234    full 3659625556 1344369747 313756048452 08/07/12 22:01 08/08/12 05:15 vF    hb E00087         /applications/planpubli/storage_01/.zfs/snapshot/cold_backup
+opsrv234    full 2183230706 1344369750       2924  08/07/12 22:01  08/07/12 22:05 vF    cb E00091         /applications/planpubli/storage_02/.zfs/snapshot/cold_backup
+opsrv234    full 2200007922 1344369749    1852744  08/07/12 22:01  08/07/12 22:06 vF    cb E00091         /applications/planpubli/xchange/.zfs/snapshot/cold_backup
+opsrv234    full 3659625556 1344369747 313756048452 08/07/12 22:01 08/08/12 05:15 vF    mb E00091         /applications/planpubli/storage_01/.zfs/snapshot/cold_backup
+
+
+##################################################
+##### verification de que l'application n'a pas redemarre apres le backup
+
+0[120808/101250]root@homer# /applications/planpubli/users/system/init.d/planpubli status
+STATE          STIME    FMRI
+disabled       15:02:32 svc:/applications/planpubli:woodweb
+disabled       15:02:34 svc:/applications/planpubli:wood
+disabled       15:02:35 svc:/applications/planpubli:xchange
+disabled       15:02:35 svc:/applications/planpubli:app
+disabled       15:02:36 svc:/applications/planpubli:web
+disabled       15:02:57 svc:/applications/planpubli:content_server
+disabled       15:02:58 svc:/applications/planpubli:docbroker
+disabled       15:03:34 svc:/applications/planpubli:ora
+
+##################################################
+##### demarrage de l'application
+
+0[120808/102233]root@homer# /applications/planpubli/users/system/init.d/planpubli enable
+0[120808/102319]root@homer# /applications/planpubli/users/system/init.d/planpubli status
+STATE          STIME    FMRI
+online         10:22:37 svc:/applications/planpubli:wood
+online         10:22:37 svc:/applications/planpubli:woodweb
+online         10:22:38 svc:/applications/planpubli:xchange
+online         10:22:38 svc:/applications/planpubli:app
+online         10:23:19 svc:/applications/planpubli:ora
+online         10:23:20 svc:/applications/planpubli:docbroker
+online         10:23:20 svc:/applications/planpubli:content_server
+online         10:23:20 svc:/applications/planpubli:web
+
+
+
+##################################################
+##### tests ...
+
+
+##################################################
+##### arret de l'application
+ 
+0[120808/142230]root@homer# /applications/planpubli/users/system/init.d/planpubli status
+STATE          STIME    FMRI
+online         10:22:37 svc:/applications/planpubli:wood
+online         10:22:37 svc:/applications/planpubli:woodweb
+online         10:22:38 svc:/applications/planpubli:xchange
+online         10:22:38 svc:/applications/planpubli:app
+online         10:23:19 svc:/applications/planpubli:ora
+online         10:23:20 svc:/applications/planpubli:docbroker
+online         10:23:20 svc:/applications/planpubli:content_server
+online         10:23:20 svc:/applications/planpubli:web
+0[120808/142231]root@homer# /applications/planpubli/users/system/init.d/planpubli disable
+
+0[120808/142336]root@homer# /applications/planpubli/users/system/init.d/planpubli status
+STATE          STIME    FMRI
+disabled       14:22:47 svc:/applications/planpubli:woodweb
+disabled       14:22:50 svc:/applications/planpubli:wood
+disabled       14:22:50 svc:/applications/planpubli:xchange
+disabled       14:22:51 svc:/applications/planpubli:app
+disabled       14:22:52 svc:/applications/planpubli:web
+disabled       14:23:14 svc:/applications/planpubli:content_server
+disabled       14:23:15 svc:/applications/planpubli:docbroker
+disabled       14:23:49 svc:/applications/planpubli:ora
+
+
+##################################################
+##### verifier que /home/planpubli et /home/ppubliweb ne sont pas montes (ce qui a ete oublie)
+
+root@homer# mount -v | egrep 'home/planpubli|/home/ppubliweb' 
+
+
+##################################################
+##### inversion des zpools planpubli et planpubli_bkp
+
+
+127[120808/142502]root@homer# zpool list | grep planpubli 
+planpubli       566G   427G   138G    75%  ONLINE  -
+planpubli_bkp   496G   425G  70.6G    85%  ONLINE  -
+
+0[120808/142530]root@homer# zpool export planpubli                 
+
+
+0[120808/142632]root@homer# zpool import
+  pool: planpubli_bkp
+    id: 11133651294910004743
+ state: ONLINE
+action: The pool can be imported using its name or numeric identifier.
+config:
+
+        planpubli_bkp                              ONLINE
+          mirror                                   ONLINE
+            c4t60060160DA612E009A212114D2DBE111d0  ONLINE
+            c4t600601602C502E0016C91A19D3DBE111d0  ONLINE
+          mirror                                   ONLINE
+            c4t60060160DA612E009C212114D2DBE111d0  ONLINE
+            c4t600601602C502E0018C91A19D3DBE111d0  ONLINE
+
+  pool: planpubli
+    id: 13928926855873901232
+ state: ONLINE
+action: The pool can be imported using its name or numeric identifier.
+config:
+
+        planpubli                                  ONLINE
+          mirror                                   ONLINE
+            c4t600601602C502E009E602D832115E111d0  ONLINE
+            c4t60060160DA612E009003948D2015E111d0  ONLINE
+          mirror                                   ONLINE
+            c4t600601602C502E00A2602D832115E111d0  ONLINE
+            c4t60060160DA612E009403948D2015E111d0  ONLINE
+          mirror                                   ONLINE
+            c4t600601602C502E00A0602D832115E111d0  ONLINE
+            c4t60060160DA612E009203948D2015E111d0  ONLINE
+          mirror                                   ONLINE
+            c4t600601602C502E00F2587F8A2115E111d0  ONLINE
+            c4t60060160DA612E00C8073A972015E111d0  ONLINE
+          mirror                                   ONLINE
+            c4t600601602C502E00F888C2AE4468E111d0  ONLINE
+            c4t60060160DA612E00D08246784368E111d0  ONLINE
+0[120808/142638]root@homer# 
+
+
+
+1[120808/142706]root@homer# zpool import planpubli_bkp planpubli 
+0[120808/142717]root@homer# zpool list planpubli
+NAME        SIZE   USED  AVAIL    CAP  HEALTH  ALTROOT
+planpubli   496G   425G  70.6G    85%  ONLINE  -
+
+
+
+0[120808/142724]root@homer# zfs list -r planpubli
+NAME                                               USED  AVAIL  REFER  MOUNTPOINT
+planpubli                                          425G  62.8G    21K  none
+planpubli@20120807_pre_stress_tests                   0      -    21K  -
+planpubli/applications                              21K  62.8G    21K  none
+planpubli/applications@20120807_pre_stress_tests      0      -    21K  -
+planpubli/orabin                                  4.49G  62.8G  4.49G  /applications/planpubli/orabin
+planpubli/orabin@20120807_pre_stress_tests            0      -  4.49G  -
+planpubli/oradata                                 70.8G  62.8G  70.8G  /applications/planpubli/oradata
+planpubli/oradata@20120807_pre_stress_tests           0      -  70.8G  -
+planpubli/oraflash                                  21K  62.8G    21K  /applications/planpubli/oraflash
+planpubli/oraflash@20120807_pre_stress_tests          0      -    21K  -
+planpubli/oralog                                  56.5M  62.8G  56.5M  /applications/planpubli/oralog
+planpubli/oralog@20120807_pre_stress_tests            0      -  56.5M  -
+planpubli/storage_01                               336G  62.8G   336G  /applications/planpubli/storage_01
+planpubli/storage_01@20120807_pre_stress_tests        0      -   336G  -
+planpubli/storage_02                                21K  62.8G    21K  /applications/planpubli/storage_02
+planpubli/storage_02@20120807_pre_stress_tests        0      -    21K  -
+planpubli/users                                   12.2G  62.8G  12.2G  /applications/planpubli/users
+planpubli/users@20120807_pre_stress_tests             0      -  12.2G  -
+planpubli/xchange                                 1.84G  62.8G  1.84G  /applications/planpubli/xchange
+planpubli/xchange@20120807_pre_stress_tests           0      -  1.84G  -
+
+
+##################################################
+##### demarrage de l'application
+
+
+0[120808/142751]root@homer# /applications/planpubli/users/system/init.d/planpubli status 
+STATE          STIME    FMRI
+disabled       14:22:47 svc:/applications/planpubli:woodweb
+disabled       14:22:50 svc:/applications/planpubli:wood
+disabled       14:22:50 svc:/applications/planpubli:xchange
+disabled       14:22:51 svc:/applications/planpubli:app
+disabled       14:22:52 svc:/applications/planpubli:web
+disabled       14:23:14 svc:/applications/planpubli:content_server
+disabled       14:23:15 svc:/applications/planpubli:docbroker
+disabled       14:23:49 svc:/applications/planpubli:ora
+0[120808/142800]root@homer# 
+
+
+0[120808/142800]root@homer# /applications/planpubli/users/system/init.d/planpubli enable
+0[120808/143545]root@homer# /applications/planpubli/users/system/init.d/planpubli status
+STATE          STIME    FMRI
+online         14:35:28 svc:/applications/planpubli:woodweb
+online         14:35:28 svc:/applications/planpubli:app
+online         14:35:29 svc:/applications/planpubli:wood
+online         14:35:29 svc:/applications/planpubli:xchange
+online         14:35:58 svc:/applications/planpubli:ora
+online         14:35:58 svc:/applications/planpubli:docbroker
+online         14:35:58 svc:/applications/planpubli:content_server
+online         14:35:58 svc:/applications/planpubli:web
+
+
+##################################################
+##### reactivation du redemarrage de l'application apres backup
+
+
+1[120808/143825]root@homer# diff /nsr/scripts/snapshot.ksh /nsr/scripts/snapshot.ksh.20120808 
+39c39
+<                 /applications/planpubli/users/system/init.d/planpubli start ||\
+---
+>                 echo betorma /applications/planpubli/users/system/init.d/planpubli start ||\
+
+0[120808/143840]root@homer# diff /nsr/scripts/snapshot.ksh /nsr/scripts/snapshot.ksh.20120807 | wc -l
+       0
+
+
+

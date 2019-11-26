@@ -1,0 +1,29 @@
+########################################################################################################
+#
+# howto use zfs_msviz
+#
+########################################################################################################
+
+
+##### variables
+
+export zpool=<zpool_name>
+export tmp_folder=/home/betorma/tmp
+export zfs_msviz_path=/home/betorma/bin/zfs_msviz-0.1.2
+export zpool_cache_file=`zpool get cachefile $zpool | grep -v ^NAME | awk '{print $3}'`
+
+
+##### obtain metaslab information about the zpool
+
+zdb -mm -U $zpool_cache_file >${tmp_folder}/zdb_mm_${zpool}.out
+#zdb -emm -U $zpool_cache_file $zpool>${tmp_folder}/zdb_mm_${zpool}.out      ### for an exported pool
+
+
+
+##### convert output file for zfs_msviz
+${zfs_msviz_path}/parser.awk ${tmp_folder}/zdb_mm_${zpool}.out >${zfs_msviz_path}/zdb_data.tsv
+
+
+
+##### see the result with a web browser
+firefox ${zfs_msviz_path}/index.html

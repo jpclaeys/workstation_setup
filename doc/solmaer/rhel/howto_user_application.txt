@@ -1,0 +1,145 @@
+##################################################################################################################################################
+# description: 	creation de l'utilisateurs applicatif
+###################################################################################################################################################
+
+
+
+##### variables
+export appli_user=<appli_user>
+export appli_uid=<appli_uid>
+export appli_project=<appli_project>
+export comment_appli_user="${appli_user} user for ${appli_project} project"
+export appli_group=<appli_group>
+export appli_gid=<appli_gid>
+export oracle_used=<oracle_used>			#yes|no
+export test_used=<test_used>				#yes|no
+
+##### sauvegarde des fichiers a modifier
+{
+for FILE in /etc/auto_home /etc/group /etc/passwd /etc/shadow
+do
+	cp $FILE $FILE.`date +%Y%m%d%H%M`
+done
+}
+
+##### oracle
+
+{
+mkdir -p /u01/home/oracle
+mkdir -p /u01/home/rootdba
+mkdir -p /u02
+}
+
+
+{
+if [[ ${oracle_used} == yes ]]
+then
+	for rep in orabin oradata oralog oraflash
+	do
+		if [ -d /applications/${appli_project}/$rep ]
+		then
+			chown 1055:1055 /applications/${appli_project}/$rep
+			ls -ld /applications/${appli_project}/$rep
+		fi
+	done
+	mkdir /var/opt/oracle
+	chown 1055:1055 /var/opt/oracle
+fi
+}
+
+##### creation de $appli_group
+{
+grep ^${appli_group} /etc/group
+groupadd -g ${appli_gid} ${appli_group}
+egrep "^${appli_group}|${appli_gid}" /etc/group
+}
+
+##### creation de $appli_user
+{
+grep ^${appli_user} /etc/passwd
+mkdir -p /applications/${appli_project}/users/${appli_user}
+useradd -d /home/${appli_user} -c "${comment_appli_user}" -u ${appli_uid} -g ${appli_group} -s /bin/bash  ${appli_user} 
+egrep "^${appli_user}|${appli_uid}" /etc/passwd
+}
+
+
+##### auto_home de $appli_user
+{
+echo "${appli_user}     \$HOST:/applications/${appli_project}/users/&" >> /etc/auto_home
+cat /etc/auto_home
+}
+
+##### modification des droit sur le home de $appli_user
+{
+chown ${appli_user}:${appli_group} /applications/${appli_project}/users/${appli_user}
+ls -ld /applications/${appli_project}/users/${appli_user}
+}
+
+##### lock de $appli_user
+passwd -l ${appli_user}
+
+
+##### creation des utilisateurs pour documentum
+{
+if [[ ${documentum_used} == yes ]]
+then
+	mkdir -p /applications/${appli_project}/users/dmadmin
+	mkdir -p /applications/${appli_project}/users/pdocu
+	mkdir -p /applications/${appli_project}/users/docuser
+	roleadd -d /home/dmadmin -u 81800 -g ${appli_group} -s /bin/pfksh dmadmin
+	roleadd -d /home/pdocu -u 81801 -g ${appli_group} -s /bin/pfksh pdocu
+	roleadd -d /home/docuser -u 81802 -g ${appli_group} -s /bin/pfksh docuser
+	echo "dmadmin     \$HOST:/applications/plandd/users/&" >>/etc/auto_home
+	echo "pdocu     \$HOST:/applications/plandd/users/&" >>/etc/auto_home
+	echo "docuser     \$HOST:/applications/plandd/users/&" >>/etc/auto_home
+	chown dmadmin:${appli_group} /applications/${appli_project}/users/dmadmin
+	chown pdocu:${appli_group} /applications/${appli_project}/users/pdocu
+	chown docuser:${appli_group} /applications/${appli_project}/users/docuser
+fi
+}
+
+##### ajout des acces pour l' equipes integration de test au role $appli_user
+APP=`perl -e 'print uc($ENV{appli_project})'`
+APP_USER=`perl -e 'print uc($ENV{appli_user})'`
+USERS='betorma, warinlo, ettelma, reiffca, leidial, valleje, zadraju, sattihe, solmaer'
+if [[ $test_used == yes ]]; then USERS="$USERS, maffima, klaerpa, lafarpa, niedema, holotma, pierrph, dotzech, naratol"; fi
+{
+echo
+echo
+cat <<EOF
+### ${APP} ###
+Cmnd_Alias ROLECMD = /bin/bash, /bin/ksh
+User_Alias ${APP_USER} = $USERS
+${APP} LOCAL=($appli_user) NOPASSWD:ROLECMD
+EOF
+}
+
+visudo
+
+
+##### droit sur le repertoire xchange
+
+{
+if [ -d /applications/${appli_project}/xchange ]
+then
+	chown ${appli_user}:${appli_group} /applications/${appli_project}/xchange
+	ls -ld /applications/${appli_project}/xchange
+fi
+}
+
+
+##### connexion aux roles
+{
+for users in ${appli_user} rootdba oracle dmadmin pdocu docuser
+do
+	echo "##### $users"
+	su - $users -c 'id;pwd'
+	echo	
+done
+}
+
+
+
+
+
+

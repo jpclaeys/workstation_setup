@@ -1,0 +1,62 @@
+##### on each node
+
+cluster_name=`clnode list | xargs | sed -e 's/ /_/'`
+tmp_dir="/net/vdm-unix/systemstore/temp/${cluster_name}"
+mkdir -p $tmp_dir
+/home/admin/bin/storage_info.pl -A >${tmp_dir}/storage_info_`uname -n`.txt
+
+
+
+
+##### check on one node
+
+#for did in d38 d40
+for did in `cldev list`
+do
+	#echo $did
+
+	##### if the did is combined, check if each node has the same number of device in the current did
+	cldev show $did | grep 'Replication:' | grep 'srdf' >/dev/null
+	if [ $? == 0 ]; then
+		for node in `clnode list`
+		do
+			cldev list -v $did | grep $did | grep $node | wc -l >${tmp_dir}/count_${node}.txt
+		done
+		eval cat /net/vdm-unix/systemstore/temp/lava_kusha/count_{`clnode list | xargs | sed -e 's/ /,/g'`}.txt | sort -u | wc -l | grep '1$' >/dev/null
+		if [ $? != 0 ]; then echo "ERROR: ${did} does not contents the same device number for each cluster nodes."; fi
+	fi
+
+	##### check for the current did if it is with the good replication when it is composed by device for several nodes
+	for node in `clnode list`
+	do
+		cldev show $did | grep $node | awk -F':' '{print $2}'
+	done | sort -u | wc -l | grep '1$' >/dev/null
+	if [ $? != 0 ]; then 
+		cldev show $did | grep 'Replication:' | grep 'srdf' >/dev/null
+		if [ $? != 0 ]; then
+			echo "WARNING: ${did} seems to be combined, but not with SRDF replication type."
+		fi
+	fi
+
+	##### check if all devices of the current did comes from the samen storage type
+	for node in `clnode list`
+	do
+		grep " $did " ${tmp_dir}/storage_info_${node}.txt | awk '{print $8}' | awk -F'_' '{print $1}' 
+	done | sort -u | wc -l | grep '1$' >/dev/null
+	if [ $? != 0 ]; then echo "ERROR: ${did} contents devices from different storage array types."; fi
+
+	##### check is all device of the current did are with the same lun id
+	for node in `clnode list`
+	do
+		grep " $did " ${tmp_dir}/storage_info_${node}.txt | awk '{print $9}'
+	done | sort -u | wc -l | grep '1$' >/dev/null
+	if [ $? != 0 ]; then echo "ERROR: ${did} contents devices with different lun ids."; fi
+done
+
+
+
+
+
+
+
+

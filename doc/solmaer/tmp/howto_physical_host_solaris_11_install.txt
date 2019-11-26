@@ -1,0 +1,262 @@
+################################################################################
+##### OBP
+
+
+##### banner
+{0} ok setenv oem-banner <host_name>
+
+
+##### check network adapter link
+
+{0} ok watch-net-all
+/pci@0/pci@0/pci@1/pci@0/pci@3/network@0,1
+1000 Mbps full duplex Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+....
+/pci@0/pci@0/pci@1/pci@0/pci@3/network@0
+1000 Mbps full duplex Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+....
+/pci@0/pci@0/pci@1/pci@0/pci@2/network@0,1
+1000 Mbps full duplex Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+....
+/pci@0/pci@0/pci@1/pci@0/pci@2/network@0
+1000 Mbps full duplex Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+....
+{0} ok 
+
+
+
+##### choose the network adapter to use it to install host, and get the ethernet address
+
+
+{0} ok cd /pci@0/pci@0/pci@1/pci@0/pci@2/network@0
+{0} ok .properties
+local-mac-address        00 14 4f eb b2 b8 
+mac-addresses            00 14 4f eb b2 b8 
+assigned-addresses       82080010 00000000 00400000 00000000 00020000 
+                         81080018 00000000 00000000 00000000 00000020 
+compatible               pciex8086,105e.108e.105e.6
+                         pciex8086,105e.108e.105e
+                         pciex8086,105e.6
+                         pciex8086,105e
+                         pciexclass,020000
+                         pciexclass,0200
+reg                      00080000 00000000 00000000 00000000 00000000 
+                         02080010 00000000 00000000 00000000 00020000 
+                         01080018 00000000 00000000 00000000 00000020 
+max-frame-size           00010000 
+address-bits             00000030 
+device_type              network
+name                     network
+interrupts               00000001 
+cache-line-size          00000010 
+class-code               00020000 
+subsystem-id             0000105e 
+subsystem-vendor-id      0000108e 
+ More [<space>,<cr>,q,n,p,c] ? 
+
+
+{0} ok nvalias net_ai /pci@0/pci@0/pci@1/pci@0/pci@2/network@0
+
+
+
+################################################################################
+##### AI profile
+
+
+export host_name=chronos
+export ip_host_name=`getent hosts $host_name | awk '{print $1}'`
+export ether=0:14:4f:eb:b2:b8
+
+
+##### list AI service names
+
+1[131105/090508]root@borusa-tz# installadm list -m
+Service/Manifest Name   Status   Criteria
+---------------------   ------   --------
+opoce-sparc-sol11_1
+   opoce-sparc-sol11_1  Default  None
+   orig_default         Inactive None
+
+
+export service_name=opoce-sparc-sol11_1
+
+
+##### copy the appropriate profile file to the new
+
+cd /applications/ai/images/profiles
+cp lava.xml ${host_name}.xml
+
+##### edit the new xml file, and change the 'net_address_v4' and nodename values;
+
+diff lava.xml ${host_name}.xml
+8c8
+<                  value="10.199.99.157/24"/>
+---
+>                  value="10.199.99.70/24"/>
+24c24
+<         <propval type="astring" name="nodename" value="lava"/>
+---
+>         <propval type="astring" name="nodename" value="chronos"/>
+
+
+
+##### create AI profile
+
+installadm create-profile -n ${service_name} -f ${host_name}.xml -c ipv4=${ip_host_name}
+
+2[131105/091255]root@borusa-tz# installadm list -p
+Service/Profile Name  Criteria
+--------------------  --------
+opoce-sparc-sol11_1
+   general.xml        None
+   user.xml           None
+   harpo.xml          ipv4 = 10.199.99.161
+   groucho.xml        ipv4 = 10.199.99.163
+   zeppo.xml          ipv4 = 10.199.99.162
+   chico.xml          ipv4 = 10.199.99.164
+   rama.xml           ipv4 = 10.199.99.155
+   gretel.xml         ipv4 = 10.199.99.166
+   sita.xml           ipv4 = 10.199.99.156
+   kusha.xml          ipv4 = 10.199.99.158
+   hansel.xml         ipv4 = 10.199.99.165
+   vali.xml           ipv4 = 10.199.99.153
+   tara.xml           ipv4 = 10.199.99.154
+   lava.xml           ipv4 = 10.199.99.157
+   chronos.xml        ipv4 = 10.199.99.70
+
+
+##### create AI client
+
+installadm create-client -e ${ether} -n ${service_name}
+
+
+0[131105/091505]root@borusa-tz# installadm list -c | grep -i $ether                           
+opoce-sparc-sol11_1 00:14:4F:EB:B2:B8  sparc  /applications/ai/images/opoce-sparc-sol11_1
+
+
+##### generate install command
+
+def_router=10.199.99.254
+netmask=255.255.255.0
+
+0[131105/092007]root@borusa-tz# echo setenv network-boot-arguments host-ip=${ip_host_name},router-ip=${def_router},subnet-mask=${netmask},hostname=${host_name},file=http://158.167.98.87:5555/cgi-bin/wanboot-cgi 
+setenv network-boot-arguments host-ip=10.199.99.70,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=chronos,file=http://158.167.98.87:5555/cgi-bin/wanboot-cgi
+
+
+
+################################################################################
+##### OBP
+
+
+##### boot to install
+
+{0} ok boot net_ai - install
+
+
+
+
+################################################################################
+##### system configuration
+
+
+grep root /etc/passwd /etc/shadow /etc/user_attr /etc/user_attr.d/* /etc/security/prof_attr /etc/security/prof_attr.d/* /etc/security/exec_attr /etc/security/exec_attr.d/*
+
+
+root@chronos:~# grep root /etc/passwd /etc/shadow /etc/user_attr /etc/user_attr
+.d/* /etc/security/prof_attr /etc/security/prof_attr.d/* /etc/security/exec_att
+r /etc/security/exec_attr.d/*
+/etc/passwd:root:x:0:0:Super-User:/root:/usr/bin/bash
+/etc/shadow:root:$5$/tXMZRYH$8om/MNj1lGz8impKitlIHT7TYnUJt0Wvbl1ZruGF89C:6445::::::
+/etc/user_attr.d/core-os:root::::auths=solaris.*;profiles=All;audit_flags=lo\:no;lock_after_retries=no;\
+/etc/security/exec_attr.d/core-os:File System Management:solaris:cmd:RO::/usr/sbin/share:uid=0;gid=root
+/etc/security/exec_attr.d/core-os:File System Management:solaris:cmd:RO::/usr/sbin/shareall:uid=0;gid=root
+/etc/security/exec_attr.d/core-os:File System Management:solaris:cmd:RO::/usr/sbin/unshare:uid=0;gid=root
+/etc/security/exec_attr.d/core-os:File System Management:solaris:cmd:RO::/usr/sbin/unshareall:uid=0;gid=root
+/etc/security/exec_attr.d/core-os:      privs=proc_chroot,proc_owner,sys_ip_config
+root@chronos:~# 
+
+root@chronos:~# usermod -K type=normal root
+UX: usermod: root is currently logged in, some changes may not take effect until next login.
+
+
+
+
+
+
+Automated Installation finished successfully
+The system can be rebooted now
+
+
+
+
+##### change root role into user
+
+rolemod -K type=normal root
+
+##### root password
+
+passwd root
+
+
+##### reboot
+
+init 6
+
+##### check install_log
+
+egrep -i 'error|fail' /var/log/install/install_log
+
+##### variables
+
+export host_name=chronos
+export ip_host_name=10.199.99.70
+export domain=opoce.cec.eu.int
+
+
+##### name resolution
+
+cat >/etc/inet/host <<EOF
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# Internet host table
+#
+::1 localhost 
+127.0.0.1 localhost 
+$ip_host_name   $host_name ${host_name}.${domain}
+EOF
+
+
+domainname opoce.cec.eu.int
+
+
+##### aggregat
+
+
+
+
+##### route
+
+Make sure static route is correct interface,aggregate or ipmp group
+
+  vi /etc/inet/static_routes-DefaultFixed
+
+
+
+
+
+##### auto-boot?
+

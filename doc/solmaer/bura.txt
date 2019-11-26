@@ -1,0 +1,344 @@
+#####################################################################################################################################################################
+##### reference carlo
+
+betorma@vespa % cat /home/reiffca/bura/daily.txt     
+
+
+#####################################################################################################################################################################
+##### verification des saveset par rapport aux explorer
+
+##### generer le rapport
+timex /applications/i-status/users/system/perl-5.8.8/bin/perl /home/reiffca/develop/solaris/explorer/explorep.pl --backup_fs explorer* >/home/betorma/tmp/ssrport.txt  
+
+
+#####################################################################################################################################################################
+##### verification des log, console, ...
+
+##### remus:/applications/bura/users/bura/htdocs/savegrp/`date +%Y`/`date +%Y%m%d`
+
+##### remus:/nsr/logs/daemon.log 
+
+export today_date=`date +%m/%d/%y`,
+export process='nsrd|nsrmmgd|nsrmmdbd|savegrp|nsrjobd|savepsm|nsrexecd'
+perl -ne '
+	##### id;date;heure;process;info
+	if(m{^(\d+)\s($ENV{today_date})\s+(\d{2}:\d{2}:\d{2})\s+($ENV{process})\s+(.*?$)}) {
+		print "$&\n";
+
+	}
+' /nsr/logs/daemon.log
+
+
+##### NMC
+
+
+#####################################################################################################################################################################
+##### bootstrap 
+
+##### verifier que plus rien ne tourne; backup, clone
+ptree `pgrep -f clone`
+
+##### liste des derniers boostrop et de leurs clones
+/usr/sbin/mminfo -s opbk01 -B -t 'one week ago'  
+
+##### backup des boostrap ##### sur remus 
+savegrp -O -G unix
+
+##### verif 
+/usr/sbin/mminfo -s opbk01 -B -t 'one week ago'
+
+##### clone des bootstrap
+{
+nsrclone -s opbk01  -b 'mercier bootstrap' -C 1 -S -t '10 days ago' -N bootstrap
+nsrclone -s opbk01 -b 'eufo bootstrap' -C 1 -S -t '10 days ago' -N bootstrap 
+/usr/sbin/mminfo -s opbk01 -B -t 'one week ago' 2>&1|/usr/bin/mailx -s "nsr bootstrap `date`" carlo.reiffers@ext.publications.europa.eu opensystem-logs@publications.europa.eu 2>&1 > /dev/null
+}
+
+##### verif
+/usr/sbin/mminfo -s opbk01 -B -t 'one week ago'  
+
+
+
+#####################################################################################################################################################################
+##### liberer des tapes
+
+!!!!!!!!!!!!!!!!!!!!!!! ne jamais utiliser nrsmm avec comme dernier argument recyclable
+
+##### liste le nombre de bandes recyclables par librairie
+{
+echo -n 'VTA:'
+mminfo -s opbk01 -q 'location=rd=chronos:VTA,volrecycle' -r 'volume,%used,volflags'|tail +2|wc -l
+echo -n 'VTB:'
+mminfo -s opbk01 -q 'location=rd=chronos:VTB,volrecycle' -r 'volume,%used,volflags'|tail +2|wc -l
+echo -n 'L180:'
+mminfo -s opbk01 -q 'location=rd=saturne:L180,volrecycle' -r 'volume,%used,volflags'|tail +2|wc -l
+echo -n 'L700:'
+mminfo -s opbk01 -q 'location=rd=chronos:L700,volrecycle' -r 'volume,%used,volflags'|tail +2|wc -l
+}
+
+##### meme fonction
+{
+nsrjb -s opbk01 -j rd=chronos:VTA|perl -nae '$F[-1] eq "yes" and print'|wc
+nsrjb -s opbk01 -j rd=saturne:VTB|perl -nae '$F[-1] eq "yes" and print'|wc
+nsrjb -s opbk01 -j rd=saturne:L180|perl -nae '$F[-1] eq "yes" and print'|wc
+}
+
+##### genere les commandes pour expirer des tapes sur le l700
+mminfo -s opbk01 -q 'pool=Backup MedRet' -r 'volume,volretent,%used'|perl -nae '($F[1] =~ m{expired}) or ($F[2] =~ m{full}) && print(join("\t", @F). "\n")' |sort -k 2.8,2.9 -k 2.0,2.6|head -30 |perl -nae 'print "$F[0]\n"'|xargs echo nsrmm -s opbk01 -y -o recyclable   
+
+##### genere les commandes pour expirer des tapes sur le l180
+mminfo -s opbk01 -q 'pool=EUFOrman,pool=eufo backup test' -r 'volume,volretent,%used'|perl -nae '($F[1] =~ m{expired}) or ($F[2] =~ m{full}) && print(join("\t", @F). "\n")' |sort -k 2.8,2.9 -k 2.1,2.5|perl -nae ' m{expired} or m{full} && print "$F[0]\n"' |xargs -n 10 echo timex nsrmm -y -s opbk01 -o recyclable
+
+##### genere les commandes pour expirer des tapes sur vta
+##### les tapes des premieres lignes on une date de retention plus proche que les tapes des dernieres lignes
+cat /tmp/tapes_fully_cloned.$(date +%Y%m%d)|perl -na0777e 'print qq{mminfo -s opbk01 -q "}. join(",", map({qq{volume=$_}} split("\n", $_))). qq{" -r "volretent,volume,volaccess,%used"\n} '|/bin/ksh |sort -k 1.8,1.9 -k 1.2,1.6|perl -nae 'm{expired} or m{ full} && print "$F[1]\n"' |grep VTA|xargs -n 10 echo timex nsrmm -y -s opbk01 -o recyclable
+
+##### genere les commandes pour expirer des tapes sur vtb
+##### les tapes des premieres lignes on une date de retention plus proche que les tapes des dernieres lignes
+cat /tmp/tapes_fully_cloned.$(date +%Y%m%d)|perl -na0777e 'print qq{mminfo -s opbk01 -q "}. join(",", map({qq{volume=$_}} split("\n", $_))). qq{" -r "volretent,volume,volaccess,%used"\n} '|/bin/ksh |sort -k 1.8,1.9 -k 1.2,1.6|perl -nae 'm{expired} or m{ full} && print "$F[1]\n"' |grep VTB|xargs -n 10 echo timex nsrmm -y -s opbk01 -o recyclable
+
+
+#####################################################################################################################################################################
+##### clones
+
+##### liste des process en cours pour les clones
+ptree `pgrep -f clone`
+
+##### mise a jour de la db cloneadm
+##### les 2 premieres lignes sont necessaires seulement apres recyclage de tapes
+
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl clear
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db vacuum
+
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl mminfo update --timespec='10 days ago'
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl task create         
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job create --all
+
+##### lancement de 8 job de clone en parallele
+(repeat 120 echo /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job run) |/home/admin/bin/parexec.pl -p 8 &
+
+
+
+##### ou par at job
+
+su -
+
+at -k  6am sun <<'EOT'
+at -k  6am mon <<'EOT'
+at -k now <<'EOT'
+
+at -k 6am <<'EOT'
+date
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl clear
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db vacuum
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl mminfo update --timespec='100 days ago'
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl task create         
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job create --all
+/bin/rm /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db 'select distinct volume from mminfo where pool like "V%" except select  vol from (select m.ssid, m.volume vol from mminfo m where m.pool like "V%" except select  m0.ssid, m0.volume from mminfo m0, mminfo m1  where m0.pool like "V%" and m1.pool="Backup MedRet" and m0.ssid=m1.ssid) ' > /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+date
+zsh -c "(repeat 200 echo /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job run) |/home/admin/bin/parexec.pl -p 8"
+date
+EOT
+
+######### Clone par at job (monday to thursday)
+at -k 6am <<'EOT'
+date
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl clear
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db vacuum
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl mminfo update --timespec='100 days ago'
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl task create
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job create --all
+/bin/rm /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db 'select distinct volume from mminfo where pool like "V%" except select  vol from (select m.ssid, m.volume vol from mminfo m where m.pool like "V%" except select  m0.ssid, m0.volume from mminfo m0, mminfo m1  where m0.pool like "V%" and m1.pool="Backup MedRet" and m0.ssid=m1.ssid) ' > /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+date
+zsh -c "(repeat 200 echo /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job run) |/home/admin/bin/parexec.pl -p 8"
+date
+EOT
+ 
+######### Clone par at job (Friday)
+at -k 6am sun <<'EOT'
+date
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl clear
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db vacuum
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl mminfo update --timespec='100 days ago'
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl task create         
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job create --all
+/bin/rm /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db 'select distinct volume from mminfo where pool like "V%" except select  vol from (select m.ssid, m.volume vol from mminfo m where m.pool like "V%" except select  m0.ssid, m0.volume from mminfo m0, mminfo m1  where m0.pool like "V%" and m1.pool="Backup MedRet" and m0.ssid=m1.ssid) ' > /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+date
+zsh -c "(repeat 200 echo /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job run) |/home/admin/bin/parexec.pl -p 6"
+date
+EOT
+ 
+at -k  6am mon <<'EOT'
+date
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl mminfo update --timespec='10 days ago'
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl task create          
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job create --all   
+/bin/rm /tmp/tapes_fully_cloned.$(date +%Y%m%d)                                 
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db 'select distinct volume from mminfo where pool like "V%" except select  vol from (select m.ssid, m.volume vol from mminfo m where m.pool like "V%" except select  m0.ssid, m0.volume from mminfo m0, mminfo m1  where m0.pool like "V%" and m1.pool="Backup MedRet" and m0.ssid=m1.ssid) ' > /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+date
+zsh -c "(repeat 200 echo /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job run) |/home/admin/bin/parexec.pl -p 6"
+date
+EOT
+ 
+######### Clone par at job (now)
+at -k now <<'EOT'
+date
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl clear
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db vacuum
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl mminfo update --timespec='100 days ago'
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl task create         
+timex /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job create --all
+/bin/rm /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+timex /applications/bura/users/system/sqlite/bin/sqlite3 /applications/bura/users/bura/var/clone.db 'select distinct volume from mminfo where pool like "V%" except select  vol from (select m.ssid, m.volume vol from mminfo m where m.pool like "V%" except select  m0.ssid, m0.volume from mminfo m0, mminfo m1  where m0.pool like "V%" and m1.pool="Backup MedRet" and m0.ssid=m1.ssid) ' > /tmp/tapes_fully_cloned.$(date +%Y%m%d)
+date
+zsh -c "(repeat 200 echo /home/reiffca/develop/backup/bura/scripts/cloneadm.pl job run) |/home/admin/bin/parexec.pl -p 6"
+date
+EOT
+ 
+
+#####################################################################################################################################################################
+##### flushdns
+
+nsr_shutdown -l
+dbgcommand -p pid FlushDnsCache
+
+
+#####################################################################################################################################################################
+##### save by hand
+
+Starting a client manually (WARNING: this may shutdown applications on the client!)
+- login to opbk01 as root (this is either saturne or chronos)
+- savegrp -c <client> -l <level> <groupname>
+
+Saving only a particilar FS
+- login to client
+- savefs -s opbk01 -c <client> -g <group> [-l <level>] /path/to/FS
+
+
+#####################################################################################################################################################################
+##### archivage sur schnaps
+
+
+##### maj de l'index
+
+index_archive=/applications/archive_bura/index_archive
+DATE=`date +%Y%m%d%H%M`
+env_APPL=TEST
+APPL=acfv3
+SERVER=happy
+IP_OPSRV=158.167.227.94
+OPSRV=opsrv094
+FS_APPL=/applications/archive_bura/${env_APPL}/applications/${APPL}
+DATA_POOL=data_pool/archive_bura/${env_APPL}/applications/${APPL}
+
+cp -p $index_archive ${index_archive}.${DATE}
+echo "${DATE};${env_APPL};${APPL};${SERVER};${IP_OPSRV};${OPSRV};${FS_APPL}" >>$index_archive
+
+
+##### creation de chaque fs de l'application sur schnaps:
+{
+echo zfs create -o mountpoint=none ${DATA_POOL}
+echo zfs create -o mountpoint=${FS_APPL}/orabin ${DATA_POOL}/orabin
+echo zfs create -o mountpoint=${FS_APPL}/oradata ${DATA_POOL}/oradata
+echo zfs create -o mountpoint=${FS_APPL}/oralog ${DATA_POOL}/oralog
+echo zfs create -o mountpoint=${FS_APPL}/users ${DATA_POOL}/users
+echo zfs create -o mountpoint=${FS_APPL}/xchange ${DATA_POOL}/xchange
+}
+
+
+
+
+#### autoriser $SERVER pour le rsynx daemon
+cp -p /etc/hosts.allow /etc/hosts.allow.${DATE}
+echo rsyncd:${SERVER}.opoce.cec.eu.int >>/etc/hosts.allow
+
+
+#### create rsync_share into /etc/rsyncd.conf
+cp -p  /etc/rsyncd.conf  /etc/rsyncd.conf.${DATE}
+vi /etc/rsyncd.conf 
+
+
+cat <<EOT >>/etc/rsyncd.conf 
+[${APPL}_orabin]
+             path = /applications/archive_bura/${env_APPL}/applications/${APPL}/orabin
+             read only = no
+             write only = yes
+             uid = root
+             gid = root
+             hosts allow = ${SERVER}.opoce.cec.eu.int
+             use chroot = yes
+             max connections = 32
+[${APPL}_oradata]
+             path = /applications/archive_bura/${env_APPL}/applications/${APPL}/oradata
+             read only = no
+             write only = yes
+             uid = root
+             gid = root
+             hosts allow = ${SERVER}.opoce.cec.eu.int
+             use chroot = yes
+             max connections = 32
+[${APPL}_oralog]
+             path = /applications/archive_bura/${env_APPL}/applications/${APPL}/oralog
+             read only = no
+             write only = yes
+             uid = root
+             gid = root
+             hosts allow = ${SERVER}.opoce.cec.eu.int
+             use chroot = yes
+             max connections = 32
+[${APPL}_users]
+             path = /applications/archive_bura/${env_APPL}/applications/${APPL}/users
+             read only = no
+             write only = yes
+             uid = root
+             gid = root
+             hosts allow = ${SERVER}.opoce.cec.eu.int
+             use chroot = yes
+             max connections = 32
+[${APPL}_xchange]
+             path = /applications/archive_bura/${env_APPL}/applications/${APPL}/xchange
+             read only = no
+             write only = yes
+             uid = root
+             gid = root
+             hosts allow = ${SERVER}.opoce.cec.eu.int
+             use chroot = yes
+             max connections = 32
+EOT
+
+
+diff /etc/rsyncd.conf  /etc/rsyncd.conf.${DATE}
+
+##### verifier que l'identifiant entre [] est unique dans /etc/rsyncd.conf
+
+
+
+#### sur $SERVER
+
+APPL=acfv3
+/opt/OPrsync/bin/rsync --update -aHS  /applications/${APPL}/orabin/ schnaps::${APPL}_orabin
+/opt/OPrsync/bin/rsync --update -aHS  /applications/${APPL}/oradata/ schnaps::${APPL}_oradata
+/opt/OPrsync/bin/rsync --update -aHS  /applications/${APPL}/oralog/ schnaps::${APPL}_oralog
+/opt/OPrsync/bin/rsync --update -aHS  /applications/${APPL}/users/ schnaps::${APPL}_users
+/opt/OPrsync/bin/rsync --update -aHS  /applications/${APPL}/xchange/ schnaps::${APPL}_xchange
+
+
+##### comparer les tailles des fs synchronises
+
+##### on schnaps
+
+zfs list | grep ${env_APPL} | grep ${APPL}          
+
+
+{
+zfs list -o name| grep ${env_APPL} | grep $APPL | while read dataset
+do
+	echo zfs set readonly=on $dataset
+done
+}
+
+zfs get readonly | grep archive_bura
+

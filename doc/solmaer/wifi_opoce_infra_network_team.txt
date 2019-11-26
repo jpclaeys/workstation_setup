@@ -1,0 +1,2 @@
+point d'acces wifi: wireless4
+pw: M0nd@Y

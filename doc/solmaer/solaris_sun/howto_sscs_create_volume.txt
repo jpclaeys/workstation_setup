@@ -1,0 +1,132 @@
+################################################################################################################################################################
+# creation d'un volume sur un 61x0 mappe sur un hote
+################################################################################################################################################################
+
+##### variables
+export array=<array1>
+export host=<host>
+export size=<lun_size>
+
+##### liste des volues deja existants sur host
+./sscs list -a ${array} mapping ${host} | sort -n -k 3
+
+##### choisit le nom du volume
+export volume=v<application_name>_<environment>XX
+
+##### verifie qu'un volume portant ce nom n'existe pas deja
+./sscs list -a ${array} volume ${volume}
+
+##### choisit le numero de lun
+export lun=1
+
+##### verifie que le numero de lun n'est pas deja utilise par l'hote
+./sscs list -a ${array} mapping ${host} | grep "LUN: ${lun} "
+
+##### liste les vdisk
+{
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $array vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $array vdisk $n | egrep 'Virtual Disk:|Capacity|Maximal Volume Size'
+done
+}
+
+##### choix du vdisk
+export virtual_disk=1
+export pool=Default
+
+##### creation du volume
+echo ./sscs create -a ${array} -p ${pool} -s ${size} -v ${virtual_disk} volume ${volume}
+
+##### mappage du volume
+echo ./sscs map -a ${array} -v ${volume} -l ${lun} host ${host}
+
+##### verifie le status du volume
+./sscs list -a ${array} volume ${volume}
+
+
+
+################################################################################################################################################################
+# creation de 2 volumes pour un mirroir mappe sur un hotegroup (hotes en cluster)
+################################################################################################################################################################
+
+##### variables
+export primary_array=<array1>
+export secondary_array=<array2>
+export hostgroup=<hostgroup>
+export size=<lun_size>
+
+##### liste des volues deja existants sur hostgroup sur primary_array
+./sscs list -a ${primary_array} mapping ${hostgroup} | sort -n -k 3
+
+##### choisit le nom du volume
+export volume=v<application_name>_<environment>XX
+
+##### verifie qu'un volume portant ce nom n'existe pas deja
+{
+./sscs list -a ${primary_array} volume ${volume}
+./sscs list -a ${secondary_array} volume ${volume} 
+}
+
+##### choisit le numero de lun
+export lun=1
+
+##### verifie que le numero de lun n'est pas deja utilise par l'hostgroup
+{
+./sscs list -a ${primary_array} mapping ${hostgroup} | grep "LUN: ${lun} "
+./sscs list -a ${secondary_array} mapping ${hostgroup} | grep "LUN: ${lun} "
+}
+
+##### liste les vdisk
+{
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $primary_array vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $primary_array vdisk $n | egrep 'Virtual Disk:|Capacity|Maximal Volume Size'
+done
+}
+
+##### choix du vdisk
+export virtual_disk=1
+export pool=Default
+
+##### creation du volume
+echo ./sscs create -a ${primary_array} -p Default -s ${size} -v ${virtual_disk} volume ${volume}
+
+##### mappage du volume
+echo ./sscs map -a ${primary_array} -v ${volume} -l ${lun} hostgroup ${hostgroup}
+
+##### verifie le status du volume
+./sscs list -a ${primary_array} volume ${volume}
+
+##### liste les vdisk
+{
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $secondary_array vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $secondary_array vdisk $n | egrep 'Virtual Disk:|Capacity|Maximal Volume Size'
+done
+}
+
+##### choix du vdisk
+export virtual_disk=1
+export pool=Default
+
+##### creation du volume
+echo ./sscs create -a ${secondary_array} -p Default -s ${size} -v ${virtual_disk} volume ${volume}
+
+##### mappage du volume
+echo ./sscs map -a ${secondary_array} -v ${volume} -l ${lun} hostgroup ${hostgroup}
+
+##### verifie le status du volume
+./sscs list -a ${secondary_array} volume ${volume}
+

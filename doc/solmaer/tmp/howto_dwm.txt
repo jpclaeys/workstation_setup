@@ -1,0 +1,111 @@
+###########################################################################
+##### put dwm in place
+
+chmod 777 /opt/dwm 
+cp /home/betorma/download/dwm-6.0.tar.gz /opt/dwm
+gunzip dwm-6.0.tar.gz 
+tar xf dwm-6.0.tar 
+cd dwm-6.0 
+
+
+
+###########################################################################
+##### change the path to install dwm
+
+diff config.mk config.mk.orig
+7c7
+< PREFIX = /opt/dwm/dwm-6.0
+---
+> PREFIX = /usr/local
+
+
+
+###########################################################################
+##### conpile
+
+make clean install
+
+
+
+###########################################################################
+##### create an xsession entry
+
+{
+cat <<EOF >/usr/share/xsessions/dwm.desktop
+[Desktop Entry]
+Encoding=UTF-8
+Name=Dwm
+Comment=Dynamic window manager
+Exec=/opt/dwm/dwm-6.0/bin/startdwm
+Icon=dwm
+Type=XSession
+EOF
+}
+
+
+
+###########################################################################
+##### create e custom start script
+
+{
+cat <<EOF >/opt/dwm/dwm-6.0/bin/startdwm
+#!/bin/sh
+
+
+DWM_PATH=/opt/dwm/dwm-6.0/bin
+
+PATH=$PATH:$DWM_PATH
+
+exec dwm &
+while true
+do
+	d=`date '+%H:%M %a %d/%m/%Y'`
+	xsetroot -solid grey -name "$d"
+	sleep 1
+done
+}
+
+chmod +x /opt/dwm/dwm-6.0/bin/startdwm
+
+
+
+
+
+###########################################################################
+##### create a custon lock script
+
+
+{
+cat <<EOF >/opt/dwm/dwm-6.0/bin/lockdwm    
+#!/bin/sh
+
+xlock -mode blank
+exit 0
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

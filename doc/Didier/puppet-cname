@@ -1,0 +1,20 @@
+
+
+opsvc001;obvmwsidol01	puppet class R
+opsvc002;obvmwsidol02	puppet class R
+opsvc003;obvmwsidol03
+opsvc004;obvmwsidol04
+opsvc005;obvmwsidol05
+opsvc006;obvmwsidol06
+opsvc007;obvmwsidol07
+opsvc008;obvmwsidol08
+opsvc009;ldap2-tk	puppet class R
+opsvc011;cellarbo-tk
+opsvc020;orion-tk
+opsvc021;otvmwsljpar
+opsvc025;cportalfs-tk
+opsvc026;cportalfs-rk
+opsvc044;centreonfo-tk
+opsvc045;centreonbo1-tk	
+opsvc046;infra1-tk   	puppet class R
+opsvc047;infra2-tk	puppet class R

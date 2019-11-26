@@ -1,0 +1,39 @@
+# creer le tgz pour sauvegarder l'ancien fichier/s
+tar cvf - -I /applications/formexweb/users/formexweb/PATCHES/20080221/files.lst |gzip -c > /applications/formexweb/users/formexweb/PATCHES/20080221/files_sav.tgz
+
+# creer le tgz pour le patch
+tar cvf - -I /applications/formexweb/users/formexweb/PATCHES/20080221/files.lst |gzip -c > /applications/formexweb/users/formexweb/PATCHES/20080221/patch.tgz
+
+##########
+# patch systeme
+
+Bug ID   	 6743776
+Synopsis 	zone update on attach should ignore all "special" patches
+State 	10-Fix Delivered (Fix available in build)
+Category:Subcategory 	utility:zones
+Keywords 	no-snv+
+Responsible Engineer 	Nagaraj Yedathore
+Reported Against 	solaris_10u6
+Duplicate Of 	
+Introduced In 	solaris_10u6
+Commit to Fix 	s10u7_02
+Fixed In 	s10u7_02
+Release Fixed 	solaris_10u7(s10u7_02)
+Related Bugs 	
+Submit Date 	02-SEP-2008
+Last Update Date 	03-DEC-2008
+Description 	
+
+"special" patches are not released, so customer
+can never get them.  They only show up on a
+customer system as patch metadata.  When migrating
+a zone, if the source had the special patch, but
+the target is at a later release, there is no way
+to bring the target up to sync with the source system
+since the patch is not available and these patches
+are never obsoleted.
+
+Work Around 	
+
+Install the attached bad_patches file in
+/usr/lib/brand/native.

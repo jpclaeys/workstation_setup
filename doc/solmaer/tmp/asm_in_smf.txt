@@ -1,0 +1,1263 @@
+###########################################################################################################
+##### some checks, info, ....
+
+0[140930/103909]betorma@csandbox-tz% ls -l /etc/init.d/ohasd 
+-rwxr-x---   1 root     root        7136 Aug 18 10:58 /etc/init.d/ohasd
+
+
+0[140930/111729]root@csandbox-tz# grep ohasd /etc/inittab
+h1:3:respawn:/etc/init.d/init.ohasd run >/dev/null 2>&1 </dev/null
+
+
+
+
+case "$1" in
+  deinstall)
+    deinstall_stack
+    ;;
+  install)
+    install_stack
+    ;;
+  start)
+    start_stack
+    ;;
+  stop)
+    stop_stack
+    ;;
+esac
+
+
+
+start_stack()
+        my_crsctl start has -nowait
+
+
+my_crsctl()
+{
+  if [ $HAS_USER = "root" ]; then
+    $CRSCTL $*
+  else
+    $SU $HAS_USER -c "$CRSCTL $*"
+  fi
+}
+
+
+ORA_CRS_HOME=/u01/home/clusterware
+CRSCTL=$ORA_CRS_HOME/bin/crsctl
+
+
+0[140930/104751]root@csandbox-tz# ll /u01/home/clusterware/bin/crsctl
+-rwxr-x---   1 oracle   dba         9436 Aug 18 10:58 /u01/home/clusterware/bin/crsctl
+
+
+
+
+
+0[140930/111251]root@csandbox-tz# ps -ef | grep ora | awk '{print $2}' | xargs ptree
+4730  zsched
+  6152  /usr/lib/ssh/sshd
+    29268 /usr/lib/ssh/sshd
+      29269 /usr/lib/ssh/sshd
+        29270 -ksh
+          29310 su - oracle
+            29311 -ksh
+    8406  /usr/lib/ssh/sshd
+      8407  /usr/lib/ssh/sshd
+        8408  -ksh
+          8416  su - rootdba
+            8417  -ksh
+              8429  su -
+                8430  -bash
+                  13277 su - oracle
+                    13278 -ksh
+  6306  /u01/home/clusterware/bin/ohasd.bin reboot
+  6410  /u01/home/clusterware/bin/oraagent.bin
+  6454  /u01/home/clusterware/bin/evmd.bin
+    6614  /u01/home/clusterware/bin/evmlogger.bin -o /u01/home/clusterware/log/[HOSTNAME]
+  6477  /u01/home/clusterware/bin/tnslsnr LISTENER -no_crs_notify -inherit
+  6479  /u01/home/clusterware/bin/cssdagent
+  6481  /u01/home/clusterware/bin/ocssd.bin 
+  6728  asm_pmon_+ASM
+  6730  asm_psp0_+ASM
+  6732  asm_vktm_+ASM
+  6736  asm_gen0_+ASM
+  6738  asm_mman_+ASM
+  6742  asm_diag_+ASM
+  6744  asm_dia0_+ASM
+  6746  asm_dbw0_+ASM
+  6748  asm_lgwr_+ASM
+  6752  asm_ckpt_+ASM
+  6754  asm_smon_+ASM
+  6756  asm_lreg_+ASM
+  6759  asm_pxmn_+ASM
+  6761  asm_rbal_+ASM
+  6763  asm_gmon_+ASM
+  6765  asm_mmon_+ASM
+  6767  asm_mmnl_+ASM
+  6771  ora_dism_+ASM
+  6794  oracle+ASM (DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))
+  7896  oracle+ASM (DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))
+  29545 ora_pmon_CELLARM
+  29547 ora_psp0_CELLARM
+  29549 ora_vktm_CELLARM
+  29554 ora_u004_CELLARM
+  29556 ora_u005_CELLARM
+  29558 ora_dbw0_CELLARM
+  29567 oracle+ASM_asmb_cellarm (DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))
+  29866 ora_dism_CELLARM
+  29965 ora_u000_CELLARM
+  2354  oracle+ASM_o001_cellarm (DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))
+  5657  /u01/home/oracle/product/cellarm/db/bin/tnslsnr LISTENER_CELLARM -inherit
+0[140930/111433]root@csandbox-tz# 
+
+
+
+
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+
+
+###########################################################################################################
+##### customize the script present in /etc/init.d to move it to smf
+
+cp /etc/init.d/ohasd /u01/home/clusterware/bin/ohasd_smf
+#mv /etc/init.d/ohasd /etc/init.d/__ohasd
+chown oracle:dba /u01/home/clusterware/bin/ohasd_smf
+chmod 750 /u01/home/clusterware/bin/ohasd_smf
+
+
+vi /u01/home/clusterware/bin/ohasd_smf
+
+0[141001/123211]root@csandbox-tz# diff /etc/init.d/ohasd /u01/home/clusterware/bin/ohasd_smf       
+12a13,19
+> #
+> #
+> #########
+> #
+> # customized script for Publications Office needs
+> #
+> ##########
+13a21,22
+> . /lib/svc/share/smf_include.sh
+> 
+238a248
+>       SMF_EXIT_CODE=$SMF_EXIT_OK
+241a252
+>       SMF_EXIT_CODE=$SMF_EXIT_ERR_CONFIG
+245a257
+>       SMF_EXIT_CODE=$SMF_EXIT_ERR_FATAL
+258a271
+>       SMF_EXIT_CODE=$SMF_EXIT_ERR_PERM
+275a289
+>   SMF_EXIT_CODE=$SMF_EXIT_OK
+320c334,335
+< exit 0;
+---
+> #exit 0;
+> exit SMF_EXIT_CODE
+1[141001/123235]root@csandbox-tz# 
+
+
+
+
+###########################################################################################################
+##### check asm disk 
+
+
+
+
+0[141125/102332]root@csandbox-tz# cat /u01/home/clusterware/bin/asm_check_smf                   
+#!/bin/sh
+
+. /lib/svc/share/smf_include.sh
+
+WAIT=10
+LOOP=10
+COUNT=0
+export WAIT LOOP COUNT
+
+CRSCTL=/u01/home/clusterware/bin/crsctl
+export CRSCTL
+
+while [ $COUNT -lt $LOOP ]; do
+        
+        date "+%Y/%m/%d %H:%M:%S"
+        echo "LOOP: $COUNT/$LOOP"
+
+        HAS_STATE=`$CRSCTL check has | grep 'Oracle High Availability Services is online$' | awk '{print $7}'`
+        DG_STATE=`$CRSCTL stat res -w "TYPE = ora.diskgroup.type" | grep STATE | grep -v '^STATE=ONLINE'`
+        echo "DG_STATE: $DG_STATE"
+        echo "HAS_STATE: $HAS_STATE"
+
+        #if [ -z $DG_STATE ] && [ $HAS_STATE == 'online' ]; then
+        if [ "x${DG_STATE}" == 'x' ] && [ "x${HAS_STATE}" == 'xonline' ]; then
+                SMF_EXIT_CODE=$SMF_EXIT_OK
+                echo "loop exit code: SMF_EXIT_OK"
+                break
+        else
+                echo "loop exit code: SMF_EXIT_ERR_FATAL"
+                SMF_EXIT_CODE=$SMF_EXIT_ERR_FATAL
+        fi
+        COUNT=$(( $COUNT + 1 ))
+        sleep $WAIT
+        echo --------------------------------------------------------------------------
+done
+
+echo "SMF_EXIT_CODE: $SMF_EXIT_CODE"
+exit $SMF_EXIT_CODE
+0[141125/102334]root@csandbox-tz# 
+
+
+
+
+###########################################################################################################
+##### manifest
+
+
+
+
+
+
+127[141125/102358]root@csandbox-tz# cat /applications/cellar/users/system/svc/manifest/clusterware.xml
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='oracle-high-availability-server'>
+
+        <service name="applications/oracle-high-availability-server" type="service" version="1">
+                <create_default_instance enabled="false" />
+                <dependency name="multi-user-server" grouping="require_all" restart_on="restart" type="service">
+                        <service_fmri value="svc:/milestone/multi-user-server:default" />
+                </dependency>
+                <exec_method type="method" name="start" exec="/u01/home/clusterware/bin/ohasd_smf start" timeout_seconds="600" >
+                        <method_context>
+                                <method_credential user="root" group="root" />
+                        </method_context>
+                </exec_method>
+                <exec_method type="method" name="stop" exec="/u01/home/clusterware/bin/ohasd_smf stop" timeout_seconds="60" >
+                </exec_method>
+        </service>
+
+        <service name="applications/asm-disks-check" type="service" version="1">
+                <create_default_instance enabled="false" />
+                <dependency name="multi-user-server" grouping="require_all" restart_on="restart" type="service">
+                        <service_fmri value="svc:/applications/oracle-high-availability-server:default" />
+                </dependency>
+                <exec_method timeout_seconds="60" type="method" name="start" exec="/u01/home/clusterware/bin/asm_check_smf">
+                        <method_context>
+                        <method_credential user="root" group="root"/>
+                </method_context>
+                </exec_method>
+                <exec_method timeout_seconds="0" type="method" name="stop" exec=":true"/>
+                <property_group name='startd' type='framework'>
+                        <propval name='duration' type='astring' value='transient' />
+                </property_group>
+        </service>
+        
+</service_bundle>
+0[141125/102405]root@csandbox-tz# 
+
+
+
+
+
+
+
+
+
+
+0[141125/105208]root@csandbox-tz# cat /applications/cellar/users/system/svc/manifest/cellar.xml                                                            
+<?xml version='1.0'?>
+<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+<service_bundle type='manifest' name='export'>
+
+        <service name='applications/cellar' type='service' version='0'>
+                <dependency name='multiuser-cellar' grouping='optional_all' restart_on='restart' type='service'>
+                        <service_fmri value='svc:/milestone/multi-user'/>
+                </dependency>
+
+                <dependency name='oracle-high-availability-server' grouping='require_all' restart_on='restart' type='service'>
+                        <service_fmri value='svc:/applications/oracle-high-availability-server:default'/>
+                </dependency>
+                <dependency name='asm-disks-check' grouping='require_all' restart_on='none' type='service'>
+                        <service_fmri value='svc:/applications/asm-disks-check:default'/>
+                </dependency>
+
+                <property_group name='general' type='framework'>
+                        <propval name='action_authorization' type='astring' value='solaris.smf.manage.applications/cellar'/>
+                        <propval name='value_authorization' type='astring' value='solaris.smf.manage.applications/cellar'/>
+                </property_group>
+
+                <instance name='ora' enabled='false'>
+                        <exec_method name='start' type='method' exec='/applications/cellar/users/oracle/init.d/oracle_CELLARM start' timeout_seconds='600'>
+                                <method_context working_directory='/applications/cellar/users/oracle' project='cellar.dba'>
+                                <method_credential user='oracle' group='dba'/>
+                        </method_context>
+                        </exec_method>
+                                <exec_method name='stop' type='method' exec='/applications/cellar/users/oracle/init.d/oracle_CELLARM stop' timeout_seconds='120'>
+                                <method_context working_directory='/applications/cellar/users/oracle' project='cellar.dba'>
+                                <method_credential user='oracle' group='dba'/>
+                        </method_context>
+                        </exec_method>
+                                <property_group name='startd' type='framework'>
+                                <propval name='ignore_error' type='astring' value='core,signal'/>
+                        </property_group>
+                </instance>
+        </service>
+</service_bundle>
+0[141125/105212]root@csandbox-tz# 
+
+
+
+
+
+
+
+
+
+svccfg validate /applications/cellar/users/system/svc/manifest/clusterware.xml
+svccfg validate /applications/cellar/users/system/svc/manifest/cellar.xml
+
+svccfg import /applications/cellar/users/system/svc/manifest/clusterware.xml
+svccfg import /applications/cellar/users/system/svc/manifest/cellar.xml
+
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+
+svcadm enable svc:/applications/oracle-high-availability-server:default
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+
+svcadm enable svc:/applications/asm-disks-check:default
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+
+svcadm enable svc:/applications/cellar:ora
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+
+
+
+
+###########################################################################################################
+##### dependencies
+
+
+
+
+0[141125/114108]root@csandbox-tz# svcs -d svc:/applications/oracle-high-availability-server:default
+STATE          STIME    FMRI
+online         Oct_25   svc:/milestone/multi-user-server:default
+0[141125/114109]root@csandbox-tz# svcs -D svc:/applications/oracle-high-availability-server:default
+STATE          STIME    FMRI
+online         10:53:56 svc:/applications/asm-disks-check:default
+online         10:56:22 svc:/applications/cellar:ora
+0[141125/114111]root@csandbox-tz# 
+
+
+
+0[141125/114124]root@csandbox-tz# svcs -d svc:/applications/asm-disks-check:default
+STATE          STIME    FMRI
+online         10:52:41 svc:/applications/oracle-high-availability-server:default
+0[141125/114132]root@csandbox-tz# svcs -D svc:/applications/asm-disks-check:default
+STATE          STIME    FMRI
+online         10:56:22 svc:/applications/cellar:ora
+0[141125/114138]root@csandbox-tz# 
+
+
+
+0[141125/114148]root@csandbox-tz# svcs -d svc:/applications/cellar:ora             
+STATE          STIME    FMRI
+online         Oct_25   svc:/milestone/multi-user:default
+online         10:52:41 svc:/applications/oracle-high-availability-server:default
+online         10:53:56 svc:/applications/asm-disks-check:default
+0[141125/114203]root@csandbox-tz# svcs -D svc:/applications/cellar:ora            
+STATE          STIME    FMRI
+0[141125/114213]root@csandbox-tz# 
+
+
+
+
+
+
+
+
+###########################################################################################################
+##### test
+
+#####
+##### start with this order: ora, asm-disks-check, oracle-high-availability-server
+#####
+
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+svcadm enable svc:/applications/cellar:ora
+svcadm enable svc:/applications/asm-disks-check:default
+svcadm enable svc:/applications/oracle-high-availability-server:default
+
+
+
+0[141125/152450]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       13:46:53 svc:/applications/oracle-high-availability-server:default
+disabled       13:47:01 svc:/applications/asm-disks-check:default
+disabled       15:22:46 svc:/applications/cellar:ora
+
+
+
+0[141125/152452]root@csandbox-tz# svcadm enable svc:/applications/cellar:ora
+0[141125/152456]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       13:46:53 svc:/applications/oracle-high-availability-server:default
+disabled       13:47:01 svc:/applications/asm-disks-check:default
+offline        15:24:56 svc:/applications/cellar:ora
+
+
+
+0[141125/152458]root@csandbox-tz# svcadm enable svc:/applications/asm-disks-check:default
+0[141125/152501]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       13:46:53 svc:/applications/oracle-high-availability-server:default
+offline        15:24:56 svc:/applications/cellar:ora
+offline        15:25:01 svc:/applications/asm-disks-check:default
+
+
+
+0[141125/152503]root@csandbox-tz# svcadm enable svc:/applications/oracle-high-availability-server:default
+0[141125/152614]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:25:09 svc:/applications/oracle-high-availability-server:default
+offline        15:24:56 svc:/applications/cellar:ora
+offline*       15:25:01 svc:/applications/asm-disks-check:default
+0[141125/152616]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:25:09 svc:/applications/oracle-high-availability-server:default
+online         15:26:20 svc:/applications/asm-disks-check:default
+online         15:26:23 svc:/applications/cellar:ora
+
+
+
+
+
+#####
+##### start with this order: ora, oracle-high-availability-server, asm-disks-check
+#####
+
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+svcadm enable svc:/applications/cellar:ora
+svcadm enable svc:/applications/oracle-high-availability-server:default
+svcadm enable svc:/applications/asm-disks-check:default
+
+
+0[141125/152824]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:27:16 svc:/applications/cellar:ora
+disabled       15:28:22 svc:/applications/asm-disks-check:default
+disabled       15:28:31 svc:/applications/oracle-high-availability-server:default
+
+
+0[141125/152840]root@csandbox-tz# svcadm enable svc:/applications/cellar:ora
+0[141125/152901]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:28:22 svc:/applications/asm-disks-check:default
+disabled       15:28:31 svc:/applications/oracle-high-availability-server:default
+offline        15:29:01 svc:/applications/cellar:ora
+
+
+0[141125/152903]root@csandbox-tz# svcadm enable svc:/applications/oracle-high-availability-server:default
+0[141125/152907]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:28:22 svc:/applications/asm-disks-check:default
+online         15:29:07 svc:/applications/oracle-high-availability-server:default
+offline        15:29:01 svc:/applications/cellar:ora
+
+
+0[141125/152908]root@csandbox-tz# svcadm enable svc:/applications/asm-disks-check:default
+0[141125/152918]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:29:07 svc:/applications/oracle-high-availability-server:default
+offline        15:29:01 svc:/applications/cellar:ora
+offline*       15:29:18 svc:/applications/asm-disks-check:default
+0[141125/153017]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:29:07 svc:/applications/oracle-high-availability-server:default
+online         15:30:19 svc:/applications/asm-disks-check:default
+offline*       15:29:01 svc:/applications/cellar:ora
+0[141125/153058]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:29:07 svc:/applications/oracle-high-availability-server:default
+online         15:30:19 svc:/applications/asm-disks-check:default
+online         15:31:08 svc:/applications/cellar:ora
+0[141125/153111]root@csandbox-tz# 
+
+
+
+
+#####
+##### start with this order: oracle-high-availability-server, asm-disks-check, ora
+#####
+
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+svcadm enable svc:/applications/oracle-high-availability-server:default
+svcadm enable svc:/applications/asm-disks-check:default
+svcadm enable svc:/applications/cellar:ora
+
+
+
+1[141125/153523]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:34:37 svc:/applications/cellar:ora
+disabled       15:34:49 svc:/applications/asm-disks-check:default
+disabled       15:35:00 svc:/applications/oracle-high-availability-server:default
+
+
+0[141125/153526]root@csandbox-tz# svcadm enable svc:/applications/oracle-high-availability-server:default
+0[141125/153531]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:34:37 svc:/applications/cellar:ora
+disabled       15:34:49 svc:/applications/asm-disks-check:default
+online         15:35:31 svc:/applications/oracle-high-availability-server:default
+0[141125/153532]root@csandbox-tz# 
+
+
+0[141125/153532]root@csandbox-tz# svcadm enable svc:/applications/asm-disks-check:default
+0[141125/153548]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:34:37 svc:/applications/cellar:ora
+online         15:35:31 svc:/applications/oracle-high-availability-server:default
+offline*       15:35:48 svc:/applications/asm-disks-check:default
+0[141125/153648]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:34:37 svc:/applications/cellar:ora
+online         15:35:31 svc:/applications/oracle-high-availability-server:default
+online         15:36:49 svc:/applications/asm-disks-check:default
+0[141125/153707]root@csandbox-tz# 
+
+
+0[141125/153707]root@csandbox-tz# svcadm enable svc:/applications/cellar:ora
+0[141125/153708]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:35:31 svc:/applications/oracle-high-availability-server:default
+online         15:36:49 svc:/applications/asm-disks-check:default
+online         15:37:11 svc:/applications/cellar:ora
+0[141125/153714]root@csandbox-tz# 
+
+
+
+
+#####
+##### start with this order: oracle-high-availability-server, ora, asm-disks-check
+#####
+
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+
+svcadm enable svc:/applications/oracle-high-availability-server:default
+svcadm enable svc:/applications/cellar:ora
+svcadm enable svc:/applications/asm-disks-check:default
+
+
+
+
+0[141125/154229]root@csandbox-tz# svcadm enable svc:/applications/oracle-high-availability-server:default
+0[141125/154309]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:38:38 svc:/applications/cellar:ora
+disabled       15:41:42 svc:/applications/asm-disks-check:default
+online         15:43:10 svc:/applications/oracle-high-availability-server:default
+0[141125/154311]root@csandbox-tz# 
+
+
+
+0[141125/154321]root@csandbox-tz# svcadm enable svc:/applications/cellar:ora
+0[141125/154324]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:41:42 svc:/applications/asm-disks-check:default
+online         15:43:10 svc:/applications/oracle-high-availability-server:default
+offline        15:43:24 svc:/applications/cellar:ora
+0[141125/154325]root@csandbox-tz# 
+
+
+
+
+
+0[141125/154341]root@csandbox-tz# svcadm enable svc:/applications/asm-disks-check:default
+0[141125/154342]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:43:10 svc:/applications/oracle-high-availability-server:default
+offline        15:43:24 svc:/applications/cellar:ora
+offline*       15:43:42 svc:/applications/asm-disks-check:default
+0[141125/154424]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:43:10 svc:/applications/oracle-high-availability-server:default
+online         15:44:14 svc:/applications/asm-disks-check:default
+online         15:45:00 svc:/applications/cellar:ora
+0[141125/154624]root@csandbox-tz# 
+
+
+
+
+
+
+
+
+#####
+##### start with this order: asm-disks-check, oracle-high-availability-server, ora
+#####
+
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+svcadm enable svc:/applications/asm-disks-check:default
+svcadm enable svc:/applications/oracle-high-availability-server:default
+svcadm enable svc:/applications/cellar:ora
+
+
+
+0[141125/155051]root@csandbox-tz# svcadm enable svc:/applications/asm-disks-check:default
+0[141125/155052]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:49:21 svc:/applications/oracle-high-availability-server:default
+disabled       15:49:35 svc:/applications/cellar:ora
+offline        15:50:52 svc:/applications/asm-disks-check:default
+0[141125/155054]root@csandbox-tz# 
+
+
+
+0[141125/155109]root@csandbox-tz# svcadm enable svc:/applications/oracle-high-availability-server:default
+0[141125/155110]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:49:35 svc:/applications/cellar:ora
+online         15:51:11 svc:/applications/oracle-high-availability-server:default
+offline*       15:50:52 svc:/applications/asm-disks-check:default
+0[141125/155115]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:49:35 svc:/applications/cellar:ora
+online         15:51:11 svc:/applications/oracle-high-availability-server:default
+online         15:52:23 svc:/applications/asm-disks-check:default
+0[141125/155257]root@csandbox-tz# 
+
+
+0[141125/155304]root@csandbox-tz# svcadm enable svc:/applications/cellar:ora
+0[141125/155306]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:51:11 svc:/applications/oracle-high-availability-server:default
+online         15:52:23 svc:/applications/asm-disks-check:default
+online         15:53:09 svc:/applications/cellar:ora
+0[141125/155316]root@csandbox-tz# 
+
+
+
+
+#####
+##### start with this order: asm-disks-check, ora, oracle-high-availability-server
+#####
+
+
+svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+
+svcadm enable svc:/applications/asm-disks-check:default
+svcadm enable svc:/applications/cellar:ora
+svcadm enable svc:/applications/oracle-high-availability-server:default
+
+0[141125/155428]root@csandbox-tz# svcadm enable svc:/applications/asm-disks-check:default
+0[141125/155444]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:53:46 svc:/applications/cellar:ora
+disabled       15:54:12 svc:/applications/oracle-high-availability-server:default
+offline        15:54:44 svc:/applications/asm-disks-check:default
+0[141125/155446]root@csandbox-tz# 
+
+
+0[141125/155454]root@csandbox-tz# svcadm enable svc:/applications/cellar:ora
+0[141125/155455]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       15:54:12 svc:/applications/oracle-high-availability-server:default
+offline        15:54:44 svc:/applications/asm-disks-check:default
+offline        15:54:55 svc:/applications/cellar:ora
+0[141125/155456]root@csandbox-tz# 
+
+
+0[141125/155509]root@csandbox-tz# svcadm enable svc:/applications/oracle-high-availability-server:default
+0[141125/155510]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:55:11 svc:/applications/oracle-high-availability-server:default
+offline*       15:54:44 svc:/applications/asm-disks-check:default
+offline        15:54:55 svc:/applications/cellar:ora
+0[141125/155619]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:55:11 svc:/applications/oracle-high-availability-server:default
+online         15:56:23 svc:/applications/asm-disks-check:default
+offline*       15:54:55 svc:/applications/cellar:ora
+0[141125/155708]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         15:55:11 svc:/applications/oracle-high-availability-server:default
+online         15:56:23 svc:/applications/asm-disks-check:default
+online         15:57:08 svc:/applications/cellar:ora
+0[141125/155710]root@csandbox-tz# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####
+##### disable of svc:/applications/asm-disks-check:default
+#####
+
+0[141126/145453]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:53:36 svc:/applications/asm-disks-check:default
+online         14:54:24 svc:/applications/cellar:ora
+
+0[141126/145503]root@csandbox-tz# svcadm disable svc:/applications/asm-disks-check:default
+0[141126/145503]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       14:55:03 svc:/applications/asm-disks-check:default
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:54:24 svc:/applications/cellar:ora
+0[141126/145505]root@csandbox-tz# 
+
+0[141126/145505]root@csandbox-tz# svcadm enable svc:/applications/asm-disks-check:default                                                                          
+0[141126/145531]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:54:24 svc:/applications/cellar:ora
+online         14:55:32 svc:/applications/asm-disks-check:default
+
+
+
+
+#####
+##### disable of svc:/applications/oracle-high-availability-server:default
+#####
+
+0[141126/145117]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         16:07:50 svc:/applications/oracle-high-availability-server:default
+online         16:09:02 svc:/applications/asm-disks-check:defaul t
+online         16:10:36 svc:/applications/cellar:ora
+
+
+0[141126/145117]root@csandbox-tz# svcadm disable svc:/applications/oracle-high-availability-server:default
+0[141126/145128]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         16:07:50 svc:/applications/oracle-high-availability-server:default
+online*        16:10:36 svc:/applications/cellar:ora
+offline        14:51:29 svc:/applications/asm-disks-check:default
+0[141126/145129]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online*        16:07:50 svc:/applications/oracle-high-availability-server:default
+offline        14:51:29 svc:/applications/asm-disks-check:default
+offline        14:51:38 svc:/applications/cellar:ora
+0[141126/145147]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+disabled       14:51:48 svc:/applications/oracle-high-availability-server:default
+offline        14:51:29 svc:/applications/asm-disks-check:default
+offline        14:51:38 svc:/applications/cellar:ora
+
+
+0[141126/145217]root@csandbox-tz# svcadm enable svc:/applications/oracle-high-availability-server:default                                                          
+0[141126/145224]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+offline*       14:51:29 svc:/applications/asm-disks-check:default
+offline        14:51:38 svc:/applications/cellar:ora
+0[141126/145336]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:53:36 svc:/applications/asm-disks-check:default
+offline*       14:51:38 svc:/applications/cellar:ora
+0[141126/145418]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:53:36 svc:/applications/asm-disks-check:default
+online         14:54:24 svc:/applications/cellar:ora
+
+
+
+
+
+#####
+##### restart of svcadm enable svc:/applications/asm-disks-check:default
+#####
+
+
+
+2[141126/145600]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:54:24 svc:/applications/cellar:ora
+online         14:55:32 svc:/applications/asm-disks-check:default
+0[141126/145632]root@csandbox-tz# svcadm restart svc:/applications/asm-disks-check:default                                                                             
+0[141126/145643]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:54:24 svc:/applications/cellar:ora
+offline*       14:56:43 svc:/applications/asm-disks-check:default
+0[141126/145644]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:54:24 svc:/applications/cellar:ora
+online         14:56:44 svc:/applications/asm-disks-check:default
+0[141126/145646]root@csandbox-tz# 
+
+
+
+
+#####
+##### restart of svc:/applications/oracle-high-availability-server:default
+#####
+
+0[141126/145646]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online         14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:54:24 svc:/applications/cellar:ora
+online         14:56:44 svc:/applications/asm-disks-check:default
+
+
+
+0[141126/145701]root@csandbox-tz# svcadm restart svc:/applications/oracle-high-availability-server:default                                                             
+0[141126/145710]root@csandbox-tz# svcs svc:/applications/oracle-high-availability-server:default svc:/applications/asm-disks-check:default svc:/applications/cellar:ora
+STATE          STIME    FMRI
+online*        14:52:25 svc:/applications/oracle-high-availability-server:default
+online         14:54:24 svc:/applications/cellar:ora
+online         14:56:44 svc:/applications/asm-disks-check:default
+
+
+??????????????????????????????????????????
+
+#####
+##### init 6 boot
+#####
+
+
+
+
+
+
+
+###########################################################################################################
+##### nouveau manifest a tester
+
+
+
+0[150316/134958]root@csandbox-tz# cat /applications/cellar/users/system/svc/manifest/clusterware.xml 
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='oracle-high-availability-server'>
+
+        <service name="applications/cellar/oracle-high-availability-server" type="service" version="1">
+                <create_default_instance enabled="false" />
+                <dependency name="multi-user-server" grouping="require_all" restart_on="refresh" type="service">
+                        <service_fmri value="svc:/milestone/multi-user-server:default" />
+                </dependency>
+                <exec_method type="method" name="start" exec="/u01/home/clusterware/bin/ohasd_smf start" timeout_seconds="600" >
+                        <method_context>
+                                <method_credential user="root" group="root" />
+                        </method_context>
+                </exec_method>
+                <exec_method type="method" name="stop" exec="/u01/home/clusterware/bin/ohasd_smf stop" timeout_seconds="60" >
+                </exec_method>
+        </service>
+
+        <service name="applications/cellar/asm-disks-check" type="service" version="1">
+                <create_default_instance enabled="false" />
+                <dependency name="multi-user-server" grouping="require_all" restart_on="refresh" type="service">
+                        <service_fmri value="svc:/applications/cellar/oracle-high-availability-server:default" />
+                </dependency>
+                <exec_method timeout_seconds="60" type="method" name="start" exec="/u01/home/clusterware/bin/asm_check_smf">
+                        <method_context>
+                        <method_credential user="root" group="root"/>
+                </method_context>
+                </exec_method>
+                <exec_method timeout_seconds="0" type="method" name="stop" exec=":true"/>
+                <property_group name='startd' type='framework'>
+                        <propval name='duration' type='astring' value='transient' />
+                </property_group>
+        </service>
+
+        <service name="applications/cellar/ora_with_asm" type="service" version="1">
+                <create_default_instance enabled="false" />
+                <dependency name="multi-user-server" grouping="require_all" restart_on="refresh" type="service">
+                        <service_fmri value="svc:/applications/cellar/oracle-high-availability-server:default" />
+                        <service_fmri value="applications/cellar/asm-disks-check" />
+                </dependency>
+                <exec_method type="method" name="start" exec="/applications/cellar/users/oracle/init.d/oracle_CELLARM start" timeout_seconds="600" >
+                        <method_context working_directory='/applications/cellar/users/oracle' project='cellar.dba'>
+                                <method_credential user="oracle" group="dba" />
+                        </method_context>
+                </exec_method>
+                <exec_method type="method" name="stop" exec="/applications/cellar/users/oracle/init.d/oracle_CELLARM stop" timeout_seconds="600" >
+                        <method_context working_directory='/applications/cellar/users/oracle' project='cellar.dba'>
+                                <method_credential user="oracle" group="dba" />
+                        </method_context>
+                </exec_method>
+                
+        </service>
+</service_bundle>
+0[150316/140516]root@csandbox-tz# 
+
+
+
+
+
+
+
+
+
+
+
+###########################################################################################################
+##### remove inittab config
+
+?????????????????????????????????
+
+
+
+
+
+
+
+
+
+
+
+
+
+###########################################################################################################
+##### installation on restore_tz
+
+
+
+
+
+#####
+#
+# move init.ohasd
+#
+
+cp /etc/init.d/init.ohasd /u01/home/clusterware/bin
+mv /etc/init.d/init.ohasd /etc/init.d/__init.ohasd
+chown -R oracle:dba /u01/home/clusterware/bin/init.ohasd
+chmod -R 750 /u01/home/clusterware/bin/init.ohasd
+
+
+
+#####
+#
+# stop/start script 
+#
+
+cp /home/betorma/config_files/asm/ohasd.sh /u01/home/clusterware/bin 
+chown -R oracle:dba /u01/home/clusterware/bin/ohasd.sh
+chmod -R 750 /u01/home/clusterware/bin/ohasd.sh
+
+
+
+#####
+#
+# manifest
+#
+
+
+cp /home/betorma/config_files/asm/ohasd.xml /u01/home/oracle/svc/manifest/ohasd.xml
+svccfg validate /u01/home/oracle/svc/manifest/ohasd.xml
+svccfg import /u01/home/oracle/svc/manifest/ohasd.xml
+
+
+
+#####
+#
+# remove old configuration
+#
+
+perl -i -pe 's%h1:3:respawn:/etc/init.d/init.ohasd run%#h1:3:respawn:/etc/init.d/init.ohasd run%' /etc/inittab
+
+
+
+
+
+
+#####
+#
+# test
+#
+
+svcadm enable svc:/applications/oracle-high-availability-server:default
+
+0[150402/152742]root@restore_tz# svcs svc:/applications/oracle-high-availability-server:default
+STATE          STIME    FMRI
+online         15:27:42 svc:/applications/oracle-high-availability-server:default
+
+0[150402/152800]root@restore_tz# ps -ef | grep ohas | grep -v grep
+    root  5202 26488   0 15:27:42 ?           0:00 /bin/sh /u01/home/clusterware/bin/init.ohasd run
+0[150402/152807]root@restore_tz# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####
+#
+# init.ohasd customisation for SMF
+#
+
+diff /etc/init.d/init.ohasd /home/betorma/config_files/asm/smf.ohasd  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####
+#
+# remove old configuration
+#
+
+perl -i -pe 's%h1:3:respawn:/etc/init.d/init.ohasd run%#h1:3:respawn:/etc/init.d/init.ohasd run%' /etc/inittab
+mv /etc/init.d/init.ohasd /etc/init.d/__init.ohasd
+mv /etc/init.d/ohasd /etc/init.d/__ohasd
+
+
+
+
+
+#####
+#
+# manifest
+#
+
+cp /home/betorma/config_files/asm/ohasd.xml /u01/home/oracle/svc/manifest/
+svccfg validate /u01/home/oracle/svc/manifest/ohasd.xml
+svccfg import /u01/home/oracle/svc/manifest/ohasd.xml
+svcs -l applications/oracle-high-availability-server
+
+
+
+#####
+#
+# new daemon script
+#
+
+cp /home/betorma/config_files/asm/smf.ohasd /u01/home/clusterware/bin
+
+
+
+#####
+#
+# start test
+#
+
+0[150402/115929]root@restore_tz# svcs -l applications/oracle-high-availability-server
+fmri         svc:/applications/oracle-high-availability-server:default
+enabled      false
+state        disabled
+next_state   none
+state_time   Thu Apr 02 11:57:37 2015
+restarter    svc:/system/svc/restarter:default
+dependency   require_all/refresh svc:/milestone/multi-user-server:default (online)
+0[150402/115933]root@restore_tz# 
+
+
+
+0[150402/115947]root@restore_tz# ps -fe | grep -i asm | grep -v grep | wc -l
+       0
+0[150402/115951]root@restore_tz# 
+
+
+
+
+
+
+0[150402/115951]root@restore_tz# svcadm enable applications/oracle-high-availability-server
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################################################################################################################################################################################
+######################################################################################################################################################################################################################
+######################################################################################################################################################################################################################
+######################################################################################################################################################################################################################
+
+#####
+#
+# variables
+#
+
+export ohas_version=11			# '11' or '12'
+
+
+
+#####
+#
+# deploy scripts, services
+#
+
+mkdir -p /u01/home/clusterware/bin
+cp /home/betorma/config_files/asm/ohasd_smf_oracle${ohas_version} /u01/home/clusterware/bin/ohasd_smf
+chown -R oracle:dba /u01/home/clusterware
+chmod 750 /u01/home/clusterware/bin/ohasd_smf
+cp /home/betorma/config_files/asm/clusterware_smf_manifest_oralce${ohas_version}.xml /u01/home/oracle/svc/manifest/ohasd.xml
+chown -R oracle:dba /u01/home/oracle/svc/manifest/ohasd.xml
+chmod 750 /u01/home/oracle/svc/manifest/ohasd.xml
+
+svccfg validate /u01/home/oracle/svc/manifest/ohasd.xml
+svccfg import /u01/home/oracle/svc/manifest/ohasd.xml
+
+
+
+#####
+#
+# start
+#
+
+svcadm enable applications/oracle-high-availability-server
+svcs applications/oracle-high-availability-server
+
+tail /var/svc/log/applications-oracle-high-availability-server:default.log
+
+
+
+#####
+#
+# remove old configuration
+#
+
+perl -i -pe 's%h1:3:respawn:/etc/init.d/init.ohasd run%#h1:3:respawn:/etc/init.d/init.ohasd run%' /etc/inittab
+mv /etc/init.d/ohasd /etc/init.d/__ohasd                                      
+
+
+#####
+#
+# test restart zone
+#
+
+
+
+0[150402/100756]root@restore_tz# svcs applications/oracle-high-availability-server
+STATE          STIME    FMRI
+online         10:07:34 svc:/applications/oracle-high-availability-server:default
+0[150402/100807]root@restore_tz# 
+
+
+
+
+
+
+
+
+
+
+
+

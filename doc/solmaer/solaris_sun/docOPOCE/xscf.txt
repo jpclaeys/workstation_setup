@@ -1,0 +1,28 @@
+# domain status
+showdomainstatus -a
+# switching off
+poweroff -d <tag domain>
+# switching on
+poweron -d <tag domain>
+# switching on tous les domains
+poweron -a
+# status et conf de tout
+showhardconf
+# failures
+showstatus
+# logs:
+showlogs event
+showlogs power
+showlogs error -v
+# rcfgadm de sf:
+showdevices -d <tag domain>
+# send break
+sendbreak -d <tag domain>
+# voir la config reseau
+shownetwork -a
+# ips domain 
+showdscp
+# habiliter https:
+sethttps -c selfsign Lu Luxembourg Luxembourg OPOCE UNIX lsateam lsateam@infra-srv.opoce.cec.eu.int
+sethttps -c enable
+rebootxscf

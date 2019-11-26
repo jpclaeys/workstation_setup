@@ -1,0 +1,92 @@
+############################################################################################################################
+# creation du client unix pour la zone
+############################################################################################################################
+
+
+
+##### sur la zone
+
+{
+export LOCATION=<zone_site>   				# Mercier|EUFO
+export TYPE=<environment>         			# Prod|Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+for group in ${GROUPS}; do
+  cat >/nsr/res/${group}.res <<EOT
+type: savepnpc;
+precmd: "/bin/date";
+pstcmd: "/bin/date", "/bin/sleep 5";
+timeout: "06:00:00";
+abort precmd with group: No;
+EOT
+done
+}
+
+##### sur opbk01 
+
+
+export IP=<zone_ip>
+export ZONE=<zone_name>
+export LOCATION=<zone_site> 			# Mercier|EUFO
+export TYPE=<environment>				# Prod|Test
+
+export SAVESET='/,/u01/oraagent' 
+
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+export DIRECTIVE="Solaris 10 zones with compression"
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export ALIASES="${ALIASES},${ZONE},${ZONE}.opoce.cec.eu.int"
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'
+
+
+
+
+(cat <<EOT
+#client_name;remote_access;groups;save set;directive;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${SAVESET};${DIRECTIVE};${ALIASES};${ZONE};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","ss","directive","alias","zone","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: opbk01;
+                     comment: $c{zone} unix client;
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+                    save set: $c{ss};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: savepnpc;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+}
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+} | grep -v ': ;'

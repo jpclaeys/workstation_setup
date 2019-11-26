@@ -1,0 +1,23 @@
+
+
+From the perspective of a Linux system, I'll first look for packet loss on the network interface with ethtool -S ethX.
+
+Most of the time, increasing the ring buffer with ethtool -G ethX rx VALUE solves this.
+
+Sometimes interrupts are not balancing because the system is missing the irqbalance service, so look in chkconfig (EL) or update-rc (Debuntu) to see if this service is running. You can tell if interrupts are not balancing because /proc/interrupts will show only Core 0 servicing all IRQ channels.
+
+Failing this, you might need to increase net.core.netdev_max_backlog if the system is passing more than a few gigabit of traffic, and maybe net.core.netdev_budget.
+
+If that doesn't work, you could tweak the interrupt coalescing values with ethtool -C.
+
+If there are no packet drops on the network interface, look in netstat -s and see if there are drops in the socket buffers, these will be reported with statistics like "pruned from receive queue" and "dropped from out-of-order queue".
+
+You can try increasing the default and max socket buffers for the appropriate protocol (eg: net.ipv4.tcp_rmem for TCP).
+
+If the application sets its own socket buffer size, then the application may need configuration changes. If your application has hard-coded socket buffer sizes, complain to your application vendor.
+
+Personally I dislike protocol offloading onto NICs (checksumming, segmentation offload, large receive offload) as it seems to cause more trouble than it's worth. Playing around with these settings using ethtool -K may be worth a shot.
+
+Look at the module options for your NIC (modinfo <drivername>) as you may need to alter some features. To give one example I have encountered, using Intel's Flow Director on a system which handles one big TCP stream will probably harm the efficiency of that stream, so turn FDir off.
+
+Beyond that you are getting into hand-tuning this specific system for its specific workload, which I guess is beyond the scope of your question.

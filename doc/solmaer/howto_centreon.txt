@@ -1,0 +1,31 @@
+##### variables
+
+NAGIOSUSER='backupUsr'
+NAGIOSPASSWD='N3tw0rk3R'
+HOSTS='opsrv199 opsrv241 eurlex_pz opsrv148'
+WGETOUTPUT=/tmp/centreon.txt
+
+
+##### disable monitoring for services
+
+for HOST in ${HOSTS[@]}
+do
+	echo "wget --timeout 10 --http-user=${NAGIOSUSER} --http-password=${NAGIOSPASSWD} --post-data "host_name=${HOST}"'&actiontype=1' -qO - http://centreon/centreon/opoce/disableAllChecksForHost.php >>${WGETOUTPUT}"
+done
+
+wget --http-user=${NAGIOSUSER} --http-password=${NAGIOSPASSWD} --post-data "host_name=opsrv199"'&actiontype=1' http://centreon/centreon/opoce/disableAllChecksForHost.php 
+wget --http-user=${NAGIOSUSER} --http-password=${NAGIOSPASSWD} "http://centreon/centreon/opoce/disableAllChecksForHost.php?host_name=opsrv199&actiontype=0"
+
+
+
+##### enable monitoring for services 
+
+for HOST in ${HOSTS[@]}
+do
+	wget -T 10 --http-user=${NAGIOSUSER} \
+		--http-password=${NAGIOSPASSWD} \
+		--post-data "host_name=${HOST}"'&actiontype=0' -qO - \
+		http://centreon/centreon/opoce/disableAllChecksForHost.php >> \
+		${WGETOUTPUT}
+done
+

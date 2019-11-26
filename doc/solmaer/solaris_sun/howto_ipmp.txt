@@ -1,0 +1,57 @@
+#################################################
+# multipathing avec 2 interfaces et une ip
+#################################################
+
+##### se connecter a l'hote sur lequel on veut mettre en place l'ipmp (en console si possible)
+
+##### variables a definir
+export host=remus
+export group=vlan1
+export ip=remus
+export interface=ce1
+export interface_stanby=ce6
+
+##### verification de la resolution de ${ip}
+getent hosts ${ip}
+
+##### plumb des interfaces
+ifconfig ${interface} plumb
+ifconfig ${interface_stanby} plumb
+
+##### verification
+ifconfig ${interface}
+ifconfig ${interface_stanby}
+
+##### creation des fichiers de configuration des interfaces
+echo "${ip}  netmask + broadcast + group ${group} up" >/etc/hostname.${interface}
+echo "group ${group} standby" >/etc/hostname.${interface_stanby}
+
+##### verification
+cat /etc/hostname.${interface}
+cat /etc/hostname.${interface_stanby}
+
+##### configurer les interfaces a partir des fichiers de configuration
+ifconfig ${interface} `cat /etc/hostname.${interface}`
+ifconfig ${interface_stanby} `cat /etc/hostname.${interface_stanby}`
+
+##### verification
+ifconfig ${interface}
+ifconfig ${interface_stanby}
+
+##### depuis une autre machine, lancer un ping constant sur l'adresse ip pour constater une coupure (ou non)
+ssh <host_test>
+export ip=remus
+ping -s ${ip}
+
+##### tester le switch en faisant tomber ${interface}
+if_mpadm -d ${interface}
+ifconfig ${interface}
+ifconfig ${interface_stanby}
+ifconfig ${interface_stanby}:1
+
+##### retour de ${interface}
+if_mpadm -r ${interface}
+ifconfig ${interface}
+ifconfig ${interface_stanby}
+ifconfig ${interface_stanby}:1
+

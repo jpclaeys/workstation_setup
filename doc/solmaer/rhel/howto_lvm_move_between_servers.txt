@@ -1,0 +1,294 @@
+#########################################################################################################
+##### on source server
+
+
+##### prerequiste
+
+# application stopped
+# no I/O on file systems
+
+
+##### variables
+
+mountpoint_list='/applications/eurlex/data_is /applications/eurlex/data_is/contentEUFO_3_09_IS/backup'
+export tmp_folder=/home/betorma/tmp
+export date=`date +%Y%m%d`
+
+for mountpoint in $mountpoint_list; do df $mountpoint| perl -ne 'if(m{^/dev/mapper/(.*?)-(.*?)}) {print "$1\n"}'; done | xargs | perl -ne 'chomp; print "\nexport vg_list=\"$_\"\n"' 
+
+
+##### umount fs
+
+for mountpoint in $mountpoint_list; do echo fuser $mountpoint; done
+for mountpoint in $mountpoint_list; do echo umount $mountpoint; done | sort -r
+for mountpoint in $mountpoint_list; do echo rmdir $mountpoint; done | sort -r
+
+
+##### clear /etc/fstab
+
+rm $tmp_folder/`uname -n`_fstab.out
+for mountpoint in $mountpoint_list; do grep "$mountpoint" /etc/fstab; echo; done | sort -u -r -k 2 >>$tmp_folder/`uname -n`_fstab.out
+
+cp -p /etc/fstab /etc/fstab.$date
+vi /etc/fstab
+
+diff /etc/fstab /etc/fstab.$date 
+cat $tmp_folder/`uname -n`_fstab.out
+
+
+##### export lvm volume groups and logical volumes
+
+for vg in $vg_list; do echo vgchange -an $vg; done
+
+for vg in $vg_list; do echo vgexport $vg; done
+
+
+##### unmap luns on source server
+
+/home/admin/bin/storage/storage_info.pl >${tmp_folder}/storage_info_`uname -n`.out
+
+for vg in $vg_list; do grep $vg ${tmp_folder}/storage_info_`uname -n`.out; done
+
+
+
+1[140904/135150]root@vader# for vg in $vg_list; do grep $vg ${tmp_folder}/storage_info_`uname -n`.out; done
+LUN ID: 2FE, LUN NUM: 31, #WWN: 60000970000292602560533030324645, #Size : 205GB, #Path /dev/sdhj (500009740828012d),/dev/sdhk (50000974082801ad),/dev/sdhl (50000974082801a1),/dev/sdhm (5000097408280121),/dev/sdhn (5000097408280111),/dev/sdho (5000097408280191),/dev/sdhp (500009740828019d),/dev/sdhq (500009740828011d),  #FriendlyName euf_vmax2560_t2_no_backup1, #LVM (#Free : 0, #VG : eurlex_backup_no)
+LUN ID: 34B8, LUN NUM: 22, #WWN: 60000970000292602560533033344238, #Size : 102GB, #Path /dev/sds (500009740828012d),/dev/sdam (50000974082801ad),/dev/sdbu (50000974082801a1),/dev/sdcb (5000097408280111),/dev/sdcx (5000097408280121),/dev/sddp (5000097408280191),/dev/sdej (500009740828019d),/dev/sdfd (500009740828011d),  #FriendlyName euf_vmax2560_t1_no_data1, #LVM (#Free : 0, #VG : eurlex_data_novg)
+LUN ID: 56B, LUN NUM: 6, #WWN: 60000970000292602560533030353642, #Size : 204GB, #Path /dev/sdf (500009740828012d),/dev/sdz (50000974082801ad),/dev/sday (5000097408280111),/dev/sdbb (50000974082801a1),/dev/sdci (5000097408280121),/dev/sddc (5000097408280191),/dev/sddw (500009740828019d),/dev/sdeq (500009740828011d),  #FriendlyName euf_vmax2560_t1_no_data2, #LVM (#Free : 0, #VG : eurlex_data_novg)
+
+
+0[140904/135621]root@vader# multipath -l euf_vmax2560_t2_no_backup1 
+euf_vmax2560_t2_no_backup1 (360000970000292602560533030324645) dm-47 EMC,SYMMETRIX
+size=204G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:4:31 sdhl 133:176 active undef running
+  |- 0:0:5:31 sdhm 133:192 active undef running
+  |- 0:0:2:31 sdhk 133:160 active undef running
+  |- 1:0:3:31 sdhp 133:240 active undef running
+  |- 1:0:4:31 sdhq 134:0   active undef running
+  |- 0:0:0:31 sdhj 133:144 active undef running
+  |- 1:0:1:31 sdho 133:224 active undef running
+  `- 1:0:0:31 sdhn 133:208 active undef running
+0[140904/135626]root@vader# multipath -f euf_vmax2560_t2_no_backup1 
+0[140904/135629]root@vader# multipath -l euf_vmax2560_t2_no_backup1
+0[140904/135631]root@vader# 
+
+
+0[140904/135646]root@vader# multipath -l euf_vmax2560_t1_no_data1 
+euf_vmax2560_t1_no_data1 (360000970000292602560533033344238) dm-18 EMC,SYMMETRIX
+size=101G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:0:22 sds  65:32   active undef running
+  |- 0:0:2:22 sdam 66:96   active undef running
+  |- 1:0:0:22 sdcb 68:240  active undef running
+  |- 1:0:1:22 sddp 71:112  active undef running
+  |- 0:0:4:22 sdbu 68:128  active undef running
+  |- 0:0:5:22 sdcx 70:80   active undef running
+  |- 1:0:3:22 sdej 128:176 active undef running
+  `- 1:0:4:22 sdfd 129:240 active undef running
+0[140904/135651]root@vader# multipath -f euf_vmax2560_t1_no_data1 
+0[140904/135656]root@vader# multipath -l euf_vmax2560_t1_no_data1
+0[140904/135658]root@vader# 
+
+
+0[140904/135725]root@vader# multipath -l euf_vmax2560_t1_no_data2
+euf_vmax2560_t1_no_data2 (360000970000292602560533030353642) dm-5 EMC,SYMMETRIX
+size=202G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:2:6  sdz  65:144  active undef running
+  |- 0:0:0:6  sdf  8:80    active undef running
+  |- 1:0:0:6  sday 67:32   active undef running
+  |- 0:0:4:6  sdbb 67:80   active undef running
+  |- 0:0:5:6  sdci 69:96   active undef running
+  |- 1:0:1:6  sddc 70:160  active undef running
+  |- 1:0:3:6  sddw 71:224  active undef running
+  `- 1:0:4:6  sdeq 129:32  active undef running
+0[140904/135727]root@vader# multipath -f euf_vmax2560_t1_no_data2 
+0[140904/135732]root@vader# multipath -l euf_vmax2560_t1_no_data2
+0[140904/135734]root@vader# 
+
+
+
+
+
+
+0[140904/140928]root@deathstar# for vg in $vg_list; do grep $vg ${tmp_folder}/storage_info_`uname -n`.out; done
+LUN ID: 5A7, LUN NUM: 5, #WWN: 60000970000292602560533030354137, #Size : 204GB, #Path /dev/sde (500009740828012d),/dev/sdx (50000974082801ad),/dev/sdar (5000097408280121),/dev/sdbk (5000097408280111),/dev/sdcd (5000097408280191),/dev/sdck (50000974082801a1),/dev/sddp (500009740828011d),/dev/sdei (500009740828019d),  #FriendlyName euf_vmax2560_t1_is_data2, #LVM (#Free : 0, #VG : eurlex_data_isvg)
+LUN ID: 34BE, LUN NUM: 21, #WWN: 60000970000292602560533033344245, #Size : 102GB, #Path /dev/sdr (500009740828012d),/dev/sdak (50000974082801ad),/dev/sdbe (5000097408280121),/dev/sdbx (5000097408280111),/dev/sddc (50000974082801a1),/dev/sddj (5000097408280191),/dev/sdec (500009740828011d),/dev/sdev (500009740828019d),  #FriendlyName euf_vmax2560_t1_is_data1, #LVM (#Free : 0, #VG : eurlex_data_isvg)
+LUN ID: 10D9, LUN NUM: 23, #WWN: 60000970000292602560533031304439, #Size : 205GB, #Path /dev/sdfb (500009740828012d),/dev/sdfk (50000974082801ad),/dev/sdft (5000097408280121),/dev/sdgc (50000974082801a1),/dev/sdgl (5000097408280111),/dev/sdgu (5000097408280191),/dev/sdhd (500009740828011d),/dev/sdhm (500009740828019d),  #FriendlyName euf_vmax2560_t2_is_backup1, #LVM (#Free : 0, #VG : eurlex_backup_is)
+
+
+
+multipath -l euf_vmax2560_t1_is_data2
+multipath -f euf_vmax2560_t1_is_data2
+multipath -l euf_vmax2560_t1_is_data2
+
+multipath -l euf_vmax2560_t1_is_data1
+multipath -f euf_vmax2560_t1_is_data1
+multipath -l euf_vmax2560_t1_is_data1
+
+multipath -l euf_vmax2560_t2_is_backup1
+multipath -f euf_vmax2560_t2_is_backup1
+multipath -l euf_vmax2560_t2_is_backup1
+
+
+0[140904/141119]root@deathstar# multipath -l euf_vmax2560_t1_is_data2
+euf_vmax2560_t1_is_data2 (360000970000292602560533030354137) dm-4 EMC,SYMMETRIX
+size=202G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:0:5  sde  8:64    active undef running
+  |- 0:0:1:5  sdx  65:112  active undef running
+  |- 0:0:3:5  sdar 66:176  active undef running
+  |- 1:0:0:5  sdbk 67:224  active undef running
+  |- 1:0:1:5  sdcd 69:16   active undef running
+  |- 0:0:5:5  sdck 69:128  active undef running
+  |- 1:0:2:5  sddp 71:112  active undef running
+  `- 1:0:3:5  sdei 128:160 active undef running
+0[140904/141123]root@deathstar# multipath -f euf_vmax2560_t1_is_data2
+0[140904/141126]root@deathstar# multipath -l euf_vmax2560_t1_is_data2
+0[140904/141129]root@deathstar# 
+
+
+0[140904/141131]root@deathstar# multipath -l euf_vmax2560_t1_is_data1
+euf_vmax2560_t1_is_data1 (360000970000292602560533033344245) dm-14 EMC,SYMMETRIX
+size=101G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:0:21 sdr  65:16   active undef running
+  |- 0:0:1:21 sdak 66:64   active undef running
+  |- 1:0:0:21 sdbx 68:176  active undef running
+  |- 1:0:1:21 sddj 71:16   active undef running
+  |- 0:0:3:21 sdbe 67:128  active undef running
+  |- 0:0:5:21 sddc 70:160  active undef running
+  |- 1:0:2:21 sdec 128:64  active undef running
+  `- 1:0:3:21 sdev 129:112 active undef running
+0[140904/141135]root@deathstar# multipath -f euf_vmax2560_t1_is_data1
+0[140904/141135]root@deathstar# multipath -l euf_vmax2560_t1_is_data1
+0[140904/141136]root@deathstar# 
+
+
+0[140904/141137]root@deathstar# multipath -l euf_vmax2560_t2_is_backup1
+euf_vmax2560_t2_is_backup1 (360000970000292602560533031304439) dm-42 EMC,SYMMETRIX
+size=204G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=0 status=active
+  |- 0:0:0:23 sdfb 129:208 active undef running
+  |- 0:0:1:23 sdfk 130:96  active undef running
+  |- 0:0:3:23 sdft 130:240 active undef running
+  |- 0:0:5:23 sdgc 131:128 active undef running
+  |- 1:0:0:23 sdgl 132:16  active undef running
+  |- 1:0:1:23 sdgu 132:160 active undef running
+  |- 1:0:3:23 sdhm 133:192 active undef running
+  `- 1:0:2:23 sdhd 133:48  active undef running
+0[140904/141142]root@deathstar# multipath -f euf_vmax2560_t2_is_backup1
+0[140904/141142]root@deathstar# multipath -l euf_vmax2560_t2_is_backup1
+0[140904/141142]root@deathstar# 
+
+
+##### clear friendly name
+#####
+#####
+#####
+#####
+
+
+
+#########################################################################################################
+##### ask to storage team to remove masking from source server and add masking to target server
+
+
+
+
+#########################################################################################################
+##### on target server
+
+
+##### variables (same values from source server)
+
+export vg_list='eurlex_backup_no eurlex_data_novg'
+
+export tmp_folder=/home/betorma/tmp
+export source_server=deathstar
+export date=`date +%Y%m%d%`
+
+
+
+##### refresh storage config
+
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+
+vgscan
+
+0[140904/164835]root@anakin# vgscan 
+  Reading all physical volumes.  This may take a while...
+  Found volume group "rootvg" using metadata type lvm2
+  Found exported volume group "eurlex_backup_no" using metadata type lvm2
+  Found exported volume group "eurlex_data_novg" using metadata type lvm2
+  Found volume group "eurlex_bck_vg" using metadata type lvm2
+  Found volume group "eurlex_vg" using metadata type lvm2
+  Found volume group "eurlex_data_novg_old" using metadata type lvm2
+  Found volume group "eurlex_backup_mtvg" using metadata type lvm2
+  Found volume group "eurlex_data_mtvg" using metadata type lvm2
+  Found volume group "eurlex_backup_novg" using metadata type lvm2
+0[140904/164843]root@anakin# 
+
+
+##### import volume groups
+
+for vg in $vg_list; do echo vgimport $vg; done
+
+for vg in $vg_list; do echo vgchange -ay $vg; done
+
+
+##### update /etc/fstab
+
+cp -p /etc/fstab /etc/fstab.$date
+cat $tmp_folder/${source_server}_fstab.out >>/etc/fstab
+diff /etc/fstab /etc/fstab.$date
+
+
+0[140904/170747]root@anakin# diff /etc/fstab /etc/fstab.$date
+30,32c30,31
+< 
+< /dev/mapper/eurlex_data_novg-eurlex_data_no  /applications/eurlex/data_no  ext4    defaults        1 2
+< /dev/mapper/eurlex_backup_no-backup_no        /applications/eurlex/data_no/contentEUFO_2_09_NO/backup ext4    defaults        1 2
+---
+> /dev/mapper/eurlex_data_novg-data_no    /applications/eurlex/data_no    ext4    defaults,acl    1 2
+> /dev/mapper/eurlex_backup_novg-backup_no        /applications/eurlex/data_no/contentEUFO_4_03_NO/backup  ext4    defaults,acl    1 2
+1[140904/170755]root@anakin# 
+
+
+0[140904/171041]root@hydra# diff /etc/fstab /etc/fstab.$date
+30,31c30,31
+< /dev/mapper/eurlex_data_isvg-eurlex_data_is  /applications/eurlex/data_is  ext4    defaults        1 2
+< /dev/mapper/eurlex_backup_is-backup_is        /applications/eurlex/data_is/contentEUFO_3_09_IS/backup ext4    defaults        1 2
+---
+> /dev/mapper/eurlex_data_isvg-data_is    /applications/eurlex/data_is    ext4    defaults,acl    1 2
+> /dev/mapper/eurlex_backup_isvg-backup_is        /applications/eurlex/data_is/contentEUFO_5_03_IS/backup  ext4    defaults,acl    1 2
+1[140904/171043]root@hydra# 
+
+
+##### mount 
+
+### /applications/eurlex/data_no/contentMER_2_09_NO/backup devient /applications/eurlex/data_no/contentMER_4_02_NO/backup
+### /applications/eurlex/data_is/contentMER_3_09_IS/backup devient /applications/eurlex/data_is/contentMER_5_02_IS/backup
+
+awk '{print $2}' $tmp_folder/${source_server}_fstab.out | xargs echo mkdir -p
+
+mount -a
+
+
+
+##### update friendly name
+#####
+#####
+#####
+#####
+
+
+
+
+
+
+
+
+
+

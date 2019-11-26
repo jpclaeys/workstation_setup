@@ -1,0 +1,105 @@
+(  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! en cours d'ecriture)
+
+##########################################################################
+# creation du volume group 
+##########################################################################
+
+##### variables
+% export kvm=<kvm_name>
+% export vg=<vg_name>
+
+export vg=centreon-tk
+export kvm=centreon-tk
+
+
+
+##### disk scanning
+% {
+for i in 0 1 2 3 4 5
+do
+	if [ -f /sys/class/scsi_host/host${i}/scan ]; then
+		echo "- - -" >/sys/class/scsi_host/host${i}/scan
+	fi
+done
+}
+
+##### verification
+% multipath -ll
+
+
+3600601602c502e003603efcd1ad6e111 dm-25 DGC,VRAID
+size=80G features='0' hwhandler='1 emc' wp=rw
+|-+- policy='round-robin 0' prio=1 status=active
+| |- 2:0:6:131 sdaf       65:240 active ready  running
+| `- 4:0:6:131 sdan       66:112 active ready  running
+`-+- policy='round-robin 0' prio=0 status=enabled
+  |- 2:0:5:131 sdad       65:208 active ready  running
+  `- 4:0:4:131 sdal       66:80  active ready  running
+360060160da612e00faf27cc419d6e111 dm-23 DGC,VRAID
+size=80G features='0' hwhandler='1 emc' wp=rw
+|-+- policy='round-robin 0' prio=0 status=active
+| |- 2:0:2:131 sdab       65:176 active undef running
+| `- 4:0:2:131 sdaj       66:48  active undef running
+`-+- policy='round-robin 0' prio=0 status=enabled
+  |- 2:0:0:131 sdz        65:144 active undef running
+  `- 4:0:0:131 sdah       66:16  active undef running
+
+##### creation du pv
+% pvcreate /dev/mapper/3600601602c502e003603efcd1ad6e111 /dev/mapper/360060160da612e00faf27cc419d6e111
+
+
+##### creation du vg
+% vgcreate ${vg} /dev/mapper/3600601602c502e003603efcd1ad6e111 /dev/mapper/360060160da612e00faf27cc419d6e111
+
+
+##### creation des lv
+
+#% lvcreate -L4G -m1 --mirrorlog disk --alloc anywhere -n ${vg}-root ${vg}
+#% lvcreate -L250M -m1 --mirrorlog disk --alloc anywhere -n ${vg}-boot ${vg}
+#% lvcreate -L4G -m1 --mirrorlog disk --alloc anywhere -n ${vg}-u01 ${vg}
+#% lvcreate -L2G -m1 --mirrorlog disk --alloc anywhere -n ${vg}-oraagent ${vg}
+#% lvcreate -L4G -m1 --mirrorlog disk --alloc anywhere -n ${vg}-var ${vg}
+#% lvcreate -L4G -m1 --mirrorlog disk --alloc anywhere -n ${vg}-tmp ${vg}
+lvcreate -L20G -m1 --mirrorlog disk --alloc anywhere -n centreon-tk-system centreon-tk
+
+##### creation de la vm
+% export DISPLAY=vespa:10
+% virt-install --connect=qemu:///system --name=${kvm} --ram=4096 --vcpus=4 --check-cpu --os-type=linux --os-variant=rhel6 --accelerate --hvm --vnc --nodisk --network bridge:br0 --pxe --keymap=en-us
+
+
+##### recuperer l'adresse mac
+awk -F\' '/mac address/ {print $2}' /etc/libvirt/qemu/${kvm}.xml
+
+
+##### creation du client jet/kickstart sur le serveur jet
+
+% export kvm=<kvm_name>
+% export mac=52:54:00:62:5b:01
+
+
+cp /tftpboot/OPOCE-kickstart-conf-unattended-template.tpl /tftpboot/OPOCE-kickstart-conf-unattended-${kvm}
+vi /tftpboot/OPOCE-kickstart-conf-unattended-${kvm}
+/tftpboot/OPOCE-kickstart-conf-prepare.sh -f /tftpboot/OPOCE-kickstart-conf-unattended-${kvm}
+
+
+##### installation, a nouveau sur l'host physique qui va heberger la kvm
+
+% export mac=52:54:00:62:5b:01
+% export kvm_md=`echo ${kvm} | sed -e 's/-dk$/--dk/' -e 's/-tk$/--tk/' -e 's/-pk$/--pk/'`
+
+% virsh destroy $kvm
+% virsh undefine ${kvm}
+% virt-install --connect=qemu:///system --name=${kvm} --ram=4096 --vcpus=4 --check-cpu --os-type=linux --os-variant=rhel6 --accelerate --hvm --vnc --disk path=/dev/mapper/${kvm_md}-${kvm_md}--system,sparse=false  --network bridge:br0 --mac=${mac} --pxe --keymap=en-us
+
+
+##### cfengine
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,67 @@
+showhostname -a
+
+showuser -p
+
+
+setsnmp addtraphost -t v2 -s public -p 162 158.167.98.112
+setsnmp enable
+setsnmp enablev1v2c public
+showservicetag
+showsnmp
+
+
+
+#### test
+ssh remus
+cd /opt/SUNWswasr/bin
+./asr
+list_asset
+192.168.1.121   m5K08-sc0                      BDF1052129                     Enabled  Sun SPARC Enterprise M5000 Server
+
+### normally we have received a mail.
+
+
+########### LOGS
+root@remus # ssh xscfadm@m5k08-sc0
+The authenticity of host 'm5k08-sc0 (192.168.1.121)' can't be established.
+RSA key fingerprint is 54:eb:69:1f:d4:f4:2a:ac:0c:fc:fd:93:69:56:7e:8f.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'm5k08-sc0,192.168.1.121' (RSA) to the list of known hosts.
+xscfadm@m5k08-sc0's password:
+Last login: Fri Mar 25 14:29:29 2011 from valerian.opoce.cec.eu.int
+XSCF> showhostname -a
+xscf#0:m5K08-sc0.opoce.cec.eu.int
+XSCF> showuser -p
+User Name:         xscfadm
+Privileges:        useradm
+                   platadm
+                   auditadm
+XSCF> setsnmp addtraphost -t v2 -s public -p 162 158.167.98.112
+XSCF> setsnmp enable
+setsnmp: Agent enabled.
+XSCF> setsnmp enablev1v2c public
+XSCF> showservicetag
+Enabled
+XSCF> showsnmp
+
+Agent Status:       Enabled
+Agent Port:         161
+System Location:    Unknown
+System Contact:     Unknown
+System Description: Unknown
+
+Trap Hosts:
+
+Hostname        Port Type   Community String Username        Auth Protocol
+--------        ---- ----   ---------------- --------        -------------
+158.167.98.112  162  v2     public           n/a             n/a
+
+SNMP V1/V2c:
+
+Status:            Enabled
+Community String:  public
+
+Enabled MIB Modules:
+
+SP MIB
+FM MIB

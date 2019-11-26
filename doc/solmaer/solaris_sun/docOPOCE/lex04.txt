@@ -1,0 +1,97 @@
+find jo_pdf/ -type f | xargs -n 100 du -ks | perl -ane '$t+=$F[0];unless ( $t > 3670016 ) {print "tar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/jo_pdf/dvd$i ; tar xf - )\n" } else {$i++;$t=0;print "#######\ntar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/jo_pdf/dvd$i ; tar xf - )\n"}' > /var/tmp/jo_pdf.sh
+
+find com/ -type f | xargs -n 100 du -ks | perl -ane '$t+=$F[0];unless ( $t > 3670016 ) {print "tar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/com/dvd$i ; tar xf - )\n" } else {$i++;$t=0;print "#######\ntar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/com/dvd$i ; tar xf - )\n"}' > /var/tmp/com.sh
+
+find juris/ -type f | xargs -n 100 du -ks | perl -ane '$t+=$F[0];unless ( $t > 3670016 ) {print "tar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/juris/dvd$i ; tar xf - )\n" } else {$i++;$t=0;print "#######\ntar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/juris/dvd$i ; tar xf - )\n"}' > /var/tmp/juris.sh
+
+find html_texte/ -type f | xargs -n 100 du -ks | perl -ane '$t+=$F[0];unless ( $t > 3670016 ) {print "tar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/html_texte/dvd$i ; tar xf - )\n" } else {$i++;$t=0;print "#######\ntar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/html_texte/dvd$i ; tar xf - )\n"}' > /var/tmp/html_texte.sh
+
+find textindex/ -type f | xargs -n 100 du -ks | perl -ane '$t+=$F[0];unless ( $t > 3670016 ) {print "tar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/textindex/dvd$i ; tar xf - )\n" } else {$i++;$t=0;print "#######\ntar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/textindex/dvd$i ; tar xf - )\n"}' > /var/tmp/textindex.sh
+
+
+# une fois fini pour savoir la quantite de dossiers a creer
+cd /var/tmp
+tail -10 jo_pdf.sh
+tail -10 com.sh
+tail -10 juris.sh
+tail -10 html_texte.sh
+tail -10 textindex.sh
+
+# creation dossiers
+mkdir -p /net/opsrv190/xchange/LEX04/jo_pdf/dvd
+perl -e 'for $i (1 .. 14) { mkdir("/net/opsrv190/xchange/LEX04/jo_pdf/dvd$i") or warn "erreur lors de la creation des dossiers"; }'
+
+mkdir -p /net/opsrv190/xchange/LEX04/com/dvd
+perl -e 'for $i (1 .. 6) { mkdir("/net/opsrv190/xchange/LEX04/com/dvd$i") or warn "erreur lors de la creation des dossiers"; }'
+
+mkdir -p /net/opsrv190/xchange/LEX04/juris/dvd
+mkdir -p /net/opsrv190/xchange/LEX04/juris/dvd1
+
+mkdir -p /net/opsrv190/xchange/LEX04/html_texte/dvd
+perl -e 'for $i (1 .. 4) { mkdir("/net/opsrv190/xchange/LEX04/html_texte/dvd$i") or warn "erreur lors de la creation des dossiers"; }'
+
+mkdir -p /net/opsrv190/xchange/LEX04/textindex/dvd
+perl -e 'for $i (1 .. 4) { mkdir("/net/opsrv190/xchange/LEX04/textindex/dvd$i") or warn "erreur lors de la creation des dossiers"; }'
+
+# chmod et lancement des scripts
+chmod +x /var/tmp/jo_pdf.sh
+chmod +x /var/tmp/com.sh
+chmod +x /var/tmp/juris.sh
+chmod +x /var/tmp/html_texte.sh
+chmod +x /var/tmp/textindex.sh
+
+cd /applications/lex04/xchange/procat
+/var/tmp/jo_pdf.sh
+/var/tmp/com.sh
+/var/tmp/juris.sh
+/var/tmp/html_texte.sh
+/var/tmp/textindex.sh
+
+# une fois fini, changer l'owner des dossiers dans alambic 
+cd /xchange/LEX04
+chown -R root:root com/
+chown -R root:root html_texte/
+chown -R root:root juris/
+chown -R root:root jo_pdf/
+chown -R root:root texteindex/
+
+chmod -R 777 com/
+chmod -R 777 html_texte/
+chmod -R 777 juris/
+chmod -R 777 jo_pdf/
+chmod -R 777 texteindex/
+
+# vider les repertoires. On laisse les derniers dix jours:
+# find juris/in/ -mtime +10 | xargs -n 100 rm -f  ( NON !!!)
+# pour com comme on a pas fini mais il manque de la place
+# on prend le fichier /var/tmp/com.sh et on cherche si les dvd graves ont des fichiers d'il y a dix jours
+# enlever les fichiers qui ont plus de 10 sur la base de la liste des fichiers copies a alambic
+for i in `cat /var/tmp/liste_jo_pdf.txt`
+do
+find /applications/lex04/xchange/procat/jo_pdf/in -name ${i} -mtime +10 -exec rm {} \;
+done
+# pour html_texte et texteindex vu la quantite des fichiers
+cat /var/tmp/html_texte.sh |sed -e 's!tar cf \- html_texte\/in\/!!' > /var/tmp/temp
+cat /var/tmp/temp  |sed -e 's/ | ( cd .*$//' > /var/tmp/temp2
+cat /var/tmp/tem2  | sed -e 's!^!/applications/lex04/xchange/procat/html_texte/in/!' > /var/tmp/temp3
+cat /var/tmp/temp2  | sed -e 's!^!/applications/lex04/xchange/procat/html_texte/in/!' > /var/tmp/temp3
+mv /var/tmp/temp3 /var/tmp/liste_html_texte.txt
+cd /applications/lex04/xchange/procat/html_texte/in
+find /applications/lex04/xchange/procat/html_texte/in -mtime +30 -type f  > /var/tmp/find_html_texte.txt
+mkdir -p /var/tmp/html_texte/
+split -l 1000 /var/tmp/find_html_texte.txt /var/tmp/html_texte/find_html_texte.txt
+foreach j in `ls -1 /var/tmp/html_texte/`
+do
+foreach i in `cat /var/tmp/html_texte/${j}`
+do
+grep ${i} /var/tmp/liste_html_texte.txt | awk '{print "\\rm "$0}' >> /var/tmp/rm_html_texte.sh
+done
+done
+
+# j'ai du creer des images iso pour texteindex\dvd texteindex\dvd3
+mkisofs -d -D -J -l -L -R -V "texteindex\dvd" -log-file /var/tmp/texteindex.log -o dvd.iso dvd/
+mkisofs -d -D -J -l -L -R -V "texteindex\dvd3" -log-file /var/tmp/texteindex3.log -o dvd3.iso dvd3/
+
+# il manquait des fichiers de jo_pdf et j'avais perdu la liste des fichiers, donc j'ai du faire: 
+find jo_pdf/ -type f | xargs -n 100 du -ks | perl -ane '$t+=$F[0];unless ( $t > 3670016 ) {print "test -f /net/opsrv190/xchange/LEX04/jo_pdf/dvd$i/$F[1] \|\| (tar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/jo_pdf/dvd$i ; tar xf - ))\n" } else {$i++;$t=0;print "#######\ntest -f /net/opsrv190/xchange/LEX04/jo_pdf/dvd$i/$F[1] \|\| (tar cf - $F[1] | ( cd /net/opsrv190/xchange/LEX04/jo_pdf/dvd$i ; tar xf - ))\n"}' > /var/tmp/jo_pdf.test.sh
+

@@ -1,0 +1,932 @@
+#########################################################################################################
+# renommer le zpool d'une zone standalone
+#########################################################################################################
+
+
+#########################################################################################################
+##### svn-pz
+
+##### verif des services tournant sur la zone avant arret
+export zone=svn-pz
+zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"
+/applications/*/users/system/init.d: No such file or directory
+SERV ENABLED STATE
+svc:/application/print/server:default (LP print server)
+ State: disabled since Mon Jun 29 11:07:00 2009
+Reason: Disabled by an administrator.
+   See: http://sun.com/msg/SMF-8000-05
+   See: man -M /usr/share/man -s 1M lpsched
+Impact: 2 dependent services are not running:
+        svc:/application/print/rfc1179:default
+        svc:/application/print/ipp-listener:default
+
+##### arret de a zone
+zoneadm -z ${zone} halt
+
+##### verif de l'arret
+zoneadm list -ivc | grep ${zone}
+   - svn-pz           installed  /zones/svn-pz                  native   shared
+
+##### liste les zpool
+zpool list
+export old_pool=svn
+
+##### liste les fs du pool
+zfs list -r ${old_pool}
+NAME                        USED  AVAIL  REFER  MOUNTPOINT
+svn                        1016M  7.25G    18K  /zpool/svn
+svn/applications             75K  7.25G    21K  /applications/svn
+svn/applications/oraagent    18K  2.00G    18K  /u01/oraagent
+svn/applications/users       18K  7.25G    18K  /applications/svn/users
+svn/applications/xchange     18K  7.25G    18K  /applications/svn/xchange
+svn/zone                   1015M  7.25G  1015M  /zones/svn-pz
+
+##### export du zpool
+zpool export ${old_pool}
+
+##### import du zpool avec son nouveau nom
+export pool=${zone}
+zpool import ${old_pool} ${pool}
+
+##### verif des fs
+zfs list -r ${pool}
+NAME                           USED  AVAIL  REFER  MOUNTPOINT
+svn-pz                        1016M  7.25G    18K  /zpool/svn
+svn-pz/applications             75K  7.25G    21K  /applications/svn
+svn-pz/applications/oraagent    18K  2.00G    18K  /u01/oraagent
+svn-pz/applications/users       18K  7.25G    18K  /applications/svn/users
+svn-pz/applications/xchange     18K  7.25G    18K  /applications/svn/xchange
+svn-pz/zone                   1015M  7.25G  1015M  /zones/svn-pz
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+svn-pz                                   zoned     off                                      default
+svn-pz/applications                      zoned     on                                       local
+svn-pz/applications/oraagent             zoned     on                                       inherited from svn-pz/applications
+svn-pz/applications/users                zoned     on                                       inherited from svn-pz/applications
+svn-pz/applications/xchange              zoned     on                                       inherited from svn-pz/applications
+svn-pz/zone                              zoned     off                                      default
+
+##### change la proriete a off
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=off $i
+done
+
+##### verif 
+zfs get zoned  | grep ${pool}
+svn-pz                                   zoned     off                                      default
+svn-pz/applications                      zoned     off                                      local
+svn-pz/applications/oraagent             zoned     off                                      local
+svn-pz/applications/users                zoned     off                                      local
+svn-pz/applications/xchange              zoned     off                                      local
+svn-pz/zone                              zoned     off                                      default
+
+##### changement des mountpoints
+zfs set mountpoint=/zpool/${pool} ${pool}
+zfs set mountpoint=/zones/${zone} ${zone}/zone
+
+##### verif
+zfs list -r ${pool}
+NAME                           USED  AVAIL  REFER  MOUNTPOINT
+svn-pz                        1016M  7.25G    18K  /zpool/svn-pz
+svn-pz/applications             75K  7.25G    21K  /applications/svn
+svn-pz/applications/oraagent    18K  2.00G    18K  /u01/oraagent
+svn-pz/applications/users       18K  7.25G    18K  /applications/svn/users
+svn-pz/applications/xchange     18K  7.25G    18K  /applications/svn/xchange
+svn-pz/zone                   1015M  7.25G  1015M  /zones/svn-pz
+
+##### change la propriete zoned a on
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=on $i
+done
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+svn-pz                                   zoned     off                                      default
+svn-pz/applications                      zoned     on                                       local
+svn-pz/applications/oraagent             zoned     on                                       local
+svn-pz/applications/users                zoned     on                                       local
+svn-pz/applications/xchange              zoned     on                                       local
+svn-pz/zone                              zoned     off                                      default
+
+##### suppression de l'ancien point de montage
+rmdir /zpool/${old_pool}
+
+##### modif du fichier de conf de la zone
+cp /etc/zones/${zone}.xml /etc/zones/${zone}.xml.`date +%Y%m%d`
+vi /etc/zones/${zone}.xml
+
+##### demarrage de la zone
+zoneadm -z ${zone} boot
+
+##### verif des services
+zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"
+
+
+#########################################################################################################
+# renommer le zpool d'une zone en cluster
+#########################################################################################################
+
+
+#########################################################################################################
+##### backup-pz
+
+##### verif des services tournant sur la zone avant arret
+export zone=backup-pz
+zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"
+
+##### se place dans le repertoire des binaires cluster
+cd /usr/cluster/bin
+
+##### liste les resource group
+./clresourcegroup list 
+
+##### set de ${rg}
+export rg=backup-rg
+
+##### liste les ressources de $rg
+./clresource list -g $rg
+backup-zfs
+backup-rs
+
+##### set de ${zfs_resource}
+export zfs_resource=backup-zfs
+
+##### mise a off line de $rg
+./clrg offline ${rg}
+
+##### verification du status de $rg
+./clresourcegroup status $rg
+Group Name       Node Name       Suspended      Status
+----------       ---------       ---------      ------
+backup-rg        chronos         No             Offline
+                 saturne         No             Offline
+
+##### verification du status des ressources de $rg
+./clresource status $rg
+
+##### verif de l'arret de la zone
+zoneadm list -ivc | grep ${zone}
+
+
+##### liste les zpool
+zpool list	
+export old_pool=backup-pz
+
+##### liste les fs du pool
+zfs list -r ${old_pool}	
+
+##### export du zpool (si clrg offline ${rg} ne la pas fait)
+zpool export ${old_pool} 
+
+##### import du zpool avec son nouveau nom
+export pool=${zone}
+zpool import ${old_pool} ${pool}
+
+##### verif des fs
+zfs list -r ${pool}
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+
+##### change la proriete a off
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=off $i
+done
+
+##### verif 
+zfs get zoned  | grep ${pool}
+
+
+##### changement des mountpoints
+zfs set mountpoint=/zpool/${pool} ${pool}
+zfs set mountpoint=/zones/${zone} ${zone}/zone
+
+##### verif
+zfs list -r ${pool}
+
+##### change la propriete zoned a on
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=on $i
+done
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+
+##### suppression de l'ancien point de montage
+rmdir /zpool/${old_pool}
+
+##### modif du fichier de conf de la zone
+vi /etc/zones/${zone}.xml
+
+##### export de $pool, car le cluster va l'importer lors de la mise on line
+zpool export ${pool}
+
+##### liste les zpool pour verifier l'export
+zpool list
+
+##### configure le nouveau nom du zpool dans la config cluster
+./clrs set -p Zpools=${zone} ${zfs_resource}
+
+##### mise a on line de $rg
+./clrg online ${rg}
+
+##### verif du pool
+zpool list
+
+zfs list -r $pool
+
+
+##### verif du demarrage de la zone
+zoneadm list -ivc | grep ${zone}
+
+
+##### verif des services
+zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"
+
+
+
+
+
+
+
+
+
+
+
+
+
+#########################################################################################################
+##### anninter
+
+##### verif des services tournant sur la zone avant arret
+export zone=anninter_pz
+
+##### arret de a zone
+zoneadm -z ${zone} halt
+
+##### verif de l'arret
+zoneadm list -ivc | grep ${zone}
+   - anninter_pz      installed  /zones/anninter_pz             native   shared
+
+##### liste les zpool
+zpool list
+export old_pool=anninter
+
+##### liste les fs du pool
+zfs list -r ${old_pool}
+NAME                             USED  AVAIL  REFER  MOUNTPOINT
+anninter                        14.2G  18.8G    18K  /zpool/anninter
+anninter/applications           13.0G  18.8G    24K  none
+anninter/applications/oraagent    18K  2.00G    18K  /u01/oraagent
+anninter/applications/orabin    2.13G  18.8G  2.13G  /applications/anninter/orabin
+anninter/applications/oradata   2.54G  18.8G  2.54G  /applications/anninter/oradata
+anninter/applications/oralog     599M  18.8G   599M  /applications/anninter/oralog
+anninter/applications/users     7.72G  18.8G  7.72G  /applications/anninter/users
+anninter/applications/xchange     21K  18.8G    21K  /applications/anninter/xchange
+anninter/zone                   1.24G  18.8G  1.24G  /zones/anninter_pz
+
+##### import du zpool avec son nouveau nom
+export pool=${zone}
+zpool export ${old_pool}
+zpool import ${old_pool} ${pool}
+
+##### verif des fs
+zfs list -r ${pool}
+anninter_pz                        14.2G  18.8G    18K  /zpool/anninter
+anninter_pz/applications           13.0G  18.8G    24K  none
+anninter_pz/applications/oraagent    18K  2.00G    18K  /u01/oraagent
+anninter_pz/applications/orabin    2.13G  18.8G  2.13G  /applications/anninter/orabin
+anninter_pz/applications/oradata   2.54G  18.8G  2.54G  /applications/anninter/oradata
+anninter_pz/applications/oralog     599M  18.8G   599M  /applications/anninter/oralog
+anninter_pz/applications/users     7.72G  18.8G  7.72G  /applications/anninter/users
+anninter_pz/applications/xchange     21K  18.8G    21K  /applications/anninter/xchange
+anninter_pz/zone                   1.24G  18.8G  1.24G  /zones/anninter_pz
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+anninter_pz                              zoned     off                                      default
+anninter_pz/applications                 zoned     on                                       local
+anninter_pz/applications/oraagent        zoned     on                                       inherited from anninter_pz/applications
+anninter_pz/applications/orabin          zoned     on                                       inherited from anninter_pz/applications
+anninter_pz/applications/oradata         zoned     on                                       inherited from anninter_pz/applications
+anninter_pz/applications/oralog          zoned     on                                       inherited from anninter_pz/applications
+anninter_pz/applications/users           zoned     on                                       inherited from anninter_pz/applications
+anninter_pz/applications/xchange         zoned     on                                       inherited from anninter_pz/applications
+anninter_pz/zone                         zoned     off                                      default
+
+##### change la proriete a off
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=off $i
+done
+
+##### verif 
+zfs get zoned  | grep ${pool}
+anninter_pz                              zoned     off                                      default
+anninter_pz/applications                 zoned     off                                      local
+anninter_pz/applications/oraagent        zoned     off                                      local
+anninter_pz/applications/orabin          zoned     off                                      local
+anninter_pz/applications/oradata         zoned     off                                      local
+anninter_pz/applications/oralog          zoned     off                                      local
+anninter_pz/applications/users           zoned     off                                      local
+anninter_pz/applications/xchange         zoned     off                                      local
+anninter_pz/zone                         zoned     off                                      default
+
+##### changement des mountpoints
+zfs set mountpoint=/zpool/${pool} ${pool}
+zfs set mountpoint=/zones/${zone} ${zone}/zone
+
+##### verif
+zfs list -r ${pool}
+NAME                                USED  AVAIL  REFER  MOUNTPOINT
+anninter_pz                        14.2G  18.8G    18K  /zpool/anninter_pz
+anninter_pz/applications           13.0G  18.8G    24K  none
+anninter_pz/applications/oraagent    18K  2.00G    18K  /u01/oraagent
+anninter_pz/applications/orabin    2.13G  18.8G  2.13G  /applications/anninter/orabin
+anninter_pz/applications/oradata   2.54G  18.8G  2.54G  /applications/anninter/oradata
+anninter_pz/applications/oralog     599M  18.8G   599M  /applications/anninter/oralog
+anninter_pz/applications/users     7.72G  18.8G  7.72G  /applications/anninter/users
+anninter_pz/applications/xchange     21K  18.8G    21K  /applications/anninter/xchange
+anninter_pz/zone                   1.24G  18.8G  1.24G  /zones/anninter_pz
+
+##### change la propriete zoned a on
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=on $i
+done
+
+##### verif du status des fs de la zone
+zfs get zoned  | grep ${pool}
+anninter_pz                              zoned     off                                      default
+anninter_pz/applications                 zoned     on                                       local
+anninter_pz/applications/oraagent        zoned     on                                       local
+anninter_pz/applications/orabin          zoned     on                                       local
+anninter_pz/applications/oradata         zoned     on                                       local
+anninter_pz/applications/oralog          zoned     on                                       local
+anninter_pz/applications/users           zoned     on                                       local
+anninter_pz/applications/xchange         zoned     on                                       local
+anninter_pz/zone                         zoned     off                                      default
+
+##### suppression de l'ancien point de montage
+rmdir /zpool/${old_pool}
+
+##### modif du fichier de conf de la zone
+cp /etc/zones/${zone}.xml /etc/zones/${zone}.xml.`date +%Y%m%d`
+vi /etc/zones/${zone}.xml
+
+##### demarrage de la zone
+zoneadm -z ${zone} boot
+
+##### verif des services
+zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"
+
+
+
+#########################################################################################################
+##### ceres
+
+##### verif des services tournant sur la zone avant arret
+export zone=ceres_pz
+
+##### arret de a zone
+zoneadm -z ${zone} halt
+
+##### verif de l'arret
+zoneadm list -ivc | grep ${zone}
+   - ceres_pz         installed  /zones/ceres_pz                native   shared
+
+##### liste les zpool
+zpool list
+export old_pool=ceres
+
+##### liste les fs du pool
+zfs list -r ${old_pool}
+NAME                          USED  AVAIL  REFER  MOUNTPOINT
+ceres                        94.7G   104G    18K  /zpool/ceres
+ceres/applications           92.1G   104G    25K  none
+ceres/applications/oraagent  1.19G   827M  1.19G  /u01/oraagent
+ceres/applications/orabin    3.07G   104G  3.07G  /applications/ceres/orabin
+ceres/applications/oradata   30.4G   104G  30.4G  /applications/ceres/oradata
+ceres/applications/oralog     149M   104G   149M  /applications/ceres/oralog
+ceres/applications/users     57.3G   104G  57.3G  /applications/ceres/users
+ceres/applications/xchange     18K   104G    18K  /applications/ceres/xchange
+ceres/zone                   2.56G   104G  2.56G  /zones/ceres_pz
+
+##### import du zpool avec son nouveau nom
+export pool=${zone}
+zpool export ${old_pool}
+zpool import ${old_pool} ${pool}
+
+##### verif des fs
+zfs list -r ${pool}
+NAME                             USED  AVAIL  REFER  MOUNTPOINT
+ceres_pz                        94.7G   104G    18K  /zpool/ceres
+ceres_pz/applications           92.1G   104G    25K  none
+ceres_pz/applications/oraagent  1.19G   827M  1.19G  /u01/oraagent
+ceres_pz/applications/orabin    3.07G   104G  3.07G  /applications/ceres/orabin
+ceres_pz/applications/oradata   30.4G   104G  30.4G  /applications/ceres/oradata
+ceres_pz/applications/oralog     149M   104G   149M  /applications/ceres/oralog
+ceres_pz/applications/users     57.3G   104G  57.3G  /applications/ceres/users
+ceres_pz/applications/xchange     18K   104G    18K  /applications/ceres/xchange
+ceres_pz/zone                   2.56G   104G  2.56G  /zones/ceres_pz
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+ceres_pz                                 zoned     off                                      default
+ceres_pz/applications                    zoned     on                                       local
+ceres_pz/applications/oraagent           zoned     on                                       inherited from ceres_pz/applications
+ceres_pz/applications/orabin             zoned     on                                       inherited from ceres_pz/applications
+ceres_pz/applications/oradata            zoned     on                                       inherited from ceres_pz/applications
+ceres_pz/applications/oralog             zoned     on                                       inherited from ceres_pz/applications
+ceres_pz/applications/users              zoned     on                                       inherited from ceres_pz/applications
+ceres_pz/applications/xchange            zoned     on                                       inherited from ceres_pz/applications
+ceres_pz/zone                            zoned     off                                      default
+
+##### change la proriete a off
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=off $i
+done
+
+##### verif 
+zfs get zoned  | grep ${pool}
+ceres_pz                                 zoned     off                                      default
+ceres_pz/applications                    zoned     off                                      local
+ceres_pz/applications/oraagent           zoned     off                                      local
+ceres_pz/applications/orabin             zoned     off                                      local
+ceres_pz/applications/oradata            zoned     off                                      local
+ceres_pz/applications/oralog             zoned     off                                      local
+ceres_pz/applications/users              zoned     off                                      local
+ceres_pz/applications/xchange            zoned     off                                      local
+ceres_pz/zone                            zoned     off                                      default
+
+##### changement des mountpoints
+zfs set mountpoint=/zpool/${pool} ${pool}
+zfs set mountpoint=/zones/${zone} ${zone}/zone
+
+##### verif
+zfs list -r ${pool}
+NAME                             USED  AVAIL  REFER  MOUNTPOINT
+ceres_pz                        94.7G   104G    18K  /zpool/ceres_pz
+ceres_pz/applications           92.1G   104G    25K  none
+ceres_pz/applications/oraagent  1.19G   827M  1.19G  /u01/oraagent
+ceres_pz/applications/orabin    3.07G   104G  3.07G  /applications/ceres/orabin
+ceres_pz/applications/oradata   30.4G   104G  30.4G  /applications/ceres/oradata
+ceres_pz/applications/oralog     149M   104G   149M  /applications/ceres/oralog
+ceres_pz/applications/users     57.3G   104G  57.3G  /applications/ceres/users
+ceres_pz/applications/xchange     18K   104G    18K  /applications/ceres/xchange
+ceres_pz/zone                   2.56G   104G  2.56G  /zones/ceres_pz
+
+##### change la propriete zoned a on
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=on $i
+done
+
+##### verif du status des fs de la zone
+zfs get zoned  | grep ${pool}
+ceres_pz                                 zoned     off                                      default
+ceres_pz/applications                    zoned     on                                       local
+ceres_pz/applications/oraagent           zoned     on                                       local
+ceres_pz/applications/orabin             zoned     on                                       local
+ceres_pz/applications/oradata            zoned     on                                       local
+ceres_pz/applications/oralog             zoned     on                                       local
+ceres_pz/applications/users              zoned     on                                       local
+ceres_pz/applications/xchange            zoned     on                                       local
+ceres_pz/zone                            zoned     off                                      default
+
+##### suppression de l'ancien point de montage
+rmdir /zpool/${old_pool}
+
+##### modif du fichier de conf de la zone
+cp /etc/zones/${zone}.xml /etc/zones/${zone}.xml.`date +%Y%m%d`
+vi /etc/zones/${zone}.xml
+
+##### demarrage de la zone
+#############################zoneadm -z ${zone} boot
+
+##### verif des services
+#############################zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"
+
+
+
+#########################################################################################################
+##### eudorsqc
+
+##### verif des services tournant sur la zone avant arret
+export zone=eudorsqc-pz
+
+##### arret de a zone
+zoneadm -z ${zone} halt
+   - eudorsqc-pz      installed  /zones/eudorsqc-pz             native   shared
+
+##### verif de l'arret
+zoneadm list -ivc | grep ${zone}
+
+##### liste les zpool
+zpool list
+export old_pool=eudorsqc
+
+##### liste les fs du pool
+zfs list -r ${old_pool}
+NAME                             USED  AVAIL  REFER  MOUNTPOINT
+eudorsqc                        34.9G  47.7G    18K  /zpool/eudorsqc
+eudorsqc/applications           34.9G  47.7G    24K  none
+eudorsqc/applications/oraagent  1.18G   841M  1.18G  /u01/oraagent
+eudorsqc/applications/orabin    4.73G  47.7G  4.73G  /applications/eudorsqc/orabin
+eudorsqc/applications/oradata   20.8G  47.7G  20.8G  /applications/eudorsqc/oradata
+eudorsqc/applications/oralog     190M  47.7G   190M  /applications/eudorsqc/oralog
+eudorsqc/applications/users     8.00G  47.7G  8.00G  /applications/eudorsqc/users
+eudorsqc/applications/xchange     18K  47.7G    18K  /applications/eudorsqc/xchange
+eudorsqc/zone                     18K  47.7G    18K  /zones/eudorsqc-pz
+
+##### import du zpool avec son nouveau nom
+export pool=${zone}
+zpool export ${old_pool}
+zpool import ${old_pool} ${pool}
+
+##### verif des fs
+zfs list -r ${pool}
+NAME                                USED  AVAIL  REFER  MOUNTPOINT
+eudorsqc-pz                        34.9G  47.7G    18K  /zpool/eudorsqc
+eudorsqc-pz/applications           34.9G  47.7G    24K  none
+eudorsqc-pz/applications/oraagent  1.18G   841M  1.18G  /u01/oraagent
+eudorsqc-pz/applications/orabin    4.73G  47.7G  4.73G  /applications/eudorsqc/orabin
+eudorsqc-pz/applications/oradata   20.8G  47.7G  20.8G  /applications/eudorsqc/oradata
+eudorsqc-pz/applications/oralog     190M  47.7G   190M  /applications/eudorsqc/oralog
+eudorsqc-pz/applications/users     8.00G  47.7G  8.00G  /applications/eudorsqc/users
+eudorsqc-pz/applications/xchange     18K  47.7G    18K  /applications/eudorsqc/xchange
+eudorsqc-pz/zone                     18K  47.7G    18K  /zones/eudorsqc-pz
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+eudorsqc-pz                              zoned     off                                      default
+eudorsqc-pz/applications                 zoned     on                                       local
+eudorsqc-pz/applications/oraagent        zoned     on                                       inherited from eudorsqc-pz/applications
+eudorsqc-pz/applications/orabin          zoned     on                                       inherited from eudorsqc-pz/applications
+eudorsqc-pz/applications/oradata         zoned     on                                       inherited from eudorsqc-pz/applications
+eudorsqc-pz/applications/oralog          zoned     on                                       inherited from eudorsqc-pz/applications
+eudorsqc-pz/applications/users           zoned     on                                       inherited from eudorsqc-pz/applications
+eudorsqc-pz/applications/xchange         zoned     on                                       inherited from eudorsqc-pz/applications
+eudorsqc-pz/zone                         zoned     off                                      default
+
+##### change la proriete a off
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=off $i
+done
+
+##### verif 
+zfs get zoned  | grep ${pool}
+eudorsqc-pz                              zoned     off                                      default
+eudorsqc-pz/applications                 zoned     off                                      local
+eudorsqc-pz/applications/oraagent        zoned     off                                      local
+eudorsqc-pz/applications/orabin          zoned     off                                      local
+eudorsqc-pz/applications/oradata         zoned     off                                      local
+eudorsqc-pz/applications/oralog          zoned     off                                      local
+eudorsqc-pz/applications/users           zoned     off                                      local
+eudorsqc-pz/applications/xchange         zoned     off                                      local
+eudorsqc-pz/zone                         zoned     off                                      default
+
+##### changement des mountpoints
+zfs set mountpoint=/zpool/${pool} ${pool}
+zfs set mountpoint=/zones/${zone} ${zone}/zone
+
+##### verif
+zfs list -r ${pool}
+NAME                                USED  AVAIL  REFER  MOUNTPOINT
+eudorsqc-pz                        34.9G  47.7G    18K  /zpool/eudorsqc-pz
+eudorsqc-pz/applications           34.9G  47.7G    24K  none
+eudorsqc-pz/applications/oraagent  1.18G   841M  1.18G  /u01/oraagent
+eudorsqc-pz/applications/orabin    4.73G  47.7G  4.73G  /applications/eudorsqc/orabin
+eudorsqc-pz/applications/oradata   20.8G  47.7G  20.8G  /applications/eudorsqc/oradata
+eudorsqc-pz/applications/oralog     190M  47.7G   190M  /applications/eudorsqc/oralog
+eudorsqc-pz/applications/users     8.00G  47.7G  8.00G  /applications/eudorsqc/users
+eudorsqc-pz/applications/xchange     18K  47.7G    18K  /applications/eudorsqc/xchange
+eudorsqc-pz/zone                     18K  47.7G    18K  /zones/eudorsqc-pz
+
+##### change la propriete zoned a on
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=on $i
+done
+
+##### verif du status des fs de la zone
+zfs get zoned  | grep ${pool}
+eudorsqc-pz                              zoned     off                                      default
+eudorsqc-pz/applications                 zoned     on                                       local
+eudorsqc-pz/applications/oraagent        zoned     on                                       local
+eudorsqc-pz/applications/orabin          zoned     on                                       local
+eudorsqc-pz/applications/oradata         zoned     on                                       local
+eudorsqc-pz/applications/oralog          zoned     on                                       local
+eudorsqc-pz/applications/users           zoned     on                                       local
+eudorsqc-pz/applications/xchange         zoned     on                                       local
+eudorsqc-pz/zone                         zoned     off                                      default
+
+##### suppression de l'ancien point de montage
+rmdir /zpool/${old_pool}
+
+##### modif du fichier de conf de la zone
+cp /etc/zones/${zone}.xml /etc/zones/${zone}.xml.`date +%Y%m%d`
+vi /etc/zones/${zone}.xml
+
+##### demarrage de la zone
+zoneadm -z ${zone} boot
+
+##### verif des services
+zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"
+
+
+
+
+
+
+#########################################################################################################
+##### procatx
+
+##### verif des services tournant sur la zone avant arret
+export zone=procatx-pz
+
+##### arret de a zone
+zoneadm -z ${zone} halt
+
+##### verif de l'arret
+zoneadm list -ivc | grep ${zone}
+   - procatx-pz       installed  /zones/procatx-pz              native   shared
+
+##### liste les zpool
+zpool list
+export old_pool=procatx
+
+##### liste les fs du pool
+zfs list -r ${old_pool}
+NAME                            USED  AVAIL  REFER  MOUNTPOINT
+procatx                        8.64G   123G    18K  /zpool/procatx
+procatx/applications           7.60G   123G    24K  none
+procatx/applications/oraagent  1.16G   857M  1.16G  /u01/oraagent
+procatx/applications/orabin    3.03G   123G  3.03G  /applications/procatxml/orabin
+procatx/applications/oradata   2.68G   123G  2.68G  /applications/procatxml/oradata
+procatx/applications/oralog      21K   123G    21K  /applications/procatxml/oralog
+procatx/applications/users      740M   123G   740M  /applications/procatxml/users
+procatx/applications/xchange     18K   123G    18K  /applications/procatxml/xchange
+procatx/zone                   1.04G   123G  1.04G  /zones/procatx-pz
+
+##### import du zpool avec son nouveau nom
+export pool=${zone}
+zpool export ${old_pool}
+zpool import ${old_pool} ${pool}
+
+##### verif des fs
+zfs list -r ${pool}
+NAME                               USED  AVAIL  REFER  MOUNTPOINT
+procatx-pz                        8.64G   123G    18K  /zpool/procatx
+procatx-pz/applications           7.60G   123G    24K  none
+procatx-pz/applications/oraagent  1.16G   857M  1.16G  /u01/oraagent
+procatx-pz/applications/orabin    3.03G   123G  3.03G  /applications/procatxml/orabin
+procatx-pz/applications/oradata   2.68G   123G  2.68G  /applications/procatxml/oradata
+procatx-pz/applications/oralog      21K   123G    21K  /applications/procatxml/oralog
+procatx-pz/applications/users      740M   123G   740M  /applications/procatxml/users
+procatx-pz/applications/xchange     18K   123G    18K  /applications/procatxml/xchange
+procatx-pz/zone                   1.04G   123G  1.04G  /zones/procatx-pz
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+procatx-pz                               zoned     off                                      default
+procatx-pz/applications                  zoned     on                                       local
+procatx-pz/applications/oraagent         zoned     on                                       inherited from procatx-pz/applications
+procatx-pz/applications/orabin           zoned     on                                       local
+procatx-pz/applications/oradata          zoned     on                                       local
+procatx-pz/applications/oralog           zoned     on                                       local
+procatx-pz/applications/users            zoned     on                                       local
+procatx-pz/applications/xchange          zoned     on                                       local
+procatx-pz/zone                          zoned     off                                      default
+
+##### change la proriete a off
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=off $i
+done
+
+##### verif 
+zfs get zoned  | grep ${pool}
+procatx-pz                               zoned     off                                      default
+procatx-pz/applications                  zoned     off                                      local
+procatx-pz/applications/oraagent         zoned     off                                      local
+procatx-pz/applications/orabin           zoned     off                                      local
+procatx-pz/applications/oradata          zoned     off                                      local
+procatx-pz/applications/oralog           zoned     off                                      local
+procatx-pz/applications/users            zoned     off                                      local
+procatx-pz/applications/xchange          zoned     off                                      local
+procatx-pz/zone                          zoned     off                                      default
+
+##### changement des mountpoints
+zfs set mountpoint=/zpool/${pool} ${pool}
+zfs set mountpoint=/zones/${zone} ${zone}/zone
+
+##### verif
+zfs list -r ${pool}
+NAME                               USED  AVAIL  REFER  MOUNTPOINT
+procatx-pz                        8.64G   123G    18K  /zpool/procatx-pz
+procatx-pz/applications           7.60G   123G    24K  none
+procatx-pz/applications/oraagent  1.16G   857M  1.16G  /u01/oraagent
+procatx-pz/applications/orabin    3.03G   123G  3.03G  /applications/procatxml/orabin
+procatx-pz/applications/oradata   2.68G   123G  2.68G  /applications/procatxml/oradata
+procatx-pz/applications/oralog      21K   123G    21K  /applications/procatxml/oralog
+procatx-pz/applications/users      740M   123G   740M  /applications/procatxml/users
+procatx-pz/applications/xchange     18K   123G    18K  /applications/procatxml/xchange
+procatx-pz/zone                   1.04G   123G  1.04G  /zones/procatx-pz
+
+##### change la propriete zoned a on
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=on $i
+done
+
+##### verif du status des fs de la zone
+zfs get zoned  | grep ${pool}
+procatx-pz                               zoned     off                                      default
+procatx-pz/applications                  zoned     on                                       local
+procatx-pz/applications/oraagent         zoned     on                                       local
+procatx-pz/applications/orabin           zoned     on                                       local
+procatx-pz/applications/oradata          zoned     on                                       local
+procatx-pz/applications/oralog           zoned     on                                       local
+procatx-pz/applications/users            zoned     on                                       local
+procatx-pz/applications/xchange          zoned     on                                       local
+procatx-pz/zone                          zoned     off                                      default
+
+##### suppression de l'ancien point de montage
+rmdir /zpool/${old_pool}
+
+##### modif du fichier de conf de la zone
+cp /etc/zones/${zone}.xml /etc/zones/${zone}.xml.`date +%Y%m%d`
+vi /etc/zones/${zone}.xml
+
+##### demarrage de la zone
+zoneadm -z ${zone} boot
+
+##### verif des services
+zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"
+
+
+
+
+#########################################################################################################
+##### sibylles
+
+##### verif des services tournant sur la zone avant arret
+export zone=sibylles-pz
+
+##### arret de a zone
+zoneadm -z ${zone} halt
+
+##### verif de l'arret
+zoneadm list -ivc | grep ${zone}
+   - sibylles-pz      installed  /zones/sibylles-pz             native   shared
+
+##### liste les zpool
+zpool list
+export old_pool=sibylles
+
+##### liste les fs du pool
+zfs list -r ${old_pool}
+NAME                                  USED  AVAIL  REFER  MOUNTPOINT
+sibylles                             17.1G  32.6G    18K  /zpool/sibylles
+sibylles/applications                16.0G  32.6G    18K  none
+sibylles/applications/misc           6.40G  32.6G    23K  /applications/misc
+sibylles/applications/misc/orabin    3.05G  32.6G  3.05G  /applications/misc/orabin
+sibylles/applications/misc/oradata   3.33G  32.6G  3.33G  /applications/misc/oradata
+sibylles/applications/misc/oralog    45.5K  32.6G  45.5K  /applications/misc/oralog
+sibylles/applications/misc/users     18.7M  32.6G  18.7M  /applications/misc/users
+sibylles/applications/mutf8          8.44G  32.6G    23K  /applications/mutf8
+sibylles/applications/mutf8/orabin   3.22G  32.6G  3.22G  /applications/mutf8/orabin
+sibylles/applications/mutf8/oradata  5.04G  32.6G  5.04G  /applications/mutf8/oradata
+sibylles/applications/mutf8/oralog    151M  32.6G   151M  /applications/mutf8/oralog
+sibylles/applications/mutf8/users    31.4M  32.6G  31.4M  /applications/mutf8/users
+sibylles/applications/oraagent       1.20G   821M  1.20G  /u01/oraagent
+sibylles/zone                        1.04G  32.6G  1.04G  /zones/sibylles-pz
+
+##### import du zpool avec son nouveau nom
+export pool=${zone}
+zpool export ${old_pool}
+zpool import ${old_pool} ${pool}
+
+##### verif des fs
+zfs list -r ${pool}
+NAME                                     USED  AVAIL  REFER  MOUNTPOINT
+sibylles-pz                             17.1G  32.6G    18K  /zpool/sibylles
+sibylles-pz/applications                16.0G  32.6G    18K  none
+sibylles-pz/applications/misc           6.40G  32.6G    23K  /applications/misc
+sibylles-pz/applications/misc/orabin    3.05G  32.6G  3.05G  /applications/misc/orabin
+sibylles-pz/applications/misc/oradata   3.33G  32.6G  3.33G  /applications/misc/oradata
+sibylles-pz/applications/misc/oralog    45.5K  32.6G  45.5K  /applications/misc/oralog
+sibylles-pz/applications/misc/users     18.7M  32.6G  18.7M  /applications/misc/users
+sibylles-pz/applications/mutf8          8.44G  32.6G    23K  /applications/mutf8
+sibylles-pz/applications/mutf8/orabin   3.22G  32.6G  3.22G  /applications/mutf8/orabin
+sibylles-pz/applications/mutf8/oradata  5.04G  32.6G  5.04G  /applications/mutf8/oradata
+sibylles-pz/applications/mutf8/oralog    151M  32.6G   151M  /applications/mutf8/oralog
+sibylles-pz/applications/mutf8/users    31.4M  32.6G  31.4M  /applications/mutf8/users
+sibylles-pz/applications/oraagent       1.20G   821M  1.20G  /u01/oraagent
+sibylles-pz/zone                        1.04G  32.6G  1.04G  /zones/sibylles-pz
+
+##### verif du status des fs de la zone
+zfs get zoned | grep ${pool}
+sibylles-pz                              zoned     off                                      default
+sibylles-pz/applications                 zoned     on                                       local
+sibylles-pz/applications/misc            zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/misc/orabin     zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/misc/oradata    zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/misc/oralog     zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/misc/users      zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/mutf8           zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/mutf8/orabin    zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/mutf8/oradata   zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/mutf8/oralog    zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/mutf8/users     zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/applications/oraagent        zoned     on                                       inherited from sibylles-pz/applications
+sibylles-pz/zone                         zoned     off                                      default
+
+##### change la proriete a off
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=off $i
+done
+
+##### verif 
+zfs get zoned  | grep ${pool}
+sibylles-pz                              zoned     off                                      default
+sibylles-pz/applications                 zoned     off                                      local
+sibylles-pz/applications/misc            zoned     off                                      local
+sibylles-pz/applications/misc/orabin     zoned     off                                      local
+sibylles-pz/applications/misc/oradata    zoned     off                                      local
+sibylles-pz/applications/misc/oralog     zoned     off                                      local
+sibylles-pz/applications/misc/users      zoned     off                                      local
+sibylles-pz/applications/mutf8           zoned     off                                      local
+sibylles-pz/applications/mutf8/orabin    zoned     off                                      local
+sibylles-pz/applications/mutf8/oradata   zoned     off                                      local
+sibylles-pz/applications/mutf8/oralog    zoned     off                                      local
+sibylles-pz/applications/mutf8/users     zoned     off                                      local
+sibylles-pz/applications/oraagent        zoned     off                                      local
+sibylles-pz/zone                         zoned     off                                      default
+
+##### changement des mountpoints
+zfs set mountpoint=/zpool/${pool} ${pool}
+zfs set mountpoint=/zones/${zone} ${zone}/zone
+
+##### verif
+zfs list -r ${pool}
+NAME                                     USED  AVAIL  REFER  MOUNTPOINT
+sibylles-pz                             17.1G  32.6G    18K  /zpool/sibylles-pz
+sibylles-pz/applications                16.0G  32.6G    18K  none
+sibylles-pz/applications/misc           6.40G  32.6G    23K  /applications/misc
+sibylles-pz/applications/misc/orabin    3.05G  32.6G  3.05G  /applications/misc/orabin
+sibylles-pz/applications/misc/oradata   3.33G  32.6G  3.33G  /applications/misc/oradata
+sibylles-pz/applications/misc/oralog    45.5K  32.6G  45.5K  /applications/misc/oralog
+sibylles-pz/applications/misc/users     18.7M  32.6G  18.7M  /applications/misc/users
+sibylles-pz/applications/mutf8          8.44G  32.6G    23K  /applications/mutf8
+sibylles-pz/applications/mutf8/orabin   3.22G  32.6G  3.22G  /applications/mutf8/orabin
+sibylles-pz/applications/mutf8/oradata  5.04G  32.6G  5.04G  /applications/mutf8/oradata
+sibylles-pz/applications/mutf8/oralog    151M  32.6G   151M  /applications/mutf8/oralog
+sibylles-pz/applications/mutf8/users    31.4M  32.6G  31.4M  /applications/mutf8/users
+sibylles-pz/applications/oraagent       1.20G   821M  1.20G  /u01/oraagent
+sibylles-pz/zone                        1.04G  32.6G  1.04G  /zones/sibylles-pz
+
+##### change la propriete zoned a on
+for i in `zfs list| grep "^${pool}" | egrep -v "/zpool|/zones" | awk '{print $1}'`
+do
+	echo zfs set zoned=on $i
+done
+
+##### verif du status des fs de la zone
+zfs get zoned  | grep ${pool}
+sibylles-pz                              zoned     off                                      default
+sibylles-pz/applications                 zoned     on                                       local
+sibylles-pz/applications/misc            zoned     on                                       local
+sibylles-pz/applications/misc/orabin     zoned     on                                       local
+sibylles-pz/applications/misc/oradata    zoned     on                                       local
+sibylles-pz/applications/misc/oralog     zoned     on                                       local
+sibylles-pz/applications/misc/users      zoned     on                                       local
+sibylles-pz/applications/mutf8           zoned     on                                       local
+sibylles-pz/applications/mutf8/orabin    zoned     on                                       local
+sibylles-pz/applications/mutf8/oradata   zoned     on                                       local
+sibylles-pz/applications/mutf8/oralog    zoned     on                                       local
+sibylles-pz/applications/mutf8/users     zoned     on                                       local
+sibylles-pz/applications/oraagent        zoned     on                                       local
+sibylles-pz/zone                         zoned     off                                      default
+
+##### suppression de l'ancien point de montage
+rmdir /zpool/${old_pool}
+
+##### modif du fichier de conf de la zone
+cp /etc/zones/${zone}.xml /etc/zones/${zone}.xml.`date +%Y%m%d`
+vi /etc/zones/${zone}.xml
+
+##### demarrage de la zone
+zoneadm -z ${zone} boot
+
+##### verif des services
+zlogin ${zone} "/home/admin/bin/check_svcs_service.sh; svcs -xv"

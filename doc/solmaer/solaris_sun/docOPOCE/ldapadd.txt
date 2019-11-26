@@ -1,0 +1,13 @@
+#add a host to ldap
+(export  h=vespa ip=158.167.99.191 d='workstation'
+ldapadd -D "cn=Directory Manager" -w vademecum -h kirk -p 389 <<EOT
+dn: cn=$h,ou=Hosts,dc=opoce,dc=cec,dc=eu,dc=int
+ipHostNumber: $ip
+cn: $h
+objectClass: device
+objectClass: iphost
+objectClass: top
+description: $d
+EOT
+)
+

@@ -1,0 +1,47 @@
+#############################################################
+# raccourcis
+#############################################################
+
+Ctrl+a c		pour creer une nouvelle fenetre
+Ctrl+a n		pour aller sur la fenetre suivante
+Ctrl+a p		pour aller sur la fenetre precedente
+Ctrl+a 3		pour aller sur la fenetre 3
+Ctrl+a "		pour afficher la liste des fenetres
+Ctrl+a A		pour renommer la fenetre en cours
+Ctrl+a d		pour se detacher de screen
+Ctrl+a Ctrl+a		pour retourner a al fenetre precedente
+Ctrl+a S 		pour splitter l'ecrna en 2
+Ctrl+a Tab		pour changer de demi-ecran
+Ctrl+a Q		pour enlever le split
+Ctrl+a :		pour passer en mode commande
+Ctrl+a t		pour afficher l'heure, la date et le load average
+Ctrl+a x		pour locker la session screen
+Ctrl+a k 		pour killer une fenetre, eventuellement freezee
+
+
+#############################################################
+# commandes internes
+#############################################################
+
+resize 20		resize un ecran splitter a 2 lignes
+
+
+
+#############################################################
+# options
+#############################################################
+
+screen -ls 		pour lister les instances screen
+screen -r 		pour se rattacher a une instance screen
+screen -S "popo"	donner le nom popo a l'instance screen	
+
+
+
+
+
+
+
+
+
+
+

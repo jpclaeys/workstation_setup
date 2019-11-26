@@ -1,0 +1,99 @@
+export tmp_dir=/home/betorma/tmp
+export node_list=`clnode list | xargs`
+export node1=`clnode list | tail -1`
+export node2=`clnode list | head -1`
+
+
+
+
+##### luns utilisees par zfs sur chaque noeud
+
+zpool list -H -o name | grep -v ^rpool | while read pool; do zpool status $pool; done | grep d0 | awk '{print $1}' >${tmp_dir}/zfs_disks_on_`uname -n`.txt
+
+
+##### lun utilisees par asm sur chaque noeud
+
+grep device /etc/zones/*xml | perl -ne 'if(m{device match="/dev/did/\*dsk/(d\d+)s}) {print "cldev list -v $1\n"}' | sh | grep `uname -n` | awk -F'/' '{print $4}' >${tmp_dir}/asm_disks_on_`uname -n`.txt
+
+
+##### check 
+
+ls -l ${tmp_dir}/zfs_disks_on_${node1}.txt ${tmp_dir}/zfs_disks_on_${node2}.txt ${tmp_dir}/asm_disks_on_${node1}.txt ${tmp_dir}/asm_disks_on_${node2}.txt
+
+
+
+
+
+
+##### not used disk list on all nodes
+
+sort -u ${tmp_dir}/zfs_disks_on_${node1}.txt ${tmp_dir}/zfs_disks_on_${node2}.txt ${tmp_dir}/asm_disks_on_${node1}.txt ${tmp_dir}/asm_disks_on_${node2}.txt >${tmp_dir}/disks_used_on_${node1}_${node2}.txt
+/home/betorma/bin/luxadm_carlo -z | egrep -v -f ${tmp_dir}/disks_used_on_${node1}_${node2}.txt | sort -n -k 4
+/home/betorma/bin/luxadm_carlo -z | egrep -v -f ${tmp_dir}/disks_used_on_${node1}_${node2}.txt | sort -n -k 4 | awk '{print $1}' | awk -F'/' '{print $4}' | xargs echo | perl -ne 'chomp; s/s2//g; print "iostat -xcpn $_ 1\n"'
+
+
+
+
+
+
+
+0[150105/114109]root@lava# /home/betorma/bin/luxadm_carlo -z | egrep -v -f ${tmp_dir}/disks_used_on_${node1}_${node2}.txt | sort -n -k 4
+/dev/rdsk/c0t60000970000292603453533030384538d0s2 ==> 500009740835f598 1 500009740835f5a4 1  []
+/dev/rdsk/c0t60000970000292603453533030384639d0s2 ==> 500009740835f598 2 500009740835f5a4 2  []
+/dev/rdsk/c0t60000970000292603453533030333838d0s2 ==> 500009740835f598 3 500009740835f5a4 3  []
+/dev/rdsk/c0t60000970000292603453533032374439d0s2 ==> 500009740835f598 70 500009740835f5a4 70  []
+/dev/rdsk/c0t6006016097402C00767E59C1CDBBE211d0s2 ==> 500601603ea42f4a 100 500601623ea42f4a 100 500601683ea42f4a 100 5006016a3ea42f4a 100  []
+
+0[150105/114331]root@kusha# /home/betorma/bin/luxadm_carlo -z | egrep -v -f ${tmp_dir}/disks_used_on_${node1}_${node2}.txt | sort -n -k 4
+/dev/rdsk/c0t60000970000292602560533032374438d0s2 ==> 5000097408280198 69 50000974082801a4 69  []
+/dev/rdsk/c0t60000970000292602560533032374441d0s2 ==> 5000097408280198 71 50000974082801a4 71  []
+/dev/rdsk/c0t60000970000292602560533032374334d0s2 ==> 5000097408280198 72 50000974082801a4 72  []
+/dev/rdsk/c0t60000970000292602560533032423434d0s2 ==> 5000097408280198 73 50000974082801a4 73  []
+/dev/rdsk/c0t6006016026103300DC24F5EBCDBBE211d0s2 ==> 500601603ea42f5e 100 500601623ea42f5e 100 500601683ea42f5e 100 5006016a3ea42f5e 100  []
+0[150105/114337]root@kusha# 
+
+
+
+
+0[150105/114713]root@lava# /home/betorma/bin/luxadm_carlo -z | egrep -v -f ${tmp_dir}/disks_used_on_${node1}_${node2}.txt | sort -n -k 4 | awk '{print $1}' | awk -F'/' '{print $4}' | xargs echo | perl -ne 'chomp; s/s2//g; print "iostat -xcpn $_ 1\n"'
+iostat -xcpn c0t60000970000292603453533030384538d0 c0t60000970000292603453533030384639d0 c0t60000970000292603453533030333838d0 c0t60000970000292603453533032374439d0 c0t6006016097402C00767E59C1CDBBE211d0 1
+0[150105/114718]root@lava#
+
+0[150105/114650]root@kusha# /home/betorma/bin/luxadm_carlo -z | egrep -v -f ${tmp_dir}/disks_used_on_${node1}_${node2}.txt | sort -n -k 4 | awk '{print $1}' | awk -F'/' '{print $4}' | xargs echo | perl -ne 'chomp; s/s2//g; print "iostat -xcpn $_ 1\n"'
+iostat -xcpn c0t60000970000292602560533032374438d0 c0t60000970000292602560533032374441d0 c0t60000970000292602560533032374334d0 c0t60000970000292602560533032423434d0 c0t6006016026103300DC24F5EBCDBBE211d0 1
+0[150105/114725]root@kusha# 
+
+
+
+
+##### luns a rendre
+
+130[150105/114756]root@lava# /home/betorma/bin/luxadm_carlo -z | egrep 'c0t60000970000292603453533032374439d0|c0t60000970000292603453533030384639d0|c0t60000970000292603453533030384538d0|c0t60000970000292603453533030333838d0'
+/dev/rdsk/c0t60000970000292603453533032374439d0s2 ==> 500009740835f598 70 500009740835f5a4 70  []
+/dev/rdsk/c0t60000970000292603453533030333838d0s2 ==> 500009740835f598 3 500009740835f5a4 3  []
+/dev/rdsk/c0t60000970000292603453533030384639d0s2 ==> 500009740835f598 2 500009740835f5a4 2  []
+/dev/rdsk/c0t60000970000292603453533030384538d0s2 ==> 500009740835f598 1 500009740835f5a4 1  []
+0[150105/114854]root@lava# 
+
+
+130[150105/114908]root@kusha# /home/betorma/bin/luxadm_carlo -z | egrep 'c0t60000970000292602560533032374438d0|c0t60000970000292602560533032374441d0|c0t60000970000292602560533032374334d0|c0t60000970000292602560533032423434d0'
+/dev/rdsk/c0t60000970000292602560533032374438d0s2 ==> 5000097408280198 69 50000974082801a4 69  []
+/dev/rdsk/c0t60000970000292602560533032374441d0s2 ==> 5000097408280198 71 50000974082801a4 71  []
+/dev/rdsk/c0t60000970000292602560533032374334d0s2 ==> 5000097408280198 72 50000974082801a4 72  []
+/dev/rdsk/c0t60000970000292602560533032423434d0s2 ==> 5000097408280198 73 50000974082801a4 73  []
+0[150105/114928]root@kusha# 
+
+
+
+
+
+luxxadm -e offline
+devfsadm -Cv
+cldev populate
+cldev clear
+
+
+
+
+
+

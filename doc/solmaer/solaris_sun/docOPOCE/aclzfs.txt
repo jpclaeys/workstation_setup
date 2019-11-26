@@ -1,0 +1,86 @@
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:pjoweb:rwx,group:planjo:rwx,user:dmadmin:rwx apache-ant-1.6.2/
+# file: in
+# owner: 65561
+# group: 42468
+user::rwx
+group::rwx              #effective:rwx
+group:42468:rwx         #effective:rwx
+mask:rwx
+other:---
+default:user::rwx
+default:group::rwx
+default:group:42468:rwx
+default:mask:rwx
+default:other:---
+
+
+# Depanne mais il ajoute pas les default privs
+chmod -R A=user::rwx,group::rwx,other::---,mask:rwx,user:wood:rwx,group:wood:rwx in/
+chmod -R A=user::rwx,group::rwx,other::---,mask:rwx,user:wood:rwx,group:wood:rwx out/
+#chmod  A+group@:rwx:fd:allow in/
+#chmod  A+group@:rwx:fd:allow out/
+
+# Va mieux avec ca pour les default privs:
+# Attention ca fonctionne que pour des dossiers
+chmod A+user:wood:rwxpdDaARWcCos:fd----:allow in
+chmod A+group:wood:rwxpdDaARWcCos:fd----:allow in
+chmod A+user:wood:rwxpdDaARWcCos:fd----:allow out
+chmod A+group:wood:rwxpdDaARWcCos:fd----:allow out
+
+# Supprimer et recommencer
+chmod A- in/
+chmod A- out/
+chmod -R A- in/
+chmod -R A- out/
+
+#chmod  A+owner@:rwx::allow in/
+#chmod  A+group@:rwx:fd:allow in/
+#chmod  A+everyone@:::deny in/
+
+
+########################################################################
+# S'un getfacl d'un dossier sur un FS ufs, nous donne ca:
+export do=in
+getfacl ${do}
+
+# file: in
+# owner: 65561
+# group: 42468
+user::rwx
+group::rwx              #effective:rwx
+group:42468:rwx         #effective:rwx
+mask:rwx
+other:---
+
+# Sur zfs, cela se traduit par cette commande sur le meme dossier:
+# REMARQUE: Avec ca, les fichiers dedans le dossier ont pas d'acl
+export do=in
+chmod A=user::rwx,group::rwx,other::---,mask:rwx,user:wood:rwx,group:wood:rwx ${do}
+
+# Effacez les droits donnes:
+export do=in
+chmod A- ${do}
+
+#S'un getfacl d'un dossier sur un FS ufs, nous donne ca:
+export do=in
+getfacl ${do}
+
+# file: in
+# owner: 65561
+# group: 42468
+user::rwx
+group::rwx              #effective:rwx
+group:42468:rwx         #effective:rwx
+mask:rwx
+other:---
+default:user::rwx
+default:group::rwx
+default:group:42468:rwx
+default:mask:rwx
+default:other:---
+
+# Sur zfs, cela se traduit par cette commande sur le meme dossier:
+# REMARQUE: Avec ca, les fichiers dedans le dossier auront des acl eux-aussi
+export do=in
+chmod A+user:wood:rwxpdDaARWcCos:fd----:allow ${do}
+

@@ -1,0 +1,50 @@
+#################################################################################################################
+# installation de tomcat
+##################################################################################################################
+
+##### si necessaire, telecharger le binaire de tomcat
+cd /home/betorma/download
+wget http://ftp.wayne.edu/apache/tomcat/tomcat-6/v6.0.20/bin/apache-tomcat-6.0.20.tar.gz
+
+##### variables
+export source_tomcat_path=/home/betorma/download
+export source_tomcat_file=apache-tomcat-6.0.20.tar.gz
+export application=jira
+export user=jira
+export group=jira
+export instance=WEB_JIRA_V4
+export host=loclhost
+
+##### se placer dans repertoire dans lequel tomcat doit etre installe
+cd /applications/${application}/users/system/
+
+##### extraction de tomcat
+gunzip -c ${source_tomcat_path}/${source_tomcat_file} | /usr/sfw/bin/gtar xf -
+
+mv apache-tomcat-6.0.20 tomcat-jira_v4
+
+##### creer un lien symolique 'tomcat' vers le repertoire cree par l'extraction
+ln -s /applications/${application}/users/system/`echo ${source_tomcat_file%.tar.gz}` /applications/${application}/users/system/tomcat
+
+##### creer les repertoires pour l'instance tomcat
+mkdir -p /applications/${application}/users/system/tomcat-${instance}/conf/Catalina/${host}
+mkdir /applications/${application}/users/system/tomcat-${instance}
+mkdir /applications/${application}/users/system/tomcat-${instance}/logs
+mkdir /applications/${application}/users/system/tomcat-${instance}/webapps
+mkdir /applications/${application}/users/system/tomcat-${instance}/temp
+mkdir /applications/${application}/users/system/tomcat-${instance}/work
+
+##### copier les fichiers de /applications/${application}/users/system/tomcat/conf vers /applications/${application}/users/system/tomcat-{instance}/conf
+cd /applications/${application}/users/system/tomcat && tar cf - conf | ( cd ../tomcat-${instance} ; tar xf - ) 
+
+##### change le proprietaire de /applications/${application}/users/system/tomcat-{instance} en tant que ${USER}
+chown -R ${user}:${group} /applications/${application}/users/system/tomcat-${instance}
+
+##### creation du fichier tomcat-${instance}.env
+cat > /applications/${application}/users/${user}/tomcat-${instance}.env <<EOF
+export JAVA_HOME=/applications/${application}/users/system/java/
+export JAVA_OPTS=" -Xmx512M -Xms512M "
+export CATALINA_HOME=/applications/${application}/users/system/tomcat
+export CATALINA_BASE=/applications/${application}/users/system/tomcat-${instance}
+EOF
+

@@ -1,0 +1,57 @@
+#################################################
+# howto x11 forwarding with solaris role
+#################################################
+
+
+0[170201/155649]betorma@banta% ssh -X restore_tz
+
+
+
+0[170201/155651]betorma@restore_tz% echo $DISPLAY
+localhost:14.0
+0[170201/155655]betorma@restore_tz% xauth list | grep :14
+restore_tz/unix:14  MIT-MAGIC-COOKIE-1  fb173ef3db09016cdada2fbf25946a29
+0[170201/155703]betorma@restore_tz% 
+
+
+
+0[170201/155706]betorma@restore_tz% su - oracle
+
+
+
+restore_tz@oracle[]:export DISPLAY=localhost:14.0
+restore_tz@oracle[]:echo $DISPLAY
+localhost:14.0
+restore_tz@oracle[]:
+
+
+
+restore_tz@oracle[]:xauth add restore_tz/unix:14  MIT-MAGIC-COOKIE-1  fb173ef3db09016cdada2fbf25946a29
+restore_tz@oracle[]:echo $?
+0
+restore_tz@oracle[]:
+
+ 
+
+
+restore_tz@oracle[]:xterm 
+font missing: KSC5601.1992-3 for Window
+font missing: TIS620.2533-0 for Window
+font missing: ISO8859-6 for Window
+font missing: ISO8859-8 for Window
+font missing: SUN.UNICODE.INDIA-0 for Window
+restore_tz@oracle[]:
+restore_tz@oracle[]:echo $?
+0
+restore_tz@oracle[]:
+
+
+
+
+
+
+
+
+
+
+

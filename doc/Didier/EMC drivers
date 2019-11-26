@@ -1,0 +1,41 @@
+cd /var/symapi/config
+
+cp netcnfg options /root/
+
+/net/vdm-unix/xchange/Storage/SolutionEnabler/se8300_install.sh -uninstall
+use default answers
+
+cd ../..
+cd symapi/
+
+tar -cvf /root/symapi-bkp.tar *
+
+pwd
+/var/symapi
+rm -rf *
+
+env | grep SYMCLI_
+
+SYMCLI_CONNECT=SBSE3
+SYMCLI_CONNECT_TYPE=REMOTE
+
+unset SYMCLI_CONNECT SYMCLI_CONNECT_TYPE
+
+/net/vdm-unix/xchange/Storage/SolutionEnabler/se8300_install.sh -install
+
+use the default answer except for : 
+Do you want to DELETE persistent data files (including the SYMAPI database)
+Y
+
+cd ..
+cd symapi/config
+
+mv ./options ./options-old && mv ./netcnfg ./netcnfg-old
+cp /root/netcnfg /root/options .
+symacl -unique
+
+export SYMCLI_CONNECT=SBSE3 SYMCLI_CONNECT_TYPE=REMOTE
+
+symcfg discover
+
+

@@ -1,0 +1,3 @@
+Xvnc :20 -desktop spider:20 (trassch) -auth /home/trassch/.Xauthority -geometry 1280x1024 -depth 16 -rfbwait 30000 -rfbauth /home/trassch/.vnc/passwd -rfbport 5920 -pn -query localhost
+
+env PATH=`pwd`:/usr/openwin/bin:$PATH ~/tools/vnc-4_1_1-x86_solaris/vncserver :10 -geometry 1280x1024  -query localhost

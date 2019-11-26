@@ -1,0 +1,1571 @@
+# Besoin des patches pour T5240 avec u04
+# D'abord verifie sur jack s'ils y sont installes
+# sur romulus ( jumpstart server )
+cd /var/tmp
+PKG_NONABI_SYMLINKS=true patchadd -n -C /export/install/Solaris_10_0807_SPARC/Solaris_10/Tools/Boot 125369-13.jar
+PKG_NONABI_SYMLINKS=true patchadd -n -C /export/install/Solaris_10_0807_SPARC/Solaris_10/Tools/Boot 125476-02.jar
+PKG_NONABI_SYMLINKS=true patchadd -n -C /export/install/Solaris_10_0807_SPARC/Solaris_10/Tools/Boot 127111-09.jar
+PKG_NONABI_SYMLINKS=true patchadd -n -C /export/install/Solaris_10_0807_SPARC/Solaris_10/Tools/Boot 124235-03.jar
+PKG_NONABI_SYMLINKS=true patchadd -n -C /export/install/Solaris_10_0807_SPARC/Solaris_10/Tools/Boot 125416-06.jar
+PKG_NONABI_SYMLINKS=true patchadd -n -C /export/install/Solaris_10_0807_SPARC/Solaris_10/Tools/Boot 126434-05.jar
+# PATCH de firmware chez l'ILOM
+# sur horus
+mkdir -p /tftpboot
+# Vire liese du tftp d'inetd 
+pkill -HUP inetd
+# De romulus
+cp /var/tmp/136936-02/Firmware.pkg /net/horus/tftpboot
+#De odile-sc
+# il faut faire un poweroff comme ca:
+stop /SYS
+show -d properties /SYS
+load -source tftp://158.167.227.117/FirmwareT5240.pkg
+
+# Ajout de patches au /export....
+cd /var/tmp
+unzip -o  125369-13.jar -d /export/patches/Quark/custom/
+unzip -o  125476-02.jar -d /export/patches/Quark/custom/
+unzip -o  127111-09.jar -d /export/patches/Quark/custom/
+unzip -o  124235-03.jar -d /export/patches/Quark/custom/
+unzip -o  125416-06.jar -d /export/patches/Quark/custom/
+unzip -o  126434-05.jar -d /export/patches/Quark/custom/
+
+# Recreation de fichiers profiles/class/rules du client
+cd /opt/SUNWjet/bin
+make_client -f odile
+# Changement de parametre sur sysidcfg du client
+cd /opt/SUNWjet/Clients/odile
+vi sysidcfg
+
+###############################
+
+# ==> Suivi point 2 de doc d'EDWIN
+#...format / fmthard et newfs des disques
+halt 
+boot net - install nowin
+
+###############################
+# Verifs
+cat /etc/release
+cd /var/opt/sun/jet
+grep -i eis jumpstart_install.log
+grep -i error jumpstart_install.log
+grep -i fail jumpstart_install.log
+
+##### Post-inst
+echo "opoce.cec.eu.int" >/etc/defaultdomain
+perl -pi -e 's:2007:2008:' /etc/acct/holidays
+coreadm -i /path/to/area/%f_%p_%u_%g.core
+
+cd /etc
+cat >resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOT
+
+cat <<EOT >  inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+# cfengine
+
+# copie public key chez cfengine infra-srv
+# changement master/inputs/cf.groups
+# /var/cfengine/bin/cfagent sur infra-srv
+# verification inputs/cf.groups
+# et sur odile
+/var/cfengine/bin/cfagent --no-splay
+
+#LDAP
+# de jack
+cp /var/ldap/ldap_client_* /net/coppola/xchange/
+# sur odile
+cp /net/coppola/xchange/ldap_client_* /var/ldap/
+chown root:sys /var/ldap/*
+svcadm disable svc:/network/ldap/client:default
+svcadm enable svc:/network/ldap/client:default
+
+# LEGATO
+cd /net/talisker/export/software/Networker/Networker_7.4_sp2/
+cp nw742_solaris_64.tar.gz /var/tmp/
+cd /var/tmp/
+gunzip -c nw742_solaris_64.tar.gz | tar xvf -
+pkgadd -d . LGTOclnt
+
+# ECC agent
+cd /net/talisker/export/software/EMC2/master-agent/ecc600.cd1/
+./install_master.sh  /net/talisker.opoce.cec.eu.int/export/software/EMC2/master-agent/ecc600.cd1
+/etc/init.d/eccmad start
+
+# Checkings
+/home/leidial/devel/svnco/admin/check_host/check_host.sh
+########################
+
+# SVM
+# Prise partition 7 pour state db
+format  c1t0d0
+
+prtvtoc /dev/rdsk/c1t0d0s2 > /tmp/vtoc
+fmthard -s /tmp/vtoc /dev/rdsk/c1t1d0s2
+
+metadb -f -a -c 3 /dev/rdsk/c1t0d0s7
+metadb -a -c 3 /dev/rdsk/c1t1d0s7
+
+# Verif
+metadb -i
+
+# Creation des volumes
+metainit -f d11 1 1 /dev/rdsk/c1t0d0s0
+metainit -f d21 1 1 /dev/rdsk/c1t0d0s1
+metainit -f d31 1 1 /dev/rdsk/c1t0d0s6
+metainit  d12 1 1 /dev/rdsk/c1t1d0s0
+metainit  d22 1 1 /dev/rdsk/c1t1d0s1
+metainit  d32 1 1 /dev/rdsk/c1t1d0s6
+
+metainit d10 -m d11
+metainit d20 -m d21
+metainit d30 -m d31
+
+metattach d20 d22
+metattach d30 d32
+
+metaroot d10
+
+# Edit /etc/vfstab pour changer /var et swap
+# Efface les lignes swap et var et ajoute
+/dev/md/dsk/d20         -       -       swap    -       no      -
+/dev/md/dsk/d30 /dev/md/rdsk/d30        /var    ufs     1       no      logging
+
+# Flush au disques
+lockfs -fa
+
+init 6
+
+metattach d10 d12
+
+# installboot dans le root disque miroir
+installboot /usr/platform/`uname -i`/lib/fs/ufs/bootblk /dev/rdsk/c1t1d0s2
+
+# OBP
+nvalias disk-root /pci@400/pci@0/pci@8/scsi@0/disk@0,0:a
+nvalias backup-root /pci@400/pci@0/pci@8/scsi@0/disk@1,0:a
+setenv boot-device disk-root backup-root net
+nvstore
+# martoni/mireille
+nvalias disk-root /pci@0/pci@0/pci@2/scsi@0/disk@0,0:a
+nvalias backup-root /pci@0/pci@0/pci@2/scsi@0/disk@1,0:a
+setenv boot-device disk-root backup-root net
+nvstore
+
+
+# Final post-installation
+
+perl -pi -e 's:loghost::' /etc/inet/hosts
+perl -pi -e 's:loghost::' /etc/inet/ipnodes
+
+# explorer
+export NAME_EXPLO=`hostname`
+perl -pi -e "s:happy:$NAME_EXPLO:" /etc/opt/SUNWexplo/default/explorer
+grep `hostname` /etc/opt/SUNWexplo/default/explorer
+
+#snmp
+patchadd -p  egrep "^Patch: " | cut -c8-17 >/tmp/patches
+for i in 119254 122539 119042 120272
+do
+echo -n "Patches $i: "
+grep $i /tmp/patches >/dev/null
+  if [ $? -eq 0 ]
+   then
+	echo "OK"
+  else
+	echo "Not installed"
+  fi
+done
+
+# rsync
+cp /home/leidial/pkgs/OPrsync_3.0.2_sparc_10u4.tar.bz2 /opt
+cd /opt
+bunzip2 -c OPrsync_3.0.2_sparc_10u4.tar.bz2 | tar xvf -
+\rm /opt/OPrsync_3.0.2_sparc_10u4.tar.bz2
+# Ajout dans /.profile-EIS
+
+#       Synchronization binaries:
+#
+if [ -d /opt/OPrsync/bin ]
+then
+    PATH=${PATH}:/opt/OPrsync/bin
+    MANPATH=${MANPATH}:/opt/OPrsync/share/man
+fi
+#
+
+
+
+#test mail
+ls | mailx -s `uname -n` christian.trassens@ext.publications.europa.eu
+
+# tests snmp depuis orwell
+/usr/sfw/bin/snmpdf -c specOPOCE -v 1 odile
+snmpwalk -c specOPOCE -v2c odile
+
+####################################################################
+# CLUSTER
+
+# Install
+# nettoyage devices
+devfsadm -Cv
+
+#depuis vespa
+xhost +
+
+#sur odile
+export DISPLAY=vespa:0
+
+/net/romulus/export/packages/Solaris_sparc/installer
+
+# Patches
+mkdir -p /var/tmp/Patch_suncluster_3.2
+cp -pr /net/talisker.opoce.cec.eu.int/export/patches/Quark/eiscd/26FEB08/patch/SunCluster/3.2/10 /var/tmp/Patch_suncluster_3.2
+cd /var/tmp/Patch_suncluster_3.2/10
+for i in *.zip; do unzip $i ;done
+\rm *.zip
+for i in ` cat patch_order`; do patchadd $i ;done
+
+mkdir -p /var/tmp/patch_cacao
+cp -pr /net/talisker.opoce.cec.eu.int/export/patches/Quark/eiscd/26FEB08/patch/cacao/2.1 /var/tmp/patch_cacao
+cd /var/tmp/patch_cacao/2.1
+for i in *.zip; do unzip $i ;done
+\rm *.zip
+for i in 1*;do patchadd $i;done
+
+# Patch pour nxge avec SunCluster 3.2:
+# On devrait installer le 138048 mais ce patch demande le patching du kernel donc pour eviter cela j'ajoute le parametre suivant sur /etc/system
+cp -p /etc/system /etc/system.nxge
+echo "set nxge:nxge_rx_threshold_hi=0" >> /etc/system
+
+init 0
+
+# test des disques (EISCD)
+probe-scsi-all
+# Verifier car les disques SAS sont lents!!!!
+
+
+# globaldevices
+# partition 40g pour utiliser soft partition et creer le globaldevices d'exactement 512m
+format c1t0d0
+format c1t1d0
+
+# Rappel: doivent s'appelent different entre les deux nodes:
+metainit d41 1 1 c1t0d0s5
+metainit d42 1 1 c1t1d0s5
+metainit d40 -m d41
+metattach d40 d42
+metainit d50 -p d40 512m
+#Pour Kara:
+metainit d61 1 1 c1t0d0s5
+metainit d62 1 1 c1t1d0s5
+metainit d60 -m d61
+metattach d60 d62
+metainit d70 -p d60 512m
+
+# Par default 2048 inodes
+echo y | newfs -i 4096 /dev/md/rdsk/d50
+#Pour Kara:
+echo y | newfs -i 4096 /dev/md/rdsk/d70
+
+#
+cp -p /etc/vfstab /etc/vfstab.20080916
+echo "/dev/md/dsk/d50        /dev/md/rdsk/d50        /globaldevices  ufs     2       yes     -" >> /etc/vfstab
+#Pour Kara:
+cp -p /etc/vfstab /etc/vfstab.20080917
+echo "/dev/md/dsk/d70        /dev/md/rdsk/d70        /globaldevices  ufs     2       yes     -" >> /etc/vfstab
+
+mkdir /globaldevices
+mount /globaldevices
+
+# Necessaire pour que scinstall rale pas
+mkdir -p /global/.devices/node\@1
+mkdir -p /global/.devices/node\@2
+
+# meme si le mpxio doit etre habilite, on lance le stmsboot
+stmsboot -e -D fp
+
+# Par /etc/path_to_inst je viens de confirmer que les disques internes sont sd
+#
+echo "* EISCD recommendations" >> /etc/system
+echo "set sd:sd_io_time=30" >> /etc/system
+echo "set scsi_reset_delay=500" >> /etc/system
+
+
+# doit etre false:
+svcprop rpc/bind | grep local_only
+# doit etre true
+eeprom | grep local
+
+# Install
+# d'abord, un seul node ( choix 1 et 2 )
+scinstall 
+
+# Ajoute d'interconnect
+# Ajoute d'interconnect avec clsetup c'est comme suivre:
+# choix 4 et apres
+# ce sont les choix de creer switch, adapter to a node, cable
+# le node doit etre le meme ou on lance la commande. 
+# Et on doit tout faire deux fois que c'est le nombre d'interconnects
+# pe pour l'adapter: clinterconnect add emile:nxge2
+# Sinon:
+#Add a transport junction
+export serveur=odile
+export serveur=mireille
+export interface=nxge2
+export interface=nxge3
+export interface=e1000g2
+export interface=e1000g3
+
+scconf -a -B type=switch,name=switch1
+
+# Add a transport adapter to a node
+scconf -a -A trtype=dlpi,name=${interface},node=${serveur}
+
+#Add a transport cable
+scconf -a -m endpoint=${serveur}:${interface},endpoint=switch1
+
+#Add a transport junction
+scconf -a -B type=switch,name=switch2
+
+# Add a transport adapter to a node
+scconf -a -A trtype=dlpi,name=${interface},node=${serveur}
+
+#Add a transport cable
+scconf -a -m endpoint=${serveur}:${interface},endpoint=switch2
+
+
+# Ensuite on permet l'autre machine de se connecter au cluster 
+# Choix 7 et choix 3 ( karamazov pour odile/ grimaldi pour emile )
+clsetup
+
+# Depuis karamazov ou grimaldi
+# choix 1 et 3
+# il faut faire le nettoyage des devices
+devfsadm -Cv
+# et oui:
+scinstall
+
+
+
+# Ajoute quorum un seul node
+# remarque: Si on doit virer le dernier quorum disque pour un probleme, on doit mettre le cluster en installmode comme ca:
+export clusname=gwext
+cluster set -p installmode=enabled ${clusname}
+# et apres oui:
+clquorum remove d7
+
+# Prise disque DMX200 pour odile/emile
+# On doit creer le zpool avant a cause de cette recomendation:
+# Do not add a disk that is currently configured as a quorum device to a Solaris ZFS storage pool. When a configured quorum device is added to a Solaris ZFS storage pool, the disk is relabeled as an EFI disk and quorum configuration information is lost and the disk no longer provides a quorum vote to the cluster. Once a disk is in a storage pool, that disk can then be configured as a quorum device. Or, you can unconfigure the disk, add it to the storage pool, then reconfigure the disk as a quorum device.
+
+
+format -e 
+# pour emile
+# on cree d'abord zpool en suivant le conseil de dessus
+zpool create -f -m /zpool/roma roma c4t6006048000028775112853594D303138d0
+zpool attach roma c4t6006048000028775112853594D303138d0 c4t60060480000290103312533030353130d0
+zfs create roma/zone
+
+# pour odile
+zpool create -f -m /zpool/opgtw opgtw c4t6006048000028775112853594D303241d0
+zpool attach opgtw c4t6006048000028775112853594D303241d0 c4t60060480000290103312533030353232d0
+zfs create opgtw/zone
+
+# pour mireille
+zpool create -f -m /zpool/cordis cordis c4t6006048000028775112853594D303343d0
+zpool attach cordis c4t6006048000028775112853594D303343d0 c4t60060480000290103312533030353334d0
+zfs create cordis/zone
+
+
+# On verifie si les did sont dedans
+cldevice show
+cldev status
+scdidadm -L
+# on doit voir une chose pareille:
+1        emile:/dev/rdsk/c0t0d0         /dev/did/rdsk/d1
+2        emile:/dev/rdsk/c1t0d0         /dev/did/rdsk/d2
+3        emile:/dev/rdsk/c1t1d0         /dev/did/rdsk/d3
+4        emile:/dev/rdsk/c1t2d0         /dev/did/rdsk/d4
+5        emile:/dev/rdsk/c1t3d0         /dev/did/rdsk/d5
+6        emile:/dev/rdsk/c4t60060480000290103312533030353130d0 /dev/did/rdsk/d6
+6        grimaldi:/dev/rdsk/c4t60060480000290103312533030353130d0 /dev/did/rdsk/d6
+7        emile:/dev/rdsk/c4t6006048000028775112853594D303138d0 /dev/did/rdsk/d7
+7        grimaldi:/dev/rdsk/c4t6006048000028775112853594D303138d0 /dev/did/rdsk/d7
+8        grimaldi:/dev/rdsk/c0t0d0      /dev/did/rdsk/d8
+9        grimaldi:/dev/rdsk/c1t0d0      /dev/did/rdsk/d9
+10       grimaldi:/dev/rdsk/c1t1d0      /dev/did/rdsk/d10
+11       grimaldi:/dev/rdsk/c1t2d0      /dev/did/rdsk/d11
+12       grimaldi:/dev/rdsk/c1t3d0      /dev/did/rdsk/d12
+
+# et apres oui:
+clquorum add d7
+
+
+
+# On suit la guide du doc EISCD donc:
+clnode set -p reboot_on_path_failure=enabled emile grimaldi
+# pour odile
+clnode set -p reboot_on_path_failure=enabled odile karamazov
+# pour mireille
+clnode set -p reboot_on_path_failure=enabled mireille martoni
+# il faut confirmer si on enleve la monitorisation des disques de /globaldevices
+cldev unmonitor d4
+cldev unmonitor d5
+cldev unmonitor d11
+cldev unmonitor d12
+# on verifie si on a pas escom:
+pkginfo | grep SUNWescom
+# on habilite pool-dynamic:
+# sur emile et sur grimaldi
+svcadm enable pools/dynamic
+# on verifie que ce soit true 
+svcprop /system/webconsole:console | grep tcp_listen
+# on verifie qu'il est up:
+netstat -a | grep 6789
+# on constate sur le navigateur: https://emile:6789
+# on constate l'etat de cacao sur les deux nodes:
+cacaoadm status
+# on doit voir:
+default instance is ENABLED at system startup.
+Smf monitoring process:
+2196
+2197
+Uptime: 0 day(s), 14:43
+# on verifie que les deux nodes ont les memes name_to_major pour did et md:
+grep ^md /etc/name_to_major
+grep ^did /etc/name_to_major
+# on verife si ca existe:
+ls -l /etc/notrouter
+# on efface cluster des entrees hosts/netmaks du nsswitch:
+cp -p /etc/nsswitch.conf /etc/nsswitch.conf.cluster_bug
+vi /etc/nsswitch.conf
+
+# REGARDE EN BAS!!!!
+# on ajoute les ips sur hosts/netmasks
+cp -p /etc/inet/hosts /etc/inet/hosts.20080917
+echo "######## Cluster" >> /etc/inet/hosts
+echo "172.16.0.129      clusternode1-priv1" >> /etc/inet/hosts
+echo "172.16.0.130      clusternode2-priv1" >> /etc/inet/hosts
+echo "172.16.1.1        clusternode1-priv2" >> /etc/inet/hosts
+echo "172.16.1.2        clusternode2-priv2" >> /etc/inet/hosts
+
+cp -p /etc/inet/ipnodes /etc/inet/ipnodes.20080917
+echo "######## Cluster" >> /etc/inet/ipnodes
+echo "172.16.0.129      clusternode1-priv1" >> /etc/inet/ipnodes
+echo "172.16.0.130      clusternode2-priv1" >> /etc/inet/ipnodes
+echo "172.16.1.1        clusternode1-priv2" >> /etc/inet/ipnodes
+echo "172.16.1.2        clusternode2-priv2" >> /etc/inet/ipnodes
+
+cp -p /etc/netmasks /etc/netmasks.20080917
+echo "####### Cluster" >> /etc/netmasks
+echo "172.16.1.1     255.255.255.128" >> /etc/netmasks
+echo "172.16.0.129   255.255.255.128" >> /etc/netmasks
+echo "172.16.4.1     255.255.254.0"   >> /etc/netmasks
+
+# on constate qu'on a trois lignes dans le cron de root pour newclevent:
+crontab -l | grep newclevent
+
+# on verifie que la valeur de cette parametre est 0
+ndd /dev/ip ip_strict_dst_multihoming
+
+# si on nous file des nouvelles luns lorsque le cluster est en train se faire:
+cldevice populate
+cldev refresh
+# et attendre qu'il montre ok apres taper
+cldev status
+
+# IPMP
+grep -i TRACK_INTERFACE /etc/default/mpathd
+grep -i FAILBACK /etc/default/mpathd
+export interface=nxge0
+export interface=nxge1
+export interface=e1000g0
+export interface=e1000g1
+export node=odile
+export node=karamazov
+export node=emile
+export node=grimaldi
+export node=mireille
+export node=martoni
+mv /etc/hostname.${interface} /etc/_hostname.${interface}
+echo "${node} group vlan1 up" > /etc/hostname.${interface}
+echo "group vlan1 standby up" > /etc/hostname.${interface}
+
+
+#SVM et cluster
+# on verifie qu'on a le maximum metadevices en 128 (default) et metaset 4 (default)
+grep nmd /kernel/drv/md.conf
+# on actualise dumpadm. On a oublie
+dumpadm -d /dev/md/dsk/d20
+# on a 6 state db, donc on a besoin du parametre kernel:
+cp -p /etc/system /etc/system.20080917
+echo "set md:mirrored_root_flag=1" >> /etc/system
+# on ajoute ca pour evite des erreurs bizarres lorsque on tape des cmds svm
+cp -p /etc/profile /etc/profile.20080917
+echo "########EISCD recommendations" >> /etc/profile
+echo "NOINUSE_CHECK=1" >> /etc/profile
+echo "export NOINUSE_CHECK" >> /etc/profile
+
+#rootdsk et localdsks 
+# QUE POUR emile/grimaldi
+cldev list -v
+# rootdsk d'abord
+# il faut qu'il y ait un seul node pour ces disques la
+cldg show dsk/d2
+cldg show dsk/d3
+cldev status
+# s'il y avait des autres nodes, la commande est celle la:
+cldg remove-node -n grimaldi dsk/d2
+cldg remove-node -n grimaldi dsk/d3
+# on configure comme localonly
+cldg set -p localonly=true dsk/d2
+cldg set -p localonly=true dsk/d3
+# on configure comme autogen aussi
+cldg set -p autogen=true dsk/d2
+cldg set -p autogen=true dsk/d3
+# maintenant avec ceux de l'autre node
+cldg set -p localonly=true dsk/d9
+cldg set -p localonly=true dsk/d10
+cldg set -p autogen=true dsk/d9
+cldg set -p autogen=true dsk/d10
+# Et aussi avec le reste des disques internes de deux nodes:
+cldg set -p localonly=true dsk/d8
+cldg set -p autogen=true dsk/d8
+cldg set -p localonly=true dsk/d1
+cldg set -p localonly=true dsk/d4
+cldg set -p localonly=true dsk/d5
+cldg set -p localonly=true dsk/d11
+cldg set -p localonly=true dsk/d12
+cldg set -p autogen=true dsk/d1
+cldg set -p autogen=true dsk/d4
+cldg set -p autogen=true dsk/d5
+cldg set -p autogen=true dsk/d11
+cldg set -p autogen=true dsk/d12
+
+# pour emile/grimaldi
+# on verifie que tout soit true
+for i in 1 2 3 4 5 8 9 10 11 12
+do 
+cldg show dsk/d${i} | egrep "(localonly|autogen)" 
+done
+
+# POUR odile/kara
+cldg set -p localonly=true dsk/d1
+cldg set -p autogen=true dsk/d1
+cldg set -p localonly=true dsk/d2
+cldg set -p localonly=true dsk/d3
+cldg set -p autogen=true dsk/d2
+cldg set -p autogen=true dsk/d3
+cldg set -p localonly=true dsk/d4
+cldg set -p autogen=true dsk/d4
+cldg set -p localonly=true dsk/d10
+cldg set -p localonly=true dsk/d11
+cldg set -p autogen=true dsk/d10
+cldg set -p autogen=true dsk/d11
+cldg set -p localonly=true dsk/d12
+cldg set -p autogen=true dsk/d12
+cldg set -p localonly=true dsk/d13
+cldg set -p localonly=true dsk/d14
+cldg set -p autogen=true dsk/d13
+cldg set -p autogen=true dsk/d14
+# LES DVD-ROMs aussi:
+cldg set -p localonly=true dsk/d1
+cldg set -p localonly=true dsk/d8
+
+# pour odile/kara
+# on verifie que tout soit true
+for i in 1 2 3 4 5 10 11 12 13 14
+do
+cldg show dsk/d${i} | egrep "(localonly|autogen)"
+done
+# pour mireille/martoni
+for i in 1 2 3 8 9 10
+do
+cldg show dsk/d${i} | egrep "(localonly|autogen)"
+done
+
+
+# on ajoute "logging" a FS global
+vi /etc/vfstab
+
+init 6
+
+# on verifie
+mount -p
+
+
+#########################################################################
+
+# 
+# zones et zpools
+# trouver des addr libres:
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+do
+getent hosts temp${i}
+ping temp${i} 1
+done
+
+#### ZPOOLS
+# depuis emile
+# ce qui manque pour roma
+export zname=roma
+mkdir -p /zones/${zname}
+zfs set mountpoint=/zones/${zname} ${zname}/zone
+zfs create ${zname}/applications
+zfs set mountpoint=/applications/wood ${zname}/applications
+
+#camel
+export zname=camel
+zpool create -f -m /zpool/${zname} ${zname} c4t6006048000028775112853594D324341d0
+zpool attach ${zname} c4t6006048000028775112853594D324341d0 c4t60060480000290103312533030343737d0
+mkdir -p /zones/${zname}
+zfs create ${zname}/zone
+zfs set mountpoint=/zones/${zname} ${zname}/zone
+
+#depuis odile
+# ce qui manque pour opgtw
+export zname=opgtw
+mkdir -p /zones/${zname}
+zfs set mountpoint=/zones/${zname} ${zname}/zone
+zfs create ${zname}/applications
+zfs set mountpoint=/applications/wood ${zname}/applications
+
+
+export zname=oprvp
+zpool create -f -m /zpool/${zname} ${zname} c4t6006048000028775112853594D324342d0
+zpool attach ${zname} c4t6006048000028775112853594D324342d0 c4t60060480000290103312533030353046d0
+mkdir -p /zones/${zname}
+zfs create ${zname}/zone
+zfs set mountpoint=/zones/${zname} ${zname}/zone
+
+# ce qui manque pour mireille/martoni
+export zpool=cordis
+export zname=cordis_pz
+mkdir -p /zones/${zname}
+zfs set mountpoint=/zones/${zname} ${zpool}/zone
+
+
+
+#####ZONES
+# depuis jack,averell,joe,william
+export zname=roma
+export zname=camel
+export zname=opgtw
+export zname=oprvp
+zonecfg -z ${zname} export > /tmp/${zname}.cfg
+cp /tmp/${zname}.cfg /net/coppola/xchange
+cp /net/coppola/xchange/${zname}.cfg /tmp/${zname}.cfg
+
+
+# on ajoute le dataset dans la conf de roma
+add dataset
+set name=roma/applications
+
+export zname=roma profile='drp' ip=158.167.99.130
+export zname=camel profile='drp' ip=158.167.99.134
+export zname=opgtw profile='drp' ip=158.167.99.131
+export zname=oprvp profile='drp' ip=158.167.99.135
+
+export zname=cordis_pz profile='drp' ip=158.167.99.105
+# zones
+zonecfg -z ${zname} -f /tmp/${zname}.cfg
+chmod 700 /zones/${zname}
+zoneadm -z ${zname} install
+
+#####POUR TOUS LES ZONES
+
+cat >/zones/${zname}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+timeserver=158.167.96.18
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${zname} ip_address=${ip} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOF
+
+
+touch /zones/${zname}/root/etc/.NFS4inst_state_domain
+
+cat <<EOT > /zones/${zname}/root/etc/inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+cat >/zones/${zname}/root/etc/resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOT
+
+echo "opocec.cec.eu.int" > /zones/${zname}/root/etc/defaultdomain
+
+cp /etc/init.d/networker /zones/${zname}/root/etc/init.d/
+
+cp /var/ldap/ldap_client* /zones/${zname}/root/var/ldap/
+
+ln -s /zones/${zname}/root/etc/init.d/networker /zones/${zname}/root/etc/rc2.d/S95networker
+ln -s /zones/${zname}/root/etc/init.d/networker /zones/${zname}/root/etc/rc0.d/K05networker
+
+##############################################
+
+# resource groups et leur resources
+
+export rgname=roma-rg
+export rgname=camel-rg
+export rgname=opgtw-rg
+export rgname=oprvp-rg
+
+export rsname=roma-zfs
+export rsname=camel-zfs
+export rsname=opgtw-zfs
+export rsname=oprvp-zfs
+
+export zpool=roma
+export zpool=camel
+export zpool=opgtw
+export zpool=oprvp
+
+export node=emile
+export node=grimaldi
+export node=odile
+export node=karamazov
+#### cordis
+export rgname=cordis-rg
+export rsname=cordis-zfs
+export rsname=cordis-rs
+export zpool=cordis
+export zname=cordis_pz
+export node=mireille
+export node=martoni
+
+clrg create ${rgname}
+clrg manage ${rgname}
+clrg online ${rgname}
+
+# Il faut le register du HAStoragePlus avant de l'utiliser
+clresourcetype register SUNW.HAStoragePlus
+clresourcetype list
+
+#clrslh create -g zone1-rg -h <logical_host> -N ipmp1@phy-host0,ipmp1@phy-host1 <logical_host>-rs
+# resource pour le storage
+# Absolument pas FilesystemMountPoint
+clrs create -g ${rgname} -t SUNW.HAStoragePlus -p zpools=${zpool} ${rsname}
+# logicalhost resource 
+# on verifie en jack/averell joe/william
+clreslogicalhostname list -v
+
+# on inclut dans le fichier hosts (emile/grimaldi)
+# on fait checking des ip addrs libres tempX
+cp -p /etc/inet/ipnodes /etc/inet/ipnodes.20080918
+echo "158.167.99.103  opsrv078 # LH camel" >> /etc/inet/ipnodes
+echo "158.167.99.104   opgtw001 # LH roma" >> /etc/inet/ipnodes
+cp -p /etc/inet/hosts /etc/inet/hosts.20080918
+echo "158.167.99.103  opsrv078 # LH camel" >> /etc/inet/hosts
+echo "158.167.99.104   opgtw001 # LH roma" >> /etc/inet/hosts
+# cordis_pz
+cp -p /etc/inet/hosts /etc/inet/hosts.20080923
+echo "158.167.99.105	cordis_pz" >> /etc/inet/hosts
+cp -p /etc/inet/ipnodes /etc/inet/ipnodes.20080923
+echo "158.167.99.105	cordis_pz" >> /etc/inet/ipnodes
+
+
+# Pour emile/grimaldi
+export rgname=roma-rg
+clrslh create -g ${rgname} -h opgtw001 opgtw001
+export rgname=camel-rg
+clrslh create -g ${rgname} -h opsrv078 opsrv078
+
+# odile/kara n'ont pas de logicalhost resource
+
+# Testing switch
+# Il va faire que les zpools les logical hosts 
+clrg switch -n grimaldi roma-rg
+
+# ET ON CREE LE <ZONE>-RS!!!!
+
+mkdir /etc/zoneagentparams
+cd /opt/SUNWsczone/sczbt/util/
+cp -p sczbt_config sczbt_config_orig
+clresourcetype register SUNW.gds
+clresourcetype list
+for i in roma camel
+do
+echo $i
+cp -p sczbt_config sczbt_${i}
+done
+for i in oprvp opgtw
+do
+echo $i
+cp -p sczbt_config sczbt_${i}
+done
+
+# on modifie notre scratch
+export zname=roma
+export zname=camel
+export zname=opgtw
+export zname=oprvp
+vi sczbt_${zname}
+
+# ce qu'on change pour roma par exemple:
+# Attention: opgtw/oprvp ont pas LH donc SC_NETWORK=false
+
+RS=roma-rs
+RG=roma-rg
+PARAMETERDIR=/etc/zoneagentparams
+SC_NETWORK=true
+SC_LH=opgtw001
+FAILOVER=true
+HAS_RS=roma-zfs
+Zonename=roma
+Zonebootopt=
+Milestone=multi-user-server
+Mounts=
+
+
+# on copie notre scratch sur la bonne copie
+export zname=roma
+export zname=camel
+export zname=opgtw
+export zname=oprvp
+cp -p sczbt_${zname} sczbt_config
+
+./sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_config
+
+###########################################
+
+# on boot les zones
+
+export zname=roma
+export zname=camel
+export zname=opgtw
+export zname=oprvp
+export zname=cordis_pz
+
+zoneadm -z ${zname} boot
+
+# on arrange les derniers details
+export zname=roma
+export zname=camel
+export zname=opgtw
+export zname=oprvp
+
+zlogin ${zname}
+
+svcadm enable ldap/client
+perl -pi -e 's:loghost::' /etc/inet/hosts
+perl -pi -e 's:loghost::' /etc/inet/ipnodes
+
+# cfengine/legato, on le laisse quand tout soit pret
+# on verifie les autoboot qui doivent etre false:
+grep autoboot /etc/zones/*
+
+# on arrete les zones:
+export zname=roma
+export zname=camel
+export zname=opgtw
+export zname=oprvp
+
+zlogin ${zname} init 0
+
+# Copie des fichiers necessaires au deuxieme node
+# dans notre cas, grimaldi et karamazov
+mkdir -p /net/coppola.opoce.cec.eu.int/xchange/zones
+# depuis emile
+cp /etc/zoneagentparams/* /net/coppola.opoce.cec.eu.int/xchange/zones/
+cp /etc/zones/index /net/coppola.opoce.cec.eu.int/xchange/zones/
+export zname=roma
+export zname=camel
+cp /etc/zones/${zname}.xml /net/coppola.opoce.cec.eu.int/xchange/zones/
+#depuis grimaldi
+cp -p /etc/zones/index /etc/zones/index.20080919
+cp /net/coppola.opoce.cec.eu.int/xchange/zones/index /etc/zones/index
+export zname=roma
+export zname=camel
+cp /net/coppola.opoce.cec.eu.int/xchange/zones/${zname}.xml /etc/zones/${zname}.xml
+cp /net/coppola.opoce.cec.eu.int/xchange/zones/sczbt_* /etc/zoneagentparams/
+\rm -f /net/coppola.opoce.cec.eu.int/xchange/zones/*
+
+# depuis odile
+cp /etc/zoneagentparams/* /net/coppola.opoce.cec.eu.int/xchange/zones/
+cp /etc/zones/index /net/coppola.opoce.cec.eu.int/xchange/zones/
+export zname=opgtw
+export zname=oprvp
+cp /etc/zones/${zname}.xml /net/coppola.opoce.cec.eu.int/xchange/zones/
+#depuis karamazov 
+cp -p /etc/zones/index /etc/zones/index.20080919
+cp /net/coppola.opoce.cec.eu.int/xchange/zones/index /etc/zones/index
+export zname=opgtw
+export zname=oprvp
+cp /net/coppola.opoce.cec.eu.int/xchange/zones/${zname}.xml /etc/zones/${zname}.xml
+cp /net/coppola.opoce.cec.eu.int/xchange/zones/sczbt_* /etc/zoneagentparams/
+\rm -f /net/coppola.opoce.cec.eu.int/xchange/zones/*
+
+# On met online les resources qu'on vient de creer:
+export rsname=roma-rs
+export rsname=camel-rs
+export rsname=opgtw-rs
+export rsname=oprvp-rs
+export rsname=cordis-rs
+
+clrs enable ${rsname}
+
+# Testing switching
+
+export rsname=roma-rs
+export rsname=camel-rs
+export rsname=opgtw-rs
+export rsname=oprvp-rs
+export rsname=cordis-rs
+clrs status ${rsname}
+
+export node=emile
+export node=grimaldi
+export node=odile
+export node=karamazov
+export rgname=roma-rg
+export rgname=camel-rg
+export rgname=opgtw-rg
+export rgname=oprvp-rg
+
+clrg switch -n ${node} ${rgname}
+
+# Pour odile et karamazov comme on a pas de logicalhost resource
+# alors, on copie les fichiers des "probe".sh qui se trouvent sur william ou joe et dans /etc/zoneagent...
+#depuis william par exemple
+mkdir -p /net/coppola.opoce.cec.eu.int/xchange/cluster
+export rsname=opgtw-rs
+export rsname=oprvp-rs
+clrs show -v ${rsname} > /net/coppola.opoce.cec.eu.int/xchange/cluster/${rsname}.props
+cp /etc/zoneagentparams/op*.sh /net/coppola.opoce.cec.eu.int/xchange/cluster/ 
+# depuis odile et karamazov
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/op*.sh /etc/zoneagentparams/
+# on compare les props des resources de william/joe et odile/kara:
+export rsname=opgtw-rs
+export rsname=oprvp-rs
+less /net/coppola.opoce.cec.eu.int/xchange/cluster/${rsname}.props
+clrs show -v ${rsname}
+# on change des properties du demarrage
+export zname=opgtw
+export zname=oprvp
+export rsname=opgtw-rs
+export rsname=oprvp-rs
+# d'abord on disable le resource
+clrs disable ${rsname}
+# on edite les scripts pour changer les ip
+export zname=opgtw
+export zname=oprvp
+vi /etc/zoneagentparams/${zname}.sh
+
+#on copie a l'autre node (kara)
+cp /etc/zoneagentparams/op*.sh /net/coppola.opoce.cec.eu.int/xchange/
+cp /net/coppola.opoce.cec.eu.int/xchange/op*.sh /etc/zoneagentparams/
+
+# on change le property des demarrage/arret
+clrs set -p Start_command="/etc/zoneagentparams/${zname}.sh start" ${rsname}
+clrs set -p Stop_command="/etc/zoneagentparams/${zname}.sh stop" ${rsname}
+
+clrs enable ${rsname}
+# test du switch
+export node=odile
+export node=karamazov
+
+export rgname=opgtw-rg
+export rgname=oprvp-rg
+
+clrg switch -n ${node} ${rgname}
+
+######################################################################################################
+# Checkings EISCD qui manquaient
+
+# meme s'il est deja offline, on tape
+# tous les nodes!!!
+svcadm -v disable /system/cluster/scsymon-srv
+cp -p /usr/cluster/lib/svc/method/svc_cl_svc_enable /usr/cluster/lib/svc/method/svc_cl_svc_enable.20080919
+# on vire la ligne scsymon
+vi /usr/cluster/lib/svc/method/svc_cl_svc_enable
+
+cp -p /usr/cluster/lib/svc/method/svc_boot_check /usr/cluster/lib/svc/method/svc_boot_check.20080919
+#on vire la ligne scsymon
+vi /usr/cluster/lib/svc/method/svc_boot_check
+
+# on verifie qu'il existent les trois pkgs du perl suivant:
+pkginfo | egrep "(SUNWpl5u|SUNWpl5v|SUNWpl5p)"
+
+# on modifie une autre fois /etc/inet/hosts et /etc/inet/ipnodes et on efface ce qu'on avait ajoute par rapport au cluster
+cp -p /etc/inet/hosts /etc/inet/hosts.20080919
+cp -p /etc/inet/ipnodes /etc/inet/ipnodes.20080919
+# on efface les lignes ajoute avant:
+(echo 'g/^..*clusternode..*$/d'; echo 'wq!') | ex -s /etc/inet/hosts
+(echo 'g/^..*clusternode..*$/d'; echo 'wq!') | ex -s /etc/inet/ipnodes
+#on ajoute
+cat >> /etc/inet/hosts <<EOF
+#############Cluster EISCD
+172.16.0.129 	clusternode1-priv-physical1
+172.16.1.1 	clusternode1-priv-physical2
+172.16.4.1 	clusternode1-priv
+172.16.0.130 	clusternode2-priv-physical1
+172.16.1.2 	clusternode2-priv-physical2
+172.16.4.2 	clusternode2-priv
+EOF
+
+cat >> /etc/inet/ipnodes <<EOF
+#############Cluster EISCD
+172.16.0.129    clusternode1-priv-physical1
+172.16.1.1      clusternode1-priv-physical2
+172.16.4.1      clusternode1-priv
+172.16.0.130    clusternode2-priv-physical1
+172.16.1.2      clusternode2-priv-physical2
+172.16.4.2      clusternode2-priv
+EOF
+
+# la meme chose pour netmasks ( on doit le modifier )
+cp -p /etc/netmasks /etc/netmasks.20080919
+(echo 'g/^172.16..*$/d'; echo 'wq!') | ex -s /etc/netmasks
+
+cat >> /etc/netmasks <<EOF
+172.16.0.128	255.255.255.128
+172.16.1.0	255.255.255.128
+172.16.4.0	255.255.254.0
+EOF
+
+# Verifier que le parametre montre une valeur de false:
+grep auto /kernel/drv/scsi_vhci.conf
+
+# Enable ntp native:
+svcadm enable ntp
+# On verifie qu'on a /etc/defaultrouter
+more /etc/defaultrouter
+
+#########################################################################################################
+# D'abord on copie le nsswitch du server aux
+
+export zname=roma
+export zname=camel
+export zname=oprvp
+export zname=opgtw
+
+cp /etc/nsswitch.conf /zones/${zname}/root/etc/
+
+# on finit avec les broutilles de roma/camel/oprvp/opgtw:
+# on verifie les ip a qui tempX correspondent
+export ip=158.167.99.134
+export ip=158.167.99.130
+export ip=158.167.99.135
+export ip=158.167.99.131
+getent hosts ${ip}
+
+# on ajoute temp les tempX machines dans le fichier /var/cfengine/inputs/cf.groups sur infr-srv
+vi /var/cfengine/inputs/cf.groups
+# on copie les cles publics des zones sur /var/cfengine/ppkeys/ d'infra-srv
+export zname=roma
+export ip=158.167.99.130
+cat /zones/${zname}/root/var/cfengine/ppkeys/localhost.pub  > /net/coppola.opoce.cec.eu.int/xchange/cluster/root-${ip}.pub
+# depuis infra-srv
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/root-${ip}.pub /var/cfengine/ppkeys/
+export zname=camel
+export ip=158.167.99.134
+cat /zones/${zname}/root/var/cfengine/ppkeys/localhost.pub  > /net/coppola.opoce.cec.eu.int/xchange/cluster/root-${ip}.pub
+# depuis infra-srv
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/root-${ip}.pub /var/cfengine/ppkeys/
+export zname=oprvp
+export ip=158.167.99.135
+cat /zones/${zname}/root/var/cfengine/ppkeys/localhost.pub  > /net/coppola.opoce.cec.eu.int/xchange/cluster/root-${ip}.pub
+# depuis infra-srv
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/root-${ip}.pub /var/cfengine/ppkeys/
+export zname=opgtw
+export ip=158.167.99.131
+cat /zones/${zname}/root/var/cfengine/ppkeys/localhost.pub  > /net/coppola.opoce.cec.eu.int/xchange/cluster/root-${ip}.pub
+# depuis infra-srv
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/root-${ip}.pub /var/cfengine/ppkeys/
+
+# On execute cfengine depuis chaque zone:
+/var/cfengine/bin/cfagent --no-splay
+
+# On installe LGTO pour la zone
+cd /var/tmp
+pkgadd -G -d . LGTOclnt
+export node=emile
+export node=karamazov
+export rgname=roma-rg
+export rgname=camel-rg
+export rgname=opgtw-rg
+export rgname=oprvp-rg
+clrg switch -n ${node} ${rgname}
+cd /var/tmp
+pkgadd -G -d . LGTOclnt
+# on cree sur networker les clients tempX qui correspondent a chaque zone
+# jete un coup d'oeil dans nsradmin.txt de mon scratch
+
+# Dans chaque zone:
+echo "opoce.cec.eu.int" > /etc/defaultdomain
+coreadm -i /path/to/area/%f_%p_%u_%g.core
+perl -pi -e 's:2007:2008:' /etc/acct/holidays
+/home/leidial/devel/svnco/admin/check_host/check_host.sh
+cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config.20080921
+# on va copier /nsr de zones originelles
+(echo '%s/PermitRootLogin no/PermitRootLogin yes/'; echo 'wq!') | ex -s /etc/ssh/sshd_config
+svcadm refresh "*ssh*"
+# depuis roma/camel/oprvp/opgtw ( celles de prod!!!!)
+export zname=roma
+export zname=camel
+export zname=oprvp
+export zname=opgtw
+
+tar cvf /var/tmp/nsr_${zname}.tar /nsr 
+
+cp /zones/${zname}/root/var/tmp/nsr_${zname}.tar /net/coppola/xchange/cluster
+# depuis roma/camel/oprvp/opgtw, celles qu'on est en train de migrer
+cp /net/coppola/xchange/cluster/nsr_$zname.tar /
+tar xvf nsr_${zname}.tar
+
+#  dans chaque zone
+/etc/init.d/networker start
+nsrports -s coppola
+# chez chaque zone de prod on doit ajouter root@tempX comme list d'utilisateur
+# voir nwadmin
+# et on commence le restore d'applications
+recover -s coppola -c ${zname}
+
+
+###########################################################################################################
+
+#   Patches EISCD
+
+# depuis emile
+cd /cdrom/eis-dvd/sun/install
+# reponse "n" pour tous les questions
+./setup-standard.sh
+cd /cdrom/eis-dvd/sun/patch/firmware
+unpack_patches
+cd /tmp/firmware
+# Pas de patches
+
+#  flashprom
+# on telecharge la derniere revision: 136936-07
+# on la copie en horus car on doit tout eteindre et lancer le loadsource
+# on fait la copie sur /tftpboot
+cp /var/tmp/firmware/136936-07/Sun_System_Firmware-7_1_6-SPARC_Enterprise_T5140+T5240.pkg /tftpboot
+# on eteint tout
+init 5
+load -source tftp://158.167.227.117/Sun_System_Firmware-7_1_6-SPARC_Enterprise_T5140+T5240.pkg
+# pour martoni/mireille
+load -source tftp://158.167.227.117/Sun_System_Firmware-7_1_6-SPARC_Enterprise_T5120+T5220.pkg
+
+#mireille/martoni
+/cdrom/eis-dvd/sun/patch/10
+unpack-patches /var/tmp
+cd /var/tmp/10; ./install_all_patches
+
+# Share cdrom ro: /etc/dfs/dfstab
+#depuis martoni:
+exec su -
+mount -F nfs mireille:/cdrom/eis-dvd /mnt
+cd /mnt/sun/install
+./setup-standard.sh
+cd /mnt/sun/patch/10
+unpack-patches /var/tmp
+cd /var/tmp/10; ./install_all_patches
+
+# pour les clusters
+cd /cdrom/eis-dvd/sun/patch/SunCluster/3.2/10
+cd /mnt/sun/patch/SunCluster/3.2/10
+unpack-patches /var/tmp/cluster
+echo y | /var/tmp/cluster/10/install_patches
+
+
+
+##################################################################################################
+# mireille/martoni checkings
+
+# copie des fichiers qui manquent sur martoni
+cp /etc/zones/index /net/coppola/xchange/cluster
+cp /etc/zones/cor*xml /net/coppola/xchange/cluster
+cp  /etc/zoneagentparams/*cordis* /net/coppola/xchange/cluster
+# depuis martoni ( APRES L'install des patches de mireille et apres avoir bascule la zone )
+cp /net/coppola/xchange/cluster/index /etc/zones/
+cp /net/coppola/xchange/cluster/cor*xml /etc/zones/
+cp /net/coppola/xchange/cluster/sc*cordis* /etc/zoneagentparams/
+# on va copier un script des probes d'odile et apres on va l'editer:
+cp /net/coppola/xchange/cluster/oprvp.sh /etc/zoneagentparams/cordis_pz.sh
+# on change les ip/rs/rg
+vi /etc/zoneagentparams/cordis_pz.sh
+# on fait la copie de ce fichier chez mireille
+cp /etc/zoneagentparams/cordis_pz.sh /net/coppola/xchange/cluster
+# depuis mireille
+cp /net/coppola/xchange/cluster/cordis_pz.sh /etc/zoneagentparams/cordis_pz.sh
+
+##################################################################################################
+# Resolution panique apres init 0
+
+# solution pour init 0 T5240 qui ont que l'EISCD fev
+cp -p /etc/system /etc/system.20080923b
+echo "# possible fix pour panique apres init 0" >> /etc/system
+echo "set force_domaining_disabled=1" >> /etc/system
+###########
+
+# patch IDR pour zpool
+mkdir -p /var/tmp/cluster
+# Requis de patch IDR
+# Il faut basculer les zones pour qu'elles les prennent aussi
+cp  /home/trassch/tmp/125514-03.jar /var/tmp/cluster/
+cd /var/tmp/cluster
+patchadd -n 125514-03.jar
+init 6
+# on installe
+cp /home/trassch/tmp/IDR138985-01-1845071522.zip /var/tmp/cluster/
+cd /var/tmp/cluster
+unzip -o IDR138985-01-1845071522.zip
+cd IDR138985-01
+patchadd  .
+less /var/sadm/patch/IDR138985-01/log
+
+# on uninstall sc-geo et le choix du quorum server
+# choix 41,42,44,46,47
+/var/sadm/prod/SUNWentsys5/uninstall
+# refer to logs:
+less /var/sadm/install/logs/JavaES_UnInstall_log.*
+#verif: doit pas etre ce fichier la:
+ls -l /etc/rc3.d/S91initgchb_resd
+
+#########################################################################
+##
+# Verifs de plus
+
+# e1000 sur cluster cordis
+cd /var/adm
+grep 'e1000g2 being drained' messages*
+grep 'e1000g3 being drained' messages*
+# Si c'est lors des arret, c'est bon, sinon on doit faire:
+
+scconf -c -m endpoint=${endpoint}:e1000g2,state=disabled
+scconf -c -m endpoint=${endpoint}:e1000g2,state=enabled
+
+# verifs des cartes reseaux
+dladm show-dev
+
+# verifs hards
+fmadm faulty
+
+#############################################################################
+
+# Copie fichiers /etc des zones sources
+
+#depuis zones SOURCES
+export zname=`hostname`
+
+mkdir -p  /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/project /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp -r /var/spool/cron/crontabs /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/passwd /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/shadow /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/group /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/auto_home /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/inittab /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/syslog.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/nsswitch.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/default/init /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/inet/hosts /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/netmasks /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/inet/services /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/security/prof_attr /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/security/exec_attr /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/user_attr /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/sma/snmp/snmpd.conf  /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp -r /etc/mail /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/printers.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/init.d/initd_lib.pl /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/hosts.allow /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/hosts.deny /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp -r /etc/ftpd  /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/pam.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/default/allocator* /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname} 
+cp /etc/init.d/networker /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/init.d/bbrun /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/shells /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+# que pour opgtw
+cp /etc/issue /tmp
+cp /zones/${zname}/root/tmp/issue /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/named.conf /tmp
+cp /zones/${zname}/root/tmp/named.conf  /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/opasswd /tmp
+cp /zones/${zname}/root/tmp/opasswd /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp /etc/ouser_attr /tmp
+cp /zones/${zname}/root/tmp/ouser_attr /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cd /zones/${zname}/root/var/
+tar cvf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/named.tar named
+
+
+
+tar cvf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/bb.tar /opt/OPbb4
+svcs | cut -c25-150 | sort  >/net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/svcs.txt
+
+
+# depuis zones TARGET
+
+export zname=`hostname`
+
+diff /etc/project /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/passwd /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/shadow /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/group /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/auto_home /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/inittab /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/syslog.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/nsswitch.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/default/init /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/inet/hosts /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/netmasks /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/inet/services /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/security/prof_attr /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/security/exec_attr /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/sma/snmp/snmpd.conf  /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/printers.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/init.d/initd_lib.pl /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/hosts.allow /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/hosts.deny /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+diff /etc/pam.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+
+
+# et on ajoute les differences
+# par contre on copie le fichier passwd/shadow/group/auto_home sur la zone target
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/passwd /etc/passwd
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/shadow /etc/shadow
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/group /etc/group 
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/auto_home /etc/auto_home
+# apres on lance un pwck pour voir s'il y a des problemes sur les fichiers passwd
+pwck
+
+cp /etc/nsswitch.conf /etc/nsswitch.conf.bk
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/nsswitch.conf /etc/nsswitch.conf
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/init  /etc/default/init
+cp /etc/inet/hosts /etc/inet/hosts.bk
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/hosts /etc/inet/hosts
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/prof_attr /etc/security/prof_attr
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/exec_attr /etc/security/exec_attr
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/initd_lib.pl  /etc/init.d/initd_lib.pl
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/hosts.* /etc
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/pam.conf /etc/pam.conf
+mv /etc/ftpd /etc/ftpd.bk
+cp -r /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/ftpd /etc/
+mv  /var/spool/cron/crontabs  /var/spool/cron/crontabs.bk
+cp -r /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/crontabs /var/spool/cron/
+mv /etc/mail /etc/mail.bk
+#cp -r /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail /etc
+zlogin ${zname}
+export zname=roma
+export zname=camel
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/generics-domain /etc/mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/generics.in /etc/mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/mailertable.* /etc/mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/sendmail.cf /etc/mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/submit.cf /etc/mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/aliases* /etc/mail/
+
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/allocator* /etc/default/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/networker /etc/init.d/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/bbrun /etc/init.d/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/shells /etc/
+
+
+# on compare les SMFs
+svcs | cut -c25-150 | sort > /tmp/svcs_new.txt
+diff /tmp/svcs_new.txt /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/svcs.txt
+# import des manifest d'appli ( aller dans le repertoire )
+# en plus
+svcadm disable webconsole
+
+
+# pour oprvp/opgtw
+export zname=oprvp
+export zname=opgtw
+
+cd /zones/${zname}/root
+mkdir -p  /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/project /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp -r var/spool/cron/crontabs /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/passwd /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/shadow /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/group /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/auto_home /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/inittab /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/syslog.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/nsswitch.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/default/init /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/inet/hosts /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/netmasks /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/inet/services /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/security/prof_attr /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/security/exec_attr /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/sma/snmp/snmpd.conf  /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+#cp -r etc/mail /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/printers.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/init.d/initd_lib.pl /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/hosts.allow /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/hosts.deny /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp -r etc/ftpd  /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+cp etc/pam.conf /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}
+
+ cd /zones/${zname}/root/etc
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/generics-domain mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/generics.in mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/mailertable.* mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/sendmail.cf mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/submit.cf mail/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/mail/aliases* mail/
+
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/allocator* etc/default/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/networker etc/init.d/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/bbrun etc/init.d/
+cp /net/coppola.opoce.cec.eu.int/xchange/cluster/${zname}/shells etc/
+
+
+# on deshabilite ldap
+svcadm disable ldap/client
+
+##############################################
+
+# ajouter banner machines physiques:
+
+eeprom oem-banner=`hostname`
+
+
+###################################################
+# on commence la synchro incrementale
+
+# depuis host TARGET
+cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config.20080926
+(echo '%s/PermitRootLogin no/PermitRootLogin yes/'; echo 'wq!') | ex -s /etc/ssh/sshd_config
+mv /etc/hosts.deny /etc/hosts.20080926
+#incremental des gw
+export zname=roma
+export zname=camel
+export node=emile
+export node=grimaldi
+/opt/OPrsync/bin/rsync -a --update --delete -S  --rsync-path=/opt/OPrsync/bin/rsync -e ssh --stats --progress /zones/${zname}/root/applications/  --stats root@${node}:/zones/${zname}/root/applications/
+export zname=oprvp
+export zname=opgtw
+export node=odile
+export node=karamazov
+/opt/OPrsync/bin/rsync -a --update --delete -S  --rsync-path=/opt/OPrsync/bin/rsync -e ssh --stats --progress /zones/${zname}/root/applications/  --stats root@${node}:/zones/${zname}/root/applications/
+
+##################################################################
+# Comparaison des fichiers
+
+export zname=roma
+export zname=camel
+export zname=oprvp
+export zname=opgtw
+zlogin ${zname}
+export zname=roma
+export zname=camel
+export zname=oprvp
+export zname=opgtw
+find / -local -mount -name sadm -prune  -o -name applications -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /net/coppola/xchange/cluster/${zname}.orig
+
+export zname=roma
+export zname=camel
+export zname=oprvp
+export zname=opgtw
+zlogin ${zname}
+export zname=roma
+export zname=camel
+export zname=oprvp
+export zname=opgtw
+find / -local -mount -name sadm -prune  -o -name applications -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /net/coppola/xchange/cluster/${zname}.new
+
+diff -u /net/coppola/xchange/cluster/${zname}.new /net/coppola/xchange/cluster/${zname}.orig > /tmp/${zname}.diff
+
+# soft lien
+# pas pour camel ou oprvp
+export zname=roma
+export zname=opgtw
+cd /zones/${zname}/root/opt/
+ln -s perl5 perl5.6.1
+
+
+######################################################
+# Recomendation solarisinternal.wiki
+
+cp /etc/system /etc/system.20080929
+echo "*************Nxge performance" >> /etc/system
+echo "set ip:ip_soft_rings_cnt=16" >> /etc/system
+
+
+####################################################
+# VLAN tagging
+
+# Fait depuis la console d'odile et de karamazov
+
+cd /etc
+for i in hostname.nxge*
+do
+cp -p $i  __${i}
+done
+
+\rm hostname.nxge*
+
+export node=odile
+export node=karamazov
+echo "${node} group vlan1 up" > /etc/hostname.nxge1000
+echo "group vlan1 standby up" > /etc/hostname.nxge1001
+echo "group vlan169 up" > /etc/hostname.nxge169000
+echo "group vlan169 standby up" > /etc/hostname.nxge169001
+
+cp -p /etc/inet/netmasks /etc/inet/netmasks.20081001
+echo "#############################" >> /etc/inet/netmasks
+echo "158.169.97.0    255.255.255.0" >> /etc/inet/netmasks
+
+# Possible fix au probleme de boot odile
+cp -p /etc/system /etc/system.20091002
+echo "*********************** Possible fix probleme boot" >> /etc/system
+echo "set xc_tick_limit_scale = 5" >> /etc/system
+
+#######################################################
+# on cree les clients networkers voir fichier nsradmin.txt
+
+##################################################
+# pour les acls sur opgtw, regardez le fichier aclzfs.txt dans mon repertoire scratch
+
+#####################################################
+# Probleme avec /var
+cp -p /etc/vfstab /etc/vfstab.20081014
+(echo '%s!^\/dev\/md\/dsk\/d30!#/dev/md/dsk/d30!'; echo 'wq!' ) | ex -s /etc/vfstab
+cp -p /etc/vfstab /etc/vfstab.sans_var
+cp -p /etc/vfstab.20081014 /etc/vfstab
+
+####################################################
+# lors de migration sur les sources machines:
+
+clrg offline camel-rg
+clrg suspend camel-rg
+#OU
+#clrg offline camel-rg
+#clrs disable camel-rs
+#clrs disable opsrv078
+#clrs disable camel-dg
+#clrg unmanage camel-rg

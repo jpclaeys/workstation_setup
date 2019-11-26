@@ -1,0 +1,173 @@
+export zo=dlib_pz
+cd /zones/${zo}/root
+find . -local -mount -name sadm -prune  -o -name applications -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /var/tmp/${zo}.root
+
+export zo=dlib2
+cd /zones/${zo}/root
+find . -local -mount -name sadm -prune  -o -name applications -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /var/tmp/${zo}.root
+
+export zo=dlib2
+
+echo "opoce.cec.eu.int" > /zones/${zo}/root/etc/defaultdomain
+touch /zones/${zo}/root/etc/notrouter
+cd /zones/dlib_pz/root
+tar cf - nsr|(cd ../../${zo}/root; tar xf - )
+tar cf - var/cfengine|(cd ../../${zo}/root; tar xf - )
+tar cf - etc/ftpd|(cd ../../${zo}/root; tar xf - )
+tar cf - etc/mail|(cd ../../${zo}/root; tar xf - )
+tar cf - etc/security|(cd ../../${zo}/root; tar xf - )
+tar cf - u01|(cd ../../${zo}/root; tar xf - )
+tar cf - u02|(cd ../../${zo}/root; tar xf - )
+tar cf - opt/ORCLfmap |(cd ../../${zo}/root; tar xf - )
+tar cf - opt/OPrsync |(cd ../../${zo}/root; tar xf - )
+tar cf - etc/ssh |(cd ../../${zo}/root; tar xf - )
+tar cf - /mnt/root/var/opt/oracle |(cd /zones/dlib_pz/root/var/opt; tar xf - )
+
+
+cp -p ./etc/init.d/networker ../../${zo}/root/etc/init.d
+
+cp -p etc/pam.conf ../../${zo}/root/etc/pam.conf
+
+cp -p ./etc/init.d/initd_lib.pl ../../${zo}/root/etc/init.d
+
+cp -p ./etc/auto_home ../../${zo}/root/etc
+cp -p ./etc/passwd ../../${zo}/root/etc
+cp -p ./etc/shadow ../../${zo}/root/etc
+cp -p ./etc/group ../../${zo}/root/etc
+cp -p ./etc/nsswitch.conf ../../${zo}/root/etc
+cp -p ./etc/user_attr ../../${zo}/root/etc
+cp -p ./etc/project ../../${zo}/root/etc
+cp -p ./var/ldap/ldap* ../../${zo}/root/var/ldap
+
+cp -p ./etc/inet/hosts ../../${zo}/root/etc
+cp -p ./etc/nodename ../../${zo}/root/etc
+cp -p ./etc/default/init ../../${zo}/root/etc/default
+cp -p ./etc/acct/holidays ../../${zo}/root/etc/acct
+
+cp -p ./var/spool/cron/crontabs/oracle ../../${zo}/root/var/spool/cron/crontabs
+cp -p ./etc/syslog.conf ../../${zo}/root/etc
+cp -p ./etc/logadm.conf ../../${zo}/root/etc
+
+cat <<EOF > /zones/${zo}/root/etc/resolv.conf
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOF
+
+cat <<EOF > /zones/${zo}/root/etc/hosts.allow
+all:@admin
+sendmail:all
+EOF
+
+cp -p ./etc/hosts.deny ../../${zo}/root/etc
+
+zlogin dlib2
+# podl
+# pour les fichiers
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive01/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive02/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive03/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive04/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive05/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive06/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive07/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive08/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/archive09/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/data03/02/2008/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx /applications/dlib/data03/02/2009/*
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:jurel:rwx,user:dlib:rwx,group:dlib:rwx /applications/dlib/jurel01/archive_jurel/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive01/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive02/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive03/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive04/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive05/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive06/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive07/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive08/*
+chmod -R A+user:podl:rwxpdDaARWcCos:allow /applications/dlib/archive09/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive01/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive02/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive03/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive04/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive05/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive06/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive07/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive08/*
+chmod -R A+user:w_dlib:rwxpdDaARWcCos:allow /applications/dlib/archive09/*
+
+#pour les repertoires
+export pa=/applications/dlib/archive01/
+export pa=/applications/dlib/archive02/
+export pa=/applications/dlib/archive03/
+export pa=/applications/dlib/archive04/
+export pa=/applications/dlib/archive05/
+export pa=/applications/dlib/archive06/
+export pa=/applications/dlib/archive07/
+export pa=/applications/dlib/archive08/
+export pa=/applications/dlib/archive09/
+export pa=/applications/dlib/data03
+export pa=/applications/dlib/data02
+cd ${pa}
+for i in `find . -type d`
+do
+chmod A+user:podl:rwxpdDaARWcCos:fd----:allow ${i}
+chmod A+user:w_dlib:rwxpdDaARWcCos:fd----:allow ${i}
+done
+
+
+# acl dans FS users
+cd /applications/dlib/users/podl
+export pa=etc
+export pa=logs
+chmod A+user:podl:rwxpdDaARWcCos:fd----:allow ${pa}
+chmod A+user:w_dlib:rwxpdDaARWcCos:fd----:allow ${pa}
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:podl:rwx,group:dlib:rwx ${pa}/*
+
+
+# jurel
+cd /applications/dlib/jurel01
+cd archive_jurel
+for i in `find . -type d`
+do
+chmod A+user:jurel:rwxpdDaARWcCos:fd----:allow ${i}
+chmod A+user:w_dlib:rwxpdDaARWcCos:fd----:allow ${i}
+chmod A+user:dlib:rwxpdDaARWcCos:fd----:allow ${i}
+done
+
+cd /applications/dlib/users/jurel
+export pa=etc
+export pa=logs
+chmod A+user:jurel:rwxpdDaARWcCos:fd----:allow ${pa}
+chmod A+user:w_dlib:rwxpdDaARWcCos:fd----:allow ${pa}
+chmod A+user:dlib:rwxpdDaARWcCos:fd----:allow ${pa}
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:jurel:rwx,user:dlib:rwx,group:dlib:rwx ${pa}/*
+
+
+#dcom
+cd /applications/dlib/users/dcom
+export pa=etc
+export pa=logs
+chmod A+user:dcom:rwxpdDaARWcCos:fd----:allow ${pa}
+chmod A+user:w_dlib:rwxpdDaARWcCos:fd----:allow ${pa}
+chmod A+user:dlib:rwxpdDaARWcCos:fd----:allow ${pa}
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:dcom:rwx,user:dlib:rwx,group:dlib:rwx ${pa}/*
+cd /applications/dlib/dcom01/input_dcom
+for i in `find . -type d`
+do
+chmod A+user:dcom:rwxpdDaARWcCos:fd----:allow ${i}
+chmod A+user:w_dlib:rwxpdDaARWcCos:fd----:allow ${i}
+chmod A+user:dlib:rwxpdDaARWcCos:fd----:allow ${i}
+done
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:dcom:rwx,user:dlib:rwx,group:dlib:rwx  OP10167_COM_20080609_01/*
+cd /applications/dlib/archive_dcom01
+chmod -R A=user::rwx,group::rwx,other::r-x,mask:rwx,user:w_dlib:rwx,user:dcom:rwx,user:dlib:rwx,group:dlib:rwx  /applications/dlib/archive_dcom01/archive_dcom/WEB-INF/*
+cd /applications/dlib/archive_dcom01
+for i in `find . -type d`
+do
+chmod A+user:dcom:rwxpdDaARWcCos:fd----:allow ${i}
+chmod A+user:w_dlib:rwxpdDaARWcCos:fd----:allow ${i}
+chmod A+user:dlib:rwxpdDaARWcCos:fd----:allow ${i}
+done
+

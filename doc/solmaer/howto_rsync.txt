@@ -1,0 +1,131 @@
+
+export source_server=nemesis
+export source_folder=/applications/planpubli/storage_01
+
+export target_server=homer
+export target_folder=/applications/planpubli/storage_01 
+
+export date=`date +%Y%m%d%H%M`
+export log_file=/home/betorma/xchange/rsync_from_${source_server}_to_${target_server}.${date}
+echo $log_file
+
+
+echo "/opt/OPrsync/bin/rsync --update --progress -aHS ${source_folder}/ ${target_server}:${target_folder} >${log_file}"
+
+
+
+#######################################################################
+# synchro avec rsync
+#######################################################################
+
+##### PermitRootLogin=yes dans /etc/ssh/sshd_config
+##### sshd:hostname dans /etc/hosts.allow
+
+
+export log_tag=RSYNC
+export at_launch='10:10'
+{
+	echo "logger -pdaemon.notice -t${log_tag} begin archive rsync to schnaps"
+
+	export COMMAND="/opt/OPrsync/bin/rsync --update -aHS  /applications/${APPL}/users/ schnaps::${APPL}_users"
+	echo "logger -pdaemon.notice -t${log_tag} start ${COMMAND}"
+	echo $COMMAND
+	echo "logger -pdaemon.notice -t${log_tag} end ${COMMAND}"
+
+	export COMMAND="/opt/OPrsync/bin/rsync --update -aHS  /applications/${APPL}/repository/ schnaps::${APPL}_repository"
+	echo "logger -pdaemon.notice -t${log_tag} start ${COMMAND}"
+	echo $COMMAND
+	echo "logger -pdaemon.notice -t${log_tag} end ${COMMAND}"
+
+	echo "logger -pdaemon.notice -t${log_tag} end archive rsync to schnaps"
+
+}| at $at_launch
+
+
+
+
+export source_server=dopey
+export target_server=grumpy
+export log_tag=RSYNC
+export at_launch='20:20'
+{
+	echo "logger -pdaemon.notice -t${log_tag} begin config file from dopey to grumpy"
+
+	foreach file in /etc/passwd /etc/shadow /etc/group /etc/user_attr /etc/auto_home /etc/nsswitch.conf /etc/security/prof_attr /etc/security/exec_attr /etc/project /etc/pam.conf /etc/inet/hosts /etc/hosts.allow /etc/hosts.deny /etc/hostname.* /etc/nodename /etc/ftpd /var/spool/cron/crontabs /var/opt/oracle/oratab
+	do
+		export COMMAND="/opt/OPrsync/bin/rsync --update -aHS  ${file} ${target_server}:${file}"
+		echo "logger -pdaemon.notice -t${log_tag} start ${COMMAND}"
+		echo $COMMAND
+		echo "logger -pdaemon.notice -t${log_tag} end ${COMMAND}"
+	done
+
+	echo "logger -pdaemon.notice -t${log_tag} end config file from dopey to grumpy"
+
+}
+
+
+
+
+export source_server=hermes
+export target_server=nemesis
+export log_tag=RSYNC
+export at_launch='09:32'
+{
+	echo "logger -pdaemon.notice -t${log_tag} begin config file from ${source_server} to ${target_server}"
+
+	foreach folder in /applications/planpubli/*
+	do
+		export COMMAND="/opt/OPrsync/bin/rsync --update -aHS ${folder}/ ${target_server}:${folder}"
+		echo "logger -pdaemon.notice -t${log_tag} start ${COMMAND}"
+		echo $COMMAND
+		echo "logger -pdaemon.notice -t${log_tag} end ${COMMAND}"
+	done
+
+	echo "logger -pdaemon.notice -t${log_tag} end config file from ${source_server} to ${target_server}"
+
+}
+
+
+
+
+export at_launch='10:10'
+export log_tag='RSYNC to schnaps'
+export source_server=toutatis
+export folder_source=/applications/ceres/data/ceres/CC
+export target_server=thor
+export folder_target=/applications/ceres-archive/CC
+export command="/opt/OPrsync/bin/rsync --update --progress -aHS ${folder_source}/ ${target_server}:${folder_target}"
+{
+	echo "logger -pdaemon.notice -t${log_tag} start ${command}"
+	echo $command
+	echo "logger -pdaemon.notice -t${log_tag} end ${command}"
+} | at $at_launch
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export at_launch='now'
+export log_tag='RSYNC'
+export application_path=/applications/planjo
+{
+for folder in planjo_archive01 planjo_archive02 docdata
+do
+	command="/opt/OPrsync/bin/rsync -aHS --update ${application_path}/${folder}/ /zones/planjo-tz/root/${folder} >/net/opsrv082/xchange/mb/rsync_planjo_${folder}.log"
+	{
+	echo "logger -pdaemon.notice -t${log_tag} start ${command}"
+	echo $command
+	echo "logger -pdaemon.notice -t${log_tag} end ${command}"
+	} | at $at_launch
+done
+}
+

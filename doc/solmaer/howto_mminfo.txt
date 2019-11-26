@@ -1,0 +1,196 @@
+##### produire un resultat avec separateur
+export separator=';'
+mminfo -xc${separator} -s coppola
+
+##### quelques mminfo
+mminfo -c "$client" -t "1days ago" -q 'pool=Backup 9940B' -r 'name'
+mminfo -c "$client" -t "1days ago" -q 'pool=Backup 9940B, incomplete' -r 'client, name, ssid'
+mminfo -c "$client" -t "1days ago" -q 'pool=Backup 9940B' -r 'ssid'
+mminfo -c "$client" -t "1days ago" -q 'incomplete,pool=Backup 9940B' -r 'client,level,name'
+mminfo -s opbk01 -q 'client=odin,name=/applications/ojs/snapshot/archive/PAPER,level=full' -r 'client,level,name,totalsize,ssid,cloneid,volume,savetime'
+mminfo -s opbk01 -q 'client=opsrv020' -t "10days ago" -r 'client,level,name,totalsize,ssid,cloneid,volume,savetime'
+mminfo -s opbk01 -q 'name=/applications/ceres-data' -r 'client,level,name,totalsize,ssid,cloneid,volume,savetime'
+mminfo -s opbk01 -q 'client=opsrv118' -t "10days ago" -r 'client,level,name,totalsize,ssid,cloneid,volume,savetime'
+mminfo -s opbk01 -c opsrv111 -t '1 days ago' -r 'client,level,ssid,cloneid,totalsize,savetime(16),sscomp(16),ssflags,sumflags,volume,name'
+
+mminfo -s opbk01 -c opsrv191 -q 'level=full' -t '100 days ago' -r 'volume,client,savetime,level,name,group'
+
+mminfo -s opbk01 -c opsrv168 -q 'level=full' -t '10 days ago' -r 'volume,client,savetime(16),sscomp(16),level,name,group'
+
+
+##### liste des attributs
+attribute     value
+        name        range   width                     description
+     space       NA           1  White space before the next column.
+     newline     NA           1  Line break(s) within a logical line.
+                                 Width is actually the number of
+                                 newlines desired.
+     volume      string      15  The volume name.
+     volid       =id         11  The unique volume identifier.
+     barcode     string      15  The volume barcode, when set.
+     family      string       4  The media family (for example, tape, disk).
+     type        string       7  The media type (for example, 8mm, optical).
+     volflags    NA           5  Volume summary flags, d and r,
+                                 for dirty (in use) and read-only.
+     state       NA           7  Volume state summary, E, M, X and A,
+                                 meaning eligible for recycling,
+                                 manually-recyclable, both, and archive
+                                 or migration volumes, respectively.
+     full        flag        NA  Matches full volumes.
+     inuse       flag        NA  Matches in-use (dirty) volumes.
+     volrecycle  flag        NA  Matches recyclable volumes.
+     readonly    flag        NA  Matches read-only volumes.
+     manual      flag        NA  Matches manually-recyclable volumes.
+     pool        string      15  The pool containing the volume.
+     location    string      15  The volume's location.
+     capacity    size         8  The volume's estimated capacity.
+     written     kbsize       7  Kbytes written to volume.
+     %used       number       5  Estimated percentage used, or `full'
+                 or `full'       for volumes marked as full.
+     read        kbsize       8  Kbytes read (recovered) from the volume.
+     next        number       5  Next media file for writing.
+     nrec        number       5  Next media record for writing.
+     volaccess   time         9  Last time volume was accessed,
+                                 for read or write, for save or recover
+                                 type of operation. A mount
+                                 operation will not necessarily cause
+                                 the access time to be updated.
+                                 Old servers do not provide this value reliably.
+     volretent   time         9  The date the last save set on this
+                                 volume will expire.
+     olabel      time         9  The first time the volume was labeled.
+     labeled     time         9  The most recent time the media
+                                 volume was (re)labeled.
+     mounts      number       6  Number of times the read-label operation
+                                 is performed on the volume (not the count of
+                                 explicit mounts).
+     recycled    number       4  Number of times the volume
+                                 was relabeled.
+     avail       NA           3  Summary of volume availability, current
+                                 valid values, n meaning nearline
+                                 (that is, in a jukebox), and ov meaning
+                                 the volume is being managed by SmartMedia.
+     near        flag        NA  Matches nearline volumes.
+     smartmedia  flag        NA  Matches volumes managed by SmartMedia.
+     metric      number       6  Volume speed and desirability metric
+                                 (unused by existing servers).
+     savesets    NA           6  Number of save sets on a volume.
+     volattrs    NA          31  The extended volume attributes.
+
+     name        string      31  The save set name.
+     savetime    time         9  The save time (on the client).
+     nsavetime   NA          11  The save time, printed as seconds
+                                 since 00:00:00 GMT, Jan 1, 1970.
+     sscreate    time         9  The creation time (on the server).
+                                 If the client and server clocks are out of
+                                 sync, this time may be different from the
+                                 save time.
+
+     ssid        =id             10
+                                 The short format of ssid is the default.
+                                 It can be ambiguous.
+
+     ssid        =id             53
+                                 The long ssid format is guaranteed to be
+                                 unique for a particular saveset.
+
+     snap        flag        NA  Display snapshot backups only.
+     cover       flag        NA  Display cover save sets and ssflags will have 'K'.
+     level       0..9,        5  The backup level.  Manual backups
+                 full, incr,     are printed as 'manual'
+                 migration       values in reports.
+                 or manual
+     client      string      11  The client resource name associated with
+                                 the host that was backed up in this save set.
+     attrs       NA          31  The extended save set attributes.
+     pssid       =id         11  When part of a save set series, the
+                                 previous save set identifier in the
+                                 series, zero for the first or only
+                                 save set in a series.
+     ssflags     NA           7  The save set flags summary, one or more
+                                 characters in the set CvrENiRPKIF, for
+                                 continued, valid, purged (recoverable),
+                                 eligible for recycling, NDMP generated,
+                                 incomplete, raw(not for savesets backed up
+                                 using rawasm), snapshot, cover,
+                                 in-progress and finished (ended),
+                                 respectively.
+     continued   flag        NA  Matches continued save sets.
+     recoverable flag        NA  Matches recoverable (purged) save sets.
+     ssrecycle   flag        NA  Matches recyclable save sets.
+     incomplete  flag        NA  Matches incomplete save sets.
+     rolledin    flag        NA  Matches rolled-in save sets.
+     ndmp        flag        NA  Matches NDMP save sets.
+     dsa         flag        NA
+     raw         flag        NA  Matches raw save sets, containing partitions saved by
+                                 NetWorker modules.
+     valid       flag        NA  Matches valid save sets.  All save sets
+                                 are marked `valid' by current servers.
+     sumflags    NA           3  Per-volume save set summary flags,
+                                 as described for the -v report.
+     fragflags   NA           3  Per-section save set summary flags,
+                                 as described for the -V report.
+     totalsize   number      11  The total save set size.
+     nfiles      number       5  The number of the client's files
+                                 in the save set.
+     ssbrowse    time         9  The save set's browse time. This is
+                                 the time limit that the save set will
+                                 remain browsable. `undef' is displayed
+                                 when connected to a downrev server.
+     ssretent    time         9  The save set's retention time
+                                 (expiration time). This is the time limit that
+                                 the save set will remain recoverable in the media
+                                 database.
+     ssinsert    time         9  The save set's insertion time. This is
+                                 the time the save set was most recently
+                                 introduced into the database (for example, by a
+                                 backup or by running scanner(1m)).
+     sscomp      time         9  The save set's completion time. This is
+                                 the time the save set backup was completed.
+     clientid    =id          9  The globally unique client identifier for
+                                 the host that was backed up in this save set.
+     copies      number       6  The number of copies (instances or
+                                 clones) of the save set, all with the
+                                 same save time and save set identifier.
+     cloneid     =id         11  The clone identifier of one copy.
+     clonetime   time         9  The time a copy was made.
+     clretent    time         9  The clone retention time is the time
+                                 limit that the clone instance will remain
+                                 recoverable in the media database.
+     clflags     NA           5  The clone flags summary, one or more characters
+                                 from the set aios for aborted, incomplete,
+                                 opaque (NDMP clone of regular NetWorker savesets),
+                                 suspect (read error), respectively. This
+                                 summary reflects the status an instance of a
+                                 save set.
+     suspect     flag        NA  Matches suspect save set copies, copies
+                                 that had errors during file recovery.
+     annotation  string      31  The (archive) save set's annotation. In a
+                                 queryspec, the string is a regular expression
+                                 in the form used by grep(1).
+     group       string      12  The group of this save set. This is the
+                                 group that backed up this save set.
+     ssbundle    string      15  The save set bundle of this save set. This
+                                 is used to stage several save sets together.
+     first       number      11  The offset of the first byte of the
+                                 save set contained within the section.
+     last        NA          11  The calculated offset of the last byte
+                                 of the save set contained within the
+                                 current section.
+     fragsize    NA           7  The calculated size of the current
+                                 section of the save set.
+     sumsize     NA           7  The calculated total size of all of the
+                                 sections of the save set on this volume.
+     mediafile   number       5  The media file number containing
+                                 the current section of the save set.
+     mediarec    number       5  The media record number where the
+                                 first bytes of the save set are found
+                                 within the current media file.
+     mediamark   number       5  The absolute positioning data for
+                                 the current section (not used by
+                                 existing servers).
+     ssaccess    time         9  The last time this section of the save
+                                 set was accessed (for backup or recover).
+
+
+

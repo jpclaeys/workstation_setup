@@ -1,0 +1,412 @@
+################################################################################
+##### partionnement du disque
+
+- fedora
+	- /	: 10Go
+	- /var	:  2Go
+	- swap	:  2Go
+- solaris
+	- rpool : 10Go
+	- swap	:  2Go
+
+
+################################################################################
+##### verification de la taille du disque
+
+0[130104/111823]root@procyon# echo verify | format -d c0d0
+Searching for disks...done
+selecting c0d0
+Controller working list found
+[disk formatted, defect list found]
+/dev/dsk/c0d0s0 is part of active ZFS pool rpool. Please see zpool(1M).
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        fdisk      - run the fdisk program
+        repair     - repair a defective sector
+        show       - translate a disk address
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        save       - save new disk/partition definitions
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> 
+Primary label contents:
+
+Volume name = <        >
+ascii name  = <DEFAULT cyl 19448 alt 2 hd 255 sec 63>
+pcyl        = 19450
+ncyl        = 19448
+acyl        =    2
+bcyl        =    0
+nhead       =  255
+nsect       =   63
+Part      Tag    Flag     Cylinders         Size            Blocks
+  0       root    wm       3 - 19447      148.96GB    (19445/0/0) 312383925
+  1 unassigned    wm       0                0         (0/0/0)             0
+  2     backup    wm       0 - 19447      148.98GB    (19448/0/0) 312432120
+  3 unassigned    wm       0                0         (0/0/0)             0
+  4 unassigned    wm       0                0         (0/0/0)             0
+  5 unassigned    wm       0                0         (0/0/0)             0
+  6 unassigned    wm       0                0         (0/0/0)             0
+  7 unassigned    wm       0                0         (0/0/0)             0
+  8       boot    wu       0 -     0        7.84MB    (1/0/0)         16065
+  9 alternates    wu       1 -     2       15.69MB    (2/0/0)         32130
+
+format> 
+
+
+###############################################################################
+##### preparation du client kickstart
+
+
+
+0[130107/165506]root@procyon# /opt/SUNWjet/bin/make_template -f -A i86pc -E 00:50:56:ad:00:07 -O solaris10_u10_x86 opvmunix01 zfs
+Adding product configuration information for 
+        + base_config
+        + zfs
+Updating base_config template specifics
+Client template created in /opt/SUNWjet/Templates
+
+
+0[130107/165531]root@procyon# cp -p /opt/SUNWjet/Templates/opvmunix01 /opt/SUNWjet/Templates/opvmunix01.orig
+
+
+
+dhtadm -A -m opvmunix01 -d ':BootSrvA=158.167.226.72:'
+pntadm -A 158.167.225.249 -h opvmunix01 -i 01005056AD0007 -a -f PERMANENT -e 0 -s procyon -m opvmunix01 -y 158.167.0.0
+
+
+################################################################################
+##### preparation du client jet
+
+0[130104/111925]root@remus# cd /opt/SUNWjet/Templates 
+
+
+
+
+
+################################################################################
+##### modification de la configuration grub du client jet 
+
+
+
+
+################################################################################
+##### lancer l'installation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cd /apps/install/iso 
+wget http://be.mirror.eurid.eu/fedora/linux/releases/17/Fedora/x86_64/iso/Fedora-17-x86_64-DVD.iso
+mkdir -p /apps/install/distrib/f17-x86_64 
+
+
+# lofiadm -a /apps/install/iso/Fedora-17-x86_64-DVD.iso 
+/dev/lofi/1
+# mount -F hsfs /dev/lofi/1 /mnt 
+cd /mnt
+cp -rp * /apps/install/distrib/f17-x86_64
+
+
+cd /apps/httpd-2.4.3/conf/
+cp -p httpd.conf httpd.conf.orig 
+diff httpd.conf httpd.conf.orig 
+188d187
+< ServerName vespa:80
+196d194
+<     Options FollowSymLinks
+
+
+
+
+
+
+
+
+
+
+HOSTNAME=opvmunix01
+IP=158.167.225.249
+NETMASK=255.255.255.192
+GATEWAY=2158.167.225.254
+ROOT_SIZE=4000
+VAR_SIZE=2000
+HOME_SIZE=1000
+SWAP_SIZE=2048
+ROOT_PASS=newroot
+ROOT_CRYPT_PASS=`echo -n ${ROOT_PASS} | md5sum | awk '{print $1}'`
+
+cat <<EOF >/var/www/html/distrib/ks/${HOSTNAME}.cfg
+install
+text
+url --url http://ip_mon_serveur_web/distrib/f17-x86_64/
+lang en_UK
+keyboard uk
+timezone --utc Europe/France
+firstboot --disable
+reboot
+network --device=eth0 --bootproto=static --noipv6 --ip=${IP} --netmask=${NETMASK} --gateway=${GATEWAY} --hostname=${HOSTNAME}
+zerombr
+clearpart --all
+part /boot --fstype ext4 --size=250
+part pv.100 --size=100 --grow
+volgroup root_vg --pesize=32768 pv.100
+logvol / --fstype ext4 --name=root_lv --vgname=root_vg --size=${ROOT_SIZE}
+logvol /var --fstype ext4 --name=var_lv --vgname=root_vg --size=${VAR_SIZE}
+logvol /var --fstype ext4 --name=home_lv --vgname=root_vg --size=${HOME_SIZE}
+logvol swap --fstype swap --name=swap_lv --vgname=root_vg --size=${SWAP_SIZE}
+bootloader --append="quiet panic=20" --location mbr
+firewall --disabled
+selinux --disabled
+authconfig --enableshadow --passalgo=md5
+rootpw --iscrypted ${ROOT_CRYPT_PASS}
+EOF
+
+
+
+%packages
+@X Window System
+@GNOME Desktop Environment
+@Graphical Internet
+@Sound and Video
+dhcp
+%end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+server_name=
+server_ip=
+netmask=
+gateway=
+domain_name=
+
+
+
+cat <<EOF >/apps/install/ks/${server_name}.cfg
+install
+text
+url --url http://158.167.226.77/install/distrib/f17-x86_64/
+
+lang en_UK
+timezone --utc Europe/Luxembourg
+firstboot --disable
+reboot
+
+network --device=eth0 --bootproto=static --noipv6 --ip= --netmask= --gateway= --nameserver=158.167.99.7,158.167.99.8 --hostname=
+
+zerombr 
+clearpart --all
+part /boot --fstype ext4 --size=250
+part pv.100 --size=100 --grow
+volgroup root_vg --pesize=32768 pv.100
+logvol / --fstype ext4 --name=root_lv --vgname=root_vg --size=6000
+logvol /var --fstype ext4 --name=var_lv --vgname=root_vg --size=2000
+logvol swap --fstype swap --name=swap_lv --vgname=root_vg --size=1000
+
+bootloader  --append="quiet panic=20" --location mbr --md5pass=/
+
+firewall --disabled
+selinux --disabled
+rootpw --iscrypted /I9oh4uBCUW1jjgVc/yj/
+auth --enableshadow --enablemd5 --enableldap --enableldapauth --disablesssdauth --updateall --ldapserver=158.167.99.7,158.167.99.8 --ldapbasedn="dc=opoce,dc=cec,dc=eu,dc=int"
+EOF
+
+
+
+linux rdnetdebug ks=http://158.167.226.77/install/ks/opvmunix01.cfg ip=158.167.225.249::158.167.225.254:255.255.255.192:opvmunix01:eth0::none
+
+
+
+
+
+
+
+
+#####  install via grub
+
+1[130103/173958]root@procyon# cp -p  /rpool/boot/grub/menu.lst /rpool/boot/grub/menu.lst.20130103
+0[130103/174626]root@procyon# diff  /rpool/boot/grub/menu.lst /rpool/boot/grub/menu.lst.20130103 
+57,63d56
+< 
+< #---------- added by betorma 
+< title fedora 17 installation
+< findroot (pool_rpool,0,a)
+< kernel /boot/f17/vmlinuz ks=http://158.167.226.77/install/ks/procyon.cfg ip=158.167.226.72::158.167.226.94:255.255.255.224:procyon:eth0:none
+< initrd /boot/f17/initrd.img
+< #--------------------- end betorma
+
+
+
+0[130103/180925]root@procyon# diff  /rpool/boot/grub/menu.lst /rpool/boot/grub/menu.lst.20130103 
+57,63d56
+< 
+< #---------- added by betorma 
+< title fedora 17 installation
+< findroot (pool_rpool,0,a)
+< kernel /boot/f17/vmlinuz ks=http://158.167.226.77/install/ks/procyon.cfg ip=158.167.226.72::158.167.226.94:255.255.255.224:procyon:em1:none
+< initrd /boot/f17/initrd.img
+< #--------------------- end betorma
+
+
+
+
+
+0[130103/173151]betorma@vespa% cd /apps/install/distrib/f17-x86_64/
+0[130103/173229]betorma@vespa% mkdir ~/tmp/grub
+0[130103/173300]betorma@vespa% cp ./images/pxeboot/vmlinuz ./images/pxeboot/initrd.img ~/tmp/grub
+0[130103/173312]betorma@vespa% ll ~/tmp/grub
+total 2
+-rw-r--r--   1 betorma  staff        23M Jan  3 17:33 initrd.img
+-rwxr-xr-x   1 betorma  staff       4.4M Jan  3 17:33 vmlinuz
+
+
+1[130103/174709]root@procyon# mkdir -p /boot/f17
+0[130103/174726]root@procyon# cp ~/tmp/grub/* /boot/f17 
+0[130103/174749]root@procyon# ll /boot/f17
+total 2
+-rw-r--r--   1 root     root     24337760 Jan  3 17:47 initrd.img
+-rwxr-xr-x   1 root     root     4662160 Jan  3 17:47 vmlinuz
+
+
+
+
+kernel /vmlinuz ks="http://repo.server.com/ks/server_kickstart_config.cfg" ksdevice=eth0 vnc
+        initrd /initrd.img
+
+
+
+em1
+
+
+
+
+
+
+
+
+DISTRIBUTIN='Fedora 17'
+HOST_IP=192.168.10.89
+HOST_NAME=procyon
+HOST_INTERFACE=eth0
+HOST_NETMASK=255.255.255.0
+HOST_GATEWAY=192.168.10.254
+SERVER_IP=192.168.10.1
+KS_FILE=install/ks/procyon.cfg
+
+cat <<EOF >>/boot/grub/grib.conf
+title ${DISTRIBUTIN} installation
+root (hd0,0)
+kernel /boot/install/vmlinuz ks=http://${SERVER_IP}/${KS_FILE} ip=${HOST_IP}::${HOST_GATEWAY}:${HOST_NETMASK}:${HOST_NAME}:${HOST_INTERFACE}:none
+initrd /boot/install/initrd.img
+EOF
+
+
+
+
+
+
+
+
+
+
+DISTRIBUTIN=’Fedora 17′
+HOST_IP=192.168.10.89
+HOST_NAME=procyon
+HOST_INTERFACE=eth0
+HOST_NETMASK=255.255.255.0
+HOST_GATEWAY=192.168.10.254
+SERVER_IP=192.168.10.1
+KS_FILE=install/ks/procyon.cfg
+
+cat <<EOF >>grub.conf
+
+# installation from GRUB
+title ${DISTRIBUTION} installation
+root (hd0,0)
+kernel /boot/install/vmlinuz ks=http://${SERVER_IP}/${KS_FILE} ip=${HOST_IP}::${HOST_GATEWAY}:${HOST_NETMASK}:${HOST_NAME}:${HOST_INTERFACE}:none
+initrd /boot/install/initrd.img
+EOF
+
+
+
+DISTRIBUTION='Fedora 17'
+title ${DISTRIBUTION} installation
+
+
+
+
+/tftpboot/menu.lst.01F04DA2384082:      kernel$ /I86PC.Solaris_10-7/multiboot kernel/$ISADIR/unix  - install nowin -B install_config=158.167.98.112:/opt/SUNWjet,sysid_config=158.167.98.112:/opt/SUNWjet/Clients/procyon,install_media=158.167.98.112:/export/install/media/Solaris_10_0910_X86,install_boot=158.167.98.112:/export/install/media/Solaris_10_0910_X86/boot 
+
+
+
+
+# installation from GRUB
+title Fedora 17 installation
+root (hd0,0)
+kernel /boot/install/vmlinuz ks=http://192.168.10.1/install/ks/procyon.cfg ip=192.168.10.89::192.168.10.254:255.255.255.0:procyon:eth0:none
+initrd /boot/install/initrd.img
+
+
+
+# tail -5 /boot/grub/grub.conf
+# installation from GRUB
+title Fedora 17 installation
+root (hd0,0)
+kernel /boot/install/vmlinuz ks=http://192.168.10.1/install/ks/procyon.cfg ip=192.168.10.89::192.168.10.254:255.255.255.0:procyon:eth0:none
+initrd /boot/install/initrd.img

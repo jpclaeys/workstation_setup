@@ -1,0 +1,98 @@
+
+xml:  /etc/libvirt/qemu
+
+voyager (prod):
+*********
+chakotay; EUF
+tuvok;		EUF
+
+janeway;  MER
+torres;		MER
+
+
+Alogens (Prod):
+***********
+
+fluorine	MER
+bromine		MER
+
+iodine		EUF
+chlorine	EUF
+
+
+TNG (test):
+******
+
+laforge;	EUF
+worf;		EUF
+
+picard;		MER 
+riker;		MER 
+
+
+Metals (test):
+**********
+
+titanium	MER
+chromium	MER
+
+vanadium	EUF
+palladium	EUF
+
+
+
+Noble Gases(Prod-Test):
+**************
+
+argon		MER  (Betzdorf)
+xenon		MER  (Betzdorf)
+
+
+neon		EUF  (Windhof)
+krypton		EUF  (Windhof)
+
+
+VLan + : 1000 (prod)
+	 222, 223, 227 (test)
+
+
+
+
+
+
+
+DECO:
+
+
+OLDIES (test):
+********
+
+mykerinos	EUF
+polideuce	EUF
+
+castor		MER 
+mykerinos2	MER 
+
+
+br0 - vlan 1
+br5 - vlan 220
+br1 - vlan 1000
+
+
+civilization (prod): 
+*************
+
+kheops		EUF
+asgard		EUF
+
+kheops2		MER
+midgard		MER
+
+
+br0(vlan1) 	prod
+br1 (vlan1000)	NFS and SAN private
+br3 (vlan 167) 	bkp
+br5 (vlan 220) 	Cellar prod private
+
+
+

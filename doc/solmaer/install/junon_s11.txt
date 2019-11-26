@@ -1,0 +1,131 @@
+host_ip=10.199.99.5
+router_ip=10.199.99.254
+subnet_mask=255.255.255.0
+hostname=junon
+
+echo network-boot-arguments host-ip=${host_ip},router-ip=${router_ip},subnet-mask=${subnet_mask},hostname=${hostname},file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+
+
+network-boot-arguments host-ip=10.199.99.5,router-ip=10.199.99.254,subnet-mask=255.255.255.0,hostname=junon,file=http://158.167.99.124:5555/cgi-bin/wanboot-cgi
+
+
+
+
+{a} ok setenv auto-boot? false
+auto-boot? =            false
+
+
+
+
+
+
+
+
+
+
+{a} ok reset-all
+Resetting...
+POST Sequence 01 CPU Check
+POST Sequence 02 Banner
+LSB#00 (XSB#01-0): POST 2.17.0 (2011/11/17 10:29)
+POST Sequence 03 Fatal Check
+POST Sequence 04 CPU Register
+POST Sequence 05 STICK
+POST Sequence 06 MMU
+POST Sequence 07 Memory Initialize
+POST Sequence 08 Memory
+POST Sequence 09 Raw UE In Cache
+POST Sequence 0A Floating Point Unit
+POST Sequence 0B SC
+POST Sequence 0C Cacheable Instruction
+POST Sequence 0D Softint
+POST Sequence 0E CPU Cross Call
+POST Sequence 0F CMU-CH
+POST Sequence 10 PCI-CH
+POST Sequence 11 Master Device
+POST Sequence 12 DSCP
+POST Sequence 13 SC Check Before STICK Diag
+POST Sequence 14 STICK Stop
+POST Sequence 15 STICK Start
+POST Sequence 16 Error CPU Check
+POST Sequence 17 System Configuration
+POST Sequence 18 System Status Check
+POST Sequence 19 System Status Check After Sync
+POST Sequence 1A OpenBoot Start...
+POST Sequence Complete.
+ChassisSerialNumber BCF0904053 
+
+SPARC Enterprise M5000 Server, using Domain console
+Copyright (c) 1998, 2012, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2012, Oracle and/or its affiliates and Fujitsu Limited. All rights reserved.
+OpenBoot 4.33.5.d, 32768 MB memory installed, Serial #84024225.
+Ethernet address 0:21:28:2:1b:a1, Host ID: 85021ba1.
+{0} ok 
+
+
+
+
+
+
+
+{0} ok watch-net-all
+/pci@1,700000/network@0,1
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+10d 110 110 80 110 80 
+/pci@1,700000/network@0
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+10d 110 80 110 80 110 80 110 
+/pci@0,600000/pci@0/pci@8/pci@0/network@2,1
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+....
+/pci@0,600000/pci@0/pci@8/pci@0/network@2
+1000 Mbps full duplex  Link up
+Looking for Ethernet Packets.
+'.' is a Good Packet.  'X' is a Bad Packet.
+Type any key to stop.
+......
+{0} ok 
+
+
+
+
+
+
+
+
+
+{0} ok devalias
+cdrom                    /pci@0,600000/pci@0/pci@8/pci@0/scsi@1/disk@3,0:f
+net                      /pci@0,600000/pci@0/pci@8/pci@0/network@2
+disk                     /pci@0,600000/pci@0/pci@8/pci@0/scsi@1/disk@0
+jump                     /pci@0,600000/pci@0/pci@8/pci@0/network@2
+rootdisk                 /pci@0,600000/pci@0/pci@8/pci@0/scsi@1/disk@0
+rootmirror               /pci@0,600000/pci@0/pci@8/pci@0/scsi@1/disk@1
+name                     aliases
+{0} ok 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

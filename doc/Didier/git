@@ -1,0 +1,91 @@
+	recuperer la derniere version :
+	git pull
+
+	Modifier le fichier en question, sauvegarder, puis :
+
+bortodi@baghera:[~/git/development/modules/opoce/files/explorer] $ git add OPLinuxExplo.sh
+	(ajout ce fichier dans la liste des fichiers a envoyer sur le serveur git)
+
+bortodi@baghera:[~/git/development/modules/opoce/files/explorer] $ git commit -m "remove general option for sosreports"
+	
+
+
+				[development ef73af1] remove general option for sosreports
+				 Committer: Didier Bortolin <bortodi@baghera.opoce.cec.eu.int>
+				Your name and email address were configured automatically based
+				on your username and hostname. Please check that they are accurate.
+				You can suppress this message by setting them explicitly:
+
+				    git config --global user.name "Your Name"
+				    git config --global user.email you@example.com
+
+				After doing this, you may fix the identity used for this commit with:
+
+				    git commit --amend --reset-author
+
+				 1 file changed, 2 insertions(+), 1 deletion(-)
+
+bortodi@baghera:[~/git/development/modules/opoce/files/explorer] $ git push origin
+	(envoi le ou les fichiers selectionnés)
+
+
+	pour tester sur un client :
+
+		puppet agent --environment=development --noop -t
+		puppet agent --environment=development -t  pour appliquer
+
+	si ok :
+
+		cd production
+		# git branch -u origin/development production
+		
+	Edit
+	4.2 How to sync development into production
+
+	Inside the production repository :
+
+		git pull origin production && git pull --no-ff
+		git push origin production
+
+	sur le client pour lancer puppet en production :
+		[root@laforge ~]# puppet agent  -t
+
+
+
+git rm --cached filexample.txt
+
+
+
+Annuler un commit en particulier déjà pushé
+
+Dans un premier temps, vous récupérer l’id du commit à annuler, par exemple en consultant les logs :
+
+git log
+Puis, vous annulez le commit en question proprement :
+
+git revert XXX
+ou XXX est l’id du commit à annuler.
+Puis vous pushez proprement avec
+
+git push
+Annuler les N derniers commits déjà pushés
+
+La même méthode est employée, mais vous pouvez utiliser la commande suivante qui annulera par exemple les 5 derniers commits. Il vous restera alors à pusher proprement.
+
+git revert HEAD~5
+
+
+
+git branch -r
+git checkout <feature_branch>
+
+git log --graph --oneline --branches
+
+
+
+
+
+
+------------------------------------------------------------------------------------
+
+puppet agent --configprint resourcefile

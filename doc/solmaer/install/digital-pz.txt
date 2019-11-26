@@ -1,0 +1,680 @@
+############################################################################################
+#
+# Installation de zone sur ZFS
+#
+############################################################################################
+#
+# prerequis:
+# - nom de la zone
+# - alias pour la zone
+# - nom de l'hote physique pour la zone
+# - l'interface reseau de l'hote physique pour la zone
+# - adresse ip pour la zone
+# - adresse ip pour l'application
+# - opsrv pour la zone
+# - nom du zpool
+#
+############################################################################################
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+##### variables
+
+
+
+export ZONE=digital-pz
+export COMMENT_ZONE="zone de production pour digital"
+export ZONE_IP=158.167.99.125
+export ZONE_NETMASK=/22
+export ZONE_DEFROUTER=158.167.96.254
+export SYSIDCFG_NETMASK=255.255.252.0
+export APPLI_IP=158.167.98.158
+export APPLI_NETMASK=/22
+export APPLI_OPSRV=opsrv158
+export INTERFACE=aggr1001
+export ZPOOL=${ZONE}
+export APPLICATION=digital
+export ORACLE_IS_USED=yes
+export DOCUMENTUM_IS_USED=no
+export ZONE_IS_CLUSTER_RESSOURCE=yes
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+mkdir -p ${TMP_FOLDER}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+
+##### creation zpool (check lun wwn with carlo_command)
+export FC1=<lunID_fc1>
+export FC2=<lunID_fc2>
+echo "zpool create ${ZONE}-db mirror ${FC1} ${FC2}"
+
+export SATA1=<lunID_sata1>
+export SATA2=<lunID_sata2>
+echo "zpool create ${ZONE}-data mirror ${SATA1} ${SATA2}"
+
+##### creation et montage du repertoire de la zone
+zfs create -o mountpoint=/zones/${ZONE}/ ${ZPOOL}-data/zone
+
+zfs set mountpoint=/zpool/${ZPOOL}-data ${ZPOOL}-data
+zfs set mountpoint=/zpool/${ZPOOL}-db ${ZPOOL}-db
+
+
+##### creation des file system pour data FS
+zfs create -o mountpoint=none ${ZPOOL}-data/applications
+zfs create -o mountpoint=none ${ZPOOL}-data/applications/${APPLICATION}
+zfs create -o mountpoint=/applications/${APPLICATION}/xchange ${ZPOOL}-data/applications/${APPLICATION}/xchange
+zfs create -o mountpoint=/applications/${APPLICATION}/users ${ZPOOL}-data/applications/${APPLICATION}/users
+
+##### creation des files system pour les base de donnees oracle
+{
+zfs create -o mountpoint=none ${ZPOOL}-db/applications
+zfs create -o mountpoint=none ${ZPOOL}-db/applications/${APPLICATION}
+if [[ ${ORACLE_IS_USED} == 'yes' ]]
+then 
+for FS in orabin oralog oradata oraflash oraonlinelog; do
+zfs create -o mountpoint=/applications/${APPLICATION}/${FS} ${ZPOOL}-db/applications/${APPLICATION}/${FS}
+done
+fi
+zfs create -o mountpoint=/u01/oraagent ${ZPOOL}-data/applications/oraagent
+chown oracle:dba /u01/oraagent
+}
+
+##### creation du file system pour documentum
+{
+if [[ ${DOCUMENTUM_IS_USED} == 'yes' ]]
+then 
+	for FS in docdata; do
+		zfs create -o mountpoint=/applications/${APPLICATION}/${FS} ${ZPOOL}-data/applications/${APPLICATION}/${FS}
+	done
+fi
+}
+
+##### set logbias and recordsize otpion on file system
+{
+for FS in xchange users; do
+zfs set recordsize=128K ${ZPOOL}-data/applications/${APPLICATION}/${FS}
+zfs get recordsize ${ZPOOL}-data/applications/${APPLICATION}/${FS}
+zfs set logbias=latency ${ZPOOL}-data/applications/${APPLICATION}/${FS}
+zfs get logbias ${ZPOOL}-data/applications/${APPLICATION}/${FS}
+done
+}
+{
+if [[ ${ORACLE_IS_USED} == 'yes' ]]
+then
+for FS in orabin oralog oraflash oraonlinelog; do
+zfs set recordsize=128K ${ZPOOL}-db/applications/${APPLICATION}/${FS}
+zfs get recordsize ${ZPOOL}-db/applications/${APPLICATION}/${FS}
+zfs set logbias=latency ${ZPOOL}-db/applications/${APPLICATION}/${FS}
+zfs get logbias ${ZPOOL}-db/applications/${APPLICATION}/${FS}
+done
+fi
+zfs set recordsize=8K ${ZPOOL}-db/applications/${APPLICATION}/oradata
+zfs get recordsize ${ZPOOL}-db/applications/${APPLICATION}/oradata
+zfs set logbias=throughput ${ZPOOL}-db/applications/${APPLICATION}/oradata
+zfs get logbias ${ZPOOL}-db/applications/${APPLICATION}/oradata
+zfs set recordsize=128K ${ZPOOL}-data/applications/oraagent
+zfs get recordsize ${ZPOOL}-data/applications/oraagent
+zfs set logbias=latency ${ZPOOL}-data/applications/oraagent
+zfs get logbias ${ZPOOL}-data/applications/oraagent
+}
+
+##### verification des file system
+{
+for DS in db data
+do
+zfs list -r ${ZPOOL}-${DS}
+done
+}
+
+##### creation du fichier de configuration de la zone
+cat >${TMP_FOLDER}/${ZONE}.cfg <<EOF
+create -b
+set zonepath=/zones/${ZONE}
+set autoboot=false
+set bootargs="-m verbose"
+set limitpriv=default,proc_priocntl
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${ZONE_IP}${ZONE_NETMASK}
+set physical=${INTERFACE}
+set defrouter=${ZONE_DEFROUTER}
+end
+add net
+set address=${APPLI_IP}${APPLI_NETMASK}
+set physical=${INTERFACE}
+end
+add dataset
+set name=${ZPOOL}-db/applications
+end
+add dataset
+set name=${ZPOOL}-data/applications
+end
+add attr
+set name=comment
+set type=string
+set value="${COMMENT_ZONE}"
+end
+EOF
+
+##### verification
+cat ${TMP_FOLDER}/${ZONE}.cfg
+
+##### configuration et installation de la zone
+chmod 700 /zones/${ZONE}
+zonecfg -z ${ZONE} -f ${TMP_FOLDER}/${ZONE}.cfg
+zoneadm -z ${ZONE} install
+
+##### verification des erreurs possibles
+grep -i err /zones/${ZONE}/root/var/sadm/system/logs/install_log
+
+##### /etc/sysidcfg
+cat >/zones/${ZONE}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+timeserver=158.167.99.7
+timezone=Europe/Luxembourg
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${ZONE} ip_address=${ZONE_IP} netmask=${SYSIDCFG_NETMASK} protocol_ipv6=no default_route=${ZONE_DEFROUTER}}
+EOF
+
+##### /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+touch /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+
+##### /inet/ntp.conf
+cp -p /etc/inet/ntp.conf /zones/${ZONE}/root/etc/inet/
+
+##### /etc/resolv.conf
+cp -p /etc/resolv.conf /zones/${ZONE}/root/etc/
+
+##### /etc/ftpd/ftpservers
+echo 'deny * *.*.*.*' >>/zones/${ZONE}/root/etc/ftpd/ftphosts
+
+##### /etc/nsswitch.conf
+tar cpfv /zones/${ZONE}/root/etc/nsswitch.conf.tar /etc/nsswitch.conf
+
+##### fichier de configuration du client ldap
+cp /var/ldap/ldap_client_cred /zones/${ZONE}/root/var/ldap/
+cp /var/ldap/ldap_client_file /zones/${ZONE}/root/var/ldap/
+
+##### configuration du nom de domaine
+cp -p /etc/defaultdomain /zones/${ZONE}/root/etc/
+
+##### configuration des holidays
+cp -p /etc/acct/holidays /zones/${ZONE}/root/etc/acct/holidays
+
+##### loghost et opsrv dans /etc/hosts
+cp -p /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+echo -e "${APPLI_IP}\t${APPLI_OPSRV}\t## ${APPLICATION}" >>/zones/${ZONE}/root/etc/inet/hosts
+echo -e "${ZONE_IP}\t${ZONE}" >>/zones/${ZONE}/root/etc/inet/hosts
+
+##### verification
+diff /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+
+##### demarrage de la zonec et onnexion a la console de la zone
+zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### changer le mot de passe root
+passwd root
+
+##### variables
+export ZONE=digital-pz
+export ZONE_IP=158.167.99.125
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+
+##### enleve loghost du fichier /etc/inet/hosts
+perl -i.${DATE} -pe 's/loghost//' /etc/inet/hosts
+
+##### /etc/nsswitch.conf
+tar xvf /etc/nsswitch.conf.tar
+
+##### rafraichissement du cache dns
+svcadm restart svc:/system/name-service-cache:default
+
+##### configuration du repertoire d'accueil des core system
+coreadm -i /var/cores/%f_%p_%u_%g.core
+
+##### activation du service ldap/client
+svcadm disable svc:/network/ldap/client:default
+svcadm enable svc:/network/ldap/client:default
+
+##### tester le ldap
+ldaplist
+
+##### desactivation du webconsole
+svcadm disable svc:/system/webconsole:console
+
+##### copie de la cle cfengine
+cp -p /var/cfengine/ppkeys/localhost.pub ${TMP_FOLDER}/root-${ZONE_IP}.pub
+
+
+######################################################
+# sur le serveur cfengine
+######################################################
+
+
+##### varibales
+export ZONE=digital-pz
+export ZONE_IP=158.167.99.125
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+
+##### ajout de la zone dans la configuration de cfengine (cf.groups)
+cp /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+vi /var/cfengine/master/inputs/cf.groups
+diff /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+
+##### import de la cle publique de la zone dans cfengine
+cp -p ${TMP_FOLDER}/root-${ZONE_IP}.pub /var/cfengine/ppkeys
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### execution du client cfengine
+/var/cfengine/bin/cfagent -v -q
+
+##### installation de LGTO 4.2
+
+cd /var/tmp
+cp -p /net/remus/export/software/Networker/Oracle/nmo42_solaris_64.tar.gz /var/tmp
+gunzip /var/tmp/nmo42_solaris_64.tar.gz
+tar xvfp /var/tmp/nmo42_solaris_64.tar
+pkgadd -d /var/tmp LGTOnmo
+
+rm -r /var/tmp/LGTOnmo*
+rm -r /var/tmp/nmo42_solaris_64*
+rm -r /var/tmp/lib64
+
+/usr/ccs/bin/what /lib/libnwora.so
+
+ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+ln -s /etc/init.d/networker /etc/rc0.d/K05networker
+ln -s /lib/libnwora.so /usr/lib/libnwora.so
+ls -l /usr/lib/libnwora.so
+cp -p /net/remus/export/software/Networker/Oracle/saverman.pl /usr/sbin/saverman.pl
+chown root:root /usr/sbin/saverman.pl*
+chmod 755 /usr/sbin/saverman.pl*
+ls -l /usr/sbin/saverman.pl
+
+##### redemarrage du service auto-fs
+svcadm restart svc:/system/filesystem/autofs:default
+
+##### test d'envoie d'email depuis la zone
+mailx -s "email de test depuis `/usr/bin/uname -n`" opensystem-logs@publications.europa.eu </dev/null
+
+##### arret de la zone
+init 0
+~~.
+
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+
+##### si la zone n'est pas une ressource cluster, mettre autoboot a true
+{
+if [[ ${ZONE_IS_CLUSTER_RESSOURCE} == 'no' ]]
+then
+	zonecfg -z ${ZONE} set autoboot=true
+fi
+zonecfg -z $ZONE info autoboot
+}
+
+##### demarrage de la zonec et onnexion a la console de la zone
+zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### verfication des services SMF
+svcs -xv
+
+##### verification system
+dmesg
+
+##### verification de la zone
+ls /home/admin/
+/home/admin/bin/check_host.sh
+
+
+
+
+##################################################################################################################################################
+# 
+# description: 	creation de l'utilisateurs applicatif, acces aux roles d'adminstration pour les equipes dba, int prod, int test
+# date creation: 	16/10/2009
+# date maj: 		11/11/2010
+#
+###################################################################################################################################################
+
+
+##### variables
+export appli_project=digital
+export appli_project_id=2310
+export appli_user=digital
+export appli_uid=60700
+export comment_appli_user="${appli_user} user for ${appli_project} project"
+export w_appli_user="w_${appli_user}"
+export w_appli_uid=60701
+export comment_w_appli_user="${w_appli_user} wood user for ${appli_project} project"
+export appli_group=digital
+export appli_gid=87000
+export oracle_used=yes
+export documentum_used=no
+export test_used=no
+
+##### sauvegarde des fichiers a modifier
+{
+for FILE in /etc/auto_home /etc/group /etc/passwd /etc/shadow /etc/user_attr /etc/security/exec_attr /etc/security/prof_attr /etc/project
+do
+	cp $FILE $FILE.`date +%Y%m%d%H%M`
+done
+}
+
+##### ajout des roles dba et oracle
+{
+mkdir -p /u01/home/oracle
+mkdir -p /u01/home/rootdba
+mkdir -p /u02
+echo "rootdba::::type=role;profiles=Primary Administrator" >>/etc/user_attr
+echo "oracle::::type=role;profiles=OraAgent Management,All" >>/etc/user_attr
+echo "oracle     \$HOST:/u01/home/&" >>/etc/auto_home
+echo "rootdba      \$HOST:/u01/home/&" >>/etc/auto_home
+echo 'dba::55:oracle' >>/etc/group
+echo 'oracle:x:55:55:Oracle Role:/home/oracle:/bin/pfksh' >>/etc/passwd
+echo 'rootdba:x:20000:1:DBA Role:/home/rootdba:/bin/pfksh' >>/etc/passwd
+echo 'oracle:N1adVIyiQ/ufM:12577::::::' >>/etc/shadow
+echo 'rootdba:c1B14rQDdgzPY:12500::::::' >>/etc/shadow
+pwconv
+chown 55:55 /u01/home/oracle
+}
+
+{
+if [[ ${oracle_used} == yes ]]
+then
+	for rep in orabin oradata oralog oraflash
+	do
+		if [ -d /applications/${appli_project}/$rep ]
+		then
+			chown 55:55 /applications/${appli_project}/$rep
+               ls -ld /applications/${appli_project}/$rep
+		fi
+	done
+	mkdir /var/opt/oracle
+	chown 55:55 /var/opt/oracle
+fi
+}
+
+##### creation de $appli_group
+{
+grep ^${appli_group} /etc/group
+groupadd -g ${appli_gid} ${appli_group}
+egrep "^${appli_group}|${appli_gid}" /etc/group
+}
+
+##### creation de $appli_user
+{
+grep ^${appli_user} /etc/passwd
+grep ^${appli_user} /etc/user_attr
+mkdir -p /applications/${appli_project}/users/${appli_user}
+roleadd -d /home/${appli_user} -c "${comment_appli_user}" -u ${appli_uid} -g ${appli_group} -s /bin/pfksh  ${appli_user} 
+egrep "^${appli_user}|${appli_uid}" /etc/passwd
+}
+
+##### creation de wood_group 
+{
+grep ^wood /etc/group
+groupadd -g 65535 wood
+egrep "^wood|65535" /etc/group
+}
+
+##### creation de w_appli_user
+{
+grep ^${w_appli_user} /etc/passwd
+grep ^${w_appli_user} /etc/user_attr
+mkdir -p /applications/${appli_project}/users/${w_appli_user}
+roleadd -d /home/${w_appli_user} -c "${comment_w_appli_user}" -u ${w_appli_uid} -g ${appli_group} -G wood -s /bin/pfksh ${w_appli_user}
+egrep "^${w_appli_user}|${w_appli_uid}" /etc/passwd
+}
+
+##### auto_home de $appli_user
+{
+echo "${appli_user}     \$HOST:/applications/${appli_project}/users/&" >> /etc/auto_home
+echo "${w_appli_user}     \$HOST:/applications/${appli_project}/users/&" >> /etc/auto_home
+cat /etc/auto_home
+}
+
+##### modification des droit sur le home de $appli_user
+{
+chown ${appli_user}:${appli_group} /applications/${appli_project}/users/${appli_user}
+ls -ld /applications/${appli_project}/users/${appli_user}
+chown ${w_appli_user}:${appli_group} /applications/${appli_project}/users/${w_appli_user}
+ls -ld /applications/${appli_project}/users/${w_appli_user}
+}
+
+##### changement du mot de passe de $appli_user-----------------------------------------------------------------------------
+passwd ${appli_user}
+passwd ${w_appli_user}
+
+##### creation des utilisateurs pour documentum
+{
+if [[ ${documentum_used} == yes ]]
+then
+	mkdir -p /applications/${appli_project}/users/dmadmin
+	mkdir -p /applications/${appli_project}/users/pdocu
+	mkdir -p /applications/${appli_project}/users/docuser
+	roleadd -d /home/dmadmin -u 81800 -g ${appli_group} -s /bin/pfksh dmadmin
+	roleadd -d /home/pdocu -u 81801 -g ${appli_group} -s /bin/pfksh pdocu
+	roleadd -d /home/docuser -u 81802 -g ${appli_group} -s /bin/pfksh docuser
+	echo "dmadmin     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	echo "pdocu     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	echo "docuser     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	chown dmadmin:${appli_group} /applications/${appli_project}/users/dmadmin
+	chown pdocu:${appli_group} /applications/${appli_project}/users/pdocu
+	chown docuser:${appli_group} /applications/${appli_project}/users/docuser
+fi
+}
+
+
+
+
+
+
+##### ajout des acces pour l' equipes integration de test au role $appli_user
+{
+if [[ ${test_used} == yes ]]
+then
+	for user in maffima klaerpa lafarpa niedema holotma pierrph dotzech naratol
+	do
+		echo "${user}::::type=normal;roles=${appli_user},${w_appli_user}" >>/etc/user_attr
+	done
+fi
+cat /etc/user_attr
+}
+
+########### exec_attr
+{
+echo "${appli_project} Management:suser:cmd:::/applications/${appli_project}/users/system/init.d/*:uid=0" >>/etc/security/exec_attr
+cat /etc/security/exec_attr
+}
+
+#### /etc/security/prof_attr
+{
+echo "${appli_project} Management:::${appli_project} start/stop:auths=solaris.smf.manage.applications/${appli_project}" >>/etc/security/prof_attr
+echo "OraAgent Management:::OraAgent profile:auths=solaris.smf.manage.monitoring/oraagent" >>/etc/security/prof_attr
+cat /etc/security/prof_attr
+}
+
+####  /etc/project
+{
+cat <<EOF >/etc/project
+system:0::::
+user.root:1::::
+noproject:2::::
+default:3::::
+group.staff:10::::
+user.${appli_project}:${appli_project_id}:${appli_project}:${appli_user}:${appli_group},staff:
+${appli_project}.app:${appli_project_id%0}1:${appli_project}:${appli_user}:${appli_group},staff:
+${appli_project}.dba:${appli_project_id%0}2:${appli_project}:${appli_user},oracle:dba:process.max-file-descriptor=(basic,1024,deny);project.max-shm-memory=(priv,4294967296,deny)
+${appli_project}.wood:${appli_project_id%0}3:${appli_project}:${appli_user},${w_appli_user}:${appli_group}:
+${appli_project}.woodweb:${appli_project_id%0}4:${appli_project}:${appli_user},${w_appli_user}:${appli_group}:
+EOF
+cat /etc/project
+}
+
+##### droit sur le repertoire xchange
+
+{
+if [ -d /applications/${appli_project}/xchange ]
+then
+	chown ${appli_user}:${appli_group} /applications/${appli_project}/xchange
+	ls -ld /applications/${appli_project}/xchange
+fi
+}
+
+
+##### connexion aux roles
+{
+for users in ${appli_user} ${w_appli_user} rootdba oracle 
+do
+	echo "##### $users"
+	su - $users -c 'id;pwd'
+	echo	
+done
+}
+
+
+
+#########################################################################################################################################################
+# integration d'un zone en cluster
+#########################################################################################################################################################
+
+# resource groups et leur resources
+export rgname=digital-pz-rg
+export rsnamestorage=digital-pz-zfs
+export zpool=digital-pz-data
+export zname=digital-pz
+export server_source=pegase
+export server_target=persee
+export date=`date +%Y%m%d%H%M`
+echo $date
+
+################## POUR LE RESOURCE GROUP
+
+clrg create ${rgname}
+clrg manage ${rgname}
+clrg online ${rgname}
+clrg status
+
+
+# Il faut le register du HAStoragePlus avant de l'utiliser
+#clresourcetype register SUNW.HAStoragePlus
+#clresourcetype register SUNW.gds
+
+clresourcetype list
+
+################## POUR LE ZPOOL
+
+# resource pour le storage
+clrg switch -n ${server_source} ${rgname}
+clrs create -g ${rgname} -t SUNW.HAStoragePlus -p zpools=${zpool} ${rsnamestorage}
+clrs status
+
+
+################## POUR LA ZONE
+
+# ce qu'on change pour roma par exemple:
+# Attention: opgtw/oprvp ont pas LH donc SC_NETWORK=false
+
+
+cat <<EOT >/opt/SUNWsczone/sczbt/util/sczbt_${zname}
+RS=digital-pz-rs
+RG=digital-pz-rg
+PARAMETERDIR=/etc/zones
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=digital-pz-data-zfs
+Zonename="digital-pz"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOT
+
+cat /opt/SUNWsczone/sczbt/util/sczbt_${zname}
+
+################# CREATION RS ZONE
+# on copie notre scratch sur la bonne copie
+cp -p /opt/SUNWsczone/sczbt/util/sczbt_${zname} /opt/SUNWsczone/sczbt/util/sczbt_config
+cd /opt/SUNWsczone/sczbt/util
+./sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_config
+clrg status
+clrs enable digital-pz-rs
+clrs status
+clrs unmonitor digital-pz-rs
+clrs status
+
+######################### COPIE
+
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster
+mkdir -p $tmp_dir
+
+##### SOURCE
+
+cd /opt/SUNWsczone/sczbt/util
+tar cvfp $tmp_dir/sczbt_${zname}.tar sczbt_${zname}
+cd /etc
+tar cvfp $tmp_dir/zones.tar zones
+
+##### TARGET
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster
+export zname=digital-pz
+export date=`date +%Y%m%d%H%M`
+cd /opt/SUNWsczone/sczbt/util
+tar xvfp $tmp_dir/sczbt_${zname}.tar 
+cd /etc
+cp -p zones/index zones/index.${date}
+tar xvfp $tmp_dir/zones.tar
+
+
+
+############# TEST DE SWITCH
+echo timex clrg switch -n $server_target $rgname
+clrs status
+echo timex clrg switch -n $server_source $rgname
+clrs status

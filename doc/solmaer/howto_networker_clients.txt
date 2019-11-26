@@ -1,0 +1,138 @@
+############################################################################################################################
+# creation du client unix
+############################################################################################################################
+
+
+##### sur la zone
+
+export LOCATION=Mercier   # or EUFO
+export TYPE=Prod          # or Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+for group in ${GROUPS}; do
+  cat >/nsr/res/${group}.res <<EOT
+type: savepnpc;
+precmd: "/bin/date";
+pstcmd: "/bin/date", "/bin/sleep 5";
+timeout: "06:00:00";
+abort precmd with group: No;
+EOT
+done
+
+
+##### sur opbk01
+
+export IP=158.167.x.y
+export ZONE=zonename-tz
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+export DIRECTIVE="Solaris 10 zones with compression"
+export LOCATION=Mercier   # or EUFO
+export TYPE=Prod          # or Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="romulus,remus"
+else
+    export STORAGE="remus,romulus"
+fi
+export CLONE="romulus,remus"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export ALIASES="${ALIASES},${ZONE},${ZONE}.opoce.cec.eu.int"
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+(cat <<EOT
+#client_name;remote_access;groups;directive;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${DIRECTIVE};${ALIASES};${ZONE};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","directive","alias","zone","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: remus;
+                     comment: $c{zone} unix client;
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: savepnpc;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+
+
+##### sur infra-srv
+
+export IP=158.167.x.y   # IP of the zone
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+
+cp -p /applications/i-status/users/system/admin/list_client /applications/i-status/users/system/admin/list_client.$(date +%Y%m%d%H%M)
+echo ${CLIENT} >> /applications/i-status/users/system/admin/list_client
+
+
+############################################################################################################################
+# creation du client RMAN
+############################################################################################################################
+
+##### sur opbk01
+export IP=158.167.x.y
+export ZONE=zonename-tz
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+
+export LOCATION=Mercier   # or EUFO
+export TYPE=Prod          # or Test
+
+if [ "${TYPE}" = "Test" ]; then
+    export DAYS=03
+else
+    export DAYS=01
+fi
+export GROUPS="${LOCATION}_Rman_${TYPE}_Ctl_01,${LOCATION}_Rman_${TYPE}_Full_${DAYS},${LOCATION}_Rman_${TYPE}_Logs_01"
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="romulus,remus"
+else
+    export STORAGE="remus,romulus"
+fi
+export CLONE="romulus,remus"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export ALIASES="${ALIASES},${ZONE},${ZONE}.opoce.cec.eu.int"
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+export DBC=RMAN_<APP>_TEST        # value provided by DBA's
+export DBS=RMAN:<APP>:appl:<OID>:redo_keep:<NUMBER>   # value provided by DBA's
+
+(cat <<EOT
+#client_name;remote_access;groups;dbcomment;saveset;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${DBC};"${DBS}";${ALIASES};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","dbcomment","dbsaveset","alias","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: remus;
+                     comment: $c{dbcomment};
+                   save set: $c{dbsaveset};
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: saverman.pl;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+
+

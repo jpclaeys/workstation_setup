@@ -1,0 +1,233 @@
+
+/etc/vx/bin/vxreattach EMC_13
+vxvol -f -g prenot start vorabin
+vxvol -f -g prenot start voradata
+
+umount /applications/prenot/oradata
+umount /applications/prenot/orabin
+mount /applications/prenot/oradata
+mount /applications/prenot/orabin
+
+
+######### si on voit depuis un vxdisk qu'un disque est failed et hors de la liste des disques
+/etc/vx/bin/vxreattach
+root@bill # vxprint -htr -g oradd1
+DG NAME         NCONFIG      NLOG     MINORS   GROUP-ID
+DM NAME         DEVICE       TYPE     PRIVLEN  PUBLEN   STATE
+RV NAME         RLINK_CNT    KSTATE   STATE    PRIMARY  DATAVOLS  SRL
+RL NAME         RVG          KSTATE   STATE    REM_HOST REM_DG    REM_RLNK
+V  NAME         RVG          KSTATE   STATE    LENGTH   READPOL   PREFPLEX UTYPE
+PL NAME         VOLUME       KSTATE   STATE    LENGTH   LAYOUT    NCOL/WID MODE
+SD NAME         PLEX         DISK     DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+SV NAME         PLEX         VOLNAME  NVOLLAYR LENGTH   [COL/]OFF AM/NM    MODE
+DC NAME         PARENTVOL    LOGVOL
+SP NAME         SNAPVOL      DCO
+
+dg oradd1       default      default  8000     1045748136.1180.boule
+
+dm roba_2       fabric_10    sliced   3583     73403904 -
+dm roba_6       fabric_6     sliced   3583     157298176 -
+dm roba_8       fabric_4     sliced   3583     73403904 -
+
+v  vorabin      -            DISABLED ACTIVE   8388608  SELECT    -        fsgen
+pl vorabin-01   vorabin      DISABLED RECOVER  8390144  CONCAT    -        RW
+sd roba_8-04    vorabin-01   roba_8   65013760 8390144  0         fabric_4 ENA
+
+v  voradata     -            DISABLED ACTIVE   146800640 SELECT   -        fsgen
+pl voradata-01  voradata     DISABLED RECOVER  146800640 CONCAT   -        RW
+sd roba_8-01    voradata-01  roba_8   0        41943552 0         fabric_4 ENA
+sd roba_6-01    voradata-01  roba_6   0        31456768 41943552  fabric_6 ENA
+sd roba_6-02    voradata-01  roba_6   31456768 10486784 73400320  fabric_6 ENA
+sd roba_6-07    voradata-01  roba_6   51416064 62913536 83887104  fabric_6 ENA
+
+v  voraexp      -            DISABLED ACTIVE   10485760 SELECT    -        fsgen
+pl voraexp-01   voraexp      DISABLED RECOVER  10486784 CONCAT    -        RW
+sd roba_8-03    voraexp-01   roba_8   54526976 10486784 0         fabric_4 ENA
+
+v  voralog      -            DISABLED ACTIVE   20971520 SELECT    -        fsgen
+pl voralog-01   voralog      DISABLED RECOVER  20971776 CONCAT    -        RW
+sd roba_8-02    voralog-01   roba_8   41943552 10486784 0         fabric_4 ENA
+sd roba_2-01    voralog-01   roba_2   0        10484992 10486784  fabric_10 ENA
+
+v  vorausers    -            DISABLED ACTIVE   2045952  SELECT    -        fsgen
+pl vorausers-01 vorausers    DISABLED RECOVER  2046464  CONCAT    -        RW
+sd roba_8-05    vorausers-01 roba_8   52430336 2046464  0         fabric_4 ENA
+root@bill # vxmend fix clean vorabin-01
+vxvm:vxmend: ERROR: Plex vorabin-01 not in STALE state
+root@bill # vxmend -g oradd1 fix stale vorabin-01
+root@bill # vxprint -htr -g oradd1
+DG NAME         NCONFIG      NLOG     MINORS   GROUP-ID
+DM NAME         DEVICE       TYPE     PRIVLEN  PUBLEN   STATE
+RV NAME         RLINK_CNT    KSTATE   STATE    PRIMARY  DATAVOLS  SRL
+RL NAME         RVG          KSTATE   STATE    REM_HOST REM_DG    REM_RLNK
+V  NAME         RVG          KSTATE   STATE    LENGTH   READPOL   PREFPLEX UTYPE
+PL NAME         VOLUME       KSTATE   STATE    LENGTH   LAYOUT    NCOL/WID MODE
+SD NAME         PLEX         DISK     DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+SV NAME         PLEX         VOLNAME  NVOLLAYR LENGTH   [COL/]OFF AM/NM    MODE
+DC NAME         PARENTVOL    LOGVOL
+SP NAME         SNAPVOL      DCO
+
+dg oradd1       default      default  8000     1045748136.1180.boule
+
+dm roba_2       fabric_10    sliced   3583     73403904 -
+dm roba_6       fabric_6     sliced   3583     157298176 -
+dm roba_8       fabric_4     sliced   3583     73403904 -
+
+v  vorabin      -            DISABLED ACTIVE   8388608  SELECT    -        fsgen
+pl vorabin-01   vorabin      DISABLED STALE    8390144  CONCAT    -        RW
+sd roba_8-04    vorabin-01   roba_8   65013760 8390144  0         fabric_4 ENA
+
+v  voradata     -            DISABLED ACTIVE   146800640 SELECT   -        fsgen
+pl voradata-01  voradata     DISABLED RECOVER  146800640 CONCAT   -        RW
+sd roba_8-01    voradata-01  roba_8   0        41943552 0         fabric_4 ENA
+sd roba_6-01    voradata-01  roba_6   0        31456768 41943552  fabric_6 ENA
+sd roba_6-02    voradata-01  roba_6   31456768 10486784 73400320  fabric_6 ENA
+sd roba_6-07    voradata-01  roba_6   51416064 62913536 83887104  fabric_6 ENA
+
+v  voraexp      -            DISABLED ACTIVE   10485760 SELECT    -        fsgen
+pl voraexp-01   voraexp      DISABLED RECOVER  10486784 CONCAT    -        RW
+sd roba_8-03    voraexp-01   roba_8   54526976 10486784 0         fabric_4 ENA
+
+v  voralog      -            DISABLED ACTIVE   20971520 SELECT    -        fsgen
+pl voralog-01   voralog      DISABLED RECOVER  20971776 CONCAT    -        RW
+sd roba_8-02    voralog-01   roba_8   41943552 10486784 0         fabric_4 ENA
+sd roba_2-01    voralog-01   roba_2   0        10484992 10486784  fabric_10 ENA
+
+v  vorausers    -            DISABLED ACTIVE   2045952  SELECT    -        fsgen
+pl vorausers-01 vorausers    DISABLED RECOVER  2046464  CONCAT    -        RW
+sd roba_8-05    vorausers-01 roba_8   52430336 2046464  0         fabric_4 ENA
+root@bill # vxmend -g oradd1 fix stale voradata-01
+root@bill # vxmend -g oradd1 fix stale voraexp-01
+root@bill # vxmend -g oradd1 fix stale voralog-01
+root@bill # vxmend -g oradd1 fix stale vorausers-01
+root@bill # vxprint -htr -g oradd1
+DG NAME         NCONFIG      NLOG     MINORS   GROUP-ID
+DM NAME         DEVICE       TYPE     PRIVLEN  PUBLEN   STATE
+RV NAME         RLINK_CNT    KSTATE   STATE    PRIMARY  DATAVOLS  SRL
+RL NAME         RVG          KSTATE   STATE    REM_HOST REM_DG    REM_RLNK
+V  NAME         RVG          KSTATE   STATE    LENGTH   READPOL   PREFPLEX UTYPE
+PL NAME         VOLUME       KSTATE   STATE    LENGTH   LAYOUT    NCOL/WID MODE
+SD NAME         PLEX         DISK     DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+SV NAME         PLEX         VOLNAME  NVOLLAYR LENGTH   [COL/]OFF AM/NM    MODE
+DC NAME         PARENTVOL    LOGVOL
+SP NAME         SNAPVOL      DCO
+
+dg oradd1       default      default  8000     1045748136.1180.boule
+
+dm roba_2       fabric_10    sliced   3583     73403904 -
+dm roba_6       fabric_6     sliced   3583     157298176 -
+dm roba_8       fabric_4     sliced   3583     73403904 -
+
+v  vorabin      -            DISABLED ACTIVE   8388608  SELECT    -        fsgen
+pl vorabin-01   vorabin      DISABLED STALE    8390144  CONCAT    -        RW
+sd roba_8-04    vorabin-01   roba_8   65013760 8390144  0         fabric_4 ENA
+
+v  voradata     -            DISABLED ACTIVE   146800640 SELECT   -        fsgen
+pl voradata-01  voradata     DISABLED STALE    146800640 CONCAT   -        RW
+sd roba_8-01    voradata-01  roba_8   0        41943552 0         fabric_4 ENA
+sd roba_6-01    voradata-01  roba_6   0        31456768 41943552  fabric_6 ENA
+sd roba_6-02    voradata-01  roba_6   31456768 10486784 73400320  fabric_6 ENA
+sd roba_6-07    voradata-01  roba_6   51416064 62913536 83887104  fabric_6 ENA
+
+v  voraexp      -            DISABLED ACTIVE   10485760 SELECT    -        fsgen
+pl voraexp-01   voraexp      DISABLED STALE    10486784 CONCAT    -        RW
+sd roba_8-03    voraexp-01   roba_8   54526976 10486784 0         fabric_4 ENA
+
+v  voralog      -            DISABLED ACTIVE   20971520 SELECT    -        fsgen
+pl voralog-01   voralog      DISABLED STALE    20971776 CONCAT    -        RW
+sd roba_8-02    voralog-01   roba_8   41943552 10486784 0         fabric_4 ENA
+sd roba_2-01    voralog-01   roba_2   0        10484992 10486784  fabric_10 ENA
+
+v  vorausers    -            DISABLED ACTIVE   2045952  SELECT    -        fsgen
+pl vorausers-01 vorausers    DISABLED STALE    2046464  CONCAT    -        RW
+sd roba_8-05    vorausers-01 roba_8   52430336 2046464  0         fabric_4 ENA
+root@bill # vxmend -g oradd1 fix clean vorausers-01
+root@bill # vxmend -g oradd1 fix clean vorabin-01
+root@bill # vxmend -g oradd1 fix clean voradata-01
+root@bill # vxmend -g oradd1 fix clean voraexp-01
+root@bill # vxmend -g oradd1 fix clean voralog-01
+root@bill # vxprint -htr -g oradd1
+DG NAME         NCONFIG      NLOG     MINORS   GROUP-ID
+DM NAME         DEVICE       TYPE     PRIVLEN  PUBLEN   STATE
+RV NAME         RLINK_CNT    KSTATE   STATE    PRIMARY  DATAVOLS  SRL
+RL NAME         RVG          KSTATE   STATE    REM_HOST REM_DG    REM_RLNK
+V  NAME         RVG          KSTATE   STATE    LENGTH   READPOL   PREFPLEX UTYPE
+PL NAME         VOLUME       KSTATE   STATE    LENGTH   LAYOUT    NCOL/WID MODE
+SD NAME         PLEX         DISK     DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+SV NAME         PLEX         VOLNAME  NVOLLAYR LENGTH   [COL/]OFF AM/NM    MODE
+DC NAME         PARENTVOL    LOGVOL
+SP NAME         SNAPVOL      DCO
+
+dg oradd1       default      default  8000     1045748136.1180.boule
+
+dm roba_2       fabric_10    sliced   3583     73403904 -
+dm roba_6       fabric_6     sliced   3583     157298176 -
+dm roba_8       fabric_4     sliced   3583     73403904 -
+
+v  vorabin      -            DISABLED ACTIVE   8388608  SELECT    -        fsgen
+pl vorabin-01   vorabin      DISABLED CLEAN    8390144  CONCAT    -        RW
+sd roba_8-04    vorabin-01   roba_8   65013760 8390144  0         fabric_4 ENA
+
+v  voradata     -            DISABLED ACTIVE   146800640 SELECT   -        fsgen
+pl voradata-01  voradata     DISABLED CLEAN    146800640 CONCAT   -        RW
+sd roba_8-01    voradata-01  roba_8   0        41943552 0         fabric_4 ENA
+sd roba_6-01    voradata-01  roba_6   0        31456768 41943552  fabric_6 ENA
+sd roba_6-02    voradata-01  roba_6   31456768 10486784 73400320  fabric_6 ENA
+sd roba_6-07    voradata-01  roba_6   51416064 62913536 83887104  fabric_6 ENA
+
+v  voraexp      -            DISABLED ACTIVE   10485760 SELECT    -        fsgen
+pl voraexp-01   voraexp      DISABLED CLEAN    10486784 CONCAT    -        RW
+sd roba_8-03    voraexp-01   roba_8   54526976 10486784 0         fabric_4 ENA
+
+v  voralog      -            DISABLED ACTIVE   20971520 SELECT    -        fsgen
+pl voralog-01   voralog      DISABLED CLEAN    20971776 CONCAT    -        RW
+sd roba_8-02    voralog-01   roba_8   41943552 10486784 0         fabric_4 ENA
+sd roba_2-01    voralog-01   roba_2   0        10484992 10486784  fabric_10 ENA
+
+v  vorausers    -            DISABLED ACTIVE   2045952  SELECT    -        fsgen
+pl vorausers-01 vorausers    DISABLED CLEAN    2046464  CONCAT    -        RW
+sd roba_8-05    vorausers-01 roba_8   52430336 2046464  0         fabric_4 ENA
+root@bill # vxvol -g oradd1 startall
+root@bill # vxprint -htr -g oradd1
+DG NAME         NCONFIG      NLOG     MINORS   GROUP-ID
+DM NAME         DEVICE       TYPE     PRIVLEN  PUBLEN   STATE
+RV NAME         RLINK_CNT    KSTATE   STATE    PRIMARY  DATAVOLS  SRL
+RL NAME         RVG          KSTATE   STATE    REM_HOST REM_DG    REM_RLNK
+V  NAME         RVG          KSTATE   STATE    LENGTH   READPOL   PREFPLEX UTYPE
+PL NAME         VOLUME       KSTATE   STATE    LENGTH   LAYOUT    NCOL/WID MODE
+SD NAME         PLEX         DISK     DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+SV NAME         PLEX         VOLNAME  NVOLLAYR LENGTH   [COL/]OFF AM/NM    MODE
+DC NAME         PARENTVOL    LOGVOL
+SP NAME         SNAPVOL      DCO
+
+dg oradd1       default      default  8000     1045748136.1180.boule
+
+dm roba_2       fabric_10    sliced   3583     73403904 -
+dm roba_6       fabric_6     sliced   3583     157298176 -
+dm roba_8       fabric_4     sliced   3583     73403904 -
+
+v  vorabin      -            ENABLED  ACTIVE   8388608  SELECT    -        fsgen
+pl vorabin-01   vorabin      ENABLED  ACTIVE   8390144  CONCAT    -        RW
+sd roba_8-04    vorabin-01   roba_8   65013760 8390144  0         fabric_4 ENA
+
+v  voradata     -            ENABLED  ACTIVE   146800640 SELECT   -        fsgen
+pl voradata-01  voradata     ENABLED  ACTIVE   146800640 CONCAT   -        RW
+sd roba_8-01    voradata-01  roba_8   0        41943552 0         fabric_4 ENA
+sd roba_6-01    voradata-01  roba_6   0        31456768 41943552  fabric_6 ENA
+sd roba_6-02    voradata-01  roba_6   31456768 10486784 73400320  fabric_6 ENA
+sd roba_6-07    voradata-01  roba_6   51416064 62913536 83887104  fabric_6 ENA
+
+v  voraexp      -            ENABLED  ACTIVE   10485760 SELECT    -        fsgen
+pl voraexp-01   voraexp      ENABLED  ACTIVE   10486784 CONCAT    -        RW
+sd roba_8-03    voraexp-01   roba_8   54526976 10486784 0         fabric_4 ENA
+
+v  voralog      -            ENABLED  ACTIVE   20971520 SELECT    -        fsgen
+pl voralog-01   voralog      ENABLED  ACTIVE   20971776 CONCAT    -        RW
+sd roba_8-02    voralog-01   roba_8   41943552 10486784 0         fabric_4 ENA
+sd roba_2-01    voralog-01   roba_2   0        10484992 10486784  fabric_10 ENA
+
+v  vorausers    -            ENABLED  ACTIVE   2045952  SELECT    -        fsgen
+pl vorausers-01 vorausers    ENABLED  ACTIVE   2046464  CONCAT    -        RW
+sd roba_8-05    vorausers-01 roba_8   52430336 2046464  0         fabric_4 ENA
+root@bill #
+

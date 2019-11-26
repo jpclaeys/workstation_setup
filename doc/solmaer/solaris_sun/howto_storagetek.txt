@@ -1,0 +1,699 @@
+################################################################################################################################################################
+# connexion au cam
+################################################################################################################################################################
+
+/opt/se6x20/cli/bin/sscs login -u root -h remus
+
+################################################################################################################################################################
+# rechercher un nom de volume par rapport a son wwn
+################################################################################################################################################################
+
+export array=gnole
+export wwn_list="266772000022F44F161656"
+{
+for wwn in `echo $wwn_list`
+do
+	./sscs list -a $array volume | awk '{print $2}' | while read volume
+	do
+		./sscs list -a $array volume $volume | perl -pe 'chomp' | perl -ne '@list=split(/\s+/); $list[5]=~ s/://g; print "$list[1];$list[5]\n"'
+	done
+done
+} | egrep -i $wwn_list
+
+################################################################################################################################################################
+# generer un rapport qui liste par array, pour chaque host, les diffrents volumes mappes et leurs tailles
+################################################################################################################################################################
+
+{
+echo 'storage;storape type;host;host os;volume;volume size'
+./sscs list array | awk '{print $2}' | while read array
+do
+	array_type=`./sscs list devices | grep $array | awk '{print $3}'`
+	./sscs list -a $array host | awk '{print $2}' | while read host
+	do
+		./sscs list -a $array host $host | grep 'Volume:' | awk '{print $2}' | while read volume
+		do
+			size=`./sscs list -a $array volume $volume | grep '^  Size:' | awk '{print $2" "$3}'`
+			echo "$array;$array_type;$host;$volume;$size"
+		done
+	done
+done
+}
+
+
+
+{
+echo 'storage;storape type;host;host os;volume;volume size'
+./sscs list array | awk '{print $2}' | while read array
+do
+	array_type=`./sscs list devices | grep $array | awk '{print $3}'`
+	./sscs list -a $array host | awk '{print $2}' | while read host
+	do
+		./sscs list -a $array host $host | grep 'Volume:' | awk '{print $2}' | while read volume
+		do
+			size=`./sscs list -a $array volume $volume | grep '^  Size:' | awk '{print $2" "$3}'`
+			host_os=`grep $host /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print $7}' | awk '{print $1" "$2}'`
+			echo "$array;$array_type;$host;$hosts_os;$volume;$size"
+		done
+	done
+done
+} >/home/betorma/tmp/6130_6140.txt
+
+
+
+
+
+
+
+################################################################################################################################################################
+# creation d'un volume sur un 61x0 mappe sur un hote
+################################################################################################################################################################
+
+##### variables
+export array=gnole
+export host=thor
+export size=60GB
+
+##### liste des volues deja existants sur host
+./sscs list -a ${array} mapping ${host} | sort -n -k 3
+
+##### choisit le nom du volume
+export volume=vojmonitor_test01
+
+##### verifie qu'un volume portant ce nom n'existe pas deja
+./sscs list -a ${array} volume ${volume}
+
+##### choisit le numero de lun
+export lun=1
+
+##### verifie que le numero de lun n'est pas deja utilise par l'hote
+./sscs list -a ${array} mapping ${host} | grep "LUN: ${lun}"
+
+##### liste les vdisk
+{
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $array vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $array vdisk $n | egrep 'Virtual Disk:|Capacity|Maximal Volume Size'
+done
+}
+
+##### choix du vdisk
+export virtual_disk=1
+export pool=Default
+
+##### creation du volume
+echo ./sscs create -a ${array} -p Default -s ${size} -v ${virtual_disk} volume ${volume}
+
+##### mappage du volume
+echo ./sscs map -a ${array} -v ${volume} -l ${lun} host ${host}
+
+##### verifie le status du volume
+./sscs list -a ${array} volume ${volume}
+
+##### notification de l'initialisation du disk
+{
+export STATUS='Initializing...'
+while [ $STATUS = 'Initializing...' ]
+do
+	export STATUS=`./sscs list -a ${array} volume ${volume} | grep 'Action:' | awk '{print $2}'`
+	echo `date +%Y%m%d%H%M`" $volume: Initializing..."
+	sleep 60
+done
+./sscs list -a ${array} volume ${volume} | mailx -s "$array: $volume $size initialized" betorma
+}
+
+
+################################################################################################################################################################
+# creation de 2 volumes pour un mirroir mappe sur un hotegroup (hotes en cluster)
+################################################################################################################################################################
+
+##### variables
+export primary_array=gnole
+export secondary_array=tordboyaux
+export hostgroup=ciba
+export size=70GB
+
+##### liste des volues deja existants sur hostgroup sur primary_array
+./sscs list -a ${primary_array} mapping ${hostgroup} | sort -n -k 3
+
+##### choisit le nom du volume
+export volume=vseicr_dev02
+
+##### verifie qu'un volume portant ce nom n'existe pas deja
+{
+./sscs list -a ${primary_array} volume ${volume}
+./sscs list -a ${secondary_array} volume ${volume} 
+}
+
+##### choisit le numero de lun
+export lun=1
+
+##### verifie que le numero de lun n'est pas deja utilise par l'hostgroup
+{
+./sscs list -a ${primary_array} mapping ${hostgroup} | grep "LUN: ${lun}"
+./sscs list -a ${secondary_array} mapping ${hostgroup} | grep "LUN: ${lun}"
+}
+
+##### liste les vdisk
+{
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $primary_array vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $primary_array vdisk $n | egrep 'Virtual Disk:|Capacity'
+done
+}
+
+##### choix du vdisk
+export virtual_disk=1
+export pool=Default
+
+##### creation du volume
+echo ./sscs create -a ${primary_array} -p Default -s ${size} -v ${virtual_disk} volume ${volume}
+
+##### mappage du volume
+echo ./sscs map -a ${primary_array} -v ${volume} -l ${lun} hostgroup ${hostgroup}
+
+##### verifie le status du volume
+./sscs list -a ${primary_array} volume ${volume}
+
+##### liste les vdisk
+{
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $secondary_array vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $secondary_array vdisk $n | egrep 'Virtual Disk:|Capacity'
+done
+}
+
+##### choix du vdisk
+export virtual_disk=1
+export pool=Default
+
+##### creation du volume
+echo ./sscs create -a ${secondary_array} -p Default -s ${size} -v ${virtual_disk} volume ${volume}
+
+##### mappage du volume
+echo ./sscs map -a ${secondary_array} -v ${volume} -l ${lun} hostgroup ${hostgroup}
+
+##### verifie le status du volume
+./sscs list -a ${secondary_array} volume ${volume}
+
+################################################################################################################################################################
+# suppression d'un volume sur un 6140
+################################################################################################################################################################
+
+
+##### s'assurer qu'il n'est plus utilise par l'hote sur lequel il doit etre enleve
+
+
+##### variables
+export array=tordboyaux
+export host=doc
+
+##### liste des volues existants sur $host
+./sscs list -a ${array} mapping ${host}  
+
+##### nom du volume a supprimer
+export volume=vprocatx_test05
+
+##### verification du volume
+./sscs list -a ${array} volume $volume
+
+##### demappage du volume de son hote
+echo ./sscs unmap -a ${array} -h ${host} volume ${volume}   
+
+##### liste des volumes existants sur $host
+./sscs list -a ${array} mapping ${host} 
+
+##### visualisation du volume
+./sscs list -a ${array} volume ${volume}
+
+##### suppression du volume
+echo ./sscs delete -a ${array} volume ${volume}
+
+##### verification
+./sscs list -a ${array} volume ${volume}
+
+
+
+################################################################################################################################################################
+# demapper puis remapper des luns en mirroir pour le deplcament d'application/zone
+################################################################################################################################################################
+
+
+##### variables a recuperer de la partie precedente
+export HOSTGROUPSOURCE=bessie_sally
+export HOSTGROUPTARGET=fillmore_flo
+export ARRAY1SOURCE=gnole
+export ARRAY2SOURCE=tordboyaux
+export ARRAY1TARGET=gnole
+export ARRAY2TARGET=tordboyaux
+export LIST_LUN=''
+sh
+
+##### liste les lun mappees sur $HOSTGROUPSOURCE
+{
+echo "##### $ARRAY1SOURCE"
+./sscs list -a $ARRAY1SOURCE mapping ${HOSTGROUPSOURCE}
+echo
+echo "##### $ARRAY2SOURCE"
+./sscs list -a $ARRAY2SOURCE mapping ${HOSTGROUPSOURCE}
+}
+
+
+##### recupere les noms de volumes des $LIST_LUN
+{
+export VOLUMES_LIST=''
+for LUN in `echo ${LIST_LUN}`
+do
+	VOLUMES_LIST=`echo -n "${VOLUMES_LIST} "; ./sscs list -a ${ARRAY1SOURCE} mapping ${HOSTGROUPSOURCE} | grep "LUN: ${LUN}" | awk -F: '{print $2}' | awk '{print $1}'`
+	echo ${VOLUMES_LIST}
+	VOLUMES_LIST=`echo -n "${VOLUMES_LIST} "; ./sscs list -a ${ARRAY2SOURCE} mapping ${HOSTGROUPSOURCE} | grep "LUN: ${LUN}" | awk -F: '{print $2}' | awk '{print $1}'`
+	echo ${VOLUMES_LIST}
+done
+}
+##### liste des volumes de ${VOLUMES_LIST}
+{
+for VOLUME in `echo ${VOLUMES_LIST}`
+do
+	echo "##### $ARRAY1SOURCE"
+	./sscs list -a ${ARRAY1SOURCE} volume ${VOLUME}
+	echo "##### $ARRAY2SOURCE"
+	./sscs list -a ${ARRAY2SOURCE} volume ${VOLUME}
+done
+}
+
+##### unmap des volumes ${VOLUMES_LIST}`
+{
+for VOLUME in `echo ${VOLUMES_LIST}`
+do
+	echo ./sscs unmap -a ${ARRAY1SOURCE} -g ${HOSTGROUPSOURCE} volume ${VOLUME}
+	echo ./sscs unmap -a ${ARRAY2SOURCE} -g ${HOSTGROUPSOURCE} volume ${VOLUME}
+done
+}
+
+
+##### verification du l'unmapping
+./sscs list -a ${ARRAY1SOURCE} mapping ${HOSTGROUPSOURCE}  | sort -n -k 3
+
+
+##### liste des volumes sur ${HOSTGROUPTARGET}
+{
+echo "##### ${ARRAY1TARGET}"
+./sscs list -a ${ARRAY1TARGET} mapping ${HOSTGROUPTARGET}  | sort -n -k 3
+echo "##### ${ARRAY2TARGET}"
+./sscs list -a ${ARRAY2TARGET} mapping ${HOSTGROUPTARGET}  | sort -n -k 3
+}
+
+##### choisir un numero de lun libre pour chaque volume de $VOLUMES_LIST
+{
+COMMAND=''
+for VOLUME in `echo ${VOLUMES_LIST}`
+do
+	for ARRAY in ${ARRAY1TARGET} ${ARRAY2TARGET}
+	do
+		echo -n "Numero de lun pour le volume ${VOLUME} sur ${ARRAY}: "
+		read LUN
+		COMMAND="${COMMAND}\n./sscs map -a ${ARRAY} -g ${HOSTGROUPTARGET} -l ${LUN} volume ${VOLUME}"
+	done
+	echo ${COMMAND}
+done
+}
+
+
+
+##### verification du mapping
+{
+echo "##### ${ARRAY1TARGET}"
+./sscs list -a ${ARRAY1TARGET} mapping ${HOSTGROUPTARGET} | sort -n -k 3
+echo "##### ${ARRAY2TARGET}"
+./sscs list -a ${ARRAY2TARGET} mapping ${HOSTGROUPTARGET} | sort -n -k 3
+}
+
+
+
+
+
+################################################################################################################################################################
+# host et hostgroup
+################################################################################################################################################################
+
+##### creation d'un host
+host=mercons02
+array=6140_01
+./sscs create -a ${array} host ${host}
+
+##### suppression d'un host
+host=mercons02
+array=6140_02
+./sscs delete -a ${array} host ${host}
+
+##### creation d'un hostgroup
+hostgroup=hostgroup_test
+array=6140_02
+./sscs create -a ${array} hostgroup ${hostgroup}
+
+##### suppression d'un hostgroup
+hostgroup=hostgroup_test
+array=6140_02
+./sscs delete -a ${array} hostgroup ${hostgroup}
+
+##### ajout d'un host a un hostgroup
+host=mercons02
+hostgroup=hostgourp_test
+array=6140_02
+./sscs modify -a ${array} -g ${hostgroup} host ${host}
+
+##### liste des hosts dans les hostgroup d'un array
+export array=tordboyaux
+{
+./sscs list -a $array hostgroup | awk '{print $3}' | while read hostgroup
+do
+	echo "##### $hostgroup"
+	./sscs list -a $array hostgroup $hostgroup | egrep -v 'Host Group|Volume' | awk -F':' '{print $2}'
+done
+}
+
+
+################################################################################################################################################################
+# initiator
+################################################################################################################################################################
+
+
+./sscs create -a gnole -w 2100001b321ba67a -h mireille -o solaris initiator mireille_hba1
+
+################################################################################################################################################################
+# array
+################################################################################################################################################################
+
+##### enregistrement d'un array dans le cam en precisant son ip
+ip=192.168.1.69
+./sscs register -i ${ip} storage-system
+
+##### enregistrement de tous les arrays trouves sur le reseau
+./sscs register -d storage-system
+
+##### desenregistrement d'une array
+array_list='gnole,absynthe,tordboyaux'
+echo ./sscs unregister storage-system ${array_list}
+
+
+################################################################################################################################################################
+# controllers
+################################################################################################################################################################
+
+##### configuration d'un controller
+{
+export array=6140_01
+export controller=B
+export port=1
+export ip=192.168.1.70
+export netmask=255.255.255.0
+export gateway=192.168.1.254
+export dhcp=off
+echo ./sscs modify  -a ${array} -e ${port} -d ${dhcp} -i ${ip} -g ${gateway} -m ${netmask} controller ${controller}
+}
+
+##### liste des infos pour les controllers
+
+{
+for array in `./sscs list array | awk '{print $2}'`
+do
+	echo
+	echo "##### ${array}"
+	./sscs list -a ${array} controller | egrep 'Controller:|Ethernet Port|DHCP|IP Address|Gateway|Net Mask'
+done
+}
+
+
+###### Cherche les volumes qui ne sont pas sur le prefer controller
+
+{
+for array in gnole absynthe tordboyaux brizard stamper peket
+do
+	export array
+	./sscs list -a $array volume | awk '{print $2}' | while read volume
+	do
+		./sscs list -a $array volume $volume | perl -pe 's/\n/;/g;' | perl -ne 'if(m{Volume:\s+(.*?);.*?;\s+Controller:\s+(A|B);\s+Preferred Controller:\s+(A|B);}) {
+				
+			if ($2 ne $3) {print "./sscs modify -a $ENV{array} -c $3 volume $1\n"}
+	}'
+	done
+done
+}
+
+
+
+
+
+################################################################################################################################################################
+# vdisk
+################################################################################################################################################################
+
+##### creation d'un vdisk (en precisant le nombre de disk; les disk seront choisit en fonction de leur numerotation)
+##### il faut creer un premier volume pour creer un vdisk
+
+{
+array=stamper
+volume=initvdisk_test01
+size=10GB
+nbr_disk=5
+pool=Default
+echo ./sscs create -a ${array} -p ${pool} -s ${size} -n ${nbr_disk} volume ${volume}
+}
+
+
+##### creation d'un vdisk (en precisant le nom des disk)
+##### il faut creer un premier volume pour creer un vdisk
+{
+array=stamper
+volume=initvdisk_test01
+size=10GB
+disk_list='t0d06,t0d07,t0d08,t0d09'
+pool=Default
+echo ./sscs create -a ${array} -p ${pool} -s ${size} -d ${disk_list} volume ${volume}
+}
+
+
+##### etat d'utilisation des vdisks
+{
+export ARRAY=gnole
+
+export NB_VDISK=`/opt/se6x20/cli/bin/sscs list -a $ARRAY vdisk | wc -l | awk '{print $1}'`
+
+n=0
+while [[ $n -ne $NB_VDISK ]]; do
+	echo -e "\n"
+	n=$[$n + 1] 
+	/opt/se6x20/cli/bin/sscs list -a $ARRAY vdisk $n | egrep 'Virtual Disk:|Capacity'
+done
+}
+
+
+##### donne le virtual disk de chaque volume d'un storage
+{
+array=gnole
+./sscs list -a ${array} mapping | awk '{print $1}' | sed -e 's/Volume://' | while read volume
+do
+        ./sscs list -a ${array} volume ${volume} | egrep 'Volume:|Virtual Disk:'
+done
+}
+
+
+#### defragmentation des vdisk
+{
+export threshold=90
+echo 'array;vdisk;avail_size;maxsize;%'
+for array in gnole absynthe tordboyaux brizard stamper peket
+do
+	export array
+	./sscs list -a ${array} vdisk | awk '{print $3}' | while read vdisk
+	do
+		./sscs list -a ${array} vdisk ${vdisk} | perl -pe 's/\n/;/g; s/\s+//g' | perl -ne '
+			if(m{VirtualDisk:(\d);.*?;AvailableCapacity:(.*?);.*?;MaximalVolumeSize:(.*?);}) {
+				$vdisk = $1; $avail_size = $2; $maxsize = $3;
+				$percent = $maxsize/$avail_size*100; 
+				$percent =~ s/\.\d*//;
+				print "$ENV{array};$vdisk;$avail_size;$maxsize;$percent\n";
+				if($percent < $ENV{threshold}) {print "./sscs modify -a $ENV{array} -f vdisk $vdisk\n"}
+			}
+		'
+	done
+done
+} | grep -v sscs
+
+
+
+################################################################################################################################################################
+# disk
+################################################################################################################################################################
+
+
+##### designer un disk comme hot-sapre
+disk=t85d11
+array=6140_02
+echo ./sscs modify -a $array -h true disk ${disk}
+
+
+
+################################################################################################################################################################
+# firmware
+################################################################################################################################################################
+
+##### list les version de firmware
+array=6140_02
+./sscs list -a ${array} firmware
+
+
+list  [-a|--array <array-name[,array-name...]>] [-t|--type <string[,string...]>] [-x|--exclude <string[,string...]>]  firmware
+
+modify  -a|--array <array-name> [-f|--force] [-o|--off-line] [-t|--type <string[,string...]>] [-x|--exclude <string[,string...]>] [-p|--path <string>] [-c|--component <string>] [-w|--no-warn]  firmware
+
+
+
+##### met a jour le firmware par rapport a la baseline
+array=6140_02
+echo ./sscs modify -a ${array} firmware
+
+./sscs modify -a 6140_02 -t disk firmware
+
+
+
+################################################################################################################################################################
+# grand nettoyage
+################################################################################################################################################################
+
+##### suppression de tous les mappings
+{
+for array in 6140_01
+do
+	export array
+	./sscs list -a ${array} mapping | perl -ne '
+		if(m{Volume:(.*?)\s+.*?Mapped To: (.*?)\s+Target Type: Host Group}) {
+			print "./sscs unmap -a $ENV{array} -g $2 volume $1\n"
+		} 
+		elsif (m{Volume:(.*?)\s+.*?Mapped To: (.*?)\s+Target Type: Host}) {
+			print "./sscs unmap -a $ENV{array} -h $2 volume $1\n"
+		} 
+		elsif (m{Volume:(.*?)\s+.*?Mapped To: (.*?)\s+Target Type:}) {
+			print "./sscs unmap -a $ENV{array} volume $1\n"
+		}
+	'
+done
+}
+
+
+##### suppression de tous les volumes 
+{
+for array in 6140_01
+do
+	export array
+	./sscs list -a ${array} volume | perl -ne '@line=split(m{\s+}); print "./sscs delete -a $ENV{array} volume $line[1]\n"'
+done
+}
+
+
+##### si le message suivant apparait, changer le Owning Controller du volume et reessayer une suppression de ce dernier
+##### Could not communicate with the controller to complete this request. Possible causes include network or connection problems, controller problems, or no power to the host or storage array. Check these possible causes and then retry the operation.
+
+
+array=6140_01
+volume=mssqlpr01-a_data
+./sscs list -a ${array} volume ${volume} | grep Controller
+
+new_controller=A
+./sscs modify -a ${array} -c ${new_controller} volume ${volume}
+
+
+##### suppression de tous les hosts
+{
+for array in 6140_01
+do
+	export array
+	./sscs list -a ${array} host | perl -ne '@line=split(m{\s+}); print "./sscs delete -a $ENV{array} host $line[1]\n"'
+done
+}
+
+##### suppression de tous les hostgroups
+{
+for array in 6140_01
+do
+	export array
+	./sscs list -a ${array} hostgroup | perl -ne '@line=split(m{\s+}); print "./sscs delete -a $ENV{array} hostgroup $line[2]\n"'
+done
+}
+
+##### suppression de tous les pool
+{
+for array in 6140_01
+do
+	export array
+	./sscs list -a ${array} pool | perl -ne '@line=split(m{\s+}); print "./sscs delete -a $ENV{array} pool $line[1]\n"'
+done
+}
+
+################################################################################################################################################################
+# update / installation d'nue nouvelle version de CAM
+################################################################################################################################################################
+
+
+root@romulus# export DISPLAY=vespa:10
+
+##### telechargement de la nouvelle version
+
+##### desinstallation de la version actuelle
+root@romulus# /opt/Sun_Microsystems/StorageTek_Mgmt/Sun_StorageTek_CAM/_uninst/uninstaller.bin
+
+##### installation
+root@romulus# cd /home/betorma/xchange 
+root@romulus# unzip p12677019_680_SOLARIS64.zip
+root@romulus# tar xf host_sw_solaris_6.8.0.20.tar 
+root@romulus# cd HostSoftwareCD_6.8.0.20 
+root@romulus# ./RunMe.bin 
+
+##### tester la connexion a l'url https://romulus:6789
+
+##### test de connexion en cli
+root@romulus# cd /opt/se6x20/cli/bin 
+root@romulus# ./sscs login -u root -h romulus
+
+##### test de lister les storages
+[root@romulus# ./sscs list array
+
+
+
+
+
+Error:
+Failed when removing package SUNWj6cfg
+ 
+Failed when removing package SUNWj6man
+ 
+Failed when removing package SUNWj6dmo
+ 
+Failed when removing package SUNWj6dev
+ 
+Failed when removing package SUNWj6rt
+ 
+Failed when removing package
+ 
+Failed when removing package SUNWstkcamcd
+ 
+Failed when removing package SUNWsefms
+ 
+Failed when removing package SUNWstkcam-scsi
+ 
+Failed when removing package
+Notice:
+Uninstallation has an error.
+    

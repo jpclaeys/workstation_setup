@@ -1,0 +1,74 @@
+# William
+# Apres qu'ils font les menages. Nous trouverons les disks comme ca:
+vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME
+DMX1000_0    auto      DMX1000_13    bari         online       c4t6006048000028746190453594D303741d0s2
+DMX1000_1    auto      DMX1000_7     oprvp        online       c4t6006048000028746190453594D303531d0s2
+DMX1000_2    auto      -             -            online       c4t6006048000028746190453594D313942d0s2
+DMX2000_0    auto      -             -            error        c4t6006048000028775112853594D344632d0s2
+DMX2000_1    auto      -             -            error        c4t6006048000028775112853594D324143d0s2
+DMX2000_2    auto      -             -            error        c4t6006048000028775112853594D353830d0s2
+c0t0d0s2     auto      rootdisk      rootdg       online       c0t0d0s2
+c0t1d0s2     auto      rootmirror    rootdg       online       c0t1d0s2
+-            -         DMX2000_51   bari         failed was:DMX2000_2
+-            -         DMX2000_55   oprvp        failed was:DMX2000_0
+# On doit faire un forcelip:
+# Avant le forcelip:
+/usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))'
+path: /dev/rdsk/c4t6006048000028746190453594D303531d0s2 ==> stor: 5006048448948403 lun 7 stor: 500604844894840c lun 7
+path: /dev/rdsk/c4t6006048000028746190453594D303741d0s2 ==> stor: 5006048448948403 lun 13 stor: 500604844894840c lun 13
+ Error: SCSI failure. - /dev/rdsk/c4t6006048000028775112853594D324143d0s2.
+
+ Error: SCSI failure. - /dev/rdsk/c4t6006048000028775112853594D344632d0s2.
+
+ Error: SCSI failure. - /dev/rdsk/c4t6006048000028775112853594D353830d0s2.
+
+path: /dev/rdsk/c4t6006048000028746190453594D313942d0s2 ==> stor: 5006048448948403 lun 72 stor: 500604844894840c lun 72
+#FORCELIP
+luxadm -e port |perl -nae '$F[1] eq "CONNECTED" and print "$F[0]\n"' |xargs luxadm -e forcelip
+# Apres le forcelip:
+/usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))'
+path: /dev/rdsk/c4t6006048000028746190453594D303531d0s2 ==> stor: 5006048448948403 lun 7 stor: 500604844894840c lun 7
+path: /dev/rdsk/c4t6006048000028746190453594D303741d0s2 ==> stor: 5006048448948403 lun 13 stor: 500604844894840c lun 13
+path: /dev/rdsk/c4t6006048000028746190453594D313942d0s2 ==> stor: 5006048448948403 lun 72 stor: 500604844894840c lun 72
+path: /dev/rdsk/c4t6006048000028775112853594D324143d0s2 ==> stor: 5006048449aef607 lun 72 stor: 5006048449aef608 lun 72
+path: /dev/rdsk/c4t6006048000028775112853594D344632d0s2 ==> stor: 5006048449aef607 lun 55 stor: 5006048449aef608 lun 55
+path: /dev/rdsk/c4t6006048000028775112853594D353830d0s2 ==> stor: 5006048449aef607 lun 51 stor: 5006048449aef608 lun 51
+# On upgrade la conf VXVM:
+vxdctl enable
+# Apres on verra les disques online mais avec encore les messages de failed ( on a efface les etiquettes "error" ):
+root@william 14:04 [adm] vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME
+DMX1000_0    auto      DMX1000_13    bari         online       c4t6006048000028746190453594D303741d0s2
+DMX1000_1    auto      DMX1000_7     oprvp        online       c4t6006048000028746190453594D303531d0s2
+DMX1000_2    auto      -             -            online       c4t6006048000028746190453594D313942d0s2
+DMX2000_0    auto      -             -            online       c4t6006048000028775112853594D344632d0s2
+DMX2000_1    auto      -             -            online       c4t6006048000028775112853594D324143d0s2
+DMX2000_2    auto      -             -            online       c4t6006048000028775112853594D353830d0s2
+c0t0d0s2     auto      rootdisk      rootdg       online       c0t0d0s2
+c0t1d0s2     auto      rootmirror    rootdg       online       c0t1d0s2
+-            -         DMX2000_51   bari         failed was:DMX2000_2
+-            -         DMX2000_55   oprvp        failed was:DMX2000_0
+
+# Apres on doit faire des menages avec vxdiskadm
+vxdiskadm
+choix => 1
+list
+taper DEVICE => pe: DMX2000_2
+"y"
+diskgroup => pe: bari
+"n"
+apres on tape tout enter
+
+# on quite et on doit voir quelque chose comme ca:
+vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME
+DMX1000_0    auto      DMX1000_13    bari         online       c4t6006048000028746190453594D303741d0s2
+DMX1000_1    auto      DMX1000_7     oprvp        online       c4t6006048000028746190453594D303531d0s2
+DMX1000_2    auto      -             -            online       c4t6006048000028746190453594D313942d0s2
+DMX2000_0    auto      DMX2000_55    oprvp        online       c4t6006048000028775112853594D344632d0s2
+DMX2000_1    auto      -             -            online       c4t6006048000028775112853594D324143d0s2
+DMX2000_2    auto      DMX2000_51    bari         online       c4t6006048000028775112853594D353830d0s2
+c0t0d0s2     auto      rootdisk      rootdg       online       c0t0d0s2
+c0t1d0s2     auto      rootmirror    rootdg       online       c0t1d0s2
+

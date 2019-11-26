@@ -1,0 +1,76 @@
+###########################################################################################################################
+# coupure mirroir zfs de zone en cluster
+###########################################################################################################################
+
+##### verifier que la lun dedier au quorum ne va pas etre supprim, sinon changer la lun de quorum
+
+##### sur le serveur physique
+
+export zpool=
+zpool status $zpool
+
+{
+export sn_storage=`grep $zpool /home/betorma/tmp/getcmdb_zone.txt| grep 'Secondary Node' | awk -F';' '{print $10}' | sed -e 's/EUFO 03\/465 (CC)/48F/' -e 's/MER 04\/453 (CC)/266/'`
+echo $sn_storage
+}
+
+zpool status $zpool | grep $sn_storage | awk '{print $1}' | xargs echo " "
+
+export disk_to_remove='' 	# separes par des espaces s'il y en a plusieurs
+
+{
+for disk in `echo $disk_to_remove`
+do
+	echo zpool detach $zpool $disk
+done
+}
+
+
+zpool status $zpool
+
+
+{
+echo; echo '##### sur les 2 noeuds du cluster'
+for disk in `echo $disk_to_remove`
+do
+	echo luxadm -e offline /dev/rdsk/${disk}s2
+	echo devfsadm -Cv
+	echo cldev populate
+done
+}
+
+
+cldev clear
+
+grep $zpool /home/betorma/tmp/getcmdb_zone.txt| grep 'Secondary Node' | awk -F';' '{print $10}' | sed -e 's/EUFO 03\/465 (CC)/tordboyaux/' -e 's/MER 04\/453 (CC)/gnole/' 
+
+
+##### sur serveur cam
+
+export array=
+export application=
+
+./sscs list -a $array volume | grep $application
+
+export volumes=''
+
+{
+for vol in `echo $volumes`
+do
+	echo ./sscs list -a $array volume $vol
+	echo "##### verifier le wwn"
+	echo ./sscs unmap -a $array volume $vol
+	echo ./sscs delete -a $array volume $vol
+	echo
+done
+}
+
+
+
+
+
+##### verif finale, sur les 2 noeuds
+
+zpool status| egrep 'pool|mirror'
+cldev status
+

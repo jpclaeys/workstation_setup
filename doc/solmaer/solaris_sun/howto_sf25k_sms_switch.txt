@@ -1,0 +1,42 @@
+
+##### verifier le status de la synchronisation des donnees du system controller pour un failover
+
+sf25k01-sc0% showdatasync    
+File Propagation State: ACTIVE
+Active File:            -
+Queued Files:           0
+
+
+##### verifier qui a le role de system controller
+
+sf25k01-sc0% showfailover -v | egrep 'Status of sf25k|Role'
+Status of sf25k01-sc0:       
+    Role:                    .......................................MAIN
+Status of sf25k01-sc1:       
+    Role:                    ......................................SPARE
+
+
+
+##### switch le system controller sur le spare (qui doit etre up)
+
+sf25k01-sc0% setfailover force
+
+
+##### reactiver le sms
+
+
+sf25k01-sc1% showfailover -v
+SC Failover Status:     DISABLED
+
+
+sf25k01-sc1% setfailover on
+
+
+sf25k01-sc1% showfailover -v | egrep 'Status of sf25k|Role'
+Status of sf25k01-sc1:       
+    Role:                    .......................................MAIN
+Status of sf25k01-sc0:       
+    Role:                    ......................................SPARE
+
+
+

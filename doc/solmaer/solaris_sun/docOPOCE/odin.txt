@@ -1,0 +1,415 @@
+root@odin 15:56 [~] df -k /applications/ojs/archive/* /applications/ojs/users/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vexternal
+                     52405993 42014774 9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/voriginal
+                     11529300 10502171  911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vpaper
+                     51609487 51506937       0   100%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume
+                     18866138 18377535  299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/vx/dsk/ojs/vbase
+                     72253289 65446821 6083936    92%    /applications/ojs/users
+
+
+cd /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXPORT
+
+foreach dir in  2007-??? 2008-0[01]?
+do
+echo -n $dir ":"
+tar cf - $dir |gzip -c > ${dir}.tgz
+ls -l ${dir}.tgz
+done
+
+\rm -rf 2007-???
+\rm -rf 2008-0[01]?
+
+
+
+foreach dir in  2008-0[2]?
+do
+echo -n $dir ":"
+tar cf - $dir |gzip -c > ${dir}.tgz
+ls -l ${dir}.tgz
+done
+
+
+root@odin 8:49 [EXPORT] df -k /applications/ojs/archive/* /applications/ojs/users/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vexternal
+                     52405993 42014774 9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/voriginal
+                     11529300 10502171  911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vpaper
+                     51609487 51506937       0   100%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume
+                     18866138 18377535  299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/vx/dsk/ojs/vbase
+                     72253289 59369323 12161434    83%    /applications/ojs/users
+
+
+\rm -rf 2007-17?.tgz
+
+find    07-??? -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'|tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"'| xargs -n 100 /bin/rm
+
+find  09-0[0123]? -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'
+find  09-0[0123]? -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"' |tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"'| xargs -n 100 /bin/rm
+
+for dir in  09-0[0123]?
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+foreach dir in  09-0[0123]?
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+
+
+
+root@odin 9:06 [EXTERNAL_CONTRACTOR] df -k /applications/ojs/archive/* /applications/ojs/users/ Filesystem            kbytes    used   avail capacity  Mounted on /dev/vx/dsk/ojs/vexternal
+                     52405993 42014774 9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/voriginal
+                     11529300 10502171  911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vpaper
+                     51609487 51506937       0   100%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume
+                     18866138 18377535  299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/vx/dsk/ojs/vbase
+                     72253289 57585569 13945188    81%    /applications/ojs/users
+
+cd /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXTERNAL_CONTRACTOR
+
+foreach dir in  07-2[23]?
+do
+arch="arch01"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+
+foreach dir in  07-2[23]?
+do
+arch="arch01"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+
+
+foreach dir in  07-[34]??
+do
+arch="arch01"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+foreach dir in  07-[34]??
+do
+arch="arch01"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+root@odin 9:54 [EXTERNAL_CONTRACTOR] df -k /applications/ojs/archive/EXTERNA*/arch0* /applications/ojs/users/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/1          10316795 8233267 1980361    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch01
+/dev/lofi/2          10316795   10261 10203367     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+/dev/lofi/3          10316795   10260 10203368     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+/dev/lofi/4          10316795   10258 10203370     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch04
+/dev/vx/dsk/ojs/vbase
+                     72253289 51096173 20434584    72%    /applications/ojs/users
+root@odin 9:55 [EXTERNAL_CONTRACTOR] df -k /applications/ojs/archive/RESU*/arch0* /applications/ojs/users/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/5          3439482 3370406   34682    99%    /applications/ojs/archive/RESUME_TEXT/arch01
+/dev/lofi/6          3439482  327082 3078006    10%    /applications/ojs/archive/RESUME_TEXT/arch02
+/dev/lofi/7          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch03
+/dev/lofi/8          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch04
+/dev/lofi/9          3439482    3602 3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch05
+/dev/vx/dsk/ojs/vbase
+                     72253289 51092627 20438130    72%    /applications/ojs/users
+
+#########################
+foreach dir in  07-[234]??
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+foreach dir in  08-2[3-6]?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+foreach dir in  09-0[0123]?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+foreach dir in  07-[234]??
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+echo "done"
+done
+
+foreach dir in  08-2[3-6]?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+echo "done"
+done
+
+foreach dir in  09-0[0123]?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+echo "done"
+done
+#########
+cd /home/ojs/SEI-JOS/data/ORIGINAL/ORIGINAL_TEXT
+
+
+foreach dir in  07-[234]??
+do
+arch="arch01"
+type="ORIGINAL_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+foreach dir in  08-2[3-6]?
+foreach dir in  09-0[0123]?
+do
+arch="arch01"
+type="ORIGINAL_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+foreach dir in  07-[234]??
+do
+arch="arch01"
+type="ORIGINAL_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+chmod g-s ${dir}
+echo "done"
+done
+
+foreach dir in  08-2[3-6]?
+foreach dir in  09-0[0123]?
+do
+arch="arch01"
+type="ORIGINAL_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+chmod g-s ${dir}
+echo "done"
+done
+
+
+trassch@odin 14:32 [~] df -k /applications/ojs/archive/* /applications/ojs/users/
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vexternal
+                     52405993 42014774 9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/voriginal
+                     11529300 10502171  911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vpaper
+                     51609487 51506937       0   100%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume
+                     18866138 18377535  299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/vx/dsk/ojs/vbase
+                     72253289 44414370 27116387    63%    /applications/ojs/users
+
+###################################
+for dir in  08-2??
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+
+08-200  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-200.tgz
+08-201  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-201.tgz
+08-202  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-202.tgz
+08-203  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-203.tgz
+08-204  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-204.tgz
+08-205  --> -rw-r--r--   1 root     other        113 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-205.tgz
+08-206  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-206.tgz
+08-207  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-207.tgz
+08-208  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-208.tgz
+08-209  --> -rw-r--r--   1 root     other        116 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-209.tgz
+08-210  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-210.tgz
+08-211  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-211.tgz
+08-212  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-212.tgz
+08-213  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-213.tgz
+08-214  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-214.tgz
+08-215  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-215.tgz
+08-216  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-216.tgz
+08-217  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-217.tgz
+08-218  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-218.tgz
+08-219  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-219.tgz
+08-220  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-220.tgz
+08-221  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-221.tgz
+08-222  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-222.tgz
+08-223  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-223.tgz
+08-224  --> -rw-r--r--   1 root     other        568 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-224.tgz
+08-225  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-225.tgz
+08-226  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-226.tgz
+08-227  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-227.tgz
+08-228  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-228.tgz
+08-229  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-229.tgz
+08-230  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-230.tgz
+08-231  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-231.tgz
+08-232  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-232.tgz
+08-233  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-233.tgz
+08-234  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-234.tgz
+08-235  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-235.tgz
+08-236  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-236.tgz
+08-237  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-237.tgz
+08-238  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-238.tgz
+08-239  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-239.tgz
+08-240  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-240.tgz
+08-241  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-241.tgz
+08-242  --> -rw-r--r--   1 root     other        114 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-242.tgz
+08-243  --> -rw-r--r--   1 root     other        115 Apr  3 08:33 /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02/08-243.tgz
+
+for dir in  08-24[4-9]
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+for dir in  08-2[5-6]?
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+for dir in  08-18[0-9]
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+#####PAPER
+for dir in 07-2[3-9]?
+do
+type="PAPER"
+echo -n $dir " --> "
+mv $dir /applications/ojs/archive/${type}
+ln -s  /applications/ojs/archive/${type}/${dir} $dir
+chown -h oracle:ojs ${dir}
+ls -l $dir
+done
+
+#####EXPORT
+
+cd /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXPORT
+
+for dir in 2009-04[4-9]
+do
+echo -n $dir ":"
+tar cf - $dir |gzip -c > ${dir}.tgz
+ls -l ${dir}.tgz
+done
+
+\rm -rf 2009-04[4-9]

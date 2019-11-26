@@ -1,0 +1,16 @@
+####################################################################
+# changer le splachscreen de grub
+######################################################################
+
+
+########## avec gimp
+
+- Ouvrez votre fond d'écran (ou toute autre image) dans GIMP et changez sa taille en 640x480 pixels (menu "Image\Echelle et taille de l'image").
+- Allez dans le menu "Image\Mode\Couleurs indexées", cliquez sur "Générer une palette optimale" puis tapez 14 couleurs au lieu des 255 pour le "nombre maximal de couleurs". Pour finir avec cette fenêtre, choisissez le tramage "Floyd-Steinberg" (normal).
+- Enregistrez vos modifications avec le menu "Fichier\Enregistrer sous...", choisissez l'extension .xpm, pour le seuil alpha, gardez 127 comme valeur.
+- Maintenant vous devez compresser cette image en .gz, pour cela c'est simple, utilisez la commande gzip votreimage.xpm, vous devriez avoir un nouveau fichier votreimage.xpm.gz 
+
+- Éditez le fichier /boot/grub/menu.lst avec votre éditeur de texte préféré
+- Par défaut, vous devriez voir une ligne avec  splashimage=(hd0,5)/boot/grub/splash.xpm.gz, commentez cette ligne avec # et recopiez-la juste en dessous en modifiant le nom de votre nouvelle image (fichier .xpm.gz)
+- Enregistrez les modifications 
+- Redémarrez 

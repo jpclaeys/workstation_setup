@@ -1,0 +1,585 @@
+###########################################################################################################################################
+###########################################################################################################################################
+################################################################           ################################################################
+################################################################ POWER OFF ################################################################
+################################################################           ################################################################
+###########################################################################################################################################
+###########################################################################################################################################
+
+
+
+##########################################################################################################################################
+##### TEST
+##########################################################################################################################################
+
+
+
+###########################################################################
+##### consoles 
+
+{
+for host in bessie fillmore itchy moe seymour
+do
+	grep $host /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print "xterm -T \"" $1 " - "$12" - "$11"\" -e ssh xscfadm@"$12 " &"}'
+done
+}
+
+M5k6em
+console -d1 -y
+
+
+###########################################################################
+##### poweroff zfs devices on site
+
+/home/betorma/bin/op_zpool_offline_device.zsh --mer --vnx 
+/home/betorma/bin/op_zpool_offline_device.zsh --mer --vnx |sh
+zpool status |less
+
+
+
+
+
+
+###########################################################################
+##### auto-boot
+
+eeprom "auto-boot?=false"
+
+
+
+
+###########################################################################
+##### stop server
+
+init 0
+#.
+poweroff -d 1 -y
+showhostname -a;showdate; showdomainstatus -d1
+
+
+
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k17-sc0.opoce.cec.eu.int
+Fri Mar 18 17:56:14 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF> 
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k13-sc0.opoce.cec.eu.int
+Fri Mar 18 17:29:18 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF> 
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k09-sc0.publications.europa.eu
+Fri Mar 18 17:29:15 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF> 
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k05-sc0.publications.europa.eu
+Fri Mar 18 17:29:09 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF> 
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k15-sc0.opoce.cec.eu.int
+Fri Mar 18 17:29:11 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF> 
+
+
+
+
+###########################################################################
+##### check applications on secondary node
+
+
+op_applications_status_from_global_zone.sh --all
+
+
+
+
+
+
+
+
+
+
+
+
+
+##########################################################################################################################################
+##### PROD
+##########################################################################################################################################
+
+
+
+
+
+###########################################################################
+##### consoles 
+
+{
+for host in ariane cesar athena martin mercure ulysse
+do
+	grep $host /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print "xterm -T \"" $1 " - "$12" - "$11"\" -e ssh xscfadm@"$12 " &"}'
+done
+}
+
+M5k6em
+console -d0 -y
+
+
+###########################################################################
+##### poweroff zfs devices on site
+
+/home/betorma/bin/op_zpool_offline_device.zsh --mer --vmax 
+/home/betorma/bin/op_zpool_offline_device.zsh --mer --vmax |sh
+zpool status |less
+zpool list
+
+
+
+
+
+###########################################################################
+##### auto-boot
+
+eeprom "auto-boot?=false"
+
+
+
+
+###########################################################################
+##### stop server
+
+init 0
+#.
+poweroff -d 0 -y
+showhostname -a;showdate; showdomainstatus -d1
+
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k09-sc0.publications.europa.eu
+Fri Mar 18 18:32:16 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF>                                               
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k07-sc0.opoce.cec.eu.int
+Fri Mar 18 17:32:08 UTC 2016
+DID         Domain Status
+01          Running
+XSCF> 
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k05-sc0.publications.europa.eu
+Fri Mar 18 18:32:10 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF> 
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k13-sc0.opoce.cec.eu.int
+Fri Mar 18 18:32:14 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF> 
+
+
+XSCF> showhostname -a;showdate; showdomainstatus -d1
+xscf#0:m5k17-sc0.opoce.cec.eu.int
+Fri Mar 18 18:32:13 CET 2016
+DID         Domain Status
+01          Powered Off
+XSCF> 
+
+
+
+
+
+
+
+###########################################################################
+##### check applications on secondary node
+
+
+op_applications_status_from_global_zone.sh --all
+
+
+
+
+
+0[160318/183331]root@cleopatre# zoneadm list -cv
+  ID NAME             STATUS     PATH                           BRAND    IP    
+   0 global           running    /                              native   shared
+   2 qa-pz            running    /zones/qa-pz                   native   shared
+   3 anninter_pz      running    /zones/anninter_pz             native   shared
+   4 eurovocportal-pz running    /zones/eurovocportal-pz        native   shared
+   5 sibylles-pz      running    /zones/sibylles-pz             native   shared
+   9 mdr-pz           running    /zones/mdr-pz                  native   shared
+  10 plandd1-pz       running    /zones/plandd1-pz              native   shared
+  11 ceres_pz         running    /zones/ceres_pz                native   shared
+0[160318/183334]root@cleopatre# op_applications_status_from_global_zone.sh --all
+qa-pz   disabled                svc:/applications/qa:reporting
+qa-pz   online          svc:/applications/qa:jmeter
+qa-pz   online          svc:/applications/qa:ora
+qa-pz   online          svc:/applications/qa:ci
+qa-pz   online          svc:/applications/qa:awstat
+qa-pz   online          svc:/applications/qa:intportal
+anninter_pz     online          svc:/applications/anninter:viewer
+anninter_pz     online          svc:/applications/anninter:wood
+anninter_pz     online          svc:/applications/anninter:cdj
+anninter_pz     online          svc:/applications/anninter:woodweb
+anninter_pz     online          svc:/applications/anninter:ora
+anninter_pz     online          svc:/applications/anninter:app
+eurovocportal-pz        online          svc:/applications/portal:mysql
+eurovocportal-pz        online          svc:/applications/portal:ora
+eurovocportal-pz        online          svc:/applications/portal:app
+eurovocportal-pz        online          svc:/applications/portal:web
+sibylles-pz     online          svc:/applications/bo:ora
+sibylles-pz     online          svc:/applications/misc:ora
+sibylles-pz     online          svc:/applications/k4:ora
+sibylles-pz     online          svc:/applications/mutf8:ora
+sibylles-pz     online          svc:/applications/acf:ora
+mdr-pz  online          svc:/applications/mdr:mdrweb
+mdr-pz  online          svc:/applications/mdr:ora
+plandd1-pz      online          svc:/applications/plandd:web
+plandd1-pz      online          svc:/applications/plandd:xchange
+plandd1-pz      online          svc:/applications/opsamba:winbind
+plandd1-pz      online          svc:/applications/opsamba:samba
+plandd1-pz      online          svc:/applications/plandd:dba
+plandd1-pz      online          svc:/applications/plandd:docbroker
+plandd1-pz      online          svc:/applications/plandd:content_server
+plandd1-pz      online          svc:/applications/plandd:app
+plandd1-pz      online          svc:/applications/plandd:wood
+plandd1-pz      online          svc:/applications/plandd:woodweb
+ceres_pz        online          svc:/applications/lgw:app
+ceres_pz        online          svc:/applications/cdl:app
+ceres_pz        online          svc:/applications/cdl:wood
+ceres_pz        online          svc:/applications/ceres:webarchive
+ceres_pz        online          svc:/applications/ceres:wood
+ceres_pz        online          svc:/applications/ewop:wood
+ceres_pz        online          svc:/applications/cdl:woodweb
+ceres_pz        online          svc:/applications/ewop:ewopweb
+ceres_pz        online          svc:/applications/lgw:woodweb
+ceres_pz        online          svc:/applications/ewop:woodweb
+ceres_pz        online          svc:/applications/lgw:wood
+ceres_pz        online          svc:/applications/ceres:woodweb
+ceres_pz        online          svc:/applications/ewop:conslegweb
+ceres_pz        online          svc:/applications/ceres:viewer
+ceres_pz        online          svc:/applications/ceres:dd3
+ceres_pz        online          svc:/applications/ceres:vm2engine
+ceres_pz        online          svc:/applications/ewop:app
+ceres_pz        online          svc:/applications/ewop:jurelapp
+ceres_pz        online          svc:/applications/ceres:ora
+ceres_pz        online          svc:/applications/ceres:ceresjur
+ceres_pz        online          svc:/applications/ceres:vm2
+ceres_pz        online          svc:/applications/ceres:cdromjo
+ceres_pz        online          svc:/applications/ceres:cl2sf
+ceres_pz        online          svc:/applications/ceres:ceresjurng
+ceres_pz        online          svc:/applications/ceres:app
+0[160318/183429]root@cleopatre# 
+
+
+
+
+
+
+0[160318/183349]root@penelope# op_applications_status_from_global_zone.sh --all
+tedtraining-pz  disabled                svc:/applications/esentool:email-extractor-xml-prod
+tedtraining-pz  disabled                svc:/applications/esentool:email-extractor-xml-qual
+tedtraining-pz  disabled                svc:/applications/esentool:app
+tedtraining-pz  disabled                svc:/applications/esentool:email-sender
+tedtraining-pz  disabled                svc:/applications/esentool:folders
+tedtraining-pz  disabled                svc:/applications/esentool:engine
+tedtraining-pz  disabled                svc:/applications/esentool:production
+tedtraining-pz  disabled                svc:/applications/esentool:qualification
+tedtraining-pz  disabled                svc:/applications/esentool:rabbitmq
+tedtraining-pz  online          svc:/applications/tedtraining:openldap
+tedtraining-pz  online          svc:/applications/tedtraining:web
+tedtraining-pz  online          svc:/applications/tedtraining:folders
+tedtraining-pz  online          svc:/applications/tedtraining:ora
+tedtraining-pz  online          svc:/applications/etenderext:app
+tedtraining-pz  online          svc:/applications/etenderint:app
+tedtraining-pz  online          svc:/applications/simap:wood
+tedtraining-pz  online          svc:/applications/etenderint:wood
+tedtraining-pz  online          svc:/applications/simap:tws
+tedtraining-pz  online          svc:/applications/simap:tutorial
+tedtraining-pz  online          svc:/applications/simap:seijos
+tedtraining-pz  online          svc:/applications/simap:folders
+tedtraining-pz  online          svc:/applications/simap:fft
+tedtraining-pz  online          svc:/applications/simap:noticeviewsrv
+tedtraining-pz  online          svc:/applications/simap:app
+tedtraining-pz  online          svc:/applications/simap:pdf
+tedtraining-pz  online          svc:/applications/etenderint:woodweb
+tedtraining-pz  online          svc:/applications/simap:woodweb
+tedtraining-pz  online          svc:/applications/simap:esqualif
+metaconv-pz     disabled                svc:/applications/fmx2xhtml:wood
+metaconv-pz     disabled                svc:/applications/fmx2xhtml:woodweb
+metaconv-pz     online          svc:/applications/coco:viewer
+metaconv-pz     online          svc:/applications/opsamba:samba
+metaconv-pz     online          svc:/applications/syborg:woodweb
+metaconv-pz     online          svc:/applications/metaconv:woodweb
+metaconv-pz     online          svc:/applications/metaconv:ora
+metaconv-pz     online          svc:/applications/metaconv:maasview
+metaconv-pz     online          svc:/applications/metaconv:app
+metaconv-pz     online          svc:/applications/metaconv:viewer
+metaconv-pz     online          svc:/applications/metaconv:wood
+metaconv-pz     online          svc:/applications/syborg:web
+metaconv-pz     online          svc:/applications/syborg:wood
+metaconv-pz     online          svc:/applications/syborg:app
+esendtool-pz    online          svc:/applications/tedtoespd:folders
+esendtool-pz    online          svc:/applications/esentool:woodweb
+esendtool-pz    online          svc:/applications/esentool:folders
+esendtool-pz    online          svc:/applications/esentool:email-extractor-xml-qual
+esendtool-pz    online          svc:/applications/esentool:rabbitmq
+esendtool-pz    online          svc:/applications/esentool:email-sender
+esendtool-pz    online          svc:/applications/esentool:ora
+esendtool-pz    online          svc:/applications/esentool:app
+esendtool-pz    online          svc:/applications/esentool:wood
+esendtool-pz    online          svc:/applications/esentool:email-extractor-xml-prod
+esendtool-pz    online          svc:/applications/tedtoespd:app
+esendtool-pz    online          svc:/applications/esentool:engine
+esendtool-pz    online          svc:/applications/esentool:qualification
+esendtool-pz    online          svc:/applications/esentool:production
+leojparaph2-pz  online          svc:/applications/leojparaph:folders
+leojparaph2-pz  online          svc:/applications/leojparaph:wood
+leojparaph2-pz  online          svc:/applications/leojparaph:woodweb
+leojparaph2-pz  online          svc:/applications/leojparaph:ora
+leojparaph2-pz  online          svc:/applications/leojparaph:web
+studiesdb-pz    online          svc:/applications/studiesdb:folders
+studiesdb-pz    online          svc:/applications/studiesdb:app
+studiesdb-pz    online          svc:/applications/studiesdb:ora
+checklex2-pz    online          svc:/applications/checklex:folders
+checklex2-pz    online          svc:/applications/checklex:app
+planjobo_pz     online          svc:/applications/planjobo:ora
+tedmonitor-pz   online          svc:/applications/tedmonitor:email-extractor-pdf
+tedmonitor-pz   online          svc:/applications/tedmonitor:wood
+tedmonitor-pz   online          svc:/applications/tedmonitor:folders
+tedmonitor-pz   online          svc:/applications/tedmonitor:samba
+tedmonitor-pz   online          svc:/applications/tedmonitor:woodweb
+tedmonitor-pz   online          svc:/applications/tedmonitor:ora
+tedmonitor-pz   online          svc:/applications/tedmonitor:kernel
+tedmonitor-pz   online          svc:/applications/tedmonitor:app
+tedmonitor-pz   online          svc:/applications/tedmonitor:OJSlogaweb
+tedmonitor-pz   online          svc:/applications/tedmonitor:OJSloga
+tedmonitor-pz   maintenance             svc:/applications/tedmonitor_httpd_Export_DVD_TED:default
+0[160318/183430]root@penelope# 
+
+
+
+
+
+
+
+
+
+
+0[160318/182156]root@thesee# zoneadm list -cv
+  ID NAME             STATUS      PATH                         BRAND      IP    
+   0 global           running     /                            solaris    shared
+   1 eub3fe-pz        running     /zones/eub3fe-pz             solaris10  excl  
+   2 legap-pz         running     /zones/legap-pz              solaris    excl  
+   3 conslife-pz      running     /zones/conslife-pz           solaris10  excl  
+   4 cordisica-pz     running     /zones/cordisica-pz          solaris10  excl  
+   5 cordiscms-pz     running     /zones/cordiscms-pz          solaris10  excl  
+   6 cordissvc-pz     running     /zones/cordissvc-pz          solaris10  excl  
+0[160318/183348]root@thesee# op_applications_status_from_global_zone.sh --all
+eub3fe-pz       online          svc:/applications/eub3fe:app
+legap-pz        online          svc:/applications/legap:folders
+legap-pz        online          svc:/applications/legap:wood
+legap-pz        online          svc:/applications/legap:woodweb
+legap-pz        online          svc:/applications/legap:ora
+legap-pz        online          svc:/applications/legap:app
+legap-pz        online          svc:/applications/legap:mon
+conslife-pz     online          svc:/applications/conslife:viewer
+conslife-pz     online          svc:/applications/opsamba:winbind
+conslife-pz     online          svc:/applications/opsamba:samba
+conslife-pz     online          svc:/applications/conslife:ora
+conslife-pz     online          svc:/applications/conslife:app
+conslife-pz     online          svc:/applications/conslife:wood
+conslife-pz     online          svc:/applications/conslife:woodweb
+cordisica-pz    online          svc:/applications/cordisica:ora
+cordiscms-pz    online          svc:/applications/cordiscms:ora
+cordissvc-pz    online          svc:/applications/cordissvc:ora
+0[160318/183431]root@thesee# 
+
+
+
+
+
+
+0[160318/183342]root@artemis# zoneadm list -cv
+  ID NAME             STATUS      PATH                         BRAND      IP    
+   0 global           running     /                            solaris    shared
+   1 seicr_pz         running     /zones/seicr_pz              solaris10  excl  
+   2 sicof-pz         running     /zones/sicof-pz              solaris10  excl  
+   3 kpi-pz           running     /zones/kpi-pz                solaris10  excl  
+   4 tae-pz           running     /zones/tae-pz                solaris10  excl  
+   5 r11-pz           running     /zones/r11-pz                solaris10  excl  
+0[160318/183345]root@artemis# 
+0[160318/183346]root@artemis# 
+0[160318/183346]root@artemis# op_applications_status_from_global_zone.sh --all
+seicr_pz        online          svc:/applications/opsamba:samba
+seicr_pz        online          svc:/applications/seicr:ooo
+seicr_pz        online          svc:/applications/seicr:wood
+seicr_pz        online          svc:/applications/seicr:woodweb
+seicr_pz        online          svc:/applications/budget:app
+seicr_pz        online          svc:/applications/seicr:ora
+seicr_pz        online          svc:/applications/seicr:codictreader
+seicr_pz        online          svc:/applications/seicr:app
+sicof-pz        online          svc:/applications/sicof:wood
+sicof-pz        online          svc:/applications/sicof:woodweb
+sicof-pz        online          svc:/applications/sicof:ora
+sicof-pz        online          svc:/applications/sicof:app
+kpi-pz  online          svc:/applications/kpi:ora
+kpi-pz  online          svc:/applications/kpi:app
+tae-pz  online          svc:/applications/tae:tomcatviews
+tae-pz  online          svc:/applications/tae:ora
+tae-pz  online          svc:/applications/tae:app
+r11-pz  online          svc:/applications/r11:xchange-viewer
+r11-pz  online          svc:/applications/r11:ora
+r11-pz  online          svc:/applications/r11:app
+r11-pz  online          svc:/applications/r11:wood
+r11-pz  online          svc:/applications/r11:woodweb
+0[160318/183431]root@artemis# 
+
+
+
+
+
+###########################################################################
+##### poweroff mack to avoid solaris 10u10 bug with storage array down
+
+
+
+130[160318/200421]betorma@vespa% grep mack /home/betorma/tmp/getcmdb_host.txt 
+mack;10.199.99.17;spock;Production;EUFO 03/465 (CC);050-Operated;Solaris 10 8/11 s10s_u10wos_17b;Generic_147440-14;ssh;M5K-08;Domain 1;m5k08-sc0;N/A
+
+
+###########################################################################################################################################
+###########################################################################################################################################
+################################################################           ################################################################
+################################################################ POWER ON ################################################################
+################################################################           ################################################################
+###########################################################################################################################################
+###########################################################################################################################################
+
+
+
+
+
+
+
+##########################################################################################################################################
+##### PROD
+##########################################################################################################################################
+
+
+
+
+
+###########################################################################
+##### consoles 
+
+{
+for host in ariane cesar athena martin mercure ulysse
+do
+	grep $host /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print "xterm -T \"" $1 " - "$12" - "$11"\" -e ssh xscfadm@"$12 " &"}'
+done
+}
+
+M5k6em
+poweron -a -y
+showdomainstatus -a
+console -d0 -y
+
+boot
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##########################################################################################################################################
+##### TEST
+##########################################################################################################################################
+
+
+
+{
+for host in bessie fillmore itchy moe seymour
+do
+	grep $host /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print "xterm -T \"" $1 " - "$12" - "$11"\" -e ssh xscfadm@"$12 " &"}'
+done
+}
+
+
+M5k6em
+poweron -a -y
+showdomainstatus -a
+console -d1 -y
+
+svcs -xv
+
+op_clrg_check_primary_node.sh 
+op_clrg_switch_primary_node.sh
+
+
+
+powermt check
+cfgadm -al
+fmdump | egrep -v 'Repaired|Resolved' | awk '{print "fmadm repaired "$4}'
+fmdump | egrep -v 'Repaired|Resolved' | awk '{print "fmadm repaired "$4}' | sh
+fmdump | egrep -v 'Repaired|Resolved' | awk '{print "fmadm acquit "$4}'
+fmdump | egrep -v 'Repaired|Resolved' | awk '{print "fmadm acquit "$4}' | sh
+fmadm faulty
+op_zpool_online_device.zsh --mer --vnx
+op_zpool_online_device.zsh --mer --vnx | sh
+op_zpool_online_device.zsh --mer --vmax
+op_zpool_online_device.zsh --mer --vmax | sh
+zpool status -xv
+
+
+op_applications_status_from_global_zone.sh --all
+
+
+
+
+
+{
+svcs -xv
+op_clrg_check_primary_node.sh 
+op_clrg_switch_primary_node.sh
+if [[ -f /etc/powermt ]]; then powermt check; fi
+zpool status -xv | grep -v 'all pools are healthy'
+op_applications_status_from_global_zone.sh --all | grep -v 'online'
+}
+
+
+
+
+
+
+

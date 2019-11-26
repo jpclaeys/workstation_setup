@@ -1,0 +1,153 @@
+####################################################################################################
+##### dans vsphere
+
+menu "inventory"
+menu "Virtual Machine"
+menu "Guest"
+menu "Install/Upgrade VMware Tools"
+
+####################################################################################################
+##### sur le serveur
+
+##### mount iso
+
+0[131004/102724]root@otvmwsbkp01# mount /dev/cdrom /mnt 
+0[131004/102734]root@otvmwsbkp01# ls /mnt 
+manifest.txt  VMwareTools-8.6.10-913593.tar.gz
+
+
+##### unconpress
+
+0[131004/102737]root@otvmwsbkp01# cd /tmp 
+0[131004/102905]root@otvmwsbkp01# mkdir VMwareTools-8.6.10-913593           
+0[131004/102917]root@otvmwsbkp01# cd VMwareTools-8.6.10-913593    
+0[131004/103058]root@otvmwsbkp01# tar zxvf /mnt/VMwareTools-8.6.10-913593.tar.gz
+
+##### unmount
+
+0[131004/103104]root@otvmwsbkp01# umount /mnt 
+
+
+##### install 
+
+0[131004/103133]root@otvmwsbkp01# cd vmware-tools-distrib 
+0[131004/103200]root@otvmwsbkp01# ./vmware-install.pl 
+
+
+
+
+Creating a new VMware Tools installer database using the tar4 format.
+
+Installing VMware Tools.
+
+In which directory do you want to install the binary files? 
+[/usr/bin] 
+
+What is the directory that contains the init directories (rc0.d/ to rc6.d/)? 
+[/etc/rc.d] 
+
+What is the directory that contains the init scripts? 
+[/etc/rc.d/init.d] 
+
+In which directory do you want to install the daemon files? 
+[/usr/sbin] 
+
+In which directory do you want to install the library files? 
+[/usr/lib/vmware-tools] 
+
+The path "/usr/lib/vmware-tools" does not exist currently. This program is 
+going to create it, including needed parent directories. Is this what you want?
+[yes] 
+
+In which directory do you want to install the documentation files? 
+[/usr/share/doc/vmware-tools] 
+
+The path "/usr/share/doc/vmware-tools" does not exist currently. This program 
+is going to create it, including needed parent directories. Is this what you 
+want? [yes] 
+
+The installation of VMware Tools 8.6.10 build-913593 for Linux completed 
+successfully. You can decide to remove this software from your system at any 
+time by invoking the following command: "/usr/bin/vmware-uninstall-tools.pl".
+
+Before running VMware Tools for the first time, you need to configure it by 
+invoking the following command: "/usr/bin/vmware-config-tools.pl". Do you want 
+this program to invoke the command for you now? [yes] 
+
+Initializing...
+
+
+Making sure services for VMware Tools are stopped.
+
+
+
+[EXPERIMENTAL] The VMware FileSystem Sync Driver (vmsync) is a new feature that
+creates backups of virtual machines. Please refer to the VMware Knowledge Base 
+for more details on this capability. Do you wish to enable this feature? 
+[no] 
+
+Found a compatible pre-built module for vmci.  Installing it...
+
+
+Found a compatible pre-built module for vsock.  Installing it...
+
+
+The module vmxnet3 has already been installed on this system by another 
+installer or package and will not be modified by this installer.  Use the flag 
+--clobber-kernel-modules=vmxnet3 to override.
+
+The module pvscsi has already been installed on this system by another 
+installer or package and will not be modified by this installer.  Use the flag 
+--clobber-kernel-modules=pvscsi to override.
+
+The module vmmemctl has already been installed on this system by another 
+installer or package and will not be modified by this installer.  Use the flag 
+--clobber-kernel-modules=vmmemctl to override.
+
+The VMware Host-Guest Filesystem allows for shared folders between the host OS 
+and the guest OS in a Fusion or Workstation virtual environment.  Do you wish 
+to enable this feature? [no] 
+
+Found a compatible pre-built module for vmxnet.  Installing it...
+
+
+The vmblock enables dragging or copying files between host and guest in a 
+Fusion or Workstation virtual environment.  Do you wish to enable this feature?
+[no] 
+
+No X install found.
+
+Creating a new initrd boot image for the kernel.
+vmware-tools start/running
+The configuration of VMware Tools 8.6.10 build-913593 for Linux for this 
+running kernel completed successfully.
+
+You must restart your X session before any mouse or graphics changes take 
+effect.
+
+You can now run VMware Tools by invoking "/usr/bin/vmware-toolbox-cmd" from the
+command line or by invoking "/usr/bin/vmware-toolbox" from the command line 
+during an X server session.
+
+To enable advanced X features (e.g., guest resolution fit, drag and drop, and 
+file and text copy/paste), you will need to do one (or more) of the following:
+1. Manually start /usr/bin/vmware-user
+2. Log out and log back into your desktop session; and,
+3. Restart your X session.
+
+Enjoy,
+
+--the VMware team
+
+
+
+
+
+
+
+
+
+
+
+               
+

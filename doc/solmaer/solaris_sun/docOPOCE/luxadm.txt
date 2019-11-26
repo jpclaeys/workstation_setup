@@ -1,0 +1,137 @@
+luxadm -e port |perl -nae '$F[1] eq "CONNECTED" && print "luxadm -e dump_map  $F[0]\n"'|/bin/sh
+# Voir chemins sur chaque device
+mpathadm list lu
+# Pour plus d'info
+mpathadm show lu /dev/rdsk/c6t60060480000290100249533033343230d0s2
+# effacer Error Scsi
+vxconfigd -k
+luxadm -e offline /dev/rdsk/c6t60060480000290100249533033343230d0s2
+
+# Quand luxadm montre un device qui point sur deux luns different:
+# Apres la commande a Carlo
+#
+luxadm display /dev/rdsk/c8t600A0B800026677200000BC0489A8F60d0s2
+DEVICE PROPERTIES for disk: /dev/rdsk/c8t600A0B800026677200000BC0489A8F60d0s2   Vendor:               SUN
+  Product ID:           CSM200_R
+  Revision:             0619
+  Serial Num:           1T64112330
+  Unformatted capacity: 30720.000 MBytes
+  Write Cache:          Enabled
+  Read Cache:           Enabled
+    Minimum prefetch:   0x3
+    Maximum prefetch:   0x3
+  Device Type:          Disk device
+  Path(s):
+
+  /dev/rdsk/c8t600A0B800026677200000BC0489A8F60d0s2
+  /devices/scsi_vhci/ssd@g600a0b800026677200000bc0489a8f60:c,raw
+   Controller           /devices/pci@9d,600000/SUNW,qlc@1,1/fp@0,0
+    Device Address              202700a0b8266772,0
+    Host controller port WWN    210100e08b3af7de
+    Class                       secondary
+    State                       OFFLINE
+   Controller           /devices/pci@9d,600000/SUNW,qlc@1/fp@0,0
+    Device Address              202600a0b8266772,0
+    Host controller port WWN    210000e08b1af7de
+    Class                       primary
+    State                       OFFLINE
+   Controller           /devices/pci@9d,600000/SUNW,qlc@1/fp@0,0
+    Device Address              202600a0b8266772,14
+    Host controller port WWN    210000e08b1af7de
+    Class                       primary
+    State                       ONLINE
+   Controller           /devices/pci@9d,600000/SUNW,qlc@1,1/fp@0,0
+    Device Address              202700a0b8266772,14
+    Host controller port WWN    210100e08b3af7de
+    Class                       secondary
+    State                       STANDBY
+
+
+# On voit ici quatre entrees, un online, un stby et deux offline ( c'est pas bon )
+# On verifie l'etat avec cfgadm
+ cfgadm -al -o show_FCP_dev | grep 202600a0b8266772,0
+c6::202600a0b8266772,0         disk         connected    configured   unusable
+# Enleve tous les unusable devices du attachment point
+cfgadm -c unconfigure -o unusable_FCP_dev c6::202600a0b8266772
+# on verifie
+cfgadm -al -o show_FCP_dev | grep 202600a0b8266772,0
+# ===> RIEN
+# Donc
+luxadm display /dev/rdsk/c8t600A0B800026677200000BC0489A8F60d0s2
+DEVICE PROPERTIES for disk: /dev/rdsk/c8t600A0B800026677200000BC0489A8F60d0s2
+  Vendor:               SUN
+  Product ID:           CSM200_R
+  Revision:             0619
+  Serial Num:           1T64112363
+  Unformatted capacity: 30720.000 MBytes
+  Write Cache:          Enabled
+  Read Cache:           Enabled
+    Minimum prefetch:   0x3
+    Maximum prefetch:   0x3
+  Device Type:          Disk device
+  Path(s):
+
+  /dev/rdsk/c8t600A0B800026677200000BC0489A8F60d0s2
+  /devices/scsi_vhci/ssd@g600a0b800026677200000bc0489a8f60:c,raw
+   Controller           /devices/pci@9d,600000/SUNW,qlc@1,1/fp@0,0
+    Device Address              202700a0b8266772,0
+    Host controller port WWN    210100e08b3af7de
+    Class                       secondary
+    State                       STANDBY
+   Controller           /devices/pci@9d,600000/SUNW,qlc@1,1/fp@0,0
+    Device Address              202700a0b8266772,14
+    Host controller port WWN    210100e08b3af7de
+    Class                       secondary
+    State                       ONLINE
+
+
+# A la fin, il se peut qu'il ait encore des problemes, donc il faut bricoler avec:
+cfgadm -c unconfigure c7::202700a0b8266772
+cfgadm -c configure c7
+
+
+# Nouvelle commande Carlo
+/usr/sbin/luxadm probe |/usr/bin/perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e 'BEGIN{map({split; $vx{$_[-1]}=join(",",@_[0,2,3])} split("\n", `vxdisk -o alldgs -e list`))} ($p,$d)=m{\s+(/dev/rdsk/(c.*?))\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("$p ==> ". join(" ", map({m{([^,]+),(\w+)}; "$1/". hex($2)} @a)," [$vx{$d}]\n"))'
+
+# basculer le device sur l'autre chemin (mpxio)
+luxadm failover secondary /dev/rdsk/c8t600A0B800026677200000BC0489A8F60d0s2
+
+
+# Avec les diskgroups
+/usr/sbin/luxadm probe |/usr/bin/perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e 'BEGIN{map({split; $vx{$_[-1]}=join(",",@_[0,2,3])} split("\n", `vxdisk -o alldgs -e list`))} ($p,$d)=m{\s+(/dev/rdsk/(c.*?))\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("$p ==> ". join(" ", sort (map({m{([^,]+),(\w+)}; "$1/". hex($2)} @a)),"
+
+# Fichier qui est actualise par cfgadm, luxadm
+more /etc/cfg/fp/fabric_WWN_map
+# forcelip d'un chemin seulement:
+luxadm -e forcelip /dev/cfg/c12
+# autre maniere de faire un forcelip:
+
+luxadm insert_device
+Please hit <RETURN> when you have finished adding Fibre Channel Enclosure(s)/Device(s):
+
+Waiting for Loop Initialization to complete...
+ No new device(s) were added!!
+
+ No new enclosure(s) were added!!
+
+# autre maniere de faire un forcelip:
+cfgadm -x insert_device c1
+Adding device to SCSI HBA: /devices/sbus@1f,0/SUNW,fas@1,8800000
+This operation will suspend activity on SCSI bus: c1
+
+# voir info des qlogics
+luxadm qlgc
+
+# pour voir plus simple, le wwn des cartes fibres:
+mpathadm list initiator-port
+
+# pour voir caracteristiques de la lun
+mpathadm show lu /dev/rdsk/c4t60003BA27D2120004204AC2B000DAB00d0s2
+
+# pour voir la config mpxio
+mpathadm show mpath-support libmpscsi_vhci.so
+
+# pour deshabiliter une lun
+mpathadm disable path -i 2000000173018713 -t 20030003ba27d095 \
+ -l /dev/rdsk/c4t60003BA27D2120004204AC2B000DAB00d0s2
+

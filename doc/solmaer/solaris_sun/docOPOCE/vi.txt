@@ -1,0 +1,2 @@
+# changer le temp du vi
+echo "set dir=/tmp" >> ~/.exrc

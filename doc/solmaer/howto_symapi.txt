@@ -1,0 +1,61 @@
+#################################################################################
+##### manual RDF switch
+
+export device_group=
+
+symrdf -g $device_group failover
+symrdf -g $device_group swap
+symrdf -g $device_group establish
+symrdf -g $device_group query
+
+
+
+#################################################################################
+##### mode debug 
+
+# set variables
+
+SYMAPI_DEBUG=-1
+SYMAPI_DEBUG_FILENAME=<symapi_debug_filename>
+SYMAPI_SERVER_DEBUG_SCOPE=SERVER
+
+
+
+#################################################################################
+##### check environment variables with symapi commands
+
+0[160126/100931]root@flash# symcli -def
+
+
+Symmetrix Command Line Interface (SYMCLI) Version V8.0.3.0 (Edit Level: 2026)
+built with SYMAPI Version V8.0.3.0 (Edit Level: 2026)
+
+
+Current settings of the SYMCLI environmental variables:
+
+  SYMCLI_FULL_PDEVNAME          : 1
+  SYMCLI_CONNECT                : SYMAPI_SERVER
+  SYMCLI_CONNECT_TYPE           : REMOTE
+
+
+
+#################################################################################
+##### "Unable to obtain unique ID for host" message
+
+symcfg -lockbox reset
+symcfg -ssv -lockbox reset
+
+
+
+#################################################################################
+##### check which server can see a device groupe
+
+symaccess -sid 000296700069 show view planpubli2-pz
+
+
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+##### connect to a host
+xfreerdp -g 1600x900 -d publications -u betorma opdt220 
+
+##### connect to a host and enable copy/past between local and remote machines
+sudo yum install freerdp-plugins
+xfreerdp --plugin cliprdr -g 1600x900 -d publications -u betorma opdt220 
+
+

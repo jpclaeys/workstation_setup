@@ -1,0 +1,70 @@
+0[130516/085037]root@daria# uname -a
+Linux daria.opoce.cec.eu.int 3.8.11-100.fc17.x86_64 #1 SMP Wed May 1 19:31:26 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
+
+
+
+0[130516/085049]root@daria# fdisk -l
+
+Disk /dev/sda: 160.0 GB, 160000000000 bytes
+255 heads, 63 sectors/track, 19452 cylinders, total 312500000 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x46f349d8
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1            2048   143362047    71680000   83  Linux
+/dev/sda2       143362048   155650047     6144000   82  Linux swap / Solaris
+/dev/sda3   *   155653785   312480314    78413265   bf  Solaris
+0[130516/085051]root@daria# 
+
+
+
+
+0[130516/085051]root@daria# grub2-mkconfig -o /boot/grub2/grub.cfg
+Generating grub.cfg ...
+Found linux image: /boot/vmlinuz-3.8.11-100.fc17.x86_64
+Found initrd image: /boot/initramfs-3.8.11-100.fc17.x86_64.img
+Found linux image: /boot/vmlinuz-3.7.9-104.fc17.x86_64
+Found initrd image: /boot/initramfs-3.7.9-104.fc17.x86_64.img
+Found linux image: /boot/vmlinuz-3.7.6-102.fc17.x86_64
+Found initrd image: /boot/initramfs-3.7.6-102.fc17.x86_64.img
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0[130516/083029]root@daria# cp /boot/grub2/grub.cfg /boot/grub2/grub.cfg.20130516
+0[130516/083106]root@daria# grub2-mkconfig 
+
+0[130516/084406]root@daria# diff /etc/default/grub /etc/default/grub.20130516
+5,6c5
+< #GRUB_THEME="/boot/grub2/themes/system/theme.txt"
+< GRUB_DISABLE_OS_PROBER=true
+---
+> #GRUB_THEME="/boot/grub2/themes/system/theme.txtu
+nux image: /boot/vmlinuz-3.8.11-100.fc17.x86_64
+Found initrd image: /boot/initramfs-3.8.11-100.fc17.x86_64.img
+Found linux image: /boot/vmlinuz-3.7.9-104.fc17.x86_64
+Found initrd image: /boot/initramfs-3.7.9-104.fc17.x86_64.img
+Found linux image: /boot/vmlinuz-3.7.6-102.fc17.x86_64
+Found initrd image: /boot/initramfs-3.7.6-102.fc17.x86_64.img
+done
+

@@ -1,0 +1,228 @@
+
+
+###############################################################################
+
+
+##### variables
+
+export zone_name=
+export appli_name=
+
+
+
+
+
+
+
+
+
+##### status from explorer
+
+cd /var/explorer/output/explorer.*2017.01.25.03.30
+cat ./disks/zfs/zfs_get_-rHp_all_${zone_name}-d*.out | egrep 'filesystem|mountpoint'
+
+
+
+
+
+
+
+
+
+
+
+##### recover of $zone_name-data
+
+export hex_lun_id=
+
+storage_info.pl -A >/tmp/storage_info.out
+
+grep "0x$hex_lun_id" /tmp/storage_info.out | grep -vi vmax3
+
+export device_2560=$(grep "0x$hex_lun_id" /tmp/storage_info.out | grep -i VMAX_2560 | grep `hostname` | awk '{print $3}' | head -1)
+export device_3453=$(grep "0x$hex_lun_id" /tmp/storage_info.out | grep -i VMAX_3453 | grep `hostname` | awk '{print $3}' | head -1)
+export emcpower_2560=$(powermt display dev=$device_2560 | grep 'Pseudo name' | awk -F'=' '{print $2}')
+export emcpower_3453=$(powermt display dev=$device_3453 | grep 'Pseudo name' | awk -F'=' '{print $2}')
+
+echo $device_2560
+echo $emcpower_2560
+
+echo $device_3453
+echo $emcpower_3453
+
+echo op_format_s0.sh --emc $device_2560
+echo op_format_s0.sh --emc $device_3453
+
+
+echo zpool create ${zone_name}-data mirror $emcpower_2560 $emcpower_3453
+
+
+
+
+{
+zfs set mountpoint=/zpool/${zone_name}-data ${zone_name}-data
+zfs create -o mountpoint=/zones/${zone_name} ${zone_name}-data/zone
+zfs create -o mountpoint=none -o zoned=on ${zone_name}-data/applications
+zfs create -o mountpoint=none ${zone_name}-data/applications/${appli_name}
+
+for FS in xchange users ; do
+	zfs create -o mountpoint=/applications/${appli_name}/${FS} ${zone_name}-data/applications/${appli_name}/${FS}
+	zfs set recordsize=128K ${zone_name}-data/applications/${appli_name}/${FS}
+	zfs set logbias=latency ${zone_name}-data/applications/${appli_name}/${FS}
+done
+
+zfs list -r ${zone_name}-data
+zfs get -r recordsize ${zone_name}-data
+zfs get -r logbias ${zone_name}-data
+}
+
+
+zfs create -p -o mountpoint=/zones/${zone_name}/root ${zone_name}-data/zone/rpool/ROOT/zbe-0
+zfs set mountpoint=legacy ${zone_name}-data/zone/rpool/ROOT
+zfs set mountpoint=/zones/${zone_name}/root/rpool ${zone_name}-data/zone/rpool
+
+
+
+
+chmod 700 /zones/${zone_name}
+root_ssid=$(mminfo -s opvmwsbkp06 -c $zone_name -t '1 days ago' -r 'client,level,ssid,cloneid,totalsize,savetime(16),sscomp(16),ssflags,sumflags,volume,name' | grep -vi clone | grep '/$' | awk '{print $3}')
+echo recover -q -s opvmwsbkp06 -d /zones/${zone_name}/root -S $root_ssid
+
+
+
+
+recover -s opvmwsbkp06 -c bkp-${zone_name}
+verbose
+cd /
+add *
+ls applications
+relocate /zones/<zone_name>/root
+recover
+
+
+
+
+
+
+
+##### recover db part
+
+
+export hex_lun_id=
+
+grep "0x$hex_lun_id" /tmp/storage_info.out | grep -vi vmax3
+
+export device_2560=$(grep "0x$hex_lun_id" /tmp/storage_info.out | grep -i VMAX_2560 | grep `hostname` | awk '{print $3}' | head -1)
+export device_3453=$(grep "0x$hex_lun_id" /tmp/storage_info.out | grep -i VMAX_3453 | grep `hostname` | awk '{print $3}' | head -1)
+export emcpower_2560=$(powermt display dev=$device_2560 | grep 'Pseudo name' | awk -F'=' '{print $2}')
+export emcpower_3453=$(powermt display dev=$device_3453 | grep 'Pseudo name' | awk -F'=' '{print $2}')
+
+echo $device_2560
+echo $emcpower_2560
+
+echo $device_3453
+echo $emcpower_3453
+
+
+echo op_format_s0.sh --emc $device_2560
+echo op_format_s0.sh --emc $device_3453
+
+echo zpool create ${zone_name}-db mirror $emcpower_2560 $emcpower_3453
+
+
+
+
+{
+zfs set mountpoint=/zpool/${zone_name}-db ${zone_name}-db
+zfs create -o mountpoint=none -o zoned=on ${zone_name}-db/applications
+zfs create -o mountpoint=none ${zone_name}-db/applications/${appli_name}
+
+for FS in orabin oralog oradata oraflash oraonlinelog; do
+	zfs create -p -o mountpoint=/applications/${appli_name}/${FS} ${zone_name}-db/applications/${appli_name}/${FS}
+done
+
+zfs set recordsize=8K ${zone_name}-db/applications/${appli_name}/oradata
+zfs set logbias=latency ${zone_name}-db/applications/${appli_name}/oradata
+for FS in orabin oralog oraflash oraonlinelog ; do
+	zfs set recordsize=128K ${zone_name}-db/applications/${appli_name}/${FS}
+	zfs set logbias=latency ${zone_name}-db/applications/${appli_name}/${FS}
+done
+
+zfs list -r ${zone_name}-db
+zfs get -r recordsize ${zone_name}-db
+zfs get -r logbias ${zone_name}-db
+}
+
+
+
+
+
+
+##### disable cluster part
+
+clrs list -g ${zone_name}-rg | awk '{print "clrs disable "$1}' | sh -x
+clrg offline ${zone_name}-rg 
+
+
+
+
+
+
+##### boot zone as standalone
+
+chmod 1777 /zones/${zone_name}/root/tmp
+zoneadm -z $zone_name boot -s                                  
+zlogin $zone_name
+svcs -a | grep applications | awk '{print "svcadm disable "$3}' | sh -x
+init 0
+
+zoneadm -z $zone_name boot && zlogin -C $zone_name
+
+
+
+##### on the zone
+
+
+export zone_name=etenderext-pz
+export appli_name=etendering
+
+
+chown oracle:dba /applications/*/ora* 
+
+
+
+
+{
+for fs in users xchange orabin oraonlinelog 
+do
+	echo $fs
+	ssid=$(mminfo -s opvmwsbkp06 -c $zone_name -t '1 days ago' -r 'client,level,ssid,cloneid,totalsize,savetime(16),sscomp(16),ssflags,sumflags,volume,name' | grep -vi clone | grep ${fs}$ | awk '{print $3}')
+	echo recover -s opvmwsbkp06 -d /applications/${appli_name}/ -S $ssid
+	echo
+done
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

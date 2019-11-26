@@ -1,0 +1,104 @@
+
+
+planjo-pk :
+-----------
+
+appgateway@woodgwa.cc.cec.eu.int
+
+pass: Int@Digita
+
+rsync -avzP --progress /applications/planjo/archives/worm/oj/Archive/2015 appgateway@woodgwa.cc.cec.eu.int:/ec/acc/app/planjo/documentum/ldc/archives/worm/oj/Archive
+
+ 
+
+
+
+rsync -avzPn --delete /applications/planjo/planjo_archive0* /applications/planjo/docdata /applications/planjo/archives --exclude-from='/root/exclude-dirs.txt' appgateway@woodgwa.cc.cec.eu.int:/ec/acc/app/planjo/documentum/ldc/
+
+
+[root@planjo-pk Archive]# for i in `ls -ltrh | grep -v total | awk '{print$9}' | grep -v 2015`; do echo $i && du -sh $i  ; done;
+2008
+67G	2008
+2010
+79G	2010
+2009
+86G	2009
+2012
+93G	2012
+2013
+106G	2013
+2011
+91G	2011
+2014
+150G	2014
+2007
+22G	2007
+
+
+
+********************************************************************
+[woodgwa.cc.cec.eu.int appgateway ldc]$ ls archives/
+index.html  test  worm  worm-dd
+[woodgwa.cc.cec.eu.int appgateway ldc]$ ls archives/worm
+worm/    worm-dd/ 
+[woodgwa.cc.cec.eu.int appgateway ldc]$ ls archives/worm/
+cl/   .etc/ oj/   
+[woodgwa.cc.cec.eu.int appgateway ldc]$ ls archives/worm/oj/
+Archive  Deleted Documents  Deleted OJs
+[woodgwa.cc.cec.eu.int appgateway ldc]$ ls archives/worm/oj/Archive/
+2015
+[woodgwa.cc.cec.eu.int appgateway ldc]$ cd archives/worm/oj/Archive/
+[woodgwa.cc.cec.eu.int appgateway Archive]$ ls -ltr
+total 32
+drwxrwxr-x 5 appgateway appgateway 67 18 mai    2018 2015
+[woodgwa.cc.cec.eu.int appgateway Archive]$ cd 2015/
+[woodgwa.cc.cec.eu.int appgateway 2015]$ ls
+OJ-C  OJ-CA  OJ-L
+[woodgwa.cc.cec.eu.int appgateway 2015]$ ls -rlh
+total 352K
+drwxrwxr-x 350 appgateway appgateway  18K 27 mai    2018 OJ-L
+drwxrwxr-x  92 appgateway appgateway 4,8K 27 mai    2018 OJ-CA
+drwxrwxr-x 444 appgateway appgateway  23K 27 mai    2018 OJ-C
+[woodgwa.cc.cec.eu.int appgateway 2015]$ touch tt
+[woodgwa.cc.cec.eu.int appgateway 2015]$ ls -ltrh
+total 376K
+drwxrwxr-x 444 appgateway appgateway  23K 27 mai    2018 OJ-C
+drwxrwxr-x 350 appgateway appgateway  18K 27 mai    2018 OJ-L
+drwxrwxr-x  92 appgateway appgateway 4,8K 27 mai    2018 OJ-CA
+-rw-rw-r--   1 appgateway appgateway    0 29 juil. 13:54 tt
+
+**********************************************************************************************************************
+
+opvmwsconsl:
+---------------
+
+
+
+
+
+
+
+
+
+ssh appgateway@woodgwp.cc.cec.eu.int
+slHQlUyT
+
+/ec/prod/app/conslife/int/data
+
+
+
+-----
+
+
+
+
+
+
+
+
+
+ppubli-tk :
+------------
+
+
+rsync -avzP --progress --delete /applications/planpubli/storage_0* appgateway@woodgwa.cc.cec.eu.int:/ec/acc/app/planjo/documentum/ldc/

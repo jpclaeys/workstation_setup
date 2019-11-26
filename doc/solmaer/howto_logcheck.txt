@@ -1,0 +1,20 @@
+#########################################################################################################################################
+# expression ajoutees pour filtrer certaines lignes de log dans infra-srv:/opt/OPlogch/etc/logcheck.ignore
+#########################################################################################################################################
+
+
+
+
+##### Jun 18 06:48:57 remus.opoce.cec.eu.int in.dhcpd[1694] : [ID 603263 daemon.notice]  No more IP addresses on 158.167.0.0 network (01002655D53004)
+
+^\w{3} [ :0-9]{11} remus.opoce.cec.eu.int in.dhcpd\[[0-9]+\]: \[ID [0-9]+ daemon.notice\] No more IP addresses on 158.167.0.0 network \([0-9]+\)$
+
+
+{
+cp -p /opt/OPlogch/etc/logcheck.ignore /opt/OPlogch/etc/logcheck.ignore.`date +%Y%m%d`
+
+cat <<EOT >>/opt/OPlogch/etc/logcheck.ignore
+^\w{3} [ :0-9]{11} remus.opoce.cec.eu.int in.dhcpd\[[0-9]+\]: \[ID [0-9]+ daemon.notice\] No more IP addresses on 158.167.0.0 network \([0-9]+\)$
+EOT
+}
+

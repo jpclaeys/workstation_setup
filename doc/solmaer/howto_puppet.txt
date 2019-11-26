@@ -1,0 +1,263 @@
+###########################################################################################################################
+#####
+##### create local repository
+#####
+
+# for puppet-pk
+cd ~/git/puppet-pk
+git clone -b development gitolite3@puppet-pk:/puppet development
+git clone -b production gitolite3@puppet-pk:/puppet production
+cd production
+git branch -u origin/development production
+cd ..
+
+# for satelitte-pk
+cd ~/git/satellite-pk
+git clone -b development gitolite3@satellite-pk:/puppet development
+git clone -b production gitolite3@satellite-pk:/puppet production
+cd production
+git branch -u origin/development production
+cd ..
+
+
+###########################################################################################################################
+#####
+##### update puppet with git
+#####
+
+
+
+file=modules/opoce/manifests/solaris/emc-srm.pp
+
+
+
+##### from local repository, get the last version
+
+cd ~/git/puppet-pk/development 
+git pull
+
+
+
+##### edit/write/change file
+
+
+##### check puppet syntax
+
+puppet parser validate $file
+
+
+
+##### put a server on developement branch from the formeman interface
+
+##### disable puppet agent for his automatic execution
+
+
+##### from local repository, push configuration to puppet server in developement branch
+
+git add $file
+git commit       
+git push                              
+
+
+
+##### test on the puppet client
+
+puppet agent -t --noop -o --environment  development
+
+
+
+##### apply on the client
+
+puppet agent -t       
+
+
+
+##### sync from local development branch to local production, then push
+
+cd ../production 
+git pull origin production && git pull --no-ff
+
+{
+pwd | grep puppet-pk >/dev/null
+if [[ $? == 0 ]]; then git push && cd -; fi
+pwd | grep satellite-pk >/dev/null
+if [[ $? == 0 ]]; then git push origin production && cd -; fi
+}
+
+
+###########################################################################################################################
+#####
+##### change certificate
+#####
+
+
+
+##### remove certificate on puppet master
+
+0[150417/145958]root@puppet-pk# puppet cert clean flash.opoce.cec.eu.int
+
+
+
+##### remove ssl configuration on puppet agent, then start puppet agent to generate new certificate
+
+0[150417/150535]root@flash# mv /etc/puppet/ssl /etc/puppet/ssl_old
+0[150417/150707]root@flash# puppet agent -t --noop                                              
+
+
+
+##### accept new certificte on puppet master
+
+0[150417/150913]root@puppet-pk# puppet cert sign flash.opoce.cec.eu.int
+
+
+###########################################################################################################################
+#####
+##### check between puppet yaml repository and the CMDB
+#####
+
+
+
+##### check the puppet server
+{
+export puppet_server=puppet-pk
+export local_host=`uname -n`
+if [ $puppet_server != $local_host ]; then echo; echo "You aren't on the good server which manage Puppet"; fi
+}
+
+
+
+##### check if physical solaris servers are present in foreman
+{
+for physical in `grep -i 'Solaris 11' /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print $1}'`
+do
+	ls /applications/puppet/users/puppet/yaml/node/${physical}.opoce.cec.eu.int.yaml &>/dev/null 
+	if [ $? != 0 ]; then echo "$physical exists in CMDB but not in Foreman."; fi
+done
+}
+
+
+
+##### check if zones are present in foreman
+{
+for zone in `awk -F';' '{print $1";"$2}' /home/betorma/tmp/getcmdb_zone.txt | grep -i 'solaris 11' | awk -F';' '{print $1}' | sort -u`
+do
+	ls /applications/puppet/users/puppet/yaml/node/${zone}.opoce.cec.eu.int.yaml &>/dev/null
+	if [ $? != 0 ]; then echo "$zone exists in CMDB but not in Foreman."; fi
+done
+}
+
+
+
+##### check if server in the good hostgroup, which must to match with cluster name, or within 'solaris' if it's a standalone node
+{
+for physical in `grep -i 'Solaris 11' /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print $1}'`
+do
+	host_group=solaris
+	line=`grep ";${physical};" /home/betorma/tmp/getcmdb_solaris_cluster.txt`
+	if [[ -n $line ]]; then
+		host_group='solaris/cluster/'`echo $line | awk -F';' '{print $1}'`
+	fi
+	grep $host_group /applications/puppet/users/puppet/yaml/node/${physical}.opoce.cec.eu.int.yaml &>/dev/null 
+	if [[ $? != 0 ]]; then echo "$physical is not within the good Foreman hostgroup."; fi
+done
+}
+
+
+
+##### check if parameters match with cmdb, for global zones
+{
+grep 'Solaris 11' /home/betorma/tmp/getcmdb_host.txt | while read line
+do
+	export host=`echo $line | awk -F';' '{print $1}'`
+	export site=`echo $line | awk -F';' '{print $5}' | awk '{print $1}'`
+	export environment=`echo $line | awk -F';' '{print $4}'`
+	
+	if [ $site = 'MER' ]; then site=mercier; fi
+	if [ $site = 'EUFO' ]; then site=eufo; fi
+	if [ $environment = 'Test' ]; then environment=test; fi
+	if [ $environment = 'Production' ]; then environment=prod; fi
+
+	grep "^    env: $environment" /applications/puppet/users/puppet/yaml/foreman/${host}.opoce.cec.eu.int.yaml &>/dev/null
+	if [ ! $? = 0 ]; then echo "$host: environment don't match with CMDB."; fi
+	grep "^    location: $site" /applications/puppet/users/puppet/yaml/foreman/${host}.opoce.cec.eu.int.yaml &>/dev/null
+	if [ ! $? = 0 ]; then echo "$host: site don't match with CMDB."; fi
+done
+echo
+}
+
+
+
+##### check if parameters match with cmdb, for non-global zones
+{
+perl -ne 'unless(m{^.*?;Solaris 10}) {print}' /home/betorma/tmp/getcmdb_zone.txt | grep Primary | while read line
+do
+	export host=`echo $line | awk -F';' '{print $1}'`
+	export site=`echo $line | awk -F';' '{print $11}' | awk '{print $1}'`
+	export environment=`echo $line | awk -F';' '{print $5}'`
+	
+	if [ $site = 'MER' ]; then site=mercier; fi
+	if [ $site = 'EUFO' ]; then site=eufo; fi
+	if [ $environment = 'Test' ]; then environment=test; fi
+	if [ $environment = 'Production' ]; then environment=prod; fi
+	if [ $environment = 'Reception' ]; then environment=reception; fi
+
+	grep "^    env: $environment" /applications/puppet/users/puppet/yaml/foreman/${host}.opoce.cec.eu.int.yaml &>/dev/null
+	if [ ! $? = 0 ]; then echo "$host: environment don't match with CMDB."; fi
+	grep "^    location: $site" /applications/puppet/users/puppet/yaml/foreman/${host}.opoce.cec.eu.int.yaml &>/dev/null
+	if [ ! $? = 0 ]; then echo "$host: site don't match with CMDB."; fi
+done
+echo
+}
+
+
+
+
+
+
+###########################################################################################################################
+#####
+##### procedure to configure foreman for new physical host installation
+#####
+
+- set the "location", "mercier" or "eufo"
+- set the "env", "test" or "prod"
+- set "EMCpower" to 1 if EMC PowerPath need to be used
+- specify the "EMC_PowerPath_licence"
+
+
+
+
+
+###########################################################################################################################
+#####
+##### add new user in OPinttest files for rbac
+##### 
+
+
+
+
+##### update files
+
+new_user=malnaiv
+
+cd $HOME/git/puppet-pk/development/modules/applications/files/Solaris/etc/user_attr.d
+
+for file in OPinttest.*
+do
+	grep -l $new_user $file >/dev/null
+	if [[ $? != 0 ]]; then
+		template_line=`tail -1 $file | tail -1`
+		template_user=`echo $template_line | awk -F':' '{print $1}'`
+		new_line=`echo $template_line | sed -e "s/$template_user/$new_user/"`
+		echo "echo \"$new_line\" >>$file"
+	fi
+	echo
+done
+
+
+
+
+##### git commit, push, etc...
+
+
+

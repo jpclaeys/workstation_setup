@@ -1,0 +1,29 @@
+# ipfilter utilise local0 niveau syslog . Celui-ci une bonne config pour qu'il affiche les messages sur des autres fichiers et pas sur messages:
+
+cat /etc/syslog.conf
+#
+# OPOCE syslog configuration for non-loghost machines
+#
+
+*.err;kern.warning;auth.notice;daemon.notice;mail.crit          /dev/sysmsg
+*.notice;kern.debug;lpr.info;mail.crit;news.err;local0.none     /var/adm/messages
+auth.info;                                      /var/log/authlog
+mail.info;lpr.info                              /var/log/syslog
+cron.info                                       /var/log/cron
+*.crit                                          root
+*.emerg                                         *
+
+user.notice;daemon.notice;lpr.notice;news.notice;uucp.notice;audit.notice;kern.debug;mail.crit;auth.crit                @syslog-srv
+
+local0.info;local0.debug        /var/log/ipmon.log
+local0.err      /var/log/ipmon.err
+
+
+
+# ca suffit avec svcadm refresh:
+
+svcadm refresh system-log
+
+
+# S'il s'agit des cyberdyne et dobermann
+# oublie pas /etc/logadm.conf pour inclure les nouveaux fichiers dans les rotations

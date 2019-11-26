@@ -1,0 +1,287 @@
+############################################################################################
+#
+# Installation de zone sur ZFS
+#
+############################################################################################
+#
+# prerequis:
+# - nom de la zone
+# - alias pour la zone
+# - nom de l'hote physique pour la zone
+# - l'interface reseau de l'hote physique pour la zone
+# - adresse ip pour la zone
+# - opsrv pour la zone
+# - nom du zpool
+#
+############################################################################################
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+##### variables
+% export ZONE=
+% export COMMENT_ZONE=""
+% export IP=
+% export INTERFACE=
+% export OPSRV=
+% export ZPOOL=${ZONE}
+% export APPLICATION=
+% export ORACLE_IS_USED=no		#'yes' or 'no'
+% export ZONE_IS_CLUSTER_RESSOURCE=no		# 'yes' or 'no'
+% export TMP_FOLDER=
+% mkdir -p ${TMP_FOLDER}
+% export DATE=`date +%Y%m%d%H%M`
+% echo ${DATE}
+
+##### creation et montage du repertoire de la zone
+% zfs create -o mountpoint=/zones/${ZONE} ${ZPOOL}/zone
+% zfs set mountpoint=/zpool/${ZPOOL} ${ZPOOL}
+
+##### creation des file system pour l'application
+% zfs create -o mountpoint=none ${ZPOOL}/applications
+% zfs create -o mountpoint=/applications/${APPLICATION} ${ZPOOL}/applications/${APPLICATION}
+% zfs create -o mountpoint=/applications/${APPLICATION}/xchange ${ZPOOL}/applications/${APPLICATION}/xchange
+% zfs create -o mountpoint=/applications/${APPLICATION}/users ${ZPOOL}/applications/${APPLICATION}/users
+
+##### creation des files system pour les base de donnees oracle
+% {
+if [[ ${ORACLE_IS_USED} == 'yes' ]]
+then 
+	for FS in orabin oralog oradata; do
+		zfs create -o mountpoint=/applications/${APPLICATION}/${FS} ${ZPOOL}/applications/${APPLICATION}/${FS}
+	done
+fi
+zfs create -o mountpoint=/u01/oraagent ${ZPOOL}/applications/oraagent
+}
+
+##### verification des file system
+% zfs list -r ${ZPOOL}
+
+##### creation du fichier de configuration de la zone
+% cat >${TMP_FOLDER}/${ZONE}.cfg <<EOF
+create -b
+set zonepath=/zones/${ZONE}
+set autoboot=false
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${IP}
+set physical=${INTERFACE}
+end
+add dataset
+set name=${ZPOOL}/applications
+end
+add attr
+set name=comment
+set type=string
+set value="${COMMENT_ZONE}"
+end
+EOF
+
+##### verification
+% cat ${TMP_FOLDER}/${ZONE}.cfg
+
+##### configuration et installation de la zone
+% chmod 700 /zones/${ZONE}
+% zonecfg -z ${ZONE} -f ${TMP_FOLDER}/${ZONE}.cfg
+% zoneadm -z ${ZONE} install
+
+##### verification des erreurs possibles
+% grep -i err /zones/${ZONE}/root/var/sadm/system/logs/install_log
+
+##### /etc/sysidcfg
+% cat >/zones/${ZONE}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+timeserver=158.167.99.7
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${ZONE} ip_address=${IP} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOF
+
+##### /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+% touch /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+
+##### /inet/ntp.conf
+% cat <<EOT > /zones/${ZONE}/root/etc/inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+##### /etc/resolv.conf
+% cat >/zones/${ZONE}/root/etc/resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.99.8
+nameserver 158.167.99.7
+search opoce.cec.eu.int
+EOT
+
+##### /etc/nsswitch.conf
+% tar cpfv /zones/${ZONE}/root/etc/nsswitch.conf.tar /etc/nsswitch.conf
+
+##### fichier de configuration du client ldap
+% cp /var/ldap/ldap_client_cred /zones/${ZONE}/root/var/ldap/
+% cp /var/ldap/ldap_client_file /zones/${ZONE}/root/var/ldap/
+
+##### configuration du nom de domaine
+% echo "opoce.cec.eu.int" >/zones/${ZONE}/root/etc/defaultdomain
+
+##### configuration des holidays
+% cp -p /etc/acct/holidays /zones/${ZONE}/root/etc/acct/holidays
+
+##### loghost et opsrv dans /etc/hosts
+% cp -p /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+% echo -e "${IP}\t${OPSRV}" >>/zones/${ZONE}/root/etc/inet/hosts
+% echo -e "${IP}\t${ZONE}" >>/zones/${ZONE}/root/etc/inet/hosts
+
+##### verification
+% diff /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+
+##### demarrage de la zone
+% zoneadm -z ${ZONE} boot
+
+##### connexion a la console de la zone
+% zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### changer le mot de passe root
+% passwd root
+
+##### variables
+% export ZONE=
+% export IP=
+% export TMP_FOLDER=
+% export DATE=`date +%Y%m%d%H%M`
+% echo ${DATE}
+
+##### enleve loghost du fichier /etc/inet/hosts
+% perl -i.${DATE} -pe 's/loghost//' /etc/inet/hosts
+
+##### /etc/nsswitch.conf
+% tar xvf /etc/nsswitch.conf.tar
+
+##### rafraichissement du cache dns
+% svcadm restart svc:/system/name-service-cache:default
+
+##### configuration du repertoire d'accueil des core system
+% coreadm -i /var/cores/%f_%p_%u_%g.core
+
+##### activation du service ldap/client
+% svcadm disable svc:/network/ldap/client:default
+% svcadm enable svc:/network/ldap/client:default
+
+##### tester le ldap
+% ldaplist
+
+##### desactivation du webconsole
+% svcadm disable svc:/system/webconsole:console
+
+##### installation de LGTO
+% cd /net/remus/export/packages/networker/
+% ./install_update.ksh  /net/remus/export/packages/networker/LGTOclnt-7.5.1.Build.269
+% ./install_update.ksh  /net/remus/export/packages/networker/LGTOman-7.5.1.Build.269
+% ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+% ln -s /etc/init.d/networker /etc/rc0.d/K05networker
+
+##### copie de la cle cfengine
+% cp -p /var/cfengine/ppkeys/localhost.pub ${TMP_FOLDER}/root-${IP}.pub
+
+
+######################################################
+# sur le serveur cfengine
+######################################################
+
+
+##### varibales
+% export ZONE=
+% export IP=
+% export TMP_FOLDER=
+% export DATE=`date +%Y%m%d%H%M`
+% echo ${DATE}
+
+##### ajout de la zone dans la configuration de cfengine (cf.groups)
+% cp /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+% vi /var/cfengine/master/inputs/cf.groups
+% diff /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+
+##### import de la cle publique de la zone dans cfengine
+% cp -p ${TMP_FOLDER}/root-${IP}.pub /var/cfengine/ppkeys
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### execution du client cfengine
+% /var/cfengine/bin/cfagent -v -q
+
+##### redemarrage du service auto-fs
+% svcadm restart svc:/system/filesystem/autofs:default
+
+##### verification de la zone
+% ls /home/admin/
+% /home/admin/bin/check_host.sh
+
+##### test d'envoie d'email depuis la zone
+% mailx -s "email de test depuis `/usr/bin/uname -n`" opensystem-logs@publications.europa.eu </dev/null
+
+##### arret de la zone
+% init 0
+~~.
+
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+##### si la zone n'est pas une ressource cluster, mettre autoboot a true
+% if [[ ${ZONE_IS_CLUSTER_RESSOURCE} == 'no' ]]
+then
+	zonecfg -z ${ZONE} set autoboot=true
+fi
+
+##### demarrage de la zone
+% zoneadm -z ${ZONE} boot
+
+##### connexion a la zone
+% zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### verfication des services SMF
+% svcs -xv
+
+##### verification system
+% dmesg
+
+

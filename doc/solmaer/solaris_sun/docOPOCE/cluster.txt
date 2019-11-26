@@ -1,0 +1,352 @@
+### Two nodes
+mkdir -p /zones/simul
+echo "#### ZONES SIMUL" >>/etc/vfstab
+echo "/dev/md/simul/dsk/d50 /dev/md/simul/rdsk/d50        /zones/simul    ufs     3       no      -" >>/etc/vfstab
+cat /etc/vfstab
+mount /zones/simul
+umount /zones/simul
+
+
+##### Create RG
+
+scrgadm -a -t SUNW.LogicalHostname:2
+scrgadm -a -t SUNW.HAStoragePlus:2
+scrgadm -a -t SUNW.gds:5
+scrgadm -a -g simulZ-rg -h "romulus,remus" -y rg_project_name="default" -y rg_mode="Failover"
+
+cp -p /etc/inet/hosts /etc/inet/hosts.20080315
+echo "#### cluster###" >>/etc/inet/hosts
+echo "158.167.99.135    temp7   temp7.opoce.cec.eu.int" >>/etc/inet/hosts
+
+#### Creat LH
+scrgadm -a -L -g simulZ-rg -j temp7LH-simulZ-rs -l temp7 -n sc_ipmp0@1,sc_ipmp0@2 -y resource_project_name="default"
+
+##### get out unmanaged mode
+scswitch -o -g simulZ-rg
+scswitch -z -g simulZ-rg -h romulus
+##### put LH online 
+scswitch -e -j temp7LH-simulZ-rs
+
+
+### test on remus
+scswitch -z -g simulZ-rg -h remus
+scswitch -z -g simulZ-rg -h romulus
+
+
+
+#### Create HA
+scrgadm -a -j stor-simulZ-rs -g simulZ-rg -t SUNW.HAStoragePlus:2 -y resource_project_name="default" -x filesystemmountpoints="/zones/simul"
+scswitch -e -j stor-simulZ-rs
+
+### test on remus
+scswitch -z -g simulZ-rg -h remus
+scswitch -z -g simulZ-rg -h romulus
+#### TEst de reboot
+
+## Check status ( laurel - hardy )
+/home/raguevi/Script.d/CheckClusterStatus.sh display
+
+scswitch -F -g wood-rg
+
+scswitch -F -g uploaderdd2-rg
+
+scswitch -F -g lldd1-rg
+
+scswitch -F -g lldd2-rg
+
+scswitch -F -g oradd1-rg
+
+scswitch -F -g oradd2-rg
+
+
+scswitch -z -g oradd1-rg -h laurel
+
+scswitch -z -g oradd2-rg -h hardy
+
+scswitch -z -g lldd1-rg -h hardy
+
+scswitch -z -g lldd2-rg -h laurel
+
+scswitch -z -g wood-rg -h laurel
+
+scswitch -z -g uploaderdd2-rg -h laurel
+
+
+scswitch -z -g oradd1-rg -h boule
+
+scswitch -z -g oradd2-rg -h bill
+
+scswitch -z -g lldd1-rg -h bill
+
+scswitch -z -g lldd2-rg -h boule
+
+scswitch -z -g wood-rg -h boule
+
+scswitch -z -g uploaderdd2-rg -h boule
+
+#### Lorsqu'on trouve STOP_FAILED
+# sur le resource
+scswitch -c -h laurel -g oradd1-rg -j db-oradd1-rs -f STOP_FAILED
+
+
+###Voir tout la config
+scconf -pvv | more
+
+
+################### Configuration
+
+# D'abord il faut les patches de EICD pour SunCluster 3.2 ( voir DOC_joe_william.txt de Vincent )
+######
+mkdir /var/tmp/Patch_suncluster_3.2
+cp -pr /net/talisker.opoce.cec.eu.int/export/patches/Quark/eiscd/26FEB08/patch/SunCluster/3.2/10 /var/tmp/Patch_suncluster_3.2
+cd /var/tmp/Patch_suncluster_3.2/10
+for i in *.zip; do unzip $i ;done
+rm *.zip
+for i in ` cat patch_order`; do patchadd $i ;done
+
+##### Patch cacao
+mkdir -p /var/tmp/patch_cacao
+cp -pr /net/talisker.opoce.cec.eu.int/export/patches/Quark/eiscd/26FEB08/patch/cacao/2.1 /var/tmp/patch_cacao
+cd /var/tmp/patch_cacao/2.1
+for i in *.zip; do unzip $i ;done
+rm *.zip
+for i in 1*;do patchadd $i;done
+
+
+
+# Sur globaldevices:
+# Il faut absolument que le global FS soit effectivement le default /globaldevices
+# Il faut absolument qu'on cree avant de lancer scinstall le dossier: /global/.devices/node@1 car scinstall change le mount point de globaldevices a global.... mais il cree pas le repertoire et pour cela il rale apres
+# Il faut absolument que les metadevices ou volumes ou sont montes les globaldevices dans les nodes s'appellent diferentement, pe:
+
+# romulus
+/dev/md/dsk/d60 /dev/md/rdsk/d60        /globaldevices  ufs     3       no      logging
+# remus
+/dev/md/dsk/d50        /dev/md/rdsk/d50        /globaldevices  ufs     3       no      logging
+
+
+####SC 3.1
+        Operation                            Example
+           Delete a resource group              scrgadm -r -g RG1
+           Edit  a  resource  group  property   scrgadm -c -t RG1 -y nodelist=...
+           (except for RG_system)
+           Add a resource to a resource group   scrgadm -a -j R1 -g RG1
+           Delete a resource from a  resource   scrgadm -r -j R1 -g RG1
+           group
+           Edit a property of a resource that   scrgadm -c -j R1
+           belongs to a resource group
+           Switch a resource group offline      scswitch -F -g RG1
+           Manage a resource group              scswitch -o -g RG1
+           Unmanage a resource group            scswitch -u -g RG1
+           Enable a resource                    scswitch -e -j R1
+           Enable monitoring for a resource     scswitch -e -M -j R1
+           Disable a resource                   scswitch -n -j R1
+           Disable monitoring for a resource    scswitch -n -M -j R1
+
+# man
+
+man rg_properties
+
+man r_properties
+
+# properties
+scrgadm -pvv -g oradd1-rg
+
+# changement properties
+scrgadm -c -j nsr-lldd2-rs -x Owned_Paths="/applications/planjodd2/users /applications/planjodd2/efs01 /applications/planjodd2/efs02 /applications/planjodd2/efs03 /applications/planjodd2/efs04 /applications/planjodd2/efs05 /applications/planjodd2/efs06 /applications/planjodd2/efs07 /applications/planjodd2/xchange"
+
+
+# Regarder les cles du quorum scsi2
+/usr/cluster/lib/sc/pgre -c pgre_inkeys -d /dev/did/rdsk/d14s2
+/usr/cluster/lib/sc/pgre -c pgre_inkeys -d /dev/did/rdsk/d4s2
+
+# Regarder les cles du quorum scsi3
+/usr/cluster/lib/sc/scsi -c inkeys -d /dev/did/rdsk/d4s2
+/usr/cluster/lib/sc/scsi -c inresv -d /dev/did/rdsk/d4s2
+
+# Enlever les cles scsi du quorum device
+/usr/cluster/lib/sc/pgre -c pgre_scrub -d /dev/did/rdsk/d12s2
+
+
+# Interessant:
+clnode remove martoni
+clnode:  (C656576) You must not be inside directory /etc when remove this node.
+
+# Effacer les fails sur les devices
+#	
+Try "cldev unmonitor +" followed by "cldev monitor +". 
+
+# Pour enregister une ressource type Logicalhost il faut faire comme ca:
+
+clrt set -p RT_System=False SUNW.LogicalHostname:3
+clrt unregister SUNW.LogicalHostname:3
+
+# SC 31, pour enregistrer un vxvm device group, il faut le mettre offline d'abord
+# apres unregistrer que ca peut etre fait avec scsetup
+# pour tout ca les diskgroups doivent etre encorent present, si on a oublie ca et on a vires les diskgroups, on peut les recreer
+# pour tromper SC31 ( mais ils doivent etre recreer sur les machines ou ils sont primaries )
+# depuis hardy
+vxdg init oradd1 DMX_8=fabric_7
+# depuis laurel
+vxdg init lldd1 DMX_7=fabric_8
+# depuis "n'importe quel noued"
+scswitch -F -D  oradd1
+scswitch -F -D  lldd1
+scconf -r -D name=lldd1
+# depuis le noeud ou le disk group etait importe
+vxdg destroy oradd1
+vxdg destroy lldd1
+
+
+
+#### Apres avoir mis en disable chaque ressource et unmanaged leur resource group ou apres avoir mis offline seulement chaque ressource et leur ressource group
+#### on peut virer les ressources et ressource group ( SC 31 )
+
+root@bill # scrgadm -r -j stor-lltrain-rs
+root@bill # scrgadm -r -j opsrv074
+root@bill # scrgadm -r -j nsr-lltrain-rs
+root@bill # scrgadm -r -g lltrain-rg
+root@bill # scrgadm -r -j stor-oratrain-rs
+root@bill # scrgadm -r -j opsrv073
+root@bill # scrgadm -r -j nsr-ortrain-rs
+root@bill # scrgadm -r -g oratrain-rg
+root@bill # scswitch -F -D oratrain
+scswitch: service is busy
+
+root@bill # df -h | grep train
+df: unknown option: h
+Usage: df [-F FSType] [-abegklntVv] [-o FSType-specific_options] [directory | block_device | resource]
+root@bill # df -k | grep train
+/dev/vx/dsk/lltrain/vllbin  984559  588430  337056    64%    /global/lltrain/llbin
+/dev/vx/dsk/lltrain/viplanet 2031711  139085 1831675     8%    /global/lltrain/iplanet
+/dev/vx/dsk/lltrain/vefs01 5160542 1585692 3523245    32%    /global/lltrain/efs01
+/dev/vx/dsk/lltrain/vefs02 10321884   10258 10208408     1%    /global/lltrain/efs02
+/dev/vx/dsk/lltrain/vindex 15482443 1521090 13806529    10%    /global/lltrain/index
+/dev/vx/dsk/lltrain/vxchange  984559    5326  920160     1%    /global/lltrain/xchange
+/dev/vx/dsk/oratrain/voradata 20966376 9807080 10949640    48%    /global/lltrain/oradata
+/dev/vx/dsk/oratrain/voralog 5160542   13636 5095301     1%    /global/lltrain/oralog
+/dev/vx/dsk/oratrain/voraexp 5241576    7760 5181408     1%    /global/lltrain/oraexp
+/dev/vx/dsk/oratrain/vorabin 4128430 2003944 2083202    50%    /global/lltrain/orabin
+/dev/vx/dsk/oratrain/vorausers  953231    5714  890324     1%    /global/lltrain/users
+root@bill # umount /global/lltrain/llbin
+root@bill # umount /global/lltrain/iplanet
+root@bill # umount /global/lltrain/efs01
+root@bill # umount /global/lltrain/efs02
+root@bill # umount /global/lltrain/index
+root@bill # umount /global/lltrain/xchange
+root@bill # umount  /global/lltrain/oradata
+root@bill # umount /global/lltrain/oralog
+root@bill # umount /global/lltrain/oraexp
+root@bill # umount /global/lltrain/orabin
+root@bill # umount /global/lltrain/users
+root@bill # scstat -D
+
+-- Device Group Servers --
+
+                         Device Group        Primary             Secondary
+                         ------------        -------             ---------
+  Device group servers:  rmt/1               -                   -
+  Device group servers:  oradd2              bill                boule
+  Device group servers:  lldd2               boule               bill
+  Device group servers:  oratrain            boule               bill
+  Device group servers:  lltrain             boule               bill
+  Device group servers:  rmt/2               -                   -
+
+
+-- Device Group Status --
+
+                              Device Group        Status
+                              ------------        ------
+  Device group status:        rmt/1               Offline
+  Device group status:        oradd2              Online
+  Device group status:        lldd2               Online
+  Device group status:        oratrain            Online
+  Device group status:        lltrain             Online
+  Device group status:        rmt/2               Offline
+
+
+-- Multi-owner Device Groups --
+
+                              Device Group        Online Status
+                              ------------        -------------
+
+scconf -r -D name=wood
+root@bill # scswitch -F -D oratrain
+root@bill # scswitch -F -D lltrain
+root@bill # scstat -D
+
+-- Device Group Servers --
+
+                         Device Group        Primary             Secondary
+                         ------------        -------             ---------
+  Device group servers:  rmt/1               -                   -
+  Device group servers:  oradd2              bill                boule
+  Device group servers:  lldd2               boule               bill
+  Device group servers:  oratrain            -                   -
+  Device group servers:  lltrain             -                   -
+  Device group servers:  rmt/2               -                   -
+
+
+-- Device Group Status --
+
+                              Device Group        Status
+                              ------------        ------
+  Device group status:        rmt/1               Offline
+  Device group status:        oradd2              Online
+  Device group status:        lldd2               Online
+  Device group status:        oratrain            Offline
+  Device group status:        lltrain             Offline
+  Device group status:        rmt/2               Offline
+
+
+-- Multi-owner Device Groups --
+
+                              Device Group        Online Status
+                              ------------        -------------
+
+root@bill # scconf -r -D name=lltrain
+root@bill # scconf -r -D name=oratrain
+root@bill # scstat -D
+
+-- Device Group Servers --
+
+                         Device Group        Primary             Secondary
+                         ------------        -------             ---------
+  Device group servers:  rmt/1               -                   -
+  Device group servers:  oradd2              bill                boule
+  Device group servers:  lldd2               boule               bill
+  Device group servers:  rmt/2               -                   -
+
+
+-- Device Group Status --
+
+                              Device Group        Status
+                              ------------        ------
+  Device group status:        rmt/1               Offline
+  Device group status:        oradd2              Online
+  Device group status:        lldd2               Online
+  Device group status:        rmt/2               Offline
+
+
+-- Multi-owner Device Groups --
+
+                              Device Group        Online Status
+                              ------------        -------------
+vi /etc/vfstab
+# voir les versions
+more /etc/cluster/release 
+scinstall -vp
+# deinstaller ( attention aux versions u2 est un autre repertoire )
+/var/sadm/prod/SUNWentsyssc32u1/uninstall
+
+
+## update de cluster ( ca marche pas trop bien !!!! )
+boot -x
+# ceci point sur le repertoire d'ou on a installe le SC ( pe /var/tmp )
+cd /var/sadm/prod/SUNWentsys5i/Solaris_sparc/Product
+# Executer donc le scinstall qui vient avec le tar pour installer
+./scinstall
+# choix 4  et apres update de firmware
+# en tout cas c'est trop debile car ca fait un remove de packages et ca plante avec SUNWscr car il trouve pas les SMF du cluster que lui meme enleve
+# il faut les recopier de l'autre noeud. Et il se peut que ca a pas arrete tous les services clusters donc ca planque aussi pour ca
+

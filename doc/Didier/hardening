@@ -1,0 +1,233 @@
+***************************
+yum install yum-plugin-security
+man yum-security 
+
+
+yum updateinfo summary all
+
+yum updateinfo
+yum updateinfo list
+yum updateinfo list --sec-severity=Critical
+yum updateinfo list --sec-severity=Moderate
+
+yum update --security
+yum update-minimal --security
+
+
+commandes utiles :
+------------------
+yum check-update
+yum grouplist
+
+
+a voir :
+
+yum list-updateinfo new
+
+************************
+man rpm
+
+list installed package :   rpm -qa gpg-pub*
+ 
+info :    rpm -qi gpg-pubkey-c105b9de-4e0fd3a3
+
+validité :   rpm -K ./filename
+
+
+rpm --import
+
+rpm -qip ./nom du file
+rpm -ql ./package
+rpm -qlp ./nom du file
+
+
+rpm2cpio kmod-ixgbe-5.2.1-1.el6.x86_64.rpm | cpio -idmv
+
+************************
+
+
+grub-crypt
+password --md5 HASH
+
+ctrl-alt del
+voir logger man
+voir rsyslog conf file
+
+ex : logger -p mail.notice -t TESTLOG "not allowed"
+*************************
+
+
+crypt
+
+voir /usr/share/doc/crypt...
+
+creation 
+fichier de clé
+ajout dans /etc/crypttab     			link	device		clé
+ajout dans etc/fstab
+
+link	mountpoint etc...
+
+cryptsetup luksFormat /dev/loop0
+cryptsetup luksAddKey /dev/loop0 ./test-key
+cryptsetup luksOpen --key-file ./test-key /dev/loop0 tata
+
+*************************
+
+#!/bin/sh
+
+umask -S
+
+/etc/profile
+
+chmod u+x ./filename
+chmod u+s ./filename
+
+find . -perm 4744 ....
+
+
+*************************
+
+/etc/login.defs
+
+chage
+
+gpasswd -A (pour admin) 
+gpasswd -a (adduser)
+
+pour de groupe principal
+newgrp nom_groupe
+
+*************************
+aide
+*************************
+
+/etc/aide.conf
+aide -i
+
+"PRELINKING=no" in /etc/sysconfig/prelink 
+/etc/prelink.conf
+
+
+*************************
+block le reboot
+*************************
+
+/etc/init/control-alt-delete.conf
+editer /etc/sysconsifg/init et voir la fin
+
+
+*************************
+let "toto=3600/60"
+*************************
+
+setfacl -m u:sue:rwx ./december
+
+**************************
+
+wget -q -O - https://updates.atomicorp.com/installers/atomic | sudo bash
+
+vim /var/ossec/etc/ossec.conf
+mettre smtp server
+**************************
+
+grub-md5-crypt
+password --md5 PASSWORD
+
+***************************
+password to sha512
+***************************
+
+
+authconfig --passalgo=sha512 --update
+
+authconfig --test | grep passw
+
+
+***************************
+
+bloquer un user apres x erreur 
+
+pam_tally2
+voir le man pour l'ajout dans /etc/pam.d/login
+
+
+***************************
+message login
+***************************
+voir /etc/issue avant le login
+voir /etc/motd apres le login
+/etc/ssd/sshd_config
+
+
+
+
+freeipa
+
+yum install bind-*
+yum install ipa-server
+vim /etc/hosts
+ipa-server-install
+service sshd restart
+kinit admin
+ipa user-find admin
+
+
+***************************
+remote logging
+
+/etc/rsyslog.conf
+
+# Provides TCP syslog reception
+#$ModLoad imtcp
+#$InputTCPServerRun 514
+
+# remote host is: name/ip:port, e.g. 192.168.0.1:514, port optional
+#*.* @@remote-host:514
+
+
+pour crypter la connexion voir : /usr/share/doc/rsyslo
+
+
+audit
+***************************
+
+aureport
+aureport --summary -x
+aureport -u --summary --failed
+
+
+nmap et nessus
+***************************ipa 
+
+nmap -Sv 127.0.0.1
+nmap -A -v 127.0.0.1
+
+nmap -v -A -T4 -p 389 spider
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

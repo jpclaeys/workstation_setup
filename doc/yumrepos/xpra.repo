@@ -1,0 +1,8 @@
+[winswitch]
+name=Winswitch $releasever - $basearch
+enabled=0
+metadata_expire=1d
+gpgcheck=1
+gpgkey=https://xpra.org/gpg.asc
+baseurl=https://xpra.org/dists/CentOS/$releasever/$basearch/
+proxy=http://a0029ffb:iufjSEP@158.169.131.13:8012

@@ -1,0 +1,5 @@
+# Retrouver les fichiers qui utilise
+truss -r all -w all -p 337
+# Voir les systems calls "open" d'une commande
+truss -t open clq add d7
+truss -o /var/tmp/zoneadm.out -aef -vall -wall zoneadm -z ceres_pz boot

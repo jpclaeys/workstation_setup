@@ -1,0 +1,7 @@
+timex save -c hades -s coppola  -q -b  'Backup 9940B'  -N /applications/simap/oradata -l incr /applications/simap/oradata &
+timex save -c hades -s coppola  -q -b  'Backup 9940B'  -N /applications/simap/orabin -l incr /applications/simap/orabin &
+timex save -c hades -s coppola  -q -b  'Backup 9940B'  -N /applications/simap/oraexp -l incr /applications/simap/oraexp &
+timex save -c hades -s coppola  -q -b  'Backup 9940B'  -N /applications/simap/oralog -l incr /applications/simap/oralog &
+timex save -c hades -s coppola  -q -b  'Backup 9940B'  -N /applications/simap/simaplog -l incr /applications/simap/simaplog &
+timex save -c hades -s coppola  -q -b  'Backup 9940B'  -N /applications/simap/users -l incr /applications/simap/users &
+

@@ -1,0 +1,108 @@
+
+##### put schedule downtime in centreon for the concerned zone
+
+
+
+##### on both cluster nodes, refresh storage configuration and check LUNs
+
+/usr/cluster/bin/cldev populate
+/home/admin/bin/storage_info.pl -A > /net/vdm-unix/systemstore/temp/esend_storage_disk_${hostname}
+
+##### on primary cluster node, create zpool with "_new"
+
+/home/admin/bin/op_format_s0.sh --emc <virtdisk_emc> or /home/admin/bin/op_format_s0.sh --emc <lokal_disk> if ro
+zpool create esentool-tz-data_new mirror <disk>
+zpool create esentool-tz-data_new emcpower141a
+For every zpool to migrate !!!
+
+
+##### on the zone, disable the application
+
+cd /applications/<application>/users/system/init.d/
+./esenview disable
+./esenview status
+
+
+##### on the zone, if DB is in rac, create a new dataset for orabin in <zone_name>-sys spool if exists, otherwith in <zone_name>-data zpool
+
+application=<application_name>
+zpool_db=<zpool_name_for_db>
+zpool=<new_zpool_for_orabin>
+zfs create -o mountpoint=/applications/${application}/orabin_new ${zpool}/${application}/orabin
+
+
+
+##### on the zone, copy the current orabin to the new one
+
+rsync -aHS /applications/${application}/orabin/ /applications/${application}/orabin_new
+
+
+
+##### change the mountpoint property for orabin
+
+zfs set mountpoint=none zpool_db/${application}/orabin
+zfs set mountpoint=/applications/${application}/orabin zpool/${application}/orabin
+
+
+
+##### on primary cluster node, stop the zone
+init 0 
+
+
+##### on primary cluster node, sync from current zpools to "_new" zpools (if DB is migrated in RAC, don't synchronize the db pool)
+
+export devicegroup=<zonename_dev_grp>
+
+symrdf -g $device_group failover
+symrdf -g $device_group swap
+symrdf -g $device_group establish
+symrdf -g $device_group query
+
+zfs snapshot -r <zpool_name>@<date>_migration_vnx_to_vma
+( For every zpool if more !!)
+
+zfs send -R <zpool_name>@<date>_migration_vnx_to_vmax | zfs receive -Fud <zpool_name>_new
+( For every zpool if more !!)
+
+##### on primary cluster node, export current zpools, then import them with "_old" extension
+
+zpool export <actual_zpools>
+zpool import <actual_zpools> <actual_zpools>_old
+
+
+zpool export esentool-tz-db
+zpool export esentool-tz-data
+zpool import esentool-tz-db  esentool-tz-db_old 
+zpool import esentool-tz-data  esentool-tz-data_old 
+
+zfs set mountpoint=none esentool-tz-data_old/zone
+
+##### on primary cluster node, export "_new" zpools, then import them without "_new" extension
+
+
+p.ex:
+zpool export esentool-tz-db_new
+zpool export esentool-tz-data_new
+zpool import esentool-tz-db_new esentool-tz-db 
+zpool import esentool-tz-data_new esentool-tz-data 
+
+
+##### on both cluster nodes, if the DB is migrate in RAC, remove the concerned dataset from the zone configuration
+
+
+##### on primary node, boot the zone, check zpools, datasets, and enable the application
+
+zoneadm -z <zone_name> attach
+zoneadm -z <zone_name> boot && zlogin -C <zone_name>
+ssh <zone_name>
+
+svcs -xv
+/applications/<application>/users/system/init.d/<application> enable
+
+
+##### on both cluster node, put offline disks present in "_old" zpools.
+
+
+##### recover to storage team the offlined devices (with WWN list)
+
+

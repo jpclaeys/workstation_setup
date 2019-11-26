@@ -1,0 +1,5 @@
+MASTER_MAP_NAME="auto_master"
+TIMEOUT=300
+BROWSE_MODE="no"
+APPEND_OPTIONS="yes"
+

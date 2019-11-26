@@ -1,0 +1,221 @@
+##################################################
+##### root password
+
+passwd root
+
+
+##################################################
+##### network
+
+
+##### application ip
+
+application_ip=158.167.98.209
+netmask=255.255.252.0
+
+1[130528/140003]root@odvmwsodp02# ifconfig  
+eth0      Link encap:Ethernet  HWaddr 00:50:56:40:01:08  
+          inet addr:158.167.96.161  Bcast:158.167.99.255  Mask:255.255.252.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:10768 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:3642 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:818025 (798.8 KiB)  TX bytes:477808 (466.6 KiB)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:95 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:95 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:7259 (7.0 KiB)  TX bytes:7259 (7.0 KiB)
+
+
+
+network_interface=eth0
+network_instance=0
+vlan=1
+
+cat >/etc/sysconfig/network-scripts/ifcfg-${network_interface}_${network_instance}.${vlan} <<EOF
+DEVICE=${network_interface}:${network_instance}.${vlan}
+BOOTPROTO=none
+ONBOOT=yes
+NETMASK=${netmask}
+IPADDR=${application_ip}
+VLAN=yes
+USERCTL=NO
+PEERDNS=NO
+EOF
+
+
+0[130527/143012]root@odvmwsodp01# ls -l /etc/sysconfig/network-scripts/ifcfg-${network_interface}_${network_instance}.${vlan}    
+-rw-r--r-- 1 root root 117 May 27 14:30 /etc/sysconfig/network-scripts/ifcfg-eth0_0.1
+0[130527/143016]root@odvmwsodp01# cat /etc/sysconfig/network-scripts/ifcfg-${network_interface}_${network_instance}.${vlan} 
+DEVICE=eth0:0.1
+BOOTPROTO=none
+ONBOOT=yes
+NETMASK=255.255.252.0
+IPADDR=158.167.98.233
+VLAN=yes
+USERCTL=NO
+PEERDNS=NO
+
+
+
+
+service network restart ${network_interface}
+
+0[130527/143031]root@odvmwsodp01# ifconfig 
+eth0      Link encap:Ethernet  HWaddr 00:50:56:40:01:07  
+          inet addr:158.167.96.160  Bcast:158.167.99.255  Mask:255.255.252.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:233 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:21 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:17428 (17.0 KiB)  TX bytes:2298 (2.2 KiB)
+
+eth0:0.1  Link encap:Ethernet  HWaddr 00:50:56:40:01:07  
+          inet addr:158.167.98.233  Bcast:158.167.99.255  Mask:255.255.252.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:80 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:80 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:5024 (4.9 KiB)  TX bytes:5024 (4.9 KiB)
+
+
+
+##### /etc/hosts
+
+
+date=`date +%Y%m%d`
+cp -p /etc/hosts /etc/hosts.${date}
+
+{
+getent hosts `uname -n`
+getent hosts ${application_ip}
+} >>/etc/hosts
+ 
+2[130527/142430]root@odvmwsodp01# diff /etc/hosts /etc/hosts.${date}
+3,4d2
+< 158.167.96.160  odvmwsodp01.opoce.cec.eu.int
+< 158.167.98.233  opsrv233.opoce.cec.eu.int
+
+
+
+##################################################
+##### fs application
+
+##### variables
+application=ecodp-be
+vg=${application}_vg
+
+##### cherher le nom du disque
+fdisk -l 2>/dev/null
+
+##### definition du disque:
+device=/dev/sdb
+
+##### detruire la table de partition du disk
+dd if=/dev/zero of=${device} bs=512 count=1
+
+##### creation du physical volume lvm
+pvcreate -v ${device}
+
+##### liste les device pour verification
+pvs
+pvdisplay
+pvscan
+
+##### creation du volume group
+vgcreate -v $vg $device
+
+##### verification
+vgdisplay $vg
+
+##### creation des logical volumes
+lv=users_lv
+lvcreate -L 10G -n $lv $vg
+
+##### creation du fs
+echo mkfs.ext4 /dev/mapper/`echo $vg | sed -e 's/-/--/'`-${lv}
+
+##### fstab
+cat >> /etc/fstab <<EOF
+/dev/mapper/`echo $vg | sed -e 's/-/--/'`-${lv}   /applications/${application}/users          ext4    defaults        1 1
+EOF
+
+##### montage
+mkdir -p /applications/${application}/users
+mount /applications/${application}/users
+df -h /applications/${application}/users
+
+
+
+##################################################
+##### user application
+
+
+user_application=ecodp
+uid_application=30387
+group_application=ecodp
+gid_application=21009
+
+
+groupadd -g ${gid_application} ${group_application} 
+useradd -u ${uid_application} -g ${gid_application} -d /home/${user_application} -s /bin/bash ${user_application}
+passwd ${user_application}
+
+mkdir /applications/${application}/users/${user_application}
+chown ${user_application}:${group_application} /applications/${application}/users/${user_application}
+
+0[130527/150717]root@odvmwsodp01# cp -p /etc/auto_home /etc/auto_home.${date}    
+0[130528/120339]root@odvmwsodp01# diff /etc/auto_home /etc/auto_home.20130527 
+5d4
+< ecodp      $HOST:/applications/ecodp/users/&
+
+
+
+
+0[130528/120631]root@odvmwsodp01# cd /home/ecodp 
+0[130528/120641]root@odvmwsodp01# df -h .
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/ecodp--fe_vg-users_lv
+                      9.9G  151M  9.2G   2% /applications/ecodp/users
+
+
+
+
+0[130528/134105]root@odvmwsodp01# su - ecodp
+[ecodp@odvmwsodp01 ~]# pwd
+/home/ecodp
+
+
+
+
+
+##################################################
+##### su/sudo
+
+
+
+0[130529/105517]root@odvmwsodp01# diff /etc/pam.d/su /etc/pam.d/su.20130529    
+7,8c7,8
+< # Uncomment the following if you want only adminux members to be allowed to su -
+< #auth            required        pam_wheel.so debug group=adminux use_uid root_only
+---
+> #auth           required        pam_wheel.so debug group=adminux use_uid root_only
+> auth           required        pam_wheel.so group=opsys_ux use_uid
+
+
+
+0[130529/105146]root@odvmwsodp01# diff /etc/pam.d/sudo /etc/pam.d/sudo.20130529 
+2c2
+< auth       required     pam_listfile.so onerr=fail item=user sense=allow file=/etc/suusers
+---
+> #auth       required     pam_listfile.so onerr=fail item=user sense=allow file=/etc/suusers
+
+

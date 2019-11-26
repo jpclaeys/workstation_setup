@@ -1,0 +1,26 @@
+############################################################################################
+# envoie d'une demande par email de maj de la CMDB pour une zone
+############################################################################################
+
+
+
+export vmware_name=<vmware_name>
+export vmware_ip=<vmware_ip>
+export appli_opsrv=<application_opsrv>
+export appli_opsrv_ip=<application_ip>
+export server_alias=<server_alias>
+export host=<physical_host>
+export cluster_used=<cluster_used>
+export node1=<primary_node>
+export node2=<secondary_node>
+
+{
+echo "nom de la machine virtuelle vmware:\t${vmware_name} (${vmware_ip})"
+echo "OS version:\t\t\t\t"`head -1 /etc/redhat-release`
+echo "opsrv de l'application:\t\t\t${appli_opsrv} (${appli_opsrv_ip})"
+echo "alias de la machine virtuelle vmware:\t${server_alias}"
+} | mailx -s "mise a jour de la cmdb: ${vmware_name}" betorma
+
+
+
+

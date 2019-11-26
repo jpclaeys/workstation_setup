@@ -1,0 +1,33 @@
+
+
+./getcmdb.sh opsrv | grep opsvc | cut -d \; -f 1,6
+./getcmdb.sh opsrv | grep opsvc | cut -d \; -f 1,6 | sort -k1 -u
+./getcmdb.sh opsrv | grep opsvc | cut -d \; -f 1,6 | sort -k1 -u | grep -v z$
+
+application_cname
+
+hammer global-parameter list
+
+hammer host set-parameter --name application_cname --value opsvc046 --host infra1-tk.opoce.cec.eu.int
+
+
+hammer host update --name "infra1-tk.opoce.cec.eu.int" --puppet-class-ids 218
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+hammer hostgroup update --name RHEL7 --puppet-classes=motd,stdlib
+hammer hostgroup update --name "RHEL7" --puppet-class-ids 2,1,7
+
+
+

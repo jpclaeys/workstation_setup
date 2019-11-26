@@ -1,0 +1,23 @@
+#################################################################################################################
+# installation d'apache ant
+##################################################################################################################
+
+##### si necessaire, telecharger le binaire de ant
+cd /home/betorma/download
+wget http://mirrors.axint.net/apache/ant/binaries/apache-ant-1.7.1-bin.tar.gz
+
+##### variables
+export source_ant_path=/home/betorma/download
+export source_ant_file=apache-ant-1.7.1-bin.tar.gz
+export application=tedmonitor
+export user=tedmonitor
+export group=tedmonitor
+
+##### se placer dans repertoire dans lequel ant doit etre installe
+cd /applications/${application}/users/system/
+
+##### extraction d'ant
+gunzip -c ${source_ant_path}/${source_ant_file} | /usr/sfw/bin/gtar xf -
+
+##### creer un lien symolique 'ant' vers le repertoire cree par l'extraction
+ln -s `echo ${source_ant_file%-bin.tar.gz}` ant

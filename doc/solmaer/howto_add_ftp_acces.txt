@@ -1,0 +1,92 @@
+################################################################################
+# Ajout d'acces ftp 
+################################################################################
+
+prerequis:
+
+- connaitre le nom de l'hote sur lequel se connecter en ftp ($ftp_server)
+- connaitre le nom de l'hote depuis lequel le ftp sera lance ($ftp_client)
+- connaitre l'utilsateur qui veut initialiser une connexion ftp ($ftp_user) 
+
+################################################################################
+
+remarques:
+
+- shell bash utilise pour ces commandes
+- lors de la sauvegarde du fichier ftphost (dans la deniere etape);
+  si plusieurs ajouts d'acces ftp sont donnes dans une meme journee,
+  les anciennes sauvegardes sont ecrasees
+
+################################################################################
+
+##### connexion au server
+ssh <ftp_server>
+su -
+
+##### variables
+export ftp_server=opsrv145
+export ftp_client=opsrv145
+export ftp_user=w_atto
+export domain_client=opoce.cec.eu.int
+
+##### verification du fichier /etc/pam.conf
+echo -e '\n##### Check if ftp is declared in /etc/pam.conf file'; \
+perl -pe 'print ";"; chomp($_);' /etc/pam.conf | perl -ne 'if (/;\s*ftp\s+account required\s+pam_unix_account.so.1/) {print "OK: ftp is declared in /etc/pam.conf\n"} else {print "ERROR: no ftp declaration in /etc/apm.conf file\n===> echo -ne \"\\nftp     account required        pam_unix_account.so.1\\n\" >>/etc/pam.conf\n"}'
+
+##### verification de l'existance de l'utilisateur 
+echo -e '\n##### Check if ftp user exists in /etc/passwd'; \
+if `grep "^${ftp_user}:" /etc/passwd > /dev/null`; 
+then echo -e "OK: ${ftp_user} declared in /etc/passwd"; 
+else echo -e "ERROR: ${ftp_user} not declared in /etc/passwd\n===> you must create this user."; 
+fi
+
+##### en fonction de la version de solaris, determine le repertoire des fichiers de configuration ftp ($config_path)
+echo -e '\n##### Check if ftp configuration folder exist'; \
+if [ `/usr/bin/uname -r` == '5.10' ]; 
+then export config_path='/etc/ftpd'; 
+else export config_path='/etc/opt/OPwu-ftpd'; 
+fi; \
+if [ -d ${config_path} ]; 
+then echo -e "OK: ${config_path} exists"; 
+else echo -e "ERROR: ${config_path} not exists\n===> Check why this folder not exists"; 
+fi
+
+##### si $ftp_server est un alias de l'hote, verification de la presence de l'alias dans le fichier ftpservers
+echo -e "\n##### Check if ${ftp_server} is correctly defined in the ftp configuration file"; \
+if [ ! ${ftp_server} == `uname -n` ]; 
+then if [ -f ${config_path}/ftpservers ]; 
+then perl -pe 'print ";"; chomp($_);' ${config_path}/ftpservers | perl -ne 'if (/;\s*$ENV{ftp_server}\s+$ENV{config_path}\/$ENV{ftp_server}/) {print "OK: $ENV	{ftp_server} defined in $ENV{config_path}/ftpservers\n"} else {print "INFO: $ENV{ftp_server} is not defined in $ENV{config_path}/ftpservers\n"}'; 
+echo ${ftp_server} ${config_path}/${ftp_server} >>${config_path}/ftpservers; 
+if [ $? == 0 ]; 
+then echo "${ftp_server} is now add to ${config_path}/ftpservers"; 
+fi; 
+if [ ! -d ${config_path}/${ftp_server} ]; 
+then mkdir ${config_path}/${ftp_server}; 
+if [ $? == 0 ]; 
+then echo "${config_path}/${ftp_server} folder created"; 
+fi; 
+fi; 
+else echo -e "ERROR: ${config_path}/ftpservers not exists\n===> Check why this folder not exists"; 
+fi; 
+export config_path=${config_path}/${ftp_server}
+else echo 'OK: No modification is necessary'; 
+fi
+
+##### verification de la presence du fichier ftphosts
+echo -e "\n##### Check if ${config_path}/ftphosts file exist"; \
+if [ -e ${config_path}/ftphosts ]; 
+then echo -e "OK: ${config_path}/ftphosts exist"; 
+#else echo -e "ERROR: ${config_path}/ftphosts not exist\n===> Check why this file not exists"; 
+else echo -e "\n\tdeny * *" >${config_path}/ftphosts;
+echo "OK: ${config_path}/ftphosts created";
+fi
+
+##### recherche et liste les acces deja existants dans ftphosts et popose une ligne a ajouter dans le fichier ftphosts pour ajouter un acces
+echo -e "\n##### Add ftp acces"; \
+echo -e "Access already existing for $ftp_user user:"; \
+grep ${ftp_user} ${config_path}/ftphosts; \
+if [ $? != 0 ]; then echo '===> n/a'; fi; \
+echo "You can insert the following line in the ${config_path}/ftphosts file to add the acces"; \
+echo -e "===> allow\t${ftp_user}\t${ftp_client}.${domain_client}\t${ftp_client}"; \
+echo -e "Before, you must make a backup of ${config_path}/ftphosts"; \
+echo -e "===> cp -p ${config_path}/ftphosts ${config_path}/ftphosts.`date +%Y%m%d`"

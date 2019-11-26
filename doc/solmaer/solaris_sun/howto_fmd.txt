@@ -1,0 +1,20 @@
+##########################################
+##### clear /var/fm folder
+
+svcadm disable -s svc:/system/fmd:default
+svcs svc:/system/fmd:default
+
+
+find /var/fm/fmd -type f -exec ls {} \;
+find /var/fm/fmd -type f -exec rm {} \; 
+svcadm enable svc:/system/fmd:default
+svcs svc:/system/fmd:default
+
+
+fmadm reset cpumem-diagnosis ; sleep 2
+fmadm reset cpumem-retire ; sleep 2
+fmadm reset eft ; sleep 2
+fmadm reset io-retire
+
+
+

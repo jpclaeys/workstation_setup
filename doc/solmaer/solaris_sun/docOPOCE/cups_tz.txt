@@ -1,0 +1,512 @@
+oot@doc 10:38 [~] format c4t600A0B800019E59100001B80483796F8d0
+
+c4t600A0B800019E59100001B80483796F8d0: configured with capacity of 10.00GB
+selecting c4t600A0B800019E59100001B80483796F8d0
+[disk formatted]
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        repair     - repair a defective sector
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        save       - save new disk/partition definitions
+        inquiry    - show vendor, product and revision
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> verif
+Warning: Could not read primary label.
+Warning: Could not read backup labels.
+
+Warning: Check the current partitioning and 'label' the disk or use the
+         'backup' command.
+format> p
+
+
+PARTITION MENU:
+        0      - change `0' partition
+        1      - change `1' partition
+        2      - change `2' partition
+        3      - change `3' partition
+        4      - change `4' partition
+        5      - change `5' partition
+        6      - change `6' partition
+        7      - change `7' partition
+        select - select a predefined table
+        modify - modify a predefined partition table
+        name   - name the current table
+        print  - display the current table
+        label  - write partition map and label to the disk
+        !<cmd> - execute <cmd>, then return
+        quit
+partition> p
+Current partition table (default):
+Total disk cylinders available: 5118 + 2 (reserved cylinders)
+
+Part      Tag    Flag     Cylinders        Size            Blocks
+  0       root    wm       0 -   63      128.00MB    (64/0/0)     262144
+  1       swap    wu      64 -  127      128.00MB    (64/0/0)     262144
+  2     backup    wu       0 - 5117       10.00GB    (5118/0/0) 20963328
+  3 unassigned    wm       0               0         (0/0/0)           0
+  4 unassigned    wm       0               0         (0/0/0)           0
+  5 unassigned    wm       0               0         (0/0/0)           0
+  6        usr    wm     128 - 5117        9.75GB    (4990/0/0) 20439040
+  7 unassigned    wm       0               0         (0/0/0)           0
+
+partition> label
+Ready to label disk, continue? yes
+
+partition> q
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        repair     - repair a defective sector
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        save       - save new disk/partition definitions
+        inquiry    - show vendor, product and revision
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> verif
+
+Primary label contents:
+
+Volume name = <        >
+ascii name  = <SUN-CSM100_R_FC-0619 cyl 5118 alt 2 hd 64 sec 64>
+pcyl        = 5120
+ncyl        = 5118
+acyl        =    2
+nhead       =   64
+nsect       =   64
+Part      Tag    Flag     Cylinders        Size            Blocks
+  0       root    wm       0 -   63      128.00MB    (64/0/0)     262144
+  1       swap    wu      64 -  127      128.00MB    (64/0/0)     262144
+  2     backup    wu       0 - 5117       10.00GB    (5118/0/0) 20963328
+  3 unassigned    wm       0               0         (0/0/0)           0
+  4 unassigned    wm       0               0         (0/0/0)           0
+  5 unassigned    wm       0               0         (0/0/0)           0
+  6        usr    wm     128 - 5117        9.75GB    (4990/0/0) 20439040
+  7 unassigned    wm       0               0         (0/0/0)           0
+
+format> q
+root@doc 10:38 [~] /usr/lib/vxvm/bin/vxdisksetup -i fabric_5
+root@doc 10:39 [~] vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME
+c0t0d0s2     auto      rootdisk      rootdg       online       c0t0d0s2
+c0t1d0s2     auto      rootmirror    rootdg       online       c0t1d0s2
+fabric_0     auto      absynthe_01   gescomx      online       c4t600A0B800019E59A00003D28440CE653d0s2
+fabric_1     auto      absynthe_07   sagapx       online       c4t600A0B800019E591000018DD47BE3174d0s2
+fabric_2     auto      absynthe_05   sagapx       online       c4t600A0B800019E59A0000400647BE464Fd0s2
+fabric_3     auto      absynthe_06   gescomx      online       c4t600A0B800019E59A0000400347BE301Dd0s2
+fabric_4     auto      absynthe_04   gescomx      online       c4t600A0B800019E59A0000400447BE3D4Fd0s2
+fabric_5     auto      -             -            online       c4t600A0B800019E59100001B80483796F8d0s2
+fabric_6     auto      absynthe_03   sagapx       online       c4t600A0B800019E5910000159F44EA7F82d0s2
+root@doc 10:43 [~] vxdg init cups fabric_5=absynthe_10
+VxVM vxdg ERROR V-5-1-530 Device absynthe_10 not found in configuration
+root@doc 10:44 [~] vxdg init cups absynthe_10=fabric_5
+root@doc 10:45 [~] vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME
+c0t0d0s2     auto      rootdisk      rootdg       online       c0t0d0s2
+c0t1d0s2     auto      rootmirror    rootdg       online       c0t1d0s2
+fabric_0     auto      absynthe_01   gescomx      online       c4t600A0B800019E59A00003D28440CE653d0s2
+fabric_1     auto      absynthe_07   sagapx       online       c4t600A0B800019E591000018DD47BE3174d0s2
+fabric_2     auto      absynthe_05   sagapx       online       c4t600A0B800019E59A0000400647BE464Fd0s2
+fabric_3     auto      absynthe_06   gescomx      online       c4t600A0B800019E59A0000400347BE301Dd0s2
+fabric_4     auto      absynthe_04   gescomx      online       c4t600A0B800019E59A0000400447BE3D4Fd0s2
+fabric_5     auto      absynthe_10   cups         online       c4t600A0B800019E59100001B80483796F8d0s2
+fabric_6     auto      absynthe_03   sagapx       online       c4t600A0B800019E5910000159F44EA7F82d0s2
+root@doc 10:45 [~] vxassist -g cups make vzone 8192M layout=concat
+root@doc 11:35 [~] vxassist -g cups make vusers 1024M layout=concat
+root@doc 11:44 [~] vxprint -rt -g cups
+DG NAME         NCONFIG      NLOG     MINORS   GROUP-ID
+ST NAME         STATE        DM_CNT   SPARE_CNT         APPVOL_CNT
+DM NAME         DEVICE       TYPE     PRIVLEN  PUBLEN   STATE
+RV NAME         RLINK_CNT    KSTATE   STATE    PRIMARY  DATAVOLS  SRL
+RL NAME         RVG          KSTATE   STATE    REM_HOST REM_DG    REM_RLNK
+CO NAME         CACHEVOL     KSTATE   STATE
+VT NAME         NVOLUME      KSTATE   STATE
+V  NAME         RVG/VSET/CO  KSTATE   STATE    LENGTH   READPOL   PREFPLEX UTYPE
+PL NAME         VOLUME       KSTATE   STATE    LENGTH   LAYOUT    NCOL/WID MODE
+SD NAME         PLEX         DISK     DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+SV NAME         PLEX         VOLNAME  NVOLLAYR LENGTH   [COL/]OFF AM/NM    MODE
+SC NAME         PLEX         CACHE    DISKOFFS LENGTH   [COL/]OFF DEVICE   MODE
+DC NAME         PARENTVOL    LOGVOL
+SP NAME         SNAPVOL      DCO
+
+dg cups         default      default  33000    1211791541.22.doc
+
+dm absynthe_10  fabric_5     auto     2048     20961024 -
+
+v  vusers       -            ENABLED  ACTIVE   2097152  SELECT    -        fsgen
+pl vusers-01    vusers       ENABLED  ACTIVE   2097152  CONCAT    -        RW
+sd absynthe_10-02 vusers-01  absynthe_10 16777216 2097152 0       fabric_5 ENA
+
+v  vzone        -            ENABLED  ACTIVE   16777216 SELECT    -        fsgen
+pl vzone-01     vzone        ENABLED  ACTIVE   16777216 CONCAT    -        RW
+sd absynthe_10-01 vzone-01   absynthe_10 0     16777216 0         fabric_5 ENA
+
+root@doc 11:49 [~] mv /net/coppola.opoce.cec.eu.int/xchange/cups_pz /var/tmp
+root@doc 12:03 [~] ifconfig -a
+lo0: flags=2001000849<UP,LOOPBACK,RUNNING,MULTICAST,IPv4,VIRTUAL> mtu 8232 index 1
+        inet 127.0.0.1 netmask ff000000
+lo0:1: flags=2001000849<UP,LOOPBACK,RUNNING,MULTICAST,IPv4,VIRTUAL> mtu 8232 index 1
+        zone sagapx_tz
+        inet 127.0.0.1 netmask ff000000
+lo0:2: flags=2001000849<UP,LOOPBACK,RUNNING,MULTICAST,IPv4,VIRTUAL> mtu 8232 index 1
+        zone gescomx_tz
+        inet 127.0.0.1 netmask ff000000
+lo0:3: flags=2001000849<UP,LOOPBACK,RUNNING,MULTICAST,IPv4,VIRTUAL> mtu 8232 index 1
+        zone dwcom_tz
+        inet 127.0.0.1 netmask ff000000
+ce1: flags=1000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4> mtu 1500 index 2
+        inet 158.167.227.164 netmask ffff0000 broadcast 158.167.255.255
+        ether 0:3:ba:e:ec:8
+ce1:1: flags=1000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4> mtu 1500 index 2
+        zone sagapx_tz
+        inet 158.167.227.155 netmask ffff0000 broadcast 158.167.255.255
+ce1:2: flags=1000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4> mtu 1500 index 2
+        zone gescomx_tz
+        inet 158.167.227.154 netmask ffff0000 broadcast 158.167.255.255
+ce1:3: flags=1000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4> mtu 1500 index 2
+        zone dwcom_tz
+        inet 158.167.227.205 netmask ffff0000 broadcast 158.167.255.255
+ce1:4: flags=1000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4> mtu 1500 index 2
+        zone dwcom_tz
+        inet 158.167.227.1 netmask ffff0000 broadcast 158.167.255.255
+ce1:5: flags=1000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4> mtu 1500 index 2
+        zone dwcom_tz
+        inet 158.167.227.36 netmask ffff0000 broadcast 158.167.255.255
+dman0: flags=1008843<UP,BROADCAST,RUNNING,MULTICAST,PRIVATE,IPv4> mtu 1500 index 3
+        inet 10.1.1.5 netmask ffffffe0 broadcast 10.1.1.31
+        ether 0:0:be:a9:36:e3
+root@doc 12:05 [~] vi /var/tmp/cups_pz
+"/var/tmp/cups_pz" 25 lines, 357 characters
+create -b
+set zonepath=/zones/cups_pz
+set autoboot=true
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=158.167.99.182
+set physical=ce1
+end
+add attr
+set name=comment
+set type=string
+set value="Zone cups_tz"
+end
+
+
+
+root@doc 12:06 [~] newfs /dev/vx/dsk/cups/vzone
+/dev/vx/rdsk/cups/vzone: Unable to find Media type. Proceeding with system determined parameters.
+newfs: construct a new file system /dev/vx/rdsk/cups/vzone: (y/n)? ^C
+root@doc 12:08 [~] ls -l /dev/vx/dsk/cups/vzone
+brw-------   1 root     root     315, 33000 May 26 11:35 /dev/vx/dsk/cups/vzone
+root@doc 12:09 [~] newfs /dev/vx/dsk/cups/vzone
+/dev/vx/rdsk/cups/vzone: Unable to find Media type. Proceeding with system determined parameters.
+newfs: construct a new file system /dev/vx/rdsk/cups/vzone: (y/n)? y
+/dev/vx/rdsk/cups/vzone:        16777216 sectors in 8192 cylinders of 32 tracks, 64 sectors
+        8192.0MB in 168 cyl groups (49 c/g, 49.00MB/g, 6144 i/g)
+super-block backups (for fsck -F ufs -o b=#) at:
+ 32, 100448, 200864, 301280, 401696, 502112, 602528, 702944, 803360, 903776,
+ 15857568, 15957984, 16056352, 16156768, 16257184, 16357600, 16458016,
+ 16558432, 16658848, 16759264
+root@doc 12:09 [~] vi /etc/vfstab
+"/etc/vfstab" 19 lines, 909 characters
+#device         device          mount           FS      fsck    mount   mount
+#to mount       to fsck         point           type    pass    at boot options
+#
+fd      -       /dev/fd fd      -       no      -
+/proc   -       /proc   proc    -       no      -
+/dev/vx/dsk/bootdg/swapvol      -       -       swap    -       no      nologging
+/dev/vx/dsk/bootdg/rootvol      /dev/vx/rdsk/bootdg/rootvol     /       ufs     1       no      nologging
+/dev/vx/dsk/bootdg/var  /dev/vx/rdsk/bootdg/var /var    ufs     1       no      nologging
+/devices        -       /devices        devfs   -       no      -
+ctfs    -       /system/contract        ctfs    -       no      -
+objfs   -       /system/object  objfs   -       no      -
+swap    -       /tmp    tmpfs   -       yes     -
+#NOTE: volume rootvol () encapsulated partition c0t0d0s0
+#NOTE: volume swapvol () encapsulated partition c0t0d0s1
+#NOTE: volume var () encapsulated partition c0t0d0s6
+## Zone gescomx
+/dev/vx/dsk/gescomx/vzone        /dev/vx/rdsk/gescomx/vzone       /zones/gescomx_tz        ufs     3       yes logging
+## Zone sagapx
+/dev/vx/dsk/sagapx/vzone        /dev/vx/rdsk/sagapx/vzone       /zones/sagapx_tz        ufs     3       yes logging
+## Zone cups_tz
+/dev/vx/dsk/cups/vzone        /dev/vx/rdsk/cups/vzone       /zones/cups_tz        ufs     3  yes   logging
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+"/etc/vfstab" 21 lines, 1032 characters
+root@doc 12:10 [~] mkdir -p /zones/cups_tz
+root@doc 12:10 [~] mount /zones/cups_tz
+
+
+zonecfg -z cups_tz -f /var/tmp/cups_tz
+
+chmod 700 /zones/cups_tz
+
+root@doc 12:21 [~] zoneadm -z cups_tz install
+Preparing to install zone <cups_tz>.
+Creating list of files to copy from the global zone.
+Copying <2753> files to the zone.
+Initializing zone product registry.
+Determining zone package initialization order.
+Preparing to initialize <1106> packages on the zone.
+Initialized <1106> packages on zone.
+Zone <cups_tz> is initialized.
+Installation of these packages generated errors: <VRTSSUNStorEdge3000 VRTSddlpr VRTSalloc SUNW61x0>
+Installation of <2> packages was skipped.
+The file </zones/cups_tz/root/var/sadm/system/logs/install_log> contains a log of the zone installation.
+
+root@doc 12:36 [~] zname=cups_tz
+root@doc 12:50 [~] cat <<EOT >  /zones/${zname}/root/etc/inet/ntp.conf
+heredoc> # @(#)ntp.client        1.2     96/11/06 SMI
+heredoc> #
+heredoc> # /etc/inet/ntp.client
+heredoc> #
+heredoc> # OPOCE configuration:  The router broadcasts the time-signal, so all clients
+heredoc> # simply have to listen to broadcasts.
+heredoc>
+heredoc> broadcastclient
+heredoc> EOT
+root@doc 12:50 [~]
+root@doc 12:50 [~] cat <<EOF > /zones/${zname}/root/etc/resolv.conf
+heredoc> domain opoce.cec.eu.int
+heredoc> nameserver 158.167.96.18
+heredoc> nameserver 158.167.227.6
+heredoc> nameserver 158.167.96.12
+heredoc> search opoce.cec.eu.int
+heredoc> EOF
+root@doc 12:50 [~]
+root@doc 12:50 [~] cat <<EOF > /zones/${zname}/root/etc/hosts.allow
+heredoc> all:@admin
+heredoc> sendmail:all
+heredoc> EOF
+
+name=doc
+ip="158.167.99.182"
+profile=drp
+
+
+cat <<EOT >/zones/${zname}/root/etc/sysidcfg
+name_service=LDAP { domain_name=opoce.cec.eu.int profile=${profile} profile_server=158.167.96.18 proxy_dn="cn=proxyagent,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int" proxy_password="#!proxy#!" }
+root_password=boajrOmU7GFmY
+system_locale=C
+timeserver=158.167.96.18
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${name} ip_address=${ip} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOT
+
+touch /zones/${zname}/root/etc/notrouter
+
+==> changement defaultdomain
+==> changement nodename
+==> changement /etc/inet/hosts
+==> cfgengine:
+
+mv /net/coppola.opoce.cec.eu.int/xchange/root-cups_tz.pub /zones/cups_tz/root/var/cfengine/ppkeys
+
+cp snmpd* /zones/cups_tz/root/etc/sma/snmp
+
+cp snmpd* /zones/cups_tz/root/etc/snmp/conf
+
+zoneadm -z cups_tz boot
+
+
+echo "all:all" > /etc/hosts.deny
+cups_tz# /home/leidial/scripts/check_host.sh
+Checking for correcdt default domain
+   OK: /etc/defaultdomain exists
+   OK: defaultdomain correctly set
+Checking for mpxio system settings (only necessary for servers)
+   WARN: no /kernel/drv/scsi_vhci.conf, unknown I/O multipathing status
+Checking for coreadm settings (only necessary for servers)
+   ERROR: core files are not created in a dedicated core area
+    ==>   create a dedicated area and run
+    ==>   'coreadm -i /path/to/area/%f_%p_%u_%g.core'
+Checking for Solaris Volume Manager
+   OK: no SVM in use
+Checking for Legato Networker client programs
+   ERROR: no /nsr directory found
+    ==>   install the Legato Networker client
+   OK: /usr/sbin/nsrexecd found
+   ERROR: no /etc/init.d/networker found
+    ==>   install the Legato Networker client
+Checking for RMAN backup
+   OK: Legato Networker Oracle library installed
+   OK: Networker Oracle library, second location found
+   OK: Networker Oracle library, second location is a symlink
+   OK: RMAN perl script installed
+Checking for correct tcpwrappers (hosts.allow/hosts.deny) setup
+   OK: /etc/hosts.deny contains all:all
+   OK: /etc/hosts.allow contains all:@admin
+   OK: no all:all in /etc/hosts.allow
+Checking for netgroups in ftphosts
+   OK: no netgroups in /etc/ftpd/ftphosts
+Checking for correct /etc/acct/holidays
+   OK: correct year in /etc/acct/holidays
+cups_tz# cd /net/talisker/export/software/Networker/Networker_7.4
+cups_tz#
+cups_tz# pkgadd -d . LGTOclnt
+
+Processing package instance <LGTOclnt> from </net/talisker/export/software/Networker/Networker_7.4>
+
+NetWorker Client(sparc) 7.4.Build.187
+Copyright (c) 1990-2007, EMC Corporation
+This product includes software developed by the University of
+California, Berkeley and its contributors.
+
+
+To setup NetWorker you need to specify a directory to store various
+data files in. For a NetWorker client or storage node the default
+directory of /var/nsr is acceptable. However, for a NetWorker server,
+this directory can become quite large and should reside on a big enough
+file system.
+
+Below is a list of file systems which you might consider:
+
+File system              Free space in KB
+/dev                              7860928
+
+Enter a NetWorker data directory (default=/var/nsr) [?] /nsr
+
+The NetWorker client restricts access to a select set of NetWorker
+servers. Please enter the names of each computer running a NetWorker
+server that will back up this computer, one name at a time. If a
+computer has more than one network interface, please enter each
+interface's name (one at a time).
+
+Enter a NetWorker server hostname [no more]: coppola
+Enter a NetWorker server hostname [no more]:
+
+Restart NetWorker daemons at end of install? (default=no) [y,n,?] y
+## Executing checkinstall script.
+Using </usr> as the package base directory.
+## Processing package information.
+## Processing system information.
+   88 package pathnames are already properly installed.
+## Verifying package dependencies.
+## Verifying disk space requirements.
+## Checking for conflicts with packages already installed.
+## Checking for setuid/setgid programs.
+
+This package contains scripts which will be executed with super-user
+permission during the process of installing this package.
+
+Do you want to continue with the installation of <LGTOclnt> [y,n,?] y
+
+Installing NetWorker Client as <LGTOclnt>
+
+## Executing preinstall script.
+## Installing part 1 of 1.
+/opt/nsr/configcat
+/opt/nsr <implied directory>
+/opt/nsr/fr/networkr.cat
+/opt/nsr/fr <implied directory>
+/opt/nsr/ja/networkr.cat
+/opt/nsr/ja <implied directory>
+/opt/nsr/ko/networkr.cat
+/opt/nsr/ko <implied directory>
+/opt/nsr/zh/networkr.cat
+/opt/nsr/zh <implied directory>
+[ verifying class <none> ]
+## Executing postinstall script.
+Creating the /nsr directory structure
+Creating the /nsr/res/servers file
+Creating NetWorker start/stop scripts
+Adding NetWorker entries to /etc/rpc
+Starting the NetWorker daemons
+starting NetWorker daemons:
+ nsrexecd
+
+Installation of <LGTOclnt> was successful.
+cups_tz# /home/leidial/scripts/check_host.sh
+Checking for correcdt default domain
+   OK: /etc/defaultdomain exists
+   OK: defaultdomain correctly set
+Checking for mpxio system settings (only necessary for servers)
+   WARN: no /kernel/drv/scsi_vhci.conf, unknown I/O multipathing status
+Checking for coreadm settings (only necessary for servers)
+   ERROR: core files are not created in a dedicated core area
+    ==>   create a dedicated area and run
+    ==>   'coreadm -i /path/to/area/%f_%p_%u_%g.core'
+Checking for Solaris Volume Manager
+   OK: no SVM in use
+Checking for Legato Networker client programs
+   OK: /nsr directory found
+   OK: /usr/sbin/nsrexecd found
+   OK: /etc/init.d/networker found
+Checking for RMAN backup
+   OK: Legato Networker Oracle library installed
+   OK: Networker Oracle library, second location found
+   OK: Networker Oracle library, second location is a symlink
+   OK: RMAN perl script installed
+Checking for correct tcpwrappers (hosts.allow/hosts.deny) setup
+   OK: /etc/hosts.deny contains all:all
+   OK: /etc/hosts.allow contains all:@admin
+   OK: no all:all in /etc/hosts.allow
+Checking for netgroups in ftphosts
+   OK: no netgroups in /etc/ftpd/ftphosts
+Checking for correct /etc/acct/holidays
+   OK: correct year in /etc/acct/holidays
+
+
+

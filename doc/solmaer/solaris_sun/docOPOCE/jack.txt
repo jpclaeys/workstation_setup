@@ -1,0 +1,926 @@
+# virer jack de tous les ressources groupes du cluster
+clrg remove-node -n jack +
+# verification
+clrg status
+# virer jack des device groups:
+cldg remove-node -n jack +
+# constater
+cldg show -v | grep Node
+# si ca a pas marche, essayer manuellement
+cldg remove-node -n jack  dsk/d5
+cldg remove-node -n jack  dsk/d6
+# on peut virer les devices locaux a jack, mais ca vont reapparaitre des qu'on fait un cldg populate
+cldg delete dsk/d1
+cldg delete dsk/d2
+# boot sans la couche cluster
+sync; sync; init 0
+boot -x
+# virer le noeud:
+clnode remove jack
+# depuis averell:
+clq disable jack
+# virer les interconnects de jack: 
+clintr disable jack:bge2,switch1@1
+clintr disable jack:bge3,switch2@1
+clintr remove jack:bge2,switch1@1
+clintr remove jack:bge3,switch2@1
+clintr show
+
+#preparer le template de client ( release a installer, eiscd, vxvm )
+# ajouter la mac de jack  au /etc/ethers de romulus
+# ajouter l'ip au /etc/hosts de romulus ( pas necessaire )
+ls -l /opt/SUNWjet/Templates/jack
+#creer le client ( jumpstart )
+/opt/SUNWjet/bin/make_client -f jack
+# changer nfs4_domain a dynamic dans sysidcfg
+cd /opt/SUNWjet/Clients/jack
+
+#virer les partitions
+devalias 
+nvalias jump /pci@1f,700000/network@2
+nvalias jump100 /pci@1f,700000/network@2:speed=100,duplex=full,
+nvstore
+boot jump -s
+fmthard -s /dev/null /dev/rdsk/c0t0d0s2
+fmthard -s /dev/null /dev/rdsk/c0t1d0s2
+
+# installer
+boot jump - install nowin
+
+#postinstall
+# il est probable de rencontrer problemes avec le miroir rootdisk VxVM
+more /etc/release
+# verif niveau patch kernel (eiscd):
+uname -a
+cd /var/opt/sun/jet
+grep -i eis jumpstart_install.log
+grep -i error jumpstart_install.log
+grep -i fail jumpstart_install.log
+
+# vxvm
+# miroir rootdisk 
+vxdisk -e list
+/etc/vx/bin/vxdisksetup -i c0t1d0 format=sliced
+vxdg adddisk rootmirror=c0t1d0
+# ( ca fait seulement le miroir de rootvol. Et ca le fait en foreground mais ca execute le installboot tout seule)
+/etc/vx/bin/vxrootmir rootmirror
+/etc/vx/bin/vxeeprom enable
+# on fait les miroirs des swapvol et varvol
+/etc/vx/bin/vxmirror rootdisk rootmirror
+# verifier les valeurs de l'obp 
+eeprom | grep vx
+eeprom | grep boot
+# changer le boot-device
+eeprom boot-device="vx-rootdisk vx-rootmirror jump"
+# tester booter
+init 6
+# tester boot vx-rootmirror
+init 0
+
+# post-inst:
+echo "opoce.cec.eu.int" >/etc/defaultdomain
+perl -pi -e 's:2008:2009:' /etc/acct/holidays
+mkdir -p /var/cores/
+coreadm -i /var/cores/%f_%p_%u_%g.core
+
+cd /etc
+cat >resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOT
+
+cat <<EOT >  inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+# cfengine
+
+# Il faut copier la cle dans infra-srv:/var/cfengine/ppkeys
+# Ensuite:
+/var/cfengine/bin/cfagent --no-splay
+
+#LDAP
+# copier les fichiers config ldap d'une autre machine
+cp /var/ldap/ldap_client_* /net/opsrv190/xchange/
+# sur la machine:
+cp /net/opsrv190/xchange/ldap_client_* /var/ldap/
+chown root:sys /var/ldap/*
+svcadm disable svc:/network/ldap/client:default
+svcadm enable svc:/network/ldap/client:default
+# verif:
+ldaplist
+
+# LEGATO:
+# installer:
+cd /net/romulus/export/software/Networker/Networker_7.4_sp2/
+cp nw742_solaris_64.tar.gz /var/tmp/
+cd /var/tmp/
+gunzip -c nw742_solaris_64.tar.gz | tar xvf -
+pkgadd -d . LGTOclnt
+# repondre:
+/nsr
+coppola
+y
+y
+# verif:
+ps -fe | grep nsr
+
+# LEGATO ORACLE:
+# Prendre la librairie:libnwora.so d'une machine ou ca marche
+# ( dont la version doit etre 4.2 )
+ls -l /lib/libnwora.so
+-rw-r--r--   1 root     bin      1465056 Apr 15  2005 /lib/libnwora.so
+cp /net/opsrv190/xchange/libnwora.so /lib
+what /lib/libnwora.so
+/lib/libnwora.so:
+         Module Name:  NetWorker Module for Oracle
+         Module Vers:  4.2
+         Product:      NetWorker
+         Release:      LNMs_2004.Build.273
+         Build number: 273
+         Build date:   Thu Apr 14 19:10:43 2005
+         Build arch.:  solaris7w
+         Build info:   DBG=0,OPT=-O3 -fno-strict-aliasing
+# Faire un lien de ce fichier sur /usr/lib:
+ln -s /lib/libnwora.so /usr/lib/libnwora.so
+ls -l /usr/lib/libnwora.so
+# Prendre le script backup des DBAs d'ou ca marche: /usr/sbin/saverman
+ls -l /usr/sbin/saverman.pl
+-rwxr-xr-x   1 root     root        7741 Dec  2 13:04 /usr/sbin/saverman.pl*
+cp /net/opsrv190/xchange/saverman.pl /usr/sbin/
+
+#ECC:
+# ECC agent
+# Renseigner Mathias de cette nouvelle installation car il doit installer aussi un autre agent apres d'avoir installe le master agent
+cd /net/romulus/export/software/EMC2/master-agent/ecc600.cd1/
+./install_master.sh  /net/osiris/export/software/EMC2/master-agent/ecc600.cd1
+# reponses:
+/usr/ecc
+N
+pythagore
+5799
+5798
+Y
+Y
+
+/etc/init.d/eccmad start
+# constater que les parametres EMC sont dans /etc/system
+
+# mpxio: ( rebooter apres )
+stmsboot -e -D fp
+# repondre
+y
+n
+sync; sync; init 6
+
+# rsync
+cp /home/leidial/pkgs/OPrsync_3.0.2_sparc_10u4.tar.bz2 /opt
+cd /opt
+bunzip2 -c OPrsync_3.0.2_sparc_10u4.tar.bz2 | tar xvf -
+\rm /opt/OPrsync_3.0.2_sparc_10u4.tar.bz2
+# Ajout dans /.profile-EIS
+
+#       Synchronization binaries:
+#
+if [ -d /opt/OPrsync/bin ]
+then
+    PATH=${PATH}:/opt/OPrsync/bin
+    MANPATH=${MANPATH}:/opt/OPrsync/share/man
+fi
+#
+
+# ftp denial
+echo 'deny * *.*.*.* ' > /etc/ftpd/ftphosts
+
+# test mail
+ls | mailx -s `uname -n` christian.trassens@ext.publications.europa.eu
+
+# test snmp ( depuis orwell )
+/usr/sfw/bin/snmpdf -c specOPOCE -v 1 jack
+snmpwalk -c specOPOCE -v2c jack
+
+# Finalement passer le script setup-standard.sh
+# Et installer l'outil ACT
+cd  /net/romulus/export/patches/Quark/eiscd/27JAN09/install
+./setup-standard.sh
+# Installer que l'ACT:
+# reponses:
+y
+/opt/CTEact
+y
+lsateam@infra-srv.opoce.cec.eu.int
+y
+y
+
+# test boot
+
+# regarder si le service sma ( snmp ) est up:
+svcs "*sma*"
+# regarder que les services snmp par default sont down:
+svcs "*snmp*"
+svcs "*dmi*"
+# constater aussi avec nagios que ca marche
+
+# verifier quels sont les services qui marchent pas. Ca doit etre que le printer
+svcs -x
+
+# Checkings
+# normalement on devrait avoir que trois erreurs et un warning car on a pas encore d'appli qui y tourne
+/home/admin/bin/check_host.sh
+
+# Installation patch firmware
+# vu que c'est un obp de 2004, on patch l'obp
+prtconf -V
+
+mkdir -p /var/tmp/Firmware
+cd /home/trassch/tmp
+cp 121683-06.zip /var/tmp/Firmware
+cd /var/tmp/Firmware
+unzip 121683-06.zip
+cd 121683-06
+./unix.flash-update.SunFire240.sh
+# repondre
+yes
+# meme si ca boot tout seul, verifier si les variables eeprom restent intacts
+eeprom | grep vx
+# constater le changement de release
+prtconf -V
+
+
+#########################################
+# Cluster:
+#############################################
+# Installer le soft
+unzip /net/romulus/export/software/suncluster_3_2u2-ga-solaris-sparc.zip -d /var/tmp
+export DISPLAY=vespa:0
+/var/tmp/Solaris_sparc/installer
+
+# Installer les patches qui viennent dans l'eiscd
+cd /net/romulus/export/patches/Quark/eiscd/27JAN09/patch/SunCluster/3.2/10
+mkdir -p /var/tmp/eiscd
+cp * /var/tmp/eiscd
+cd /var/tmp/eiscd
+for i in `ls *.zip`
+do
+unzip -o ${i}
+done
+\rm *.zip
+cp patch_order patch.ksh
+# Ajouter patchadd
+vi patch.ksh    
+chmod +x patch.ksh
+./patch.ksh
+
+# Interconnects
+dladm show-dev
+export re=bge2
+export re=bge3
+ifconfig ${re} plumb
+snoop -d ${re} &
+ping -s 224.0.0.1 > /dev/null
+# si on voit des packages multicast, c'est bon
+kill %1
+ifconfig ${re} unplumb
+
+# FS global
+vxassist -g rootdg make vglobal01 512m
+echo y | newfs /dev/vx/rdsk/rootdg/vglobal01
+# Ajout FS dans /etc/vfstab
+cp -p /etc/vfstab /etc/vfstab.20090421
+echo "/dev/vx/dsk/rootdg/vglobal01   /dev/vx/rdsk/rootdg/vglobal01   /globaldevices  ufs 3 yes logging" >> /etc/vfstab
+mkdir -p /globaldevices
+mount /globaldevices
+
+# Configuration cluster
+scinstall
+# On cree le cluster avec un seul noeud mais sans ajouter averell
+# On pourra pas ajouter le quorum apres car on a installe un noeud
+
+# On lui passe les conseils de la doc eiscd:
+cp -p /etc/system /etc/system.20090420
+cat >> /etc/system <<EOF
+set sd:sd_io_time=30
+set vxdmp:dmp_retry_count=1
+set scsi_reset_delay=500
+EOF
+
+# a cause d'un probleme avec les 6x40
+#cluster set -p global_fencing=prefer3
+
+# mpxio ( ca doit etre fausse )
+grep auto /kernel/drv/scsi_vhci.conf
+
+# cacao
+/usr/sbin/cacaoadm status
+
+# webconsole:
+svccfg
+svc:> select system/webconsole
+svc:/system/webconsole> setprop options/tcp_listen=true
+svc:/system/webconsole> listprop options/tcp_listen
+options/tcp_listen  boolean  true
+svc:/system/webconsole> quit
+svcadm refresh webconsole
+svcprop /system/webconsole:console | grep tcp_listen
+# verifier que ca est un dossier et pas un lien:
+ls -ld /usr/cluster/lib/SunClusterManager/WEB-INF/classes/ds
+
+#rpcbind
+# ca doit etre false
+svcprop network/rpc/bind:default | grep local_only
+
+#pour virer des messages qui puissent y arriver:
+svcs "*pools*"
+svcadm enable pools/dynamic
+svcs "*pools*"
+
+#disques internes:
+clnode set -p reboot_on_path_failure=enabled jack
+scdidadm -L
+# unmonitor des disques internes:
+cldev unmonitor d1
+cldev unmonitor d2
+
+# bougue sccheck
+# verifier si ca marche:
+sccheck -v 2 -s4
+# si ca plante, virer les entres "sds" et "vxfsextended" du fichier conf de sccheck:
+vi /usr/cluster/lib/sccheck/explorer_args.cluster
+
+# ntp:
+# on verifier le TIMEZONE. Ca doit etre MET
+more /etc/TIMEZONE
+svcs "*ntp*"
+ls -l /etc/inet/ntp.conf
+svcadm enable ntp
+svcs "*ntp*"
+
+# local-mac-address
+# ca doit etre true
+eeprom | grep local-mac-address
+
+# checkings name_to_major
+# on note ceci a cote car ca devra etre egal pour le 2eme noued:
+grep did /etc/name_to_major
+grep ^md /etc/name_to_major
+
+# constater qu'on a le default router sette
+more /etc/defaultrouter
+
+# nsswitch
+# eliminer "cluster" comme choix de resolution de noms
+vi /etc/nsswitch.conf
+
+# hosts et netmasks
+# ca doit etre un lien du fichier hosts
+ls -l /etc/inet/ipnodes
+# et cai,c'est pour eviter un bougue avec ipmp
+
+cat >> /etc/inet/ipnodes <<EOF
+#############Cluster EISCD
+172.16.0.129    clusternode1-priv-physical1
+172.16.1.1      clusternode1-priv-physical2
+172.16.4.1      clusternode1-priv
+172.16.0.130    clusternode2-priv-physical1
+172.16.1.2      clusternode2-priv-physical2
+172.16.4.2      clusternode2-priv
+EOF
+
+cat >> /etc/netmasks <<EOF
+172.16.0.128    255.255.255.128
+172.16.1.0      255.255.255.128
+172.16.4.0      255.255.254.0
+EOF
+
+
+# checkings ip
+# ca doit etre 0
+ndd /dev/ip ip_strict_dst_multihoming
+
+# setter les disques internes en autogen et localonly
+scdidadm -L
+cldg set -p localonly=true  dsk/d1
+cldg set -p localonly=true  dsk/d2
+cldg set -p autogen=true  dsk/d1
+cldg set -p autogen=true  dsk/d2
+cldg show -v
+
+# Conseils VxVM:
+cp -p /etc/system /etc/system.20090420b
+cat >> /etc/system <<EOF
+set rpcmod:svc_default_stksize=0x8000
+set lwp_default_stksize=0x6000
+EOF
+
+eeprom diag-device="vx-rootdisk vx-rootmirror"
+
+# Conseils eiscd crontab
+# remuer les frequences en 5 m de ces trois jobs
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/eventlog
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/DS
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/commandlog
+
+crontab -e
+
+20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/eventlog
+25 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/DS
+30 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/commandlog
+
+
+# conf ipmp
+# demander a Kevin une address pour configurer l'ipmp. On fait link-probe ipmp mais on en a toutefois besoin.
+cp -p /etc/hosts /etc/hosts.20090422
+echo "158.167.99.62   jack-ipmp" >> /etc/hosts
+cp -p /etc/hostname.bge0 /etc/__hostname.bge0
+echo "jack  netmask + broadcast + group sc_ipmp0 up" > /etc/hostname.bge0
+echo "jack-ipmp  netmask + broadcast + deprecated group sc_ipmp0 up" > /etc/hostname.bge1
+# ca doit etre online
+svcs "*multipath*"
+# verifier que ca affiche yes
+grep TRACK_INTERFACES_ONLY_WITH_GROUPS /etc/default/mpathd
+sync; sync ; lockfs -fa && init 6
+
+# prendre des luns temporaires pour copier les zones d'origine
+# faire du forcelip
+# labeliser la lun
+# ajouter dans la BD de Cluster de devices:
+cldev populate
+# ajouter les dans VxVM:
+vxconfigd -k
+vxdisk -e list | grep c4t600A0B800026676A00000F5749ED84AFd0
+/etc/vx/bin/vxdisksetup -i fabric_1
+vxdisk -e list | grep c4t600A0B80002667720000105049ED8DE0d0
+/etc/vx/bin/vxdisksetup -i fabric_0
+vxdg init lama gnole_2=fabric_1
+vxdg init tirana gnole_3=fabric_0
+vxdisk -e list
+# cet ordre ci est tres important:
+vxassist -g lama make vzone 8g
+vxassist -g tirana make vzone 8g
+cldg create -t vxvm -n jack lama
+cldg create -t vxvm -n jack tirana
+echo y | newfs /dev/vx/rdsk/lama/vzone
+echo y | newfs /dev/vx/rdsk/tirana/vzone
+mkdir -p /zones/lama
+mkdir -p /zones/tirana
+cp -p /etc/vfstab /etc/vfstab.20090427
+echo "/dev/vx/dsk/lama/vzone /dev/vx/rdsk/lama/vzone        /zones/lama    ufs     3       no      -" >> /etc/vfstab
+echo "/dev/vx/dsk/tirana/vzone /dev/vx/rdsk/tirana/vzone        /zones/tirana    ufs     3       no      -" >> /etc/vfstab
+mount /zones/lama
+mount /zones/tirana
+
+
+# zones:
+mkdir -p /net/opsrv190/xchange/jack
+zonecfg -z lama export  > /net/opsrv190/xchange/jack/lama.cfg
+zonecfg -z tirana export > /net/opsrv190/xchange/jack/tirana.cfg
+
+# avant de lancer le zonecfg suivant, changer les fichiers .cfg avec des addresses temporels
+zonecfg -z lama -f /net/opsrv190/xchange/jack/lama.cfg
+zonecfg -z tirana -f /net/opsrv190/xchange/jack/tirana.cfg
+zoneadm list -ivc
+mkdir -p /zones/lama
+mkdir -p /zones/tirana
+chmod 700 /zones/lama
+chmod 700 /zones/tirana
+zoneadm -z lama install
+zoneadm -z tirana install
+
+# Cluster: ressources groups et ressources:
+# enregistrement de ressource qu'on utilisera
+clrt register SUNW.HAStoragePlus
+clrt register SUNW.gds
+
+# depuis averell
+clrg export lama-rg > /net/opsrv190/xchange/jack/lama-rg.xml
+clrs export + > /net/opsrv190/xchange/jack/lama-rs.xml
+clrg export tirana-rg > /net/opsrv190/xchange/jack/tirana-rg.xml
+xmllint --valid /net/opsrv190/xchange/jack/lama-rg.xml
+xmllint --valid /net/opsrv190/xchange/jack/tirana-rg.xml
+xmllint --valid /net/opsrv190/xchange/jack/lama-rs.xml
+# enlever averell, changer le nom du cluster, la version des ressources type et le group ipmp
+vi /net/opsrv190/xchange/jack/lama-rg.xml
+vi /net/opsrv190/xchange/jack/tirana-rg.xml
+vi /net/opsrv190/xchange/jack/lama-rs.xml
+
+# ressources groups
+clrg create --input  /net/opsrv190/xchange/jack/lama-rg.xml lama-rg
+clrg create --input  /net/opsrv190/xchange/jack/tirana-rg.xml tirana-rg
+clrg online -M +
+
+# ressources
+echo '158.167.99.111  opsrv151 # LH lama' >> /etc/hosts
+echo '158.167.99.114  opgtw002 # LH tirana' >> /etc/hosts
+clrs create --input  /net/opsrv190/xchange/jack/lama-rs.xml lama-dg
+clrs create --input  /net/opsrv190/xchange/jack/lama-rs.xml opsrv151
+clrs create --input  /net/opsrv190/xchange/jack/lama-rs.xml tirana-dg
+clrs create --input  /net/opsrv190/xchange/jack/lama-rs.xml opgtw002
+mkdir /etc/zoneagentparams
+
+export rs=lama-rs
+export rs2=lama-dg
+export rl=opsrv151
+export rg=lama-rg
+export zo=lama
+cat > /opt/SUNWsczone/sczbt/util/${rs} <<EOF
+RS=${rs}
+RG=${rg}
+PARAMETERDIR=/etc/zoneagentparams
+SC_NETWORK=true
+SC_LH=${rl}
+FAILOVER=true
+HAS_RS=${rs2}
+Zonename="${zo}"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOF
+/opt/SUNWsczone/sczbt/util/sczbt_register -f /opt/SUNWsczone/sczbt/util/${rs}
+
+export rs=tirana-rs
+export rs2=tirana-dg
+export rl=opgtw002
+export rg=tirana-rg
+export zo=tirana
+cat > /opt/SUNWsczone/sczbt/util/${rs} <<EOF
+RS=${rs}
+RG=${rg}
+PARAMETERDIR=/etc/zoneagentparams
+SC_NETWORK=true
+SC_LH=${rl}
+FAILOVER=true
+HAS_RS=${rs2}
+Zonename="${zo}"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOF
+/opt/SUNWsczone/sczbt/util/sczbt_register -f /opt/SUNWsczone/sczbt/util/${rs}
+
+clrs enable +
+
+#migration des donnees
+mv /etc/hosts.deny /etc/hosts.deny.orig
+# depuis averell
+# et incremental dans le meme machine source
+clrg offline +
+clrs disable +
+clrg unmanage +
+export zo=lama
+export zo=tirana
+vxdg deport ${zo}
+# depuis averell
+cldev populate
+export zn=lama_new
+export zn=tirana_new
+vxdg -n ${zn} import ${zo}
+cldg create -t vxvm -n averell ${zn}
+
+mkdir -p /mnt2
+mount /dev/vx/dsk/tirana_new/vzone /mnt
+mount /dev/vx/dsk/lama_new/vzone /mnt2
+
+export zo=tirana
+export zo=lama
+export di="mnt"
+export di="mnt2"
+/opt/OPrsync/bin/rsync -S -A -l -p -o -g -H -r -t --devices -a --delete --update --rsync-path=/opt/OPrsync/bin/rsync  --stats /zones/${zo}/root/application/ /${di}/root/applications/
+
+# fichiers conf:
+cd /zones/${zo}/root
+tar cf - nsr|(cd /${di}/root ; tar xf - )
+tar cf - var/cfengine |(cd /${di}/root ; tar xf - )
+tar cf - etc/ftpd|(cd /${di}/root ; tar xf - )
+tar cf - etc/mail|(cd /${di}/root ; tar xf - )
+tar cf - opt/perl5.6.1 |(cd /${di}/root ; tar xf - )
+
+cp -p ./etc/shells /${di}/root/etc/
+cp -p ./etc/init.d/networker /${di}/root/etc/init.d/
+cp -p ./etc/init.d/initd_lib.pl /${di}/root/etc/init.d
+cp -p ./etc/init.d/initd_lib.sh /${di}/root/etc/init.d
+cp -p ./etc/auto_home /${di}/root/etc/
+cp -p ./etc/nsswitch.conf /${di}/root/etc
+cp -p ./etc/defaultdomain /${di}/root/etc
+cp -p ./etc/pam.conf /${di}/root/etc
+cp -p ./etc/lp/Systems /${di}/root/etc/lp/
+cp -p ./etc/resolv.conf /${di}/root/etc
+cp -p ./etc/hosts.allow /${di}/root/etc
+cp -p ./etc/hosts.deny /${di}/root/etc
+cp -p ./etc/inet/hosts  /${di}/root/etc
+cp -p ./etc/nodename /${di}/root/etc
+cp -p ./etc/acct/holidays /${di}/root/etc/acct
+cp -p ./etc/syslog.conf /${di}/root/etc
+cp -p ./etc/logadm.conf /${di}/root/etc
+cp -p ./etc/project /${di}/root/etc
+cp -p ./etc/ssh/ssh_host* /${di}/root/etc/ssh
+cp -p ./etc/default/init /${di}/root/etc/default
+# pas de nouveaux utilisateurs,donc on copie
+cp -p ./etc/passwd /${di}/root/etc
+cp -p ./etc/shadow /${di}/root/etc
+cp -p ./etc/group /${di}/root/etc
+
+touch /${di}/root/etc/notrouter
+
+# Ajoutes:
+grep wood etc/user_attr >> /${di}/root/etc/user_attr
+grep -i wood etc/security/prof_attr >> /${di}/root/etc/security/prof_attr
+grep -i wood etc/security/exec_attr >> /${di}/root/etc/security/exec_attr
+
+# liens
+cd /${di}/root/etc/rc2.d 
+ln -s /etc/init.d/networker S95networker
+cd /${di}/root/etc/rc0.d 
+ln -s /etc/init.d/networker K05networker
+
+cd /zones/${zo}/root
+find . -local -mount -name sadm -prune  -o -name applications -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /var/tmp/${zo}.root
+
+cd /${di}/root
+find . -local -mount -name sadm -prune  -o -name applications -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /var/tmp/${zo}.root.u06
+
+diff -u /var/tmp/${zo}.root /var/tmp/${zo}.root.u06 > /var/tmp/diffs.${zo}
+grep "^\-" /var/tmp/diffs.${zo} | more
+
+############################## ECHANGE DES ZONES
+umount /mnt
+umount /mnt2
+vxdg deport tirana_new
+vxdg deport lama_new
+# depuis jack
+vxdg -n lama import lama_new
+vxdg -n tirana import tirana_new
+vxvol -g tirana startall
+vxvol -g lama startall
+# changer les ips:
+vi /etc/zones/lama.xml
+vi /etc/zones/tirana.xml
+# changer les ips de ressources logicalhost dans le fichier /etc/hosts
+echo '158.167.227.151 opsrv151 # LH lama'  >> /etc/hosts
+echo '158.167.99.233  opgtw002 # LH tiranaa'  >> /etc/hosts
+# ajouter ca que c'est un autre conseil eiscd:
+cat >> /etc/hosts <<EOF
+####### Zones ( conseil eiscd )
+158.167.227.14  tirana
+158.167.227.166 lama
+EOF
+
+clrs enable +
+clrg online -M +
+
+# zlogin et execution de cfengine et insertion des services
+/var/cfengine/cfagent --no-splay
+cd /applications/wood/users/system/svc/manifest
+svccfg import ./wood.xml
+# ca marche pas !!!!: ils ont pas actualise le xml. Je demarre l'ancien tirana et je fais un svccfg export pour lui prendre
+# lama
+cd /applications/rproxy/users/system/svc/manifest/
+svccfg import ./rproxy.xml
+/applications/rproxy/users/system/init.d/rproxy enable
+
+# Apres avoir fini l'installation d'averell, permettre a averell de rejoindre le cluster
+claccess allow -h averell
+# et ajouter les interconnects
+clsetup
+# choix
+4 --> interconnects
+3 --> switch ( en ajouter deux avec les noms switch1 et switch2 )
+2 --> adapter
+1 --> cable
+# IMPORTANT: avant de lancer la configuration d'averell, demander a Kevin qu'il fasse le tagging en les ports de l'interconnect
+# lancer la conf d'averell
+scinstall 
+# si ca arrive pas au sponsoring noeud, faire:
+ifconfig e1000g2 plumb
+ifconfig e1000g2 unplumb
+ifconfig e1000g3 plumb
+ifconfig e1000g3 unplumb
+# revoir les howto pour les choix corrects mais il s'agit d'un ajoute d'un noued au cluster existent
+# voir que ca reboot bien.
+# avec les deux noeuds up:
+# constater les quorums
+clq status
+# regenerer les devices
+cldev populate
+# verifier ceux qui sont partages par les deux noeuds
+scdidadm -L
+# ajouter le device quorum
+clq add d5
+# dans averell:
+mkdir -p /zones/lama
+mkdir -p /zones/tirana
+# prendre les fichiers xml de lama et de tirana qui se trouvent dans jack
+# modifier /etc/zones/index avec ceci de jack  mais changer "installed" par "configured" a chaque entree
+# verifier:
+zoneadm list -ivc
+# creer le dossier pour le ressource zone du cluster:
+mkdir -p /etc/zoneagentparams
+# prendre les fichiers qui sont dans ce dossier et copier-les en averell
+cp /net/opsrv190/xchange/jack/sczbt_* /etc/zoneagentparams
+# verifier leur privileges 
+ls -l /etc/zoneagentparams
+# comme il s'agit du VxVM, ajouter les entrees /zones/<zone> dans /etc/vfstab
+
+# verifs:
+# verification des releases de packages cluster:
+# jack:
+scinstall -vp > /net/opsrv190/xchange/jack/scinstall.jack
+# averell:
+scinstall -vp > /var/tmp/scinstall.averell
+diff /var/tmp/scinstall.averell /net/opsrv190/xchange/jack/scinstall.jack
+# verification des packages:
+# jack
+pkginfo | sort > /net/opsrv190/xchange/jack/pkginfo.jack
+# averell:
+pkginfo | sort > /var/tmp/pkginfo.averell
+diff /var/tmp/pkginfo.averell /net/opsrv190/xchange/jack/pkginfo.jack
+
+# et maintenant on peut ajouter averell aux ressources
+# d'abord, ajouter averell dans les ressource LH
+clrs set -p  NetIfList=sc_ipmp0@1,sc_ipmp0@2 opsrv151
+clrs set -p  NetIfList=sc_ipmp0@1,sc_ipmp0@2 opgtw002
+# apres dans les diskgroups:
+cldg add-node -n averell +
+# ensuite ajouter averell aux ressources
+clrg add-node -n averell +
+# cela a besoin du SunMC pour y tourner
+svcadm disable scsymon-srv
+
+
+######## Pour William
+######## rsync en local a cause du vlan tagging
+clrg offline +
+clrs disable +
+clrg unmanage +
+vxdg deport bari
+# depuis joe
+vxdg -n bari_new import bari
+cldev populate
+cldg create -t vxvm -n joe bari_new
+mount /dev/vx/dsk/bari_new/vzone /mnt
+/opt/OPrsync/bin/rsync -A -l -p -o -g -H -r -t --devices -a --delete --update --rsync-path=/opt/OPrsync/bin/rsync  --stats /zones/bari/root/applications/ /mnt/root/applications/
+
+export zo=bari
+cd /zones/${zo}/root
+tar cf - nsr|(cd /mnt/root ; tar xf - )
+tar cf - /var/cfengine |(cd /mnt/root ; tar xf - )
+tar cf - etc/ftpd|(cd /mnt/root ; tar xf - )
+tar cf - etc/mail|(cd /mnt/root ; tar xf - )
+
+cp -p ./etc/shells /mnt/root/etc/
+cp -p ./etc/init.d/networker /mnt/root/etc/init.d/
+cp -p ./etc/init.d/initd_lib.pl /mnt/root/etc/init.d
+cp -p ./etc/init.d/initd_lib.sh /mnt/root/etc/init.d
+cp -p ./etc/auto_home /mnt/root/etc/
+cp -p ./etc/nsswitch.conf /mnt/root/etc
+cp -p ./etc/defaultdomain /mnt/root/etc
+cp -p ./etc/pam.conf /mnt/root/etc
+cp -p ./etc/resolv.conf /mnt/root/etc
+cp -p ./etc/hosts.allow /mnt/root/etc
+cp -p ./etc/hosts.deny /mnt/root/etc
+cp -p ./etc/inet/hosts  /mnt/root/etc
+cp -p ./etc/nodename /mnt/root/etc
+cp -p ./etc/acct/holidays /mnt/root/etc/acct
+cp -p ./etc/issue /mnt/root/etc/
+cp -p ./etc/syslog.conf /mnt/root/etc
+cp -p ./etc/logadm.conf /mnt/root/etc
+cp -p ./etc/project /mnt/root/etc
+cp -p ./etc/ssh/ssh_host* /mnt/root/etc/ssh
+cp -p ./etc/default/init /mnt/root/etc/default
+# pas de nouveaux utilisateurs,donc on copie
+cp -p ./etc/passwd /mnt/root/etc
+cp -p ./etc/shadow /mnt/root/etc
+cp -p ./etc/group /mnt/root/etc
+
+touch /mnt/root/etc/notrouter
+
+# Ajoutes:
+grep wood etc/user_attr >> /mnt/root/etc/user_attr
+grep -i wood etc/security/prof_attr >> /mnt/root/etc/security/prof_attr
+
+cd /zones/${zo}/root
+find . -local -mount -name sadm -prune  -o -name applications -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /var/tmp/${zo}.root
+
+cd /mnt/root
+find . -local -mount -name sadm -prune  -o -name applications -prune -o -type f |perl -ne 'm{(root/var/svc)|(root/nsr)|(root/var/log) |(root/var/adm)|(root/etc/webconsole)|(root/var/webconsole)|(root/var/apache)|(root/var/cfengine)|(root/etc/svc)|(root/var/appserver)|(root/var/log)|(root/var/mail)}||print' |sort > /var/tmp/${zo}.root.u06
+
+# post-install
+# vlan tagging
+mv /etc/hostname.bge0 /etc/__hostname.bge0
+mv /etc/hostname.bge1 /etc/__hostname.bge1
+
+echo "william netmask + broadcast + group vlan1 up" > /etc/hostname.bge1000
+echo "william-ipmp netmask + broadcast + deprecated group vlan1 up" > /etc/hostname.bge1001
+echo "william-dmz netmask + broadcast + group vlan169 up" > /etc/hostname.bge169000
+echo "william-dmz-ipmp netmask + broadcast + deprecated group vlan169 up" > /etc/hostname.bge169001
+
+sync ; sync ; lockfs -fa ; init 6
+
+# modifier le fichier conf de la zone: bari.xml avec les ips qui lui correspond
+vi /etc/zones/bari.xml
+# modifier les ips du script /etc/zoneagentparams/bari.sh
+# modifier ZoneAddr et BlackHoleAddr avec les ips de william
+vi /etc/zoneagentparams/bari.sh
+
+# cela a besoin du SunMC pour y tourner
+svcadm disable scsymon-srv
+
+# joe:
+# bretilles:
+export di=mnt
+cd /${di}/root/etc/rc2.d
+ln -s /etc/init.d/networker S95networker
+cd /${di}/root/etc/rc0.d
+ln -s /etc/init.d/networker K05networker
+zlogin bari
+svccfg export wood > /var/tmp/wood.xml
+svcs -a | sort > /var/tmp/svcs.txt
+cp /zones/bari/root/var/tmp/wood.xml /mnt/root/var/tmp
+cp /zones/bari/root/var/tmp/svcs.txt /mnt/root/var/tmp
+
+# joe:
+clrg offline +
+clrs disable +
+clrg unmanage +
+clrg status
+zoneadm list -ivc
+# dernier copie des donnees:
+mount /zones/bari
+/opt/OPrsync/bin/rsync -S -A -l -p -o -g -H -r -t --devices  -a --delete --update --rsync-path=/opt/OPrsync/bin/rsync  --stats /zones/bari/root/applications/ /mnt/root/applications/
+umount /mnt
+vxdg deport bari_new
+# william:
+vxdg -n bari import bari_new
+vxvol -g bari startall
+clrs enable +
+clrg online -M +
+# verifs:
+clrg status -v
+cldg status
+zoneadm list -vic
+zlogin bari
+cd /var/tmp/
+svccfg import ./wood.xml
+svcs "*wood*"
+grep ^online /var/tmp/svcs.txt | awk '{ print $3}' > /var/tmp/online.svcs.orig
+# la seule difference doit etre avec le service svcs svc:/application/print/cleanup:default qui existe plus en u06
+for i in `cat /var/tmp/online.svcs.orig` 
+do
+svcs ${i}
+done
+svcs -a | sort | grep ^online | awk '{ print $3}' > /var/tmp/online.svcs.new
+diff -u /var/tmp/online.svcs.orig /var/tmp/online.svcs.new
+
+# resolution de cette erreur qui s'affiche dans messages:
+# ftpd[8690]: [ID 562097 auth.alert] open_module: Owner of the module /usr/lib/security/pam_unix_session.so.1 is not root
+# ca se passait en u04 aussi
+cd /home
+find . -name "pam*" | xargs ls -l
+chown root:root ./ftp_eu/usr/lib/security/pam_unix_session.so.1
+chown root:root ./ftp_si/usr/lib/security/pam_unix_session.so.1
+for i in `find . -name "pam*"`
+do
+chmod 755 ${i}
+done
+# comme on a pas de cfengine pour bari, habiliter snmp a la main:
+svcadm disable dmi
+svcadm disable snmpdx
+# copier snmpd.conf de lama par exemple
+cp /zones/lama/root/etc/sma/snmp/snmpd.conf /net/opsrv190/xchange/william/
+cp /net/opsrv190/xchange/william/snmpd.conf /zones/bari/root/etc/sma/snmp/
+zlogin bari
+svcadm restart sma
+
+
+# post-install joe:
+# zones:copier le fichier bari.xml et coller l'entree qui a bari dans index
+# cluster conf: creer dossier /etc/zoneagentparams et copier son contenu en joe
+# cluster conf: modifier les addresses du fichier bari.sh a celles de joe, dite, joe-bge1 etc
+# vlan tagging:
+# d'abord ajouter les ips manquants dans /etc/hosts
+echo "joe netmask + broadcast + group vlan1 up" > /etc/hostname.bge1000
+echo "joe-ipmp netmask + broadcast + deprecated group vlan1 up" > /etc/hostname.bge1001
+echo "joe-dmz-ipmp1 netmask + broadcast + group vlan169 up" > /etc/hostname.bge169000
+echo "joe-dmz-ipmp2 netmask + broadcast + deprecated group vlan169 up" > /etc/hostname.bge169001
+
+# passer lui tous les conseils de l'eiscd
+# ajouter l'ip de bari ( conseil eiscd )
+# ajouter l'entree /zones/bari dans /etc/vfstab
+# cluster: ajouter joe au devicegroup
+# cluster: ajouter joe au ressourcegroup
+

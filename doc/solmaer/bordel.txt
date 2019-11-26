@@ -1,0 +1,653 @@
+
+################################################################################################################################################################
+# remote desktop
+################################################################################################################################################################
+
+xfreerdp --plugin cliprdr -g 1680x1050 -d publications -u betorma opdt220
+
+################################################################################################################################################################
+# tasks to do
+################################################################################################################################################################
+
+
+cd /home/betorma/docs/tickets
+grep '+++ status +++' task_*.txt | grep -v 'done$' | awk -F':' '{print $1}' | xargs grep '+++ title +++' | sed -e 's/+++ title +++//'
+
+
+
+################################################################################################################################################################
+# adresse euroforum
+################################################################################################################################################################
+
+Office des Publications, Euroforum
+Rue R. Stumper, 10 
+L-2557 Gasperich 
+Luxembourg 
+
+
+################################################################################################################################################################
+# url du proxy.pac
+################################################################################################################################################################
+http://pac.opoce.cec.eu.int/pac/proxy.pac
+
+################################################################################################################################################################
+# ping d'un range d'ip dans un netmask de 24 bits
+################################################################################################################################################################
+
+{
+ip1=192
+ip2=168
+ip3=1
+ip4=1
+timeout=1
+while [[ $ip4 -ne 256 ]]
+do
+	ping ${ip1}.${ip2}.${ip3}.${ip4} $timeout
+	if [[ $? = 0 ]]; then getent hosts ${ip1}.${ip2}.${ip3}.${ip4} | awk '{print $2}'; fi
+	ip4=$[$ip4 + 1]
+	echo
+done
+}
+
+
+
+################################################################################################################################################################
+# SRDF variables
+################################################################################################################################################################
+
+##### to display full disk name for sym* commands
+export SYMCLI_FULL_PDEVNAME=1
+
+#### to pass to client/server mode for SRDF
+export SYMCLI_CONNECT=SYMAPI_SERVER
+export SYMCLI_CONNECT_TYPE=REMOTE
+
+
+################################################################################################################################################################
+# ajout de luns en mirroir zfs !!!!! faire attention a l'ordre des disques dans le mirroir ==> inverser $0 et $1 dans le print de perl
+################################################################################################################################################################
+
+tmp_file=/home/betorma/tmp/luxadm_carlo_`uname -n`.txt
+export zpool=cellarmain2-pz-db
+list_lun=(113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131)
+
+/home/betorma/bin/luxadm_carlo -z >${tmp_file}
+
+
+##### add
+for lun in ${list_lun}
+do
+	grep " $lun " $tmp_file | awk '{print $1}' | sed -e 's^/dev/rdsk/^^' -e 's^s2$^^' | xargs echo | perl -ne '@disks=split; print "zpool add $ENV{zpool} mirror $disks[0] $disks[1]\n"'
+done
+
+##### attach
+for lun in ${list_lun}
+do
+	grep " $lun " $tmp_file | awk '{print $1}' | sed -e 's^/dev/rdsk/^^' -e 's^s2$^^' | xargs echo | perl -ne '@disks=split; print "zpool attach $ENV{zpool} $disks[0] $disks[1]\n"'
+done
+
+
+
+################################################################################################################################################################
+# add sharenfs to dataset zfs
+################################################################################################################################################################
+
+
+export new_host=cellarfo1111-pk.opoce.cec.eu.int
+export zpool=cellar-pz-public
+
+zfs list -t filesystem -Hr -o name $zpool | while read dataset; do zfs get -H sharenfs $dataset; done | perl -ne 'print if(!m{\s+sharenfs\s+off\s+default})' | perl -ne '@list=split; print "zfs set sharenfs=\"$list[2]:$ENV{new_host}\" $list[0]\n"' 
+
+
+
+################################################################################################################################################################
+# eis user on m5k for full admin access
+################################################################################################################################################################
+
+% ssh eis-installer@m5k07-sc0
+eis-installer@m5k07-sc0's password: sunluxm5000
+
+
+################################################################################################################################################################
+# lire les log d'un loghost en ssh et rediriger vers un tty
+################################################################################################################################################################
+
+##### prerequis
+
+etre root ou avoir les droit d ecrire sur le tty desire
+
+##### variables
+
+export loghost_name=infra-srv
+export loghost_user=betorma
+export tty_name=/dev/tty4
+
+
+##### nommage de l'xterm
+
+xterm_title "loghost to `uname -n`"
+
+
+##### empecher la mise en veille
+
+setterm -blank poke
+setterm -blank 0
+
+
+##### ssh pour lire et rediriger
+
+ssh -t ${loghost_user}@${loghost_name} 'tail -f /var/adm/messages' >${tty_name} 
+
+
+
+
+
+################################################################################################################################################################
+# ouverture des xterm pour chaque console
+################################################################################################################################################################
+
+##### pour T???
+
+{
+for host in lava
+do
+	grep $host /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print "xterm -T \"" $1 " - "$12" - "$11"\" -e ssh root@"$12 " &"}' 
+done
+}
+
+
+start /SYS
+start /HOST/console
+
+
+
+
+##### pour M5000
+
+{
+for host in moe
+do
+	grep $host /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print "xterm -T \"" $1 " - "$12" - "$11"\" -e ssh xscfadm@"$12 " &"}'
+done
+}
+
+
+M5k6em
+poweron -d1 -y
+console -d1 -y
+boot
+
+
+
+
+/usr/sbin/eeprom "auto-boot?"=true
+
+svcs -xv
+
+
+zpool status -xv
+zpool list -H -o name | grep -v rpool | awk '{print "zpool clear "$1}' 
+
+
+
+clrg list | while read rg; do echo "$rg `clrg show -p nodelist $rg | grep Nodelist`" | awk '{print "clrg switch -n "$3" "$1}'; done
+
+
+{
+echo
+grep `uname -n` /home/betorma/tmp/getcmdb_zone.txt| grep -i primary | awk -F';' '{print $1}'
+echo
+zoneadm list -cv | grep -v '0 global' | grep running
+}
+
+fmadm faulty | grep Major | awk '{print "fmadm repair "$4}'
+fmadm faulty | grep Major | awk '{print "fmadm acquit "$4}'
+
+
+
+
+
+
+
+
+
+
+##### pour SF15/25K
+
+{
+export DISPLAY=158.167.226.72:0
+showplatform | tail -19 | awk '{print $2}' | grep -v '-' | while read domain
+do
+	echo /usr/openwin/bin/xterm -T $domain -e "/opt/SUNWSMS/bin/console -d $domain &"
+done
+}
+
+##### pour HP Blade
+
+{
+for host in abel bernoulli castor cauchy deimos dirac
+do
+	grep $host /home/betorma/tmp/getcmdb_host.txt | grep "${host}-sc" | awk -F';' '{print "xterm -T \"" $1 " - "$12"\" -e ssh root@"$12 " &"}'
+done
+}
+
+
+
+################################################################################################################################################################
+# sf15/25K post control domain
+################################################################################################################################################################
+
+cd $SMSETC/SMS/config/H/
+cat .postrc
+level 7
+no_mand_access
+
+##### mini: 7
+##### maxi: 16
+
+################################################################################################################################################################
+# compteur
+################################################################################################################################################################
+
+{
+export max=17
+export n=1
+while [[ $n -le $max ]]
+do
+	printf "%02d\n" $n
+	n=$[$n + 1] 
+done
+}
+
+
+################################################################################################################################################################
+# terminal single user mode solaris
+################################################################################################################################################################
+
+ksh -o emacs
+export TERM=VT100
+
+################################################################################################################################################################
+# renommer le titre d'une console xterm
+################################################################################################################################################################
+
+echo -ne "\033]0;$1\007"
+
+################################################################################################################################################################
+# reset d'une console xterm
+################################################################################################################################################################
+
+echo -e \\033c
+
+################################################################################################################################################################
+# desactiver ctrl+alt+backspace dans xorg.conf
+################################################################################################################################################################
+
+Section "ServerFlags"
+        Option         "DontZap" "true"
+EndSection
+
+################################################################################################################################################################
+# faire des screenshot sous solaris
+################################################################################################################################################################
+
+xwd -out ~betorma/screenshot/screenshot_file.out -display localhost:0
+xwud -in ~betorma/screenshot/screenshot_file.out
+
+
+################################################################################################################################################################
+# xopl generic
+################################################################################################################################################################
+
+user: xopl262
+password: xo2562
+
+
+################################################################################################################################################################
+# du -sk avec progression
+################################################################################################################################################################
+
+du -sk * | perl -nae '$t+=$F[0]; print "$t $_"'
+
+
+
+
+################################################################################################################################################################
+# du pour les sous repertoire etant sur le meme fs
+################################################################################################################################################################
+
+export folder='/'
+
+for f in $folder/*
+do
+	f=`echo $f | sed -e 's/\/\//\//'`
+	df -P $f | grep "${folder}$" >/devnull
+	if [[ $? == 0 ]]; then
+		du -sk $f
+	fi
+done | sort -n
+
+
+
+################################################################################################################################################################
+# mes crontabs
+################################################################################################################################################################
+
+0[180108/153811]betorma@infra1-pk$ crontab -l
+0 5 * * 1-5 for type in application application_host application_url bootdisk capping console console_rh db host opsrv rac rhel_cluster rhel_virtual serial solaris_cluster zone; do /home/betorma/bin/getcmdb.sh ${type} >/home/betorma/tmp/getcmdb_${type}.txt; done
+0[180108/153818]betorma@infra1-pk$ 
+
+
+
+
+
+################################################################################################################################################################
+# fichiers/dossiers system pour une application opoce
+################################################################################################################################################################
+
+
+/etc/passwd /etc/shadow /etc/group /etc/user_attr /etc/auto_home /etc/nsswitch.conf /etc/security/prof_attr /etc/security/exec_attr /etc/project /etc/pam.conf /etc/inet/hosts /etc/hosts.allow /etc/hosts.deny /etc/hostname.* /etc/nodename /etc/ftpd /var/spool/cron/crontabs /var/opt/oracle/oratab /etc/inet/services /u01 /u02 /etc/system /nsr /etc/logadm.conf /etc/init.d/initd_lib.pl /etc/shells /etc/init.d/networker /etc/rc2.d/S95networker /etc/init.d/networker /etc/rc0.d/K05networker /usr/lib/libnwora.so /usr/sbin/saverman.pl 
+
+
+################################################################################################################################################################
+# ssh opsys_ux
+################################################################################################################################################################
+
+host=valerian
+ssh -t $host 'su opsys_ux -c <command>'
+
+
+################################################################################################################################################################
+# truss avec timestamp
+################################################################################################################################################################
+
+truss -d -p ${pid} 2>&1 | perl -ne 'if(m{(Base time stamp:\s*)(\d+)\.\d*(.*)}) {print; $base_timestamp = $2;	$data = $3} elsif (m{^\s*(\d+)\.\d+(.*)}) {$delta = $1; $data = $2; $timestamp = $base_timestamp + $delta; $timestamp = `/home/betorma/bin/timestamp2date.pl $timestamp`; chomp $timestamp;	print "$timestamp $data\n"} else {$data = $_;print}'
+
+
+################################################################################################################################################################
+# convertit le timestamp dans un champs specifique d'un log
+################################################################################################################################################################
+
+export log_file=/nsr/logs/daemon.raw
+export field=1
+
+tail -100 $log_file | perl -ne '@list=split; $list[$ENV{field}] = `/home/betorma/bin/timestamp2date.pl $list[$ENV{field}]`; chomp($list[$ENV{field}]); print "@list\n"'
+
+
+
+################################################################################################################################################################
+# timestamp -> date dans log
+################################################################################################################################################################
+
+perl -ne 'if(m{\[(\d{10})\.\d*\](.*)}) {$timestamp=$1; $timestamp=`/home/betorma/bin/timestamp2date.pl $timestamp`; chomp $timestamp; print "$timestamp $2\n"}' /applications/nagios/users/nagios/var/nagios.debug
+
+
+grep odile /applications/nagios/users/system/nagios-3.4.1/var/nagios.log | perl -ne 'if(m{\[(\d{10})](.*)}) {$timestamp=$1; $timestamp=`/home/betorma/bin/timestamp2date.pl $timestamp`; chomp $timestamp; print "$timestamp $2\n"}'
+
+perl -ne 'if(m{\[(\d{10})](.*)}) {$time=`/home/betorma/bin/timestamp2date.pl $1`; chomp($time); print "$time$2\n"}' nagios.log
+
+
+################################################################################################################################################################
+# setkeyswitch off sur les domains arretes du sun15k
+################################################################################################################################################################
+
+{
+showplatform | tail -19 | grep 'Solaris Halted, in OBP' | awk '{print $2}' | while read domain
+do
+	echo setkeyswitch -d $domain -y off
+done
+}
+
+################################################################################################################################################################
+# rechercher les keymap de clavier
+################################################################################################################################################################
+
+# utiliser xev
+# sous solaris, avec une installation complete, il en dans /usr/openwin/demo
+
+
+################################################################################################################################################################
+# verification des services applicatifs des zones depuis la zone 
+################################################################################################################################################################
+
+{
+for app in `ls /applications/*/users/system/init.d/*:*`
+do
+	`echo "$app status"` | grep -v STATE
+done
+}
+
+
+for zone in `awk '{print $1}' /home/betorma/tmp/getcmdb_zone.txt | awk -F';' '{print $1}' | sort -u | egrep -v 'ZONE|bari|cellar1|cellar2'`
+do
+	echo "##### $zone"
+	ssh $zone 'for app in `ls /applications/*/users/system/init.d/*:*`; do `echo "$app status"` | grep -v STATE; done'
+done
+
+
+################################################################################################################################################################
+# liste des lun au format csv pour Mathias
+################################################################################################################################################################
+
+export HOST; /home/betorma/bin/luxadm_carlo -z  | perl -ne 'print "$ENV{HOST};$1;$2;$3;$4;$5;$6\n" if(m{(/dev/.*)\s+==>\s+(.*?)/(\d+)\s+(.*?)/(\d+)\s+\[(.*?)\]})'
+
+
+################################################################################################################################################################
+# extraction cmdb pour powercut
+################################################################################################################################################################
+
+
+#########################################################################################
+##### to execute on infra-pz
+
+
+
+##### variables
+
+export stopped_site='MER'									# "MER" or "EUFO"
+export powercut_date=20160318
+export tmp_folder=/home/betorma/tmp	
+export powercut_appli_servers_file=${tmp_folder}/appli_server_list.txt
+export poweroff_file=${tmp_folder}/poweroff_${stopped_site}_${powercut_date}.txt
+export poweron_file=${tmp_folder}/poweron_${stopped_site}_${powercut_date}.txt
+export environment_list_off='Development Reception Test Production Infrastructure Mandatory' 			# sorted by priority order
+export environment_list_on='Mandatory Infrastructure Production Test Reception Development' 			# sorted by priority order
+
+rm ${powercut_appli_servers_file} ${poweroff_file} ${poweron_file}
+
+
+
+##### order all hosts in CMDB by group, to have a host list to shutting down
+
+{
+echo 'GROUP;DESCRIPTION;HOST;TEAM' >>${poweroff_file}
+for environment in $environment_list_off
+do
+	wget -O - -nv --no-proxy "opsrv002/modules/mpirequester/lists.php?id=59" 2>/dev/null | grep ";$stopped_site " | grep ";$environment;" | awk -F';' '{print $1"-"$9";"$3}' | sort| perl -ne 'print "$1\n" if(m{\w+-(.*)})'
+done | uniq | while read line
+do
+	host_name=`echo $line | awk -F';' '{print $2}'`
+	group_name=`echo $line | awk -F';' '{print $1}'`
+	echo $group_name | grep -i vmware >/dev/null
+	if [[ $? == 0 ]];then
+		 echo "${group_name};failover ${host_name} except INFO list (check with INT);ESX server;VIRT+SYS"
+	else
+		case $host_name in
+			phobos|deimos)
+				echo "${group_name};poweroff ${host_name};${host_name};BKP+SYS"
+			;;
+			"*bkp*"|"*nmc*")
+				echo "${group_name};failover ${host_name};${host_name};BKP+SYS"
+			;;
+			ldap1-pk|ldap2-pk)
+				echo "${group_name};failover ${host_name};${host_name};SYS"
+			;;
+			pisa|siracusa|palermo|siena)
+				echo "${group_name};poweroff ${host_name};${host_name};SYS"
+			;;
+			spectrum)
+				echo "${group_name};poweroff ${host_name};${host_name};NET"
+			;;
+			*)
+				echo "${group_name};failover VMs/applications on ${host_name} except INFO list (check with INT);${host_name};SYS"
+				echo "${group_name};poweroff ${host_name};${host_name};SYS"
+			;;
+		esac
+	fi
+done
+} >>${poweroff_file}
+
+
+
+
+
+
+##### order all hosts in CMDB by group, to have a host list to poweron
+
+{
+echo 'GROUP;DESCRIPTION;HOST;TEAM' >>${poweron_file}
+for environment in $environment_list_on; 
+do
+	wget -O - -nv --no-proxy "opsrv002/modules/mpirequester/lists.php?id=59" 2>/dev/null | grep ";$stopped_site " | grep ";$environment;" | awk -F';' '{print $1"-"$9";"$3}' | sort| perl -ne 'print "$1\n" if(m{\w+-(.*)})'
+done | uniq | while read line
+do
+	host_name=`echo $line | awk -F';' '{print $2}'`
+	group_name=`echo $line | awk -F';' '{print $1}'`
+
+	echo $group_name | grep -i vmware >/dev/null
+	if [[ $? == 0 ]];then
+		 echo "${group_name};failback ${host_name} except INFO list (check with INT);ESX server;VIRT+SYS"
+	else
+		case $host_name in
+			phobos|deimos)
+				echo "${group_name};poweron ${host_name};${host_name};BKP+SYS"
+			;;
+			"*bkp*"|"*nmc*")
+				echo "${group_name};failback ${host_name};${host_name};BKP+SYS"
+			;;
+			ldap1-pk|ldap2-pk)
+				echo "${group_name};failback ${host_name};${host_name};SYS"
+			;;
+			pisa|siracusa|palermo|siena)
+				echo "${group_name};poweron ${host_name};${host_name};SYS"
+			;;
+			spectrum)
+				echo "${group_name};poweron ${host_name};${host_name};NET"
+			;;
+			*)
+				echo "${group_name};poweron ${host_name};${host_name};SYS"
+				echo "${group_name};failback VMs/applications on ${host_name} except INFO list (check with INT);${host_name};SYS"
+
+			;;
+		esac
+	fi
+done
+} >>${poweron_file}
+
+
+
+##### list of server concerned by a application operation
+
+cat <<EOF >$powercut_appli_servers_file
+cellarmain-pz
+cellarmain2-pz
+ceres_pz
+ceresng-pz
+EOF
+
+grep -f $powercut_appli_servers_file >>${poweroff_file}
+grep -f $powercut_appli_servers_file >>${poweron_file}
+
+
+
+################################################################################################################################################################
+# lsof un peu detaille
+################################################################################################################################################################
+
+export output_file=/home/betorma/tmp/lsof_eurlexfo-pz_1043.out
+export PORT=1043
+
+{
+while true
+do
+        sleep 1
+        LSOF=`lsof -i :$PORT`
+        if [[ ! -z $LSOF ]]; then
+                echo; echo "##########"
+                date
+                PID=`echo $LSOF| tail -1 | awk '{print $2}'`
+                PROC=`ps -ef | grep $PID`
+                PARENTID=`ps -ef | grep $PID | grep -v grep | awk '{print $3}'`
+                echo "##### lsof"
+                echo $LSOF
+                echo "##### ps"
+                echo $PROC
+                echo "##### ptree"
+                ptree $PARENTID
+                echo "##### pargs"
+                pargs $PID
+                pargs $PARENTID
+        fi
+done
+} | tee $output_file
+
+
+################################################################################################################################################################
+# upload big file to oracle
+################################################################################################################################################################
+
+export xopl_name=xopl254
+export xopl_passowrd=xxxxxx
+
+export ftp_proxy=http://${xopl_name}:${xopl_passowrd}@158.169.131.13:8012
+export ftps_proxy=http://${xopl_name}:${xopl_passowrd}@158.169.131.13:8012
+export http_proxy=http://${xopl_name}:${xopl_passowrd}@158.169.131.13:8012
+export https_proxy=http://${xopl_name}:${xopl_passowrd}@158.169.131.13:8012
+
+export dump_file_list='3-9939644381_ariane.tar 3-9939644381_moe.tar 3-9939644381_persee.tar 3-9939644381_seymour.tar' 
+export sr_number=3-9939644381
+
+for dump_file in ${dump_file_list}
+do
+	echo curl -T ${dump_file} -o ${dump_file} -u "opdl-infra-systems@publications.europa.eu" ftps://transport.oracle.com/issue/${sr_number}/
+done
+
+
+
+################################################################################################################################################################
+# du on folders mounted on slash
+################################################################################################################################################################
+
+
+{
+cd /
+ls | while read folder
+do
+	df $folder | grep '/$' >/dev/null
+	if [[ $? == 0 ]]; then
+		du -sk $folder
+	fi
+done
+} | sort -n
+
+################################################################################################################################################################
+# divers
+################################################################################################################################################################
+
+##### iostat des disque d' un ou plusieurs zpools
+{
+zpool_list='digital-pz-db digital-pz-data'
+`zpool status $zpool_list | grep c3t | awk '{print $1}' | xargs | perl -ne 'print "iostat -xcpn $_ 1"'`
+}
+
+##### generer un mot de passe aleatoire sur 6 caracteres
+% openssl rand -base64 6
+
+
+##### md5 check
+% digest -a md5 -v <file>
+
+
+
+##### disk usage des repertoires de / qui sont sur le meme fs que /
+for file in /*; do echo "##### $file"; df -h $file; done | grep -v ^Filesystem | perl -pe 's/\n/ /g' | perl -ne 's/#####/\n/g; print ' | grep '/ $' | awk '{print $1}' | xargs du -sk | sort -n

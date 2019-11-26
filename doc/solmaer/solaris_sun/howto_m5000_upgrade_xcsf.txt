@@ -1,0 +1,179 @@
+#########################################################################
+# MMise a jour de l'xscf d'un M5000
+#########################################################################
+
+
+##### telecharger le firmware depuis support.oracle.com
+
+
+##### deposer le firmware telecharge sur notre serveur ftp
+
+0[111214/121902]root@remus# ls -l /tftpboot/firmwares/M5000/FFXCP1102.tar.gz 
+-rwxr--r--   1 root     root     44063324 Dec 14 12:09 /tftpboot/firmwares/M5000/FFXCP1102.tar.gz
+
+
+##### s'assurer qu'un utilisateur peut se connecter au ftp
+
+
+##### verifier la version actuelle du firmware de l'xscf
+
+XSCF> version -c xcp
+XSCF#0 (Active )
+XCP0 (Current): 1101
+XCP1 (Reserve): 1101
+
+
+##### telecharger le nouveau firmware sur l'xscf depuis le serveur ftp
+
+XSCF> getflashimage -u root ftp://158.167.99.56/tftpboot/firmwares/M5000/FFXCP1102.tar.gz
+Existing versions:
+        Version                Size  Date
+        FFXCP1101.tar.gz   44031183  Wed Sep 14 18:28:37 CEST 2011
+Warning: About to delete existing versions.
+Continue? [y|n]: y
+Removing FFXCP1101.tar.gz.
+Password: 
+
+  0MB received
+  1MB received
+  2MB received
+  3MB received
+  4MB received
+  5MB received
+  6MB received
+  7MB received
+  8MB received
+  9MB received
+ 10MB received
+ 11MB received
+ 12MB received
+ 13MB received
+ 14MB received
+ 15MB received
+ 16MB received
+ 17MB received
+ 18MB received
+ 19MB received
+ 20MB received
+ 21MB received
+ 22MB received
+ 23MB received
+ 24MB received
+ 25MB received
+ 26MB received
+ 27MB received
+ 28MB received
+ 29MB received
+ 30MB received
+ 31MB received
+ 32MB received
+ 33MB received
+ 34MB received
+ 35MB received
+ 36MB received
+ 37MB received
+ 38MB received
+ 39MB received
+ 40MB received
+ 41MB received
+ 42MB received
+Download successful: 43030 Kbytes in 55 secs (866.262 Kbytes/sec)
+Checking file...
+MD5: 6002e8c1056b22116ba83606b4a0588e
+
+
+##### verifier que la mise a jour peut etre faite avec les domains up
+
+XSCF> flashupdate -c check -m xcp -s 1102
+XCP update is possible with domains up
+
+
+##### mettre a jour le firmware, qui va d'abord mettre a jours xcp0, rebooter l'xscf, puis mettre a jour xcp1 si la mise a jour de xcp0 s'est bien passee (coupure de courant, ...)
+
+XSCF> flashupdate -c update -m xcp -s 1102                                                
+The XSCF will be reset. Continue? [y|n] :y
+Checking the XCP image file, please wait a minute
+XCP update is started (XCP version=1102:last version=1101)
+OpenBoot PROM update is started (OpenBoot PROM version=02240000)
+OpenBoot PROM update has been completed (OpenBoot PROM version=02240000)
+XSCF update is started (XSCFU=0,bank=1,XCP version=1102:last version=1101)
+XSCF download is started (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=00:version=01100001:last version=01100001)
+XSCF download has been completed (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=00:version=01100001:last version=01100001)
+XSCF download is started (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=01:version=01100002:last version=01100001)
+XSCF download has been completed (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=01:version=01100002:last version=01100001)
+XSCF download is started (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=02:version=01100001:last version=01100001)
+XSCF download has been completed (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=02:version=01100001:last version=01100001)
+XSCF download is started (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=03:version=01100002:last version=01100001)
+XSCF download has been completed (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=03:version=01100002:last version=01100001)
+XSCF download is started (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=04:version=01100002:last version=01100001)
+XSCF download has been completed (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=04:version=01100002:last version=01100001)
+XSCF download is started (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=05:version=01100001:last version=01100001)
+XSCF download has been completed (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=05:version=01100001:last version=01100001)
+XSCF download is started (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=07:version=01090001:last version=01090001)
+XSCF download has been completed (XSCFU=0,bank=1,XCP version=1102:last version=1101, Firmware Element ID=07:version=01090001:last version=01090001)
+XSCF update has been completed (XSCFU=0,bank=1,XCP version=1102:last version=1101)
+XSCF is rebooting to update the reserve bank
+XSCF> Connection to m5k16-sc0 closed by remote host.
+
+
+##### verifier les logs de l'xscf
+ 
+XSCF> showlogs event
+Dec 14 12:23:45 CET 2011      XCP update is started (XCP version=1102:last version=1101)
+Dec 14 12:24:24 CET 2011      XSCF download is started (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=00, version=01100001:last version=01100001)
+Dec 14 12:25:01 CET 2011      XSCF download has been completed (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=00, version=01100001:last version=01100001)
+Dec 14 12:25:14 CET 2011      XSCF download is started (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=01, version=01100002:last version=01100001)
+Dec 14 12:27:20 CET 2011      XSCF download has been completed (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=01, version=01100002:last version=01100001)
+Dec 14 12:27:28 CET 2011      XSCF download is started (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=02, version=01100001:last version=01100001)
+Dec 14 12:27:41 CET 2011      XSCF download has been completed (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=02, version=01100001:last version=01100001)
+Dec 14 12:28:05 CET 2011      XSCF download is started (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=03, version=01100002:last version=01100001)
+Dec 14 12:28:48 CET 2011      XSCF download has been completed (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=03, version=01100002:last version=01100001)
+Dec 14 12:29:12 CET 2011      XSCF download is started (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=04, version=01100002:last version=01100001)
+Dec 14 12:29:47 CET 2011      XSCF download has been completed (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=04, version=01100002:last version=01100001)
+Dec 14 12:30:03 CET 2011      XSCF download is started (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=05, version=01100001:last version=01100001)
+Dec 14 12:30:16 CET 2011      XSCF download has been completed (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=05, version=01100001:last version=01100001)
+Dec 14 12:30:25 CET 2011      XSCF download is started (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=07, version=01090001:last version=01090001)
+Dec 14 12:30:26 CET 2011      XSCF download has been completed (XSCFU=0, bank=1, XCP version=1102:last version=1101, Firmware Element ID=07, version=01090001:last version=01090001)
+Dec 14 12:30:26 CET 2011      XSCF bank apply has been completed (XSCFU=0, bank=1, XCP version=1102:last version=1101)
+Dec 14 12:33:54 CET 2011      XSCF ready
+Dec 14 12:34:19 CET 2011      XSCF download is started (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=00, version=01100001:last version=01100001)
+Dec 14 12:34:51 CET 2011      XSCF download has been completed (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=00, version=01100001:last version=01100001)
+Dec 14 12:35:04 CET 2011      XSCF download is started (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=01, version=01100002:last version=01100001)
+Dec 14 12:36:56 CET 2011      XSCF download has been completed (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=01, version=01100002:last version=01100001)
+Dec 14 12:37:05 CET 2011      XSCF download is started (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=02, version=01100001:last version=01100001)
+Dec 14 12:37:17 CET 2011      XSCF download has been completed (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=02, version=01100001:last version=01100001)
+Dec 14 12:37:41 CET 2011      XSCF download is started (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=03, version=01100002:last version=01100001)
+Dec 14 12:38:24 CET 2011      XSCF download has been completed (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=03, version=01100002:last version=01100001)
+Dec 14 12:38:47 CET 2011      XSCF download is started (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=04, version=01100002:last version=01100001)
+Dec 14 12:39:23 CET 2011      XSCF download has been completed (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=04, version=01100002:last version=01100001)
+Dec 14 12:39:51 CET 2011      XSCF download is started (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=05, version=01100001:last version=01100001)
+Dec 14 12:40:04 CET 2011      XSCF download has been completed (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=05, version=01100001:last version=01100001)
+Dec 14 12:40:13 CET 2011      XSCF download is started (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=07, version=01090001:last version=01090001)
+Dec 14 12:40:16 CET 2011      XSCF download has been completed (XSCFU=0, bank=0, XCP version=1102:last version=1101, Firmware Element ID=07, version=01090001:last version=01090001)
+Dec 14 12:40:16 CET 2011      XSCF bank apply has been completed (XSCFU=0, bank=0, XCP version=1102:last version=1101)
+Dec 14 12:40:17 CET 2011      XCP update has been completed (XCP version=1102)
+
+
+##### verifier les versions d'xcp
+
+XSCF> version -c xcp
+XSCF#0 (Active )
+XCP0 (Reserve): 1102
+XCP1 (Current): 1102
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

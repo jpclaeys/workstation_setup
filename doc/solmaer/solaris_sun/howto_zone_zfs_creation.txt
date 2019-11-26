@@ -1,0 +1,315 @@
+############################################################################################
+#
+# Installation de zone sur ZFS
+#
+############################################################################################
+#
+# prerequis:
+# - nom de la zone
+# - alias pour la zone
+# - nom de l'hote physique pour la zone
+# - l'interface reseau de l'hote physique pour la zone
+# - adresse ip pour la zone
+# - adresse ip pour l'application
+# - opsrv pour la zone
+# - nom du zpool
+#
+############################################################################################
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+##### variables
+% export ZONE=<zone_name>
+% export COMMENT_ZONE="zone de <environment> pour <application_name>"
+% export ZONE_IP=<zone_ip>
+% export ZONE_NETMASK=<netmask_zone_in_slash-notation>  # for example: "/24"
+% export ZONE_DEFROUTER=<defaultrouter_ip>
+% export SYSIDCFG_NETMASK=<netmask_zone_in_numeric-notation>  # for example "255.255.255.0"
+% export APPLI_IP=<application_ip>
+% export APPLI_NETMASK=<netmask_appli_in_slash-notation>  # for example: "/24"
+% export APPLI_OPSRV=<application_opsrv>
+% export INTERFACE=<zone_network_interface>
+% export ZPOOL=${ZONE}-data
+% export APPLICATION=<application_name>
+% export ORACLE_IS_USED=<oracle_used>				#'yes' or 'no'
+% export DOCUMENTUM_IS_USED=<documentum_used>			#'yes' or 'no'
+% export ZONE_IS_CLUSTER_RESSOURCE=<cluster_used>		# 'yes' or 'no'
+% export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+% mkdir -p ${TMP_FOLDER}
+% export DATE=`date +%Y%m%d%H%M`
+% echo ${DATE}
+
+##### creation et montage du repertoire de la zone
+% zfs create -o mountpoint=/zones/${ZONE} ${ZPOOL}/zone
+% zfs set mountpoint=/zpool/${ZPOOL} ${ZPOOL}
+
+##### creation des file system pour l'application
+% zfs create -o mountpoint=none ${ZPOOL}/applications
+% zfs create -o mountpoint=none ${ZPOOL}/applications/${APPLICATION}
+% zfs create -o mountpoint=/applications/${APPLICATION}/xchange ${ZPOOL}/applications/${APPLICATION}/xchange
+% zfs create -o mountpoint=/applications/${APPLICATION}/users ${ZPOOL}/applications/${APPLICATION}/users
+
+##### creation des files system pour les base de donnees oracle
+% {
+if [[ ${ORACLE_IS_USED} == 'yes' ]]
+then 
+	for FS in orabin oralog oradata oraflash; do
+		zfs create -o mountpoint=/applications/${APPLICATION}/${FS} ${ZPOOL}/applications/${APPLICATION}/${FS}
+	done
+fi
+zfs create -o mountpoint=/u01/oraagent ${ZPOOL}/applications/oraagent
+chown oracle:dba /u01/oraagent
+}
+
+##### creation du file system pour documentum
+% {
+if [[ ${DOCUMENTUM_IS_USED} == 'yes' ]]
+then 
+	for FS in docdata; do
+		zfs create -o mountpoint=/applications/${APPLICATION}/${FS} ${ZPOOL}/applications/${APPLICATION}/${FS}
+	done
+fi
+}
+
+##### verification des file system
+% zfs list -r ${ZPOOL}
+
+##### creation du fichier de configuration de la zone
+% cat >${TMP_FOLDER}/${ZONE}.cfg <<EOF
+create -b
+set zonepath=/zones/${ZONE}
+set autoboot=false
+set bootargs="-m verbose"
+set limitpriv=default,proc_priocntl
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${ZONE_IP}${ZONE_NETMASK}
+set physical=${INTERFACE}
+set defrouter=${ZONE_DEFROUTER}
+end
+add net
+set address=${APPLI_IP}${APPLI_NETMASK}
+set physical=${INTERFACE}
+end
+add dataset
+set name=${ZPOOL}/applications
+end
+add attr
+set name=comment
+set type=string
+set value="${COMMENT_ZONE}"
+end
+EOF
+
+##### verification
+% cat ${TMP_FOLDER}/${ZONE}.cfg
+
+##### configuration et installation de la zone
+% chmod 700 /zones/${ZONE}
+% zonecfg -z ${ZONE} -f ${TMP_FOLDER}/${ZONE}.cfg
+% zoneadm -z ${ZONE} install
+
+##### verification des erreurs possibles
+% grep -i err /zones/${ZONE}/root/var/sadm/system/logs/install_log
+
+##### /etc/sysidcfg
+% cat >/zones/${ZONE}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+timeserver=158.167.99.7
+timezone=Europe/Luxembourg
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${ZONE} ip_address=${ZONE_IP} netmask=${SYSIDCFG_NETMASK} protocol_ipv6=no default_route=${ZONE_DEFROUTER}}
+EOF
+
+##### /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+% touch /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+
+##### /inet/ntp.conf
+% cp -p /etc/inet/ntp.conf /zones/${ZONE}/root/etc/inet/
+
+##### /etc/resolv.conf
+% cp -p /etc/resolv.conf /zones/${ZONE}/root/etc/
+
+##### /etc/ftpd/ftpservers
+% echo 'deny * *.*.*.*' >>/zones/${ZONE}/root/etc/ftpd/ftphosts
+
+##### /etc/nsswitch.conf
+% tar cpfv /zones/${ZONE}/root/etc/nsswitch.conf.tar /etc/nsswitch.conf
+
+##### fichier de configuration du client ldap
+% cp /var/ldap/ldap_client_cred /zones/${ZONE}/root/var/ldap/
+% cp /var/ldap/ldap_client_file /zones/${ZONE}/root/var/ldap/
+
+##### configuration du nom de domaine
+% cp -p /etc/defaultdomain /zones/${ZONE}/root/etc/
+
+##### configuration des holidays
+% cp -p /etc/acct/holidays /zones/${ZONE}/root/etc/acct/holidays
+
+##### loghost et opsrv dans /etc/hosts
+% cp -p /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+% echo -e "${APPLI_IP}\t${APPLI_OPSRV}\t## ${APPLICATION}" >>/zones/${ZONE}/root/etc/inet/hosts
+% echo -e "${ZONE_IP}\t${ZONE}" >>/zones/${ZONE}/root/etc/inet/hosts
+
+
+##### verification
+% diff /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+
+##### demarrage de la zonec et onnexion a la console de la zone
+% zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### changer le mot de passe root
+% passwd root
+
+##### variables
+% export ZONE=<zone_name>
+% export ZONE_IP=<zone_ip>
+% export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+% export DATE=`date +%Y%m%d%H%M`
+% echo ${DATE}
+
+##### enleve loghost du fichier /etc/inet/hosts
+% perl -i.${DATE} -pe 's/loghost//' /etc/inet/hosts
+
+##### /etc/nsswitch.conf
+% tar xvf /etc/nsswitch.conf.tar
+
+##### rafraichissement du cache dns
+% svcadm restart svc:/system/name-service-cache:default
+
+##### configuration du repertoire d'accueil des core system
+% coreadm -i /var/cores/%f_%p_%u_%g.core
+
+##### activation du service ldap/client
+% svcadm disable svc:/network/ldap/client:default
+% svcadm enable svc:/network/ldap/client:default
+
+##### tester le ldap
+% ldaplist
+
+##### desactivation du webconsole
+% svcadm disable svc:/system/webconsole:console
+
+##### copie de la cle cfengine
+% cp -p /var/cfengine/ppkeys/localhost.pub ${TMP_FOLDER}/root-${ZONE_IP}.pub
+
+
+######################################################
+# sur le serveur cfengine
+######################################################
+
+
+##### varibales
+% export ZONE=<zone_name>
+% export ZONE_IP=<zone_ip>
+% export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+% export DATE=`date +%Y%m%d%H%M`
+% echo ${DATE}
+
+##### ajout de la zone dans la configuration de cfengine (cf.groups)
+% cp /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+% vi /var/cfengine/master/inputs/cf.groups
+
+% diff /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+
+##### import de la cle publique de la zone dans cfengine
+% cp -p ${TMP_FOLDER}/root-${ZONE_IP}.pub /var/cfengine/ppkeys
+% chown root:root /var/cfengine/ppkeys/*
+% chmod 544 /var/cfengine/ppkeys/*
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### execution du client cfengine
+% /var/cfengine/bin/cfagent -v -q
+
+##### installation de LGTO 4.2
+
+% cd /var/tmp
+% cp -p /net/remus/export/software/Networker/Oracle/nmo42_solaris_64.tar.gz /var/tmp
+% gunzip /var/tmp/nmo42_solaris_64.tar.gz
+% tar xvfp /var/tmp/nmo42_solaris_64.tar
+% pkgadd -d /var/tmp LGTOnmo
+
+% rm -r /var/tmp/LGTOnmo*
+% rm -r /var/tmp/nmo42_solaris_64*
+% rm -r /var/tmp/lib64
+
+% /usr/ccs/bin/what /lib/libnwora.so
+
+% ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+% ln -s /etc/init.d/networker /etc/rc0.d/K05networker
+% ln -s /lib/libnwora.so /usr/lib/libnwora.so
+% ls -l /usr/lib/libnwora.so
+
+% ls -l /usr/sbin/saverman.pl
+
+##### redemarrage du service auto-fs
+% svcadm restart svc:/system/filesystem/autofs:default
+
+##### test d'envoie d'email depuis la zone
+% mailx -s "email de test depuis `/usr/bin/uname -n`" opensystem-logs@publications.europa.eu </dev/null
+
+##### arret de la zone
+% init 0
+~~.
+
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+
+##### si la zone n'est pas une ressource cluster, mettre autoboot a true
+% {
+if [[ ${ZONE_IS_CLUSTER_RESSOURCE} == 'no' ]]
+then
+	zonecfg -z ${ZONE} set autoboot=true
+fi
+zonecfg -z $ZONE info autoboot
+}
+
+##### demarrage de la zonec et onnexion a la console de la zone
+% zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### verfication des services SMF
+% svcs -xv
+
+##### verification system
+% dmesg
+
+##### verification de la zone
+% ls /home/admin/
+% /home/admin/bin/check_host.sh
+

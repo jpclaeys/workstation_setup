@@ -1,0 +1,235 @@
+######################################################################################################################
+##### idol7-rk 
+
+Name		CPU	RAM	Hosted by	env		opsrv		Site	LUN sys	LUN sys size	LUN app	LUN app size	storage		SWAP
+idol7-rk	8	16 Go	eridanus	Reception	opsrv980	Eufo	12	60Go		13	200Go		VNX_0476	32
+
+
+
+
+
+
+##### creation d'une kvm fictive pour recuperer l'adresse mac
+
+SERVERNAME=idol7-rk
+VLAN=223
+
+virt-install --connect=qemu:///system --os-variant=rhel6 --check-cpu --os-type=linux --accelerate --hvm --vnc \
+ --network bridge:br${VLAN} --keymap=en-us --pxe --nodisk\
+ --name=${SERVERNAME} --ram=4096 --vcpus=4
+
+
+
+Ctrl+c
+
+virsh destroy $SERVERNAME
+
+MACADDRESS=`awk -F "'" '/mac address=/ {print $2}' /etc/libvirt/qemu/$SERVERNAME.xml`
+echo $MACADDRESS
+52:54:00:96:ef:bf
+
+
+virsh undefine $SERVERNAME
+
+
+
+
+##### creation du client foreman, sans classe
+##### ou
+##### build, suppression des classes existantes
+
+
+##### suppression du profil dans satelite, si necessaire
+
+
+##### suppression de la cle puppet, si necessaire
+SERVERNAME=
+puppet cert clean ${SERVERNAME}.opoce.cec.eu.int
+
+
+
+
+##### kvm creation
+
+
+RAM_SIZE=14000
+NB_VCPU=8
+WWN_DISK_OS1=360060160481032001ece7ad89526e311
+WWN_DISK_APP1=36006016048103200a2bf98aba226e311
+
+
+echo virt-install --connect=qemu:///system --os-variant=rhel6 --check-cpu --os-type=linux --accelerate --hvm --vnc \
+  --network bridge:br${VLAN} --keymap=en-us --pxe \
+  --name=${SERVERNAME}  --ram=${RAM_SIZE} --vcpus=${NB_VCPU} --mac=${MACADDRESS} \
+  --disk path=/dev/mapper/${WWN_DISK_OS1},sparse=false \
+  --disk path=/dev/mapper/${WWN_DISK_APP1},sparse=false
+
+virt-install --connect=qemu:///system --os-variant=rhel6 --check-cpu --os-type=linux --accelerate --hvm --vnc --network bridge:br223 --keymap=en-us --pxe --name=idol7-rk --ram=14000 --vcpus=8 --mac=52:54:00:96:ef:bf --disk path=/dev/mapper/360060160481032001ece7ad89526e311,sparse=false --disk path=/dev/mapper/36006016048103200a2bf98aba226e311,sparse=false
+
+
+-----------------------------------------------
+
+##### si besoin de relancer la creation de la kvm
+# virsh destroy $SERVERNAME && virsh undefine $SERVERNAME
+
+
+
+
+
+
+##### check log on puppet-pk
+
+tail -f /var/log/messages
+
+
+##### check puppet key
+
+SERVERNAME=
+puppet cert list -all -v | grep $SERVERNAME
+
+
+
+##### date
+
+# date MMDDhhmm
+
+/usr/sbin/ntpdate -sub rt1mer.opoce.cec.eu.int
+
+
+##### update ifcfg-eth0
+##### update route-eth0
+
+service network restart
+
+
+-------------------------------------
+
+##### puppet check
+
+/usr/bin/puppet agent --config /etc/puppet/puppet.conf -o --tags no_such_tag --server opsrv027.opoce.cec.eu.int  --no-daemonize
+
+
+##### add puppet classes 'opoce' on foreman gui
+/usr/bin/puppet agent --config /etc/puppet/puppet.conf -o --tags opoce --no-daemonize --verbose
+
+##### add puppet classes 'opoce::linux::all' on foreman gui
+/usr/bin/puppet agent --config /etc/puppet/puppet.conf -o --tags opoce::linux::all --no-daemonize --verbose
+
+##### add puppet classes 'opoce::linux::network' on foreman gui
+/usr/bin/puppet agent --config /etc/puppet/puppet.conf -o --tags opoce::linux::network --no-daemonize --verbose
+
+
+
+
+
+##### reboot
+
+init 6
+
+
+
+
+##### swap (32Go)
+
+vgs
+lvdisplay /dev/root_vg/swap_lv 
+
+swapon -s
+swapoff /dev/dm-1 
+
+lvextend -L +30G /dev/root_vg/swap_lv 
+mkswap /dev/root_vg/swap_lv
+
+swapon /dev/mapper/root_vg-swap_lv
+swapon -s
+
+
+
+##### fs applicatifs
+
+fdisk -l | grep '^Disk /'
+
+fdisk /dev/vdb
+d
+n
+p
+1
+[enter]
+[enter]
+t
+8e
+w
+
+pvcreate /dev/vdb1 
+vgcreate eurlex_vg /dev/vdb1
+
+lvcreate -L5G -n eurlex_xchange eurlex_vg
+
+PE=`vgdisplay eurlex_vg | awk '/Free  PE/ {print $5}'`
+lvcreate -l $PE -n eurlex_users eurlex_vg
+
+
+mkfs.ext4 /dev/mapper/eurlex_vg-eurlex_users
+mkfs.ext4 /dev/mapper/eurlex_vg-eurlex_xchange
+
+
+mkdir -p /applications/eurlex/{users,xchange}
+
+
+cp -p /etc/fstab /etc/fstab.20131008
+
+cat <<EOF >>/etc/fstab
+/dev/mapper/eurlex_vg-eurlex_users    /applications/eurlex/users          ext4    defaults,acl        1 2
+/dev/mapper/eurlex_vg-eurlex_xchange    /applications/eurlex/xchange          ext4    defaults,acl        1 2
+EOF
+
+mount -a
+df -h /applications/eurlex/*
+
+
+
+
+##### users applicatifs
+
+
+groupadd -g 61300 eurlex
+useradd -u 61300 -g eurlex -d /home/eurlex -s /bin/bash -c 'eurlex user' eurlex
+
+mkdir -p /applications/eurlex/users/{system,eurlex}
+chown eurlex:eurlex /applications/eurlex/users/eurlex
+
+cp -p /etc/auto_home /etc/auto_home.20131008
+echo 'eurlex     $HOST:/applications/eurlex/users/&' >>/etc/auto_home
+
+cd /home/eurlex
+df -h .
+
+
+
+visudo -f /etc/sudoers.d/50-idol
+--- snip ---
+Cmnd_Alias ROLECMD = /bin/bash, /bin/ksh
+User_Alias EURLEX = betorma, warinlo, ettelma, leidial, valleje, zadraju, sattihe, solmaer, maffima, klaerpa, lafarpa, niedema, holotma, pierrph, dotzech, naratol, neisije, ferrear, loeulch
+EURLEX LOCAL=(eurlex) NOPASSWD:ROLECMD
+--- snip ---
+
+visudo -f /etc/sudoers.d/51-idol
+--- snip ---
+Cmnd_Alias CMDSVC = /sbin/chkconfig idol_connector on, /sbin/chkconfig idol_connector off
+User_Alias US_EURLEX = eurlex
+US_EURLEX LOCAL=(root) NOPASSWD:CMDSVC
+--- snip ---
+
+
+
+##### ip applicative
+
+
+
+export OPSRV=opsrv980
+export IP=`getent hosts $OPSRV | awk '{print $1}'`
+
+
+
+
+

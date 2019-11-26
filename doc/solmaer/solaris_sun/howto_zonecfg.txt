@@ -1,0 +1,23 @@
+export zone=transjaifo-tz
+export fs_source=/applications/transjai/xchange/verity
+export fs_target=/applications/transjai/xchange/verity
+export date=`date +%Y%m%d`
+cp -p /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date}
+
+{
+zonecfg -z $zone <<EOT
+add fs
+set special=${fs_source}
+set dir=${fs_target}
+set type=lofs
+set options=rw
+end
+commit
+exit
+EOT
+}
+
+
+diff /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date}
+
+

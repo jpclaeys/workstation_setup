@@ -1,0 +1,367 @@
+$ telnet snow
+Trying 192.168.1.151...
+Connected to snow.opoce.cec.eu.int.
+Escape character is '^]'.
+
+Unauthorized access is prohibited.
+
+Login: root
+Password:
+
+
+T3B Release 3.1.5 Thu Jun 17 13:56:51 PDT 2004 (192.168.1.151)
+Copyright (C) 1997-2003 Sun Microsystems, Inc.
+All Rights Reserved.
+
+snow:/:<1>
+snow:/:<1>
+snow:/:<1>
+snow:/:<1>help
+arp     cat     cd      cmp     cp      date    du      echo
+head    help    ls      mkdir   mv      netstat ping    pwd
+rm      rmdir   tail    touch
+abort   boot    df      disable disk    enable  fru     id
+led     linkstat        logger  lpc     more    ntp     passwd
+port    proc    reset   savecore        set     shutdown
+sim_diag        sun     sync    sys     tzset   ver     vol
+volslice        ep      refresh route   ofdg    lun     hwwn
+prop    unconfig
+snow:/:<2>ver
+
+
+T3B Release 3.1.5 Thu Jun 17 13:56:51 PDT 2004 (192.168.1.151)
+Copyright (C) 1997-2003 Sun Microsystems, Inc.
+All Rights Reserved.
+
+snow:/:<3>fr
+fr: Command not found
+snow:/:<4>fru
+usage:  fru l[ist]
+        fru list sys
+        fru list [u<1-8>]
+        fru list [u<1-8>]c[1]
+        fru list [u<1-8>]d[<1-9>]
+        fru list [u<1-8>]l[<1-2>]
+        fru list [u<1-8>]pcu[<1-2>]
+        fru list [u<1-8>]bat[<1-2>]
+        fru list [u<1-8>]mpn[1]
+        fru s[tat]
+        fru stat sys
+        fru stat [u<1-8>]
+        fru stat [u<1-8>]c[1]
+        fru stat [u<1-8>]d[<1-9>]
+        fru stat [u<1-8>]l[<1-2>]
+        fru stat [u<1-8>]pcu[<1-2>]
+        fru st[atistic]
+        fru statistic sys
+        fru statistic [u<1-8>]
+        fru statistic [u<1-8>]d[<1-9>]
+        fru statistic [u<1-8>]p[1]     [clear]
+        fru statistic [u<1-8>]v[<1-2>] [clear]
+        fru myuid
+
+snow:/:<5>fru stat
+CTLR    STATUS   STATE       ROLE        PARTNER    TEMP
+------  -------  ----------  ----------  -------    ----
+u1ctr   ready    enabled     master      u2ctr      28
+u2ctr   ready    enabled     alt master  u1ctr      31
+
+DISK    STATUS   STATE       ROLE        PORT1      PORT2      TEMP  VOLUME
+------  -------  ----------  ----------  ---------  ---------  ----  ------
+u1d01   ready    enabled     data disk   ready      ready      32    v0
+u1d02   ready    enabled     data disk   ready      ready      31    v0
+u1d03   ready    enabled     data disk   ready      ready      31    v0
+u1d04   ready    enabled     data disk   ready      ready      31    v0
+u1d05   ready    enabled     data disk   ready      ready      30    v0
+u1d06   ready    enabled     data disk   ready      ready      41    v0
+u1d07   ready    enabled     data disk   ready      ready      30    v0
+u1d08   ready    enabled     data disk   ready      ready      31    v0
+u1d09   ready    enabled     standby     ready      ready      30    v0
+u2d01   ready    enabled     data disk   ready      ready      32    v2
+u2d02   ready    enabled     data disk   ready      ready      32    v2
+u2d03   ready    enabled     data disk   ready      ready      32    v2
+u2d04   ready    enabled     data disk   ready      ready      31    v2
+u2d05   ready    enabled     data disk   ready      ready      30    v2
+u2d06   ready    enabled     data disk   ready      ready      37    v2
+u2d07   ready    enabled     data disk   ready      ready      31    v2
+u2d08   ready    enabled     data disk   ready      ready      31    v2
+u2d09   ready    enabled     standby     ready      ready      35    v2
+
+LOOP    STATUS   STATE       MODE        CABLE1    LB  CABLE2    LB  TEMP
+------  -------  ----------  -------     --------- --  --------- --  ----
+u1l1    ready    enabled     master      -         -   installed 11  24
+u1l2    ready    enabled     slave       -         -   installed 10  26
+u2l1    ready    enabled     master      installed 11  -         -   26
+u2l2    ready    enabled     slave       installed 10  -         -   26
+
+POWER   STATUS   STATE       SOURCE  OUTPUT  BATTERY  TEMP    FAN1    FAN2
+------  -------  ---------   ------  ------  -------  ------  ------  ------
+u1pcu1  ready    enabled     line    normal  normal   normal  normal  normal
+u1pcu2  ready    enabled     line    normal  normal   normal  normal  normal
+u2pcu1  ready    enabled     line    normal  normal   normal  normal  normal
+u2pcu2  ready    enabled     line    normal  normal   normal  normal  normal
+snow:/:<6>vol stat
+
+v0: mounted
+  u1d01: mounted
+  u1d02: mounted
+  u1d03: mounted
+  u1d04: mounted
+  u1d05: mounted
+  u1d06: mounted
+  u1d07: mounted
+  u1d08: mounted
+  Standby: u1d09: mounted
+v2: mounted
+  u2d01: mounted
+  u2d02: mounted
+  u2d03: mounted
+  u2d04: mounted
+  u2d05: mounted
+  u2d06: mounted
+  u2d07: mounted
+  u2d08: mounted
+  Standby: u2d09: mounted
+snow:/:<7>lun
+usage:  lun map add lun <lun#> slice <slice#>
+        lun map rm lun <lun#> [slice <slice#>]
+        lun map rm all
+        lun map list [lun <lun#> | slice <slice#>]
+        lun perm <all_lun|lun <lun#>> <rw|ro|none> <all_wwn|wwn <wwn#>|grp <grp_ name>>
+        lun perm list [lun <lun#>| wwn <wwn#> | grp <grp_name> | short]
+        lun default <all_lun|lun <lun#>> <rw|ro|none>
+        lun wwn list
+        lun wwn rm all
+        lun wwn rm wwn <wwn#>
+
+snow:/:<8>lun perm list
+lun     slice   WWN                     Group Name      Group Perm      WWN PerE ffective Perm
+-------------------------------------------------------------------------------- ------------------------
+0       0       default                 --              --              none   n one
+0       0       210100e08b2fc054        sleepy          rw              none   r w
+0       0       210000e08b0fc054        sleepy          rw              none   r w
+1       1       default                 --              --              none   n one
+1       1       210000e08b0f1856        bart            rw              none   r w
+1       1       210100e08b2f1856        bart            rw              none   r w
+2       2       default                 --              --              none   n one
+2       2       210100e08b2fc054        sleepy          rw              none   r w
+2       2       210000e08b0fc054        sleepy          rw              none   r w
+3       3       default                 --              --              none   n one
+3       3       210000e08b0f1856        bart            rw              none   r w
+3       3       210100e08b2f1856        bart            rw              none   r w
+4       4       default                 --              --              none   n one
+4       4       210100e08b2fc054        sleepy          rw              none   r w
+4       4       210000e08b0fc054        sleepy          rw              none   r w
+5       5       default                 --              --              none   n one
+5       5       210000e08b0f1856        bart            rw              none   r w
+5       5       210100e08b2f1856        bart            rw              none   r w
+6       6       default                 --              --              none   n one
+6       6       210000e08b0f1856        bart            rw              none   r w
+6       6       210100e08b2f1856        bart            rw              none   r w
+7       7       default                 --              --              none   n one
+7       7       210000e08b0f1856        bart            rw              none   r w
+7       7       210100e08b2f1856        bart            rw              none   r w
+8       8       default                 --              --              none   n one
+8       8       210100e08b2fc054        sleepy          rw              none   r w
+8       8       210000e08b0fc054        sleepy          rw              none   r w
+9       9       default                 --              --              none   n one
+9       9       210100e08b2fc054        sleepy          rw              none   r w
+9       9       210000e08b0fc054        sleepy          rw              none   r w
+10      10      default                 --              --              none   n one
+10      10      210100e08b2fc054        sleepy          rw              none   r w
+10      10      210000e08b0fc054        sleepy          rw              none   r w
+11      11      default                 --              --              none   n one
+11      11      210100e08b2fc054        sleepy          rw              none   r w
+11      11      210000e08b0fc054        sleepy          rw              none   r w
+12      12      default                 --              --              none   n one
+12      12      210100e08b2fc054        sleepy          rw              none   r w
+12      12      210000e08b0fc054        sleepy          rw              none   r w
+13      13      default                 --              --              none   n one
+13      13      210100e08b2fc054        sleepy          rw              none   r w
+13      13      210000e08b0fc054        sleepy          rw              none   r w
+14      14      default                 --              --              none   n one
+14      14      210000e08b0f1856        bart            rw              none   r w
+14      14      210100e08b2f1856        bart            rw              none   r w
+15      15      default                 --              --              none   n one
+15      15      210000e08b0f1856        bart            rw              none   r w
+15      15      210100e08b2f1856        bart            rw              none   r w
+-------------------------------------------------------------------------------- ------------------------
+snow:/:<9>vol list
+volume            capacity raid data       standby
+v0              477.192 GB    5 u1d01-08     u1d09
+v2              477.192 GB    5 u2d01-08     u2d09
+snow:/:<10>lun
+usage:  lun map add lun <lun#> slice <slice#>
+        lun map rm lun <lun#> [slice <slice#>]
+        lun map rm all
+        lun map list [lun <lun#> | slice <slice#>]
+        lun perm <all_lun|lun <lun#>> <rw|ro|none> <all_wwn|wwn <wwn#>|grp <grp_name>>
+        lun perm list [lun <lun#>| wwn <wwn#> | grp <grp_name> | short]
+        lun default <all_lun|lun <lun#>> <rw|ro|none>
+        lun wwn list
+        lun wwn rm all
+        lun wwn rm wwn <wwn#>
+
+snow:/:<11>lun map^C
+snow:/:<11>lun map list
+Lun No          Slice No
+---------------------------
+0               0
+1               1
+2               2
+3               3
+4               4
+5               5
+6               6
+7               7
+8               8
+9               9
+10              10
+11              11
+12              12
+13              13
+14              14
+15              15
+---------------------------
+** Total 16 entries **
+snow:/:<12>help
+arp     cat     cd      cmp     cp      date    du      echo
+head    help    ls      mkdir   mv      netstat ping    pwd
+rm      rmdir   tail    touch
+abort   boot    df      disable disk    enable  fru     id
+led     linkstat        logger  lpc     more    ntp     passwd
+port    proc    reset   savecore        set     shutdown
+sim_diag        sun     sync    sys     tzset   ver     vol
+volslice        ep      refresh route   ofdg    lun     hwwn
+prop    unconfig
+snow:/:<13>volslice list
+Slice         Slice Num     Start Blk     Size Blks     Capacity      Volume
+s0            0             0             75511296        36.005 GB   v0
+s1            1             75511296      75511296        36.005 GB   v0
+s2            2             151022592     75511296        36.005 GB   v0
+s3            3             226533888     75511296        36.005 GB   v0
+s4            4             302045184     75511296        36.005 GB   v0
+s5            5             377556480     75511296        36.005 GB   v0
+s6            6             453067776     272679680      130.023 GB   v0
+s7            7             725747456     272679680      130.023 GB   v0
+-             -             998427136     2318848          1.105 GB   v0
+s8            8             0             75511296        36.005 GB   v2
+s9            9             75511296      75511296        36.005 GB   v2
+s10           10            151022592     75511296        36.005 GB   v2
+s11           11            226533888     75511296        36.005 GB   v2
+s12           12            302045184     75511296        36.005 GB   v2
+s13           13            377556480     75511296        36.005 GB   v2
+s14           14            453067776     272679680      130.023 GB   v2
+s15           15            725747456     272679680      130.023 GB   v2
+-             -             998427136     2318848          1.105 GB   v2
+snow:/:<14>lun heage:  lun map add lun <lun#> slice <slice#>
+        lun map rm lun <lun#> [slice <slice#>]
+        lun map rm all
+        lun map list [lun <lun#> | slice <slice#>]
+        lun perm <all_lun|lun <lun#>> <rw|ro|none> <all_wwn|wwn <wwn#>|grp <grp_name>>
+        lun perm list [lun <lun#>| wwn <wwn#> | grp <grp_name> | short]
+        lun default <all_lun|lun <lun#>> <rw|ro|none>
+        lun wwn list
+        lun wwn rm all
+        lun wwn rm wwn <wwn#>
+
+snow:/:<15>lun map
+usage:  lun map add lun <lun#> slice <slice#>
+        lun map rm lun <lun#> [slice <slice#>]
+        lun map rm all
+        lun map list [lun <lun#> | slice <slice#>]
+        lun perm <all_lun|lun <lun#>> <rw|ro|none> <all_wwn|wwn <wwn#>|grp <grp_name>>
+        lun perm list [lun <lun#>| wwn <wwn#> | grp <grp_name> | short]
+        lun default <all_lun|lun <lun#>> <rw|ro|none>
+        lun wwn list
+        lun wwn rm all
+        lun wwn rm wwn <wwn#>
+
+snow:/:<16>lun mapo
+usage:  lun map add lun <lun#> slice <slice#>
+        lun map rm lun <lun#> [slice <slice#>]
+        lun map rm all
+        lun map list [lun <lun#> | slice <slice#>]
+        lun perm <all_lun|lun <lun#>> <rw|ro|none> <all_wwn|wwn <wwn#>|grp <grp_name>>
+        lun perm list [lun <lun#>| wwn <wwn#> | grp <grp_name> | short]
+        lun default <all_lun|lun <lun#>> <rw|ro|none>
+        lun wwn list
+        lun wwn rm all
+        lun wwn rm wwn <wwn#>
+
+snow:/:<17>lun map list
+Lun No          Slice No
+---------------------------
+0               0
+1               1
+2               2
+3               3
+4               4
+5               5
+6               6
+7               7
+8               8
+9               9
+10              10
+11              11
+12              12
+13              13
+14              14
+15              15
+---------------------------
+** Total 16 entries **
+snow:/:<18>lun perm list
+lun     slice   WWN                     Group Name      Group Perm      WWN Perm        Effective Perm
+--------------------------------------------------------------------------------------------------------
+0       0       default                 --              --              none            none
+0       0       210100e08b2fc054        sleepy          rw              none            rw
+0       0       210000e08b0fc054        sleepy          rw              none            rw
+1       1       default                 --              --              none            none
+1       1       210000e08b0f1856        bart            rw              none            rw
+1       1       210100e08b2f1856        bart            rw              none            rw
+2       2       default                 --              --              none            none
+2       2       210100e08b2fc054        sleepy          rw              none            rw
+2       2       210000e08b0fc054        sleepy          rw              none            rw
+3       3       default                 --              --              none            none
+3       3       210000e08b0f1856        bart            rw              none            rw
+3       3       210100e08b2f1856        bart            rw              none            rw
+4       4       default                 --              --              none            none
+4       4       210100e08b2fc054        sleepy          rw              none            rw
+4       4       210000e08b0fc054        sleepy          rw              none            rw
+5       5       default                 --              --              none            none
+5       5       210000e08b0f1856        bart            rw              none            rw
+5       5       210100e08b2f1856        bart            rw              none            rw
+6       6       default                 --              --              none            none
+6       6       210000e08b0f1856        bart            rw              none            rw
+6       6       210100e08b2f1856        bart            rw              none            rw
+7       7       default                 --              --              none            none
+7       7       210000e08b0f1856        bart            rw              none            rw
+7       7       210100e08b2f1856        bart            rw              none            rw
+8       8       default                 --              --              none            none
+8       8       210100e08b2fc054        sleepy          rw              none            rw
+8       8       210000e08b0fc054        sleepy          rw              none            rw
+9       9       default                 --              --              none            none
+9       9       210100e08b2fc054        sleepy          rw              none            rw
+9       9       210000e08b0fc054        sleepy          rw              none            rw
+10      10      default                 --              --              none            none
+10      10      210100e08b2fc054        sleepy          rw              none            rw
+10      10      210000e08b0fc054        sleepy          rw              none            rw
+11      11      default                 --              --              none            none
+11      11      210100e08b2fc054        sleepy          rw              none            rw
+11      11      210000e08b0fc054        sleepy          rw              none            rw
+12      12      default                 --              --              none            none
+12      12      210100e08b2fc054        sleepy          rw              none            rw
+12      12      210000e08b0fc054        sleepy          rw              none            rw
+13      13      default                 --              --              none            none
+13      13      210100e08b2fc054        sleepy          rw              none            rw
+13      13      210000e08b0fc054        sleepy          rw              none            rw
+14      14      default                 --              --              none            none
+14      14      210000e08b0f1856        bart            rw              none            rw
+14      14      210100e08b2f1856        bart            rw              none            rw
+15      15      default                 --              --              none            none
+15      15      210000e08b0f1856        bart            rw              none            rw
+15      15      210100e08b2f1856        bart            rw              none            rw
+--------------------------------------------------------------------------------------------------------
+snow:/:<19>exit
+Connection to snow.opoce.cec.eu.int closed by foreign host.
+

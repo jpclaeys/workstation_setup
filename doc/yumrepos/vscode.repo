@@ -1,0 +1,7 @@
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+proxy=http://a0029ffb:iufjSEP@158.169.131.13:8012

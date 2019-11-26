@@ -1,0 +1,109 @@
+#####################################################################################################################
+##### 
+##### change MASQUERADE_AS
+#####
+#####################################################################################################################
+
+
+
+##### stop mail services
+
+0[151002/142656]root@planjo2-tz# svcadm disable sendmail sendmail-client
+0[151002/142711]root@planjo2-tz# svcs sendmail sendmail-client
+STATE          STIME    FMRI
+disabled       14:26:26 svc:/network/smtp:sendmail
+disabled       14:27:11 svc:/network/sendmail-client:default
+0[151002/142719]root@planjo2-tz# 
+
+
+
+##### backup current config
+
+0[151002/143548]root@planjo2-tz# cd /etc/mail/cf/ 
+2[151002/143618]root@planjo2-tz# cp -r cf cf_20151002
+1[151002/144521]root@planjo2-tz# cp /etc/mail/sendmail.cf /etc/mail/sendmail.20151002
+
+
+
+##### create/edit new file
+
+0[151002/150442]root@planjo2-tz# cd /etc/mail/cf/cf
+0[151002/150600]root@planjo2-tz# egrep -v '$#|$^' sendmail_oc.mc
+divert(-1)
+divert(0)dnl
+VERSIONID(`sendmail.mc (Sun)')
+OSTYPE(`solaris11')dnl
+DOMAIN(`solaris-generic')dnl
+define(`confFALLBACK_SMARTHOST', `mailhost$?m.$m$.')dnl
+MAILER(`local')dnl
+MAILER(`smtp')dnl
+MASQUERADE_AS(`noreply.publications.europa.eu')
+LOCAL_NET_CONFIG
+R$* < @ $* .$m. > $*    $#esmtp $@ $2.$m $: $1 < @ $2.$m. > $3
+0[151002/150611]root@planjo2-tz# 
+
+
+
+##### compile 
+
+0[151002/150639]root@planjo2-tz# /usr/ccs/bin/make sendmail_oc.cf
+test ! -f sendmail_oc.cf || /usr/bin/mv sendmail_oc.cf sendmail_oc.cf.prev
+/usr/bin/m4 ../m4/cf.m4 sendmail_oc.mc > sendmail_oc.cf
+
+
+
+##### test new file
+
+0[151002/150733]root@planjo2-tz# sendmail -C sendmail_oc.cf -v betorma </dev/null
+betorma... Warning: alias database /etc/mail/aliases.db out of date
+betorma... aliased to Mathieu.Betori@ext.publications.europa.eu
+Mathieu.Betori@ext.publications.europa.eu... Connecting to opvmwsehtx3.opoce.cec.eu.int. via esmtp...
+220 OPVMWSEHTX3.publications.win Microsoft ESMTP MAIL Service ready at Fri, 2 Oct 2015 15:08:21 +0200
+>>> EHLO planjo2-tz.opoce.cec.eu.int
+250-OPVMWSEHTX3.publications.win Hello [158.167.99.94]
+250-SIZE 62914560
+250-PIPELINING
+250-DSN
+250-ENHANCEDSTATUSCODES
+250-AUTH
+250-8BITMIME
+250-BINARYMIME
+250-CHUNKING
+250-XEXCH50
+250 XSHADOW
+>>> MAIL From:<betorma@planjo2-tz.opoce.cec.eu.int>
+250 2.1.0 Sender OK
+>>> RCPT To:<Mathieu.Betori@ext.publications.europa.eu>
+>>> DATA
+250 2.1.5 Recipient OK
+354 Start mail input; end with <CRLF>.<CRLF>
+>>> .
+250 2.6.0 <201510021308.t92D8LUn001454@planjo2-tz.opoce.cec.eu.int> [InternalId=13031899] Queued mail for delivery
+Mathieu.Betori@ext.publications.europa.eu... Sent (<201510021308.t92D8LUn001454@planjo2-tz.opoce.cec.eu.int> [InternalId=13031899] Queued mail for delivery)
+Closing connection to opvmwsehtx3.opoce.cec.eu.int.
+>>> QUIT
+221 2.0.0 Service closing transmission channel
+0[151002/150821]root@planjo2-tz# 
+
+
+
+##### put in place new confi
+
+0[151002/150842]root@planjo2-tz# cp sendmail_oc.cf /etc/mail/sendmail.cf
+
+
+
+##### restart sendmail
+
+0[151002/150935]root@planjo2-tz# svcadm enable sendmail sendmail-client
+0[151002/150950]root@planjo2-tz# svcs sendmail sendmail-client 
+STATE          STIME    FMRI
+online         15:09:50 svc:/network/smtp:sendmail
+online         15:09:51 svc:/network/sendmail-client:default
+0[151002/150955]root@planjo2-tz# 
+
+
+
+
+
+

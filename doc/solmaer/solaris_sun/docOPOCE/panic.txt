@@ -1,0 +1,25 @@
+Boot device: disk-root  File and args:
+SunOS Release 5.10 Version Generic_127111-09 64-bit
+Copyright 1983-2008 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+/kernel/sched/sparcv9/TS: undefined symbol 'cpucaps_enforce'
+/kernel/sched/sparcv9/TS: undefined symbol 'cpucaps_enabled'
+/kernel/sched/sparcv9/TS: undefined symbol 'cpucaps_charge'
+/kernel/sched/sparcv9/TS: undefined symbol 'cpucaps_sc_init'
+WARNING: mod_load: cannot load module 'TS'
+
+panic[cpu0]/thread=180e000: Couldn't load default scheduling class 'TS'
+
+000000000180b8b0 unix:startup_modules+154 (182c800, 1822c00, 70002000, 70004000, 182c800, 185c400)
+  %l0-3: 00000000001f271d 00000000018f2800 0000000001822c00 0000000000000103
+  %l4-7: 000000000182c800 000000000182c800 0000000001856c00 000000000182c800
+000000000180b960 unix:startup+28 (2, 1, 1, 1, 1, 103e400)
+  %l0-3: 000000000dbab91d 03b9aca000000000 00000000457656f0 000000000000001c
+  %l4-7: 000000000000048e 000000004585992f 00000000457656f0 0000000001061f90
+000000000180ba10 genunix:main+c (180c000, 1018800, 1854990, 180e000, 70002000, 108e000)
+  %l0-3: 0000000070002000 0000000000000001 000000000180c000 000000000180e000
+  %l4-7: 0000000000000001 000000000180c000 0000000000000060 0000000070002000
+
+skipping system dump - no dump device configured
+rebooting...
+

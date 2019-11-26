@@ -1,0 +1,427 @@
+
+hammer repository upload-content --product AWS --id 7831 --path "path_to_dir"
+
+hammer repository upload-content --product "AWS" --name "networker-server" --organization "DG-OPOCE" --path /net/vdm-unix/xchange/Backup/Sources/java/jre-8u131-linux-x64.rpm
+
+
+aws ec2 describe-instances --output text
+
+--profile op-prime
+--query
+
+
+STATE	80	stopped
+
+
+	aws ec2 describe-instances --instance-ids --output table
+ 	aws ec2 describe-instances --filters "Name=tag:Role,Values=K8s-WorkerLB" --output text
+ 	aws ec2 describe-instances --filters "Name=tag:Role,Values=K8s-WorkerLB" --output table
+
+
+
+
+------------------------------------------
+
+---- filtrer sur un tag et selection une information precise :
+
+aws ec2 describe-instances --filters "Name=tag:Application,Values=eurlex" --query 'Reservations[*].Instances[*].[InstanceId, Monitoring.State]'  --output json --profile op-prime
+
+
+
+
+---- plusieurs filtres :
+
+aws ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId, Monitoring.State]' --filter "Name=tag:Application,Values=shibboleth" "Name=instance-state-name,Values=running" --output json --profile op-identity
+
+
+
+
+
+
+
+------------------------------------------
+
+
+
+aws ec2 describe-instances --profile op-prime --query 'Reservations[0].Instances[0].SecurityGroups[0]' --output json
+
+
+aws ec2 describe-instances --profile op-prime --query 'Reservations[0].Instances[0].State.Name' --output json
+
+
+aws ec2 describe-instances --profile op-prime --query 'Reservations[2].Instances[0].[Placement.AvailabilityZone, State.Name, InstanceId]' --output json
+
+
+
+ aws ec2 describe-instances --profile op-prime --query 'Reservations[0].Instances[0].NetworkInterfaces[*].PrivateIpAddresses[*].{IP:PrivateIpAddress}' --output json
+
+
+aws ec2 describe-instances --profile op-prime --query 'Reservations[*].Instances[0].State.{nom:Name,codeetat:Code}' --output json
+
+
+aws ec2 describe-volumes --query 'Volumes[0].{test:Attachments[].InstanceId[]}'
+
+
+
+
+aws ec2 describe-volumes --query 'Volumes[0].[VolumeId,VolumeType,Size,{avail:AvailabilityZone}]'
+
+
+
+aws ec2 describe-instances --query 'Reservations[].Instances[].[Architecture,VpcId,InstanceId]' --filter "Name=instance-state-name,Values=running"  --profile op-prime --output json
+
+
+
+aws ec2 describe-instances --query 'Reservations[*].Instances[*].[State.Name, InstanceId, Monitoring.State]' --output text --profile op-prime
+
+
+
+aws ec2 describe-instances --query 'Reservations[*].Instances[*].[State.Name, InstanceId, Monitoring.State, SecurityGroups[]]' --output json --profile op-prime
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+aws ec2 describe-instances --instance-ids <instance-id> --query 'Reservations[0].Instances[0].State.Name'
+aws ec2 describe-instances --instance-ids <instance-id> --query 'Reservations[0].Instances[0].PublicDnsName'
+aws ec2 create-tags --resources <instance-id> --tags 'Key=Name,Value=WebServer'
+aws ec2 describe-instances --instance-ids <instance-id>
+
+aws ec2 run-instances --image-id <ami-id> --user-data file:///home/ec2-user/UserData.txt --key-name <key-name> --security-group-ids <sg-id> --instance-type t2.micro --subnet-id <subnet-id> --associate-public-ip-address --query 'Instances[*].InstanceId'
+
+
+aws ec2 run-instances --image-id ami-3bfab942 --user-data file:///home/ec2-user/UserData.txt --key-name qwikLABS-L131-563 --security-group-ids sg-b7fef1cd --instance-type t2.micro --subnet-id subnet-ccc911aa --associate-public-ip-address --query 'Instances[*].InstanceId'
+
+
+
+
+#!/bin/sh
+echo 1 > /proc/sys/net/ipv4/ip_forward
+echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects
+/sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE
+/sbin/iptables-save > /etc/sysconfig/iptables
+mkdir -p /etc/sysctl.d/
+cat <<EOF > /etc/sysctl.d/nat.conf
+net.ipv4.ip_forward = 1
+net.ipv4.conf.eth0.send_redirects = 0
+EOF
+
+
+
+54.229.223.115
+
+
+
+
+aws ec2 describe-volumes --filters Name=attachment.instance-id,Values=i-089bee19b7dc697de Name=size,Values=3072 Name=availability-zone,Values=eu-west-1a --query "Volumes[].[VolumeId,VolumeType,Attachments[].Device]"  --region eu-west-1 --output json
+
+
+
+
+
+
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListAllMyBuckets",
+                "s3:HeadBucket",
+                "s3:ListObjects"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::db-bucket-001/*",
+                "arn:aws:s3:::YOUR-BUCKET-NAME"
+            ]
+        }
+    ]
+}
+
+
+
+
+54.229.68.178
+
+52.215.39.112
+
+
+aws ec2 describe-instances --filter 'Name=tag:Name,Values=Processor'
+
+aws ec2 describe-instances --filter 'Name=tag:Name,Values=Processor' --query 'Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.{VolumeId:VolumeId}'
+
+aws ec2 describe-instances --filters 'Name=tag:Name,Values=Processor' --query 'Reservations[0].Instances[0].InstanceId'
+
+aws ec2 stop-instances --instance-ids <instance-id>
+
+aws ec2 describe-instance-status --instance-id <instance-id>
+
+aws ec2 create-snapshot --volume-id <volume-id>
+
+aws ec2 describe-snapshots --snapshot-id <snapshot-id>
+
+ aws ec2 start-instances --instance-ids i-05069c7611c41374e
+
+aws ec2 describe-snapshots --filters "Name=volume-id,Values=vol-0bf3db81e114c7c2c" --output table
+
+
+#!/usr/bin/env python
+
+import boto3
+
+MAX_SNAPSHOTS = 2   # Number of snapshots to keep
+
+# Create the EC2 resource
+ec2 = boto3.resource('ec2')
+
+# Get a list of all volumes
+volume_iterator = ec2.volumes.all()
+
+# Create a snapshot of each volume
+for v in volume_iterator:
+  v.create_snapshot()
+
+  # Too many snapshots?
+  snapshots = list(v.snapshots.all())
+  if len(snapshots) > MAX_SNAPSHOTS:
+
+    # Delete oldest snapshots, but keep MAX_SNAPSHOTS available
+    snap_sorted = sorted([(s.id, s.start_time, s) for s in snapshots], key=lambda k: k[1])
+    for s in snap_sorted[:-MAX_SNAPSHOTS]:
+      print "Deleting snapshot", s[0]
+      s[2].delete()
+
+
+aws ec2 describe-snapshots --filters "Name=volume-id, Values=vol-0bf3db81e114c7c2c" --query 'Snapshots[*].SnapshotId' --output table
+
+aws s3 mv timestamp.log s3://db-bucket-001/logfiles/timestamp-`date +"%m-%d-%Y-%H.%M.%S"`.log
+
+
+aws s3 ls s3://db-bucket-001
+ aws s3 ls s3://db-bucket-001/logfiles/
+
+aws s3 mv s3://<s3-bucket-name>/logfiles/<file-name> s3://<s3-bucket-name>/logfiles/archive/<file-name>
+
+
+aws s3api put-bucket-versioning --bucket <s3-bucket-name> --versioning-configuration Status=Enabled
+
+aws s3 sync files s3://db-bucket-001/files/ --delete
+
+aws s3api list-object-versions --bucket <s3-bucket-name> --prefix files/file1.txt
+
+aws s3api list-object-versions --bucket db-bucket-001  --prefix files/file1.txt --output table
+
+aws s3api get-object --bucket <s3-bucket-name> --key files/file1.txt --version-id <version-id> files/file1.txt
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+yum -y update
+yum -y install httpd php
+chkconfig httpd on
+/etc/init.d/httpd start
+
+mkdir /var/awslogs
+mkdir /var/awslogs/state
+
+yum -y install awslogs
+
+cat > /etc/awslogs/awslogs.conf <<EOF
+[general]
+state_file = /var/awslogs/state/agent-state
+
+[HttpAccessLog]
+file = /var/log/httpd/access_log
+log_group_name = HttpAccessLog
+log_stream_name = {instance_id}
+datetime_format = %b %d %H:%M:%S
+
+[HttpErrorLog]
+file = /var/log/httpd/error_log
+log_group_name = HttpErrorLog
+log_stream_name = {instance_id}
+datetime_format = %b %d %H:%M:%S
+EOF
+
+REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed -n 's/.$//p')
+sed -i "s/us-east-1/$REGION/g" /etc/awslogs/awscli.conf
+
+service awslogs start
+chkconfig awslogs on
+
+
+
+
+
+
+
+
+mem=$(ps -C httpd -O rss | gawk '{ count ++; sum += $2 }; END {count --; print sum/1024 ;};')
+
+instance_id=$(curl -s -w '\n' http://169.254.169.254/latest/meta-data/instance-id)
+
+aws cloudwatch put-metric-data --namespace HttpServerMetrics --metric-name HttpServerMemUtilization --dimension InstanceId=$instance_id --value $mem --unit "Megabytes"
+
+
+
+
+
+
+
+
+
+
+aws ec2 describe-instances --filter "Name=tag:Project,Values=ERPSystem"
+
+aws ec2 describe-instances --filter "Name=tag:Project,Values=ERPSystem" --query 'Reservations[*].Instances[*].InstanceId'
+
+aws ec2 describe-instances --filter "Name=tag:Project,Values=ERPSystem" --query 'Reservations[*].Instances[*].{ID:InstanceId,AZ:Placement.AvailabilityZone}'
+
+aws ec2 describe-instances --filter "Name=tag:Project,Values=ERPSystem" --query 'Reservations[*].Instances[*].{ID:InstanceId,AZ:Placement.AvailabilityZone,Project:Tags[?Key==`Project`] | [0].Value}'
+
+aws ec2 describe-instances --filter "Name=tag:Project,Values=ERPSystem" --query 'Reservations[*].Instances[*].{ID:InstanceId,AZ:Placement.AvailabilityZone,Project:Tags[?Key==`Project`] | [0].Value,Environment:Tags[?Key==`Environment`] | [0].Value,Version:Tags[?Key==`Version`] | [0].Value}'
+
+aws ec2 describe-instances --filter "Name=tag:Project,Values=ERPSystem" "Name=tag:Environment,Values=development" --query 'Reservations[*].Instances[*].{ID:InstanceId,AZ:Placement.AvailabilityZone,Project:Tags[?Key==`Project`] | [0].Value,Environment:Tags[?Key==`Environment`] | [0].Value,Version:Tags[?Key==`Version`] | [0].Value}'
+
+
+
+#!/bin/bash
+
+ids=$(aws ec2 describe-instances --filter "Name=tag:Project,Values=ERPSystem" "Name=tag:Environment,Values=development" --query 'Reservations[*].Instances[*].InstanceId' --output text)
+
+aws ec2 create-tags --resources $ids --tags 'Key=Version,Value=1.1'
+
+
+./stopinator.php -t"Project=ERPSystem;Environment=development"
+
+
+
+aws elb describe-load-balancers --query 'LoadBalancerDescriptions[].LoadBalancerName'  --profile op-identity --output text
+
+
+
+test2=(`aws ec2 describe-instances --query 'Reservations[].Instances[].[InstanceId]' --filter "Name=tag:Application,Values=security"  --profile op-identity --output text`)
+
+for i in ${arr[@]}; do echo $i; done
+
+aws elb register-instances-from-load-balancer --load-balancer-name i-ew1-sec-LdapLoad-1NC1KZE4JLS7U --instances i-0373a5f160d6a887c --profile op-identity
+
+aws elb deregister-instances-from-load-balancer --load-balancer-name i-ew1-sec-LdapLoad-1NC1KZE4JLS7U --instances i-0373a5f160d6a887c --profile op-identity
+
+DescribeLoadBalancers LoadBalancerDescriptions GroupName
+
+aws elb describe-load-balancers --query 'LoadBalancerDescriptions[?contains(LoadBalancerName,`Ldap`) == `true`].LoadBalancerName'  --profile op-identity --output text
+
+aws elb describe-instance-health --load-balancer-name i-ew1-sec-LdapLoad-1NC1KZE4JLS7U --instances i-0373a5f160d6a887c --query 'InstanceStates[?contains(State,`InService`) == `true`].State'  --profile op-identity --output text
+
+aws ec2 describe-tags --region eu-west-1  --filters "Name=resource-id,Values=i-0ea5000e86b5e9679" "Name=key,Values=Application" | jq -r .Tags[0].Value
+
+app=$(aws ec2 describe-tags --region eu-west-1  --filters "Name=resource-id,Values=`curl 169.254.169.254/latest/meta-data/instance-id`" "Name=key,Values=Application" | jq -r .Tags[0].Value)
+
+
+$PS1="[\u@\h `aws ec2 describe-tags --region eu-west-1  --filters "Name=resource-id,Values=\`curl 169.254.169.254/latest/meta-data/instance-id\`" "Name=key,Values=Application" | jq -r .Tags[0].Value` \W]\$"
+
+PS1="[\u@\h $app] [\w] \$ "
+
+ aws ec2 describe-tags --region eu-west-1  --filters "Name=resource-id,Values=`curl 169.254.169.254/latest/meta-data/instance-id`" "Name=key,Values=Environment" | jq -r .Tags[0].Value | cut -c1-3
+
+production - rouge :				[\u@\h \e[1;31m$application\e[00m] [\w] \$ 
+development -  vert :   			[\u@\h \e[1;32m$application\e[00m] [\w] \$ 
+acceptance, reception et stress - jaune :		[\u@\h \e[1;33m$application\e[00m] [\w] \$ 
+
+01-ps.sh.profiled
+
+#!/bin/bash
+
+environnement={{ PSenvironnement.stdout }}
+application={{ PSapplication.stdout }}
+end="\[$(tput sgr0)\]"
+
+if [ $environnement = "production" ] 2> /dev/null
+        then
+                color="\[$(tput setaf 1)\]"
+
+elif [ $environnement = "acceptance" ] || [ $environnement = "reception" ] || [ $environnement = "stress" ]
+        then
+                color="\[$(tput setaf 11)\]"
+
+elif [ $environnement == "development" ]
+       then
+               color="\[$(tput setaf 10)\]"
+else
+                color="\[$(tput setaf 15)\]"
+fi
+
+
+PS1="[\u@\h $color$application$end] [\w] \$ "
+
+
+GREEN="\[$(tput setaf 10)\]"
+jaune = 11
+rouge : 1
+
+blanc 15
+
+
+
+  - name: Install JQ package
+    yum:
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - jq
+    register: JQINSTALLED
+    ignore_errors: True
+
+  - name: get application name 
+    shell: aws ec2 describe-tags --region eu-west-1  --filters "Name=resource-id,Values=`curl 169.254.169.254/latest/meta-data/instance-id`" "Name=key,Values=Application" | jq -r .Tags[0].Value
+    register: PSapplication
+    when: JQINSTALLED.rc == 0 
+
+  - name: get environnement
+    shell: aws ec2 describe-tags --region eu-west-1  --filters "Name=resource-id,Values=`curl 169.254.169.254/latest/meta-data/instance-id`" "Name=key,Values=Environment" | jq -r .Tags[0].Value 
+    register: PSenvironnement
+    when: JQINSTALLED.rc == 0  
+
+  - template:
+      src: /root/.ansible/roles/ansible-role-os/templates/01-ps.sh.profiled
+      dest: /etc/profile.d/01-ps.sh
+      owner: root
+      group: root
+      mode: "u=rw,g=r,o=r"
+    when: JQINSTALLED.rc == 0 and PSapplication is defined and PSenvironnement is defined
+
+
+ansible localhost -m include_role -a name=ansible-role-os -e "target_application=bortodi-app"
+
+

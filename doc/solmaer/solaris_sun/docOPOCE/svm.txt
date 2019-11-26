@@ -1,0 +1,38 @@
+# miroir
+metainit -f d51 1 1 c6t2000001862806EF5d0s5
+d51: Concat/Stripe is setup
+metainit d52 1 1 c6t200000186280786Fd0s5
+d52: Concat/Stripe is setup
+metainit d50 -m d51
+d50: Mirror is setup
+metattach d50 d52
+d50: submirror d52 is attached
+# et on verifie
+metastat -c
+d50              m  1.0GB d51 d52 (resync-80%)
+    d51          s  1.0GB /dev/dsk/c6t2000001862806EF5d0s5
+    d52          s  1.0GB /dev/dsk/c6t200000186280786Fd0s5
+d40              m  136GB d41 d42
+    d41          s  136GB c6t2000001862807896d0s0
+    d42          s  136GB c6t2000001862807866d0s0
+d30              m   10GB d31 d32
+    d31          s   10GB /dev/dsk/c6t2000001862806EF5d0s6
+    d32          s   10GB /dev/dsk/c6t200000186280786Fd0s6
+d20              m   10GB d21 d22
+    d21          s   10GB /dev/dsk/c6t2000001862806EF5d0s1
+    d22          s   10GB /dev/dsk/c6t200000186280786Fd0s1
+d10              m   10GB d11 d12
+    d11          s   10GB /dev/dsk/c6t2000001862806EF5d0s0
+    d12          s   10GB /dev/dsk/c6t200000186280786Fd0s0
+
+# efface le volume et ses submirrors:
+metaclear -r /dev/md/dsk/d50
+d50: Mirror is cleared
+d51: Concat/Stripe is cleared
+d52: Concat/Stripe is cleared
+# if ever it says ( maint ) or needs maintenance, issue:
+metasync d10
+# agrandir une soft partition
+metattach d80 10g
+growfs -M /xchange /dev/md/rdsk/d80
+

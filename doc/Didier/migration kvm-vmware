@@ -1,0 +1,155 @@
+Prerequisites
+
+On the VM source:
+******************
+
+					service puppet stop
+					systemctl disable puppet
+
+					sed -i 's/ALL: ALL/#ALL: ALL/g' /etc/hosts.deny
+
+					sed -i 's/^PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
+					systemctl restart sshd
+
+					ip a| grep eth0 -A1 | grep link | awk '{print$2}'
+					ip a| grep eth1 -A1 | grep link | awk '{print$2}'
+
+					o	RHEL7: cp /boot/grub2/grub.cfg ~/
+					o	RHEL6: cp /boot/grub/menu.lst ~/
+
+
+
+Connect on rdp to opvmwstss03
+Launch VMware vCenter Converter Standalone Client
+
+Connect to a local server
+Click on Convert machine
+Select source type: Power on => Remote Linux machine
+VM source: IP address 
+User name: root
+Password: Linux rules
+
+ 
+Next
+Accept the key
+VMware Vcenter Server: 158.167.96.243
+User name/Password: Credential Windows PUBLICATIONS
+ 
+Next
+Ignore Certificate Warnings
+Keep the VM Name
+Select UNIX TEAM => KVM Migration
+ 
+Next
+Select HPE-DIGIT-OT-65 => OP-TCPC01 
+You can create VM on the following ESX servers:
+-	opeufsvmw23 to opeufsvmw26
+-	opmersvmw23 to opmersvmw26
+- Choose the datastore cluster that start by “LDS” If the size of the VM > 200 GB
+- Choose the datastore cluster that start by “DS” If the size of the VM < 200 GB
+ 
+Next
+Modify Data to copy:
+-	Advanced => Destination Layout
+-	Move system folder to VirtualDisk1
+-	Create New Disk (4)
+-	Move all systems partitions to the new disk
+-	Change type New Disk to LVG
+-	Destroy Old Disk with systems partitions
+-	Modify Type to Thin for all disks
+
+
+ 
+Modify Networks: Add VLAN
+ 
+
+No modification in Advanced options
+Helper VM Network:
+-	IPv4: Take the reserved IP
+-	Change DNS Server
+ 
+
+Uncheck IPv6
+Next
+ 
+Finish
+For example, the transfer rate is 50Mo/s
+Once the migration is complete, log in to the vcenter: https://opvmwsvc060.publications.win/ui/
+Modify the settings of the VM destination:
+-	SCSI Controller 0 => VMware Paravirtual
+-	Modify MAC Address for NIC 1: put the MAC eth0 of the source VM
+-	Modify MAC Address for NIC 2: put the MAC eth1 of the source VM
+-	Disconnect CD Player
+-	Swap disk system and application
+
+ [DS-OP-TCPC01-LUN01-DT] enotices-tk/enotices-tk_1.vmdk
+
+Stop the VM Source:
+-	On the cluster: 
+o	[root@xenon ~]# pcs resource disable centreonfo-tk
+o	[root@xenon ~]# pcs resource unmanage centreonfo-tk
+-	Wait the VM is stopped:
+o	[root@xenon ~]# pcs status | grep centreonfo-tk
+o	 centreonfo-tk	(ocf::heartbeat:VirtualDomain):	Stopped (disabled, unmanaged)
+
+
+
+Start the VM destination
+CHECK:
+-	SSH connection
+-	lsblk (all disks are available + PV/VG/LV)
+
+-	VGrename:
+o	vgrename VolGroup0 root
+o	Modify /etc/fstab: sed -i 's/VolGroup0/root/g' /etc/fstab
+o	Modify grub:
+	sed -i 's/VolGroup0/root/g' /boot/grub2/grub.cfg
+	sed -i 's/^: #/#/g' /boot/grub2/grub.cfg
+o	vgchange -ay
+o	lvchange /dev/root/* --refresh
+o	mkinitrd -f -v /boot/initramfs-$(uname -r).img $(uname -r)
+	sync
+
+o	reboot / Reset VM
+
+o	grub2-mkconfig -o /boot/grub2/grub.cfg
+o	reboot
+
+-	Install VMware Tools:
+o	yum install open-vm-tools.x86_64 -y
+o	systemctl start vmtoolsd.service
+
+-	Puppet
+o	puppet agent -t --noop puis puppet agent -t
+
+o	[root@centreonfo-tk ~]# service puppet start
+
+o	RHEL6: chkconfig puppet on
+o	RHEL 7: [root@centreonfo-tk ~]# systemctl enable puppet
+
+-	Disable root SSH access
+o	[root@centreonfo-tk ~]# grep Root /etc/ssh/sshd_config
+o	PermitRootLogin no
+							sed -i 's/^PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
+							systemctl restart sshd
+-	Mac address
+-	Monitoring (services OK)
+-	Backup
+o	recover
+-	Satellite
+o	yum repolist
+-	Reboot test
+
+-	Start application
+-	Enable application
+
+Move the VM to the correct directory under VMware (DIGIT)
+
+Remove Source VM:
+-	Remove VM on the cluster
+-	Remove LUNs
+-	Update CMDB
+
+
+
+

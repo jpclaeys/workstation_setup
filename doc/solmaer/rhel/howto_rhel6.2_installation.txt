@@ -1,0 +1,354 @@
+############################################################
+# NAME: howto-RHEL6-install.txt
+# DESC: Flow to install RHEL on a server
+#       Copy this file to your home directory.
+#       Then replace the following entries by the appropriate
+#       names:
+#           - srvname: the name of the server to be installed
+#           - jesuis: your user name
+#       and set the following variables:
+#           - OS
+#           - HARDWARE
+#           - SITE
+#           - ENV
+#
+# CREATION DATE:    2012/03/07
+# AUTHOR: Mathias Chauvin
+# CHANGELOG:
+# 20120307: - Creation
+############################################################
+
+####
+## Get the server name from Antonio Schifano
+
+####
+## Set a couple of variable 
+## using vi/vim to edit this file while installing, for instance castor, you can do :%s/srvname/castor/g
+## if you are jesuis, do :%s/jesuis/jesuis/g
+export SERVERNAME=srvname
+export WHOAMI=jesuis
+## OS is one of "RHEL5", "RHEL6", "RHEL6.2"
+## :%s/quelos/RHEL6.2/g
+export OS=quelos
+## HARDWARE is on of "KVM guest", "HP Blade server", "HP Proliant DL580", "VMware guest"
+## :%s/quelhw/"HP Blade server"/g
+export HARDWARE="quelhw"
+## :%s/quelsite/mercier/g or :%s/quelsite/eufo/g
+export SITE="quelsite"
+## :%s/quelenv/prod/g or :%s/quelenv/test/g
+export ENV=quelenv
+
+####
+## Get the workflow from Sonia
+cat <<EOT | mailx -s "Demande de Workflow pour ${SERVERNAME}" jesuis
+Salut Sonia,
+
+Peux-tu ouvrir un workflow pour l'installation de ${HARDWARE} sous ${OS}.
+Le serveur est un serveur de ${ENV}: ${SERVERNAME} (${SITE}).
+
+Merci d'avance.
+--
+EOT
+
+####
+## Ask an IP to the Network team
+cat <<EOT | mailx -s "IP request for ${OS} server ${SERVERNAME}" kevin.dorrel@ext.publications.europa.eu OPOCE-INFRA-UNIX-WEB@publications.europa.eu INFRA-NETTEAM@publications.europa.eu 
+Hi,
+
+Can you provide us with an IP for ${HARDWARE} ${SERVERNAME} (${SITE}) in VLAN199?
+This server will be running ${OS}.
+
+Thanks and regards
+
+--
+Mathias
+Unix/Linux Team
+EOT
+
+
+####
+## Prepare the Kickstart server with the following, and edit it to set the servername, MAC address and IP address
+cp /net/remus/tftpboot/OPOCE-kickstart-conf-unattended-template.tpl /net/remus/tftpboot/OPOCE-kickstart-conf-unattended-${SERVERNAME}
+
+####
+## On remus, run the following to prepare the JET server for kickstart installation:
+export SERVERNAME=srvname
+/tftpboot/OPOCE-kickstart-conf-prepare.sh -f /tftpboot/OPOCE-kickstart-conf-unattended-${SERVERNAME}
+
+####
+## Connect to the ILO2 or to the blade chassis (or to the KVM console)
+## HP chassis in Mercier:   https://10.6.0.68  adm-linux/Admlinux
+## HP chassis at EUFO:      https://10.6.0.71  adm-linux/Admlinux
+
+## Get to the JAVA console of the target (server or blade) and power the server on from the ILO2
+
+####
+## Once the installation is over, change the root password
+passwd
+
+####
+## Define the opsrv if there is one on the same VLAN as the default interface
+IPOPSRV=xxx.xxx.xxx.xxx
+
+cat > ifcfg-eth0\:0 <<EOT 
+DEVICE="eth0:0"
+BOOTPROTO="static"
+IPADDR="${IPOPSRV}"
+NETMASK="255.255.252.0"
+ONBOOT="yes"
+TYPE="Ethernet"
+USERCTL=NO
+PEERDNS=NO
+EOT
+
+####
+## Thenrun the cfengine agent once
+
+## On the server:
+\rm  /home/betorma/xchange/cfengine/ppkeys/*
+for user in root opsys_ux root-int rootdba; do
+\cp /var/cfengine/ppkeys/localhost.pub /home/betorma/xchange/cfengine/ppkeys/${user}-`{ ip addr show eth0; ip addr show bond0; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`.pub;
+done
+
+# for srv in pioneer sputnik ariel betty carla donna erika fedra greta helen abel bernoulli cauchy dirac euler fermat galilei hilbert castor polideuce; do  IPSRV=`getent hosts ${srv} | awk '{ print $1; }'`; for user in opsys_ux root-int rootdba; do cp root-${IPSRV}.pub ${user}-${IPSRV}.pub; done; done
+
+
+## On infra-srv
+export WHOAMI=jesuis
+cp /home/betorma/xchange/cfengine/ppkeys/*-*.pub /var/cfengine/ppkeys/
+chmod 644 /var/cfengine/ppkeys/*    
+chown root:root /var/cfengine/ppkeys/*                                
+                                  
+## Edit the /var/cfengine/master/inputs/cf.groups to add the server the the appropriate 
+## - eufo_linux_phys = ( sputnik erika fedra greta helen asgard castor )
+## - mer_linux_phys = ( pioneer ariel betty carla donna midgard polideuce )
+## - eufo_linux_vm = ( otvmwsdish1 otvmwsidol1 otvmwsidol2 otvmwsidol3 otvmwsidol4 otvmwsidol5 nagios-pk nagios-tk )
+## - mer_linux_vm = ( opvmwsidol1 ot-pioneer otkvmnagios1 otvmwsbck03 rhnproxy-pk )
+## group
+
+## On the server, run the agent, and reboot
+/var/cfengine/bin/cfagent -qv
+echo "init 6" ## Let's put an echo to prevent an init 6 on the wrong server ;-)
+
+####
+## As we've just rebooted
+## Set a couple of variable 
+## using vi/vim to edit this file while installing, for instance castor, you can do :%s/srvname/castor/g
+## if you are jesuis, do :%s/jesuis/jesuis/g
+export SERVERNAME=srvname
+export WHOAMI=jesuis
+## OS is one of "RHEL5", "RHEL6", "RHEL6.2"
+export OS=quelos
+## HARDWARE is on of "KVM guest", "HP Blade server", "HP Proliant DL580"
+export HARDWARE=quelhw
+export SITE=quelsite
+export ENV=quelenv
+
+
+####
+## Populate the /etc/hosts file
+IPSRV199=`{ ip addr show eth0; ip addr show bond0; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN1=`{ ip addr show eth0.1; ip addr show bond0.1; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN220=`{ ip addr show eth0.220; ip addr show bond0.220; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN222=`{ ip addr show eth0.222; ip addr show bond0.222; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+if [[ ! -z "$IPSRV199" ]]; then getent hosts $IPSRV199 | awk '{ split($2,a,"."); print $1"\t"$2" "a[1]; }' >> /etc/hosts; fi
+if [[ ! -z "$IPVLAN1" ]]; then getent hosts $IPVLAN1 | awk '{ split($2,a,"."); print $1"\t"$2" "a[1]; }' >> /etc/hosts; fi
+if [[ ! -z "$IPVLAN220" ]]; then getent hosts $IPVLAN220 | awk '{ split($2,a,"."); print $1"\t"$2" "a[1]; }' >> /etc/hosts; fi
+if [[ ! -z "$IPVLAN222" ]]; then getent hosts $IPVLAN222 | awk '{ split($2,a,"."); print $1"\t"$2" "a[1]; }' >> /etc/hosts; fi
+cat /etc/hosts
+
+####
+## Create a ticket for the oraagent installation
+cat <<EOT | mailx -s "Request for service to be opened: oraagent installation on ${SERVERNAME}" OPOCE-HELPDESK@publications.europa.eu ${WHOAMI}
+Hi,
+
+Could you please open the following ticket?
+
+Type:           Service
+CI:             UNIX
+Server:         ${SERVERNAME}
+Group:          DB-OPOCE
+Assignee name:  
+URGENCY:        low 
+IMPACT:         low
+
+Description:    Can you please install the Oraagent on ${OS} server ${SERVERNAME}?
+
+Thanks and regards.
+
+_______________________________________
+     
+Mathias Chauvin
+HALIAN
+Infrastructures/Exploitation/Syst?mes Ouverts de production
+Linux System Engineer
+______________________________________
+EOT
+
+####
+## If the server is a new server, create a ticket for the nagios monitoring
+IPSRV199=`{ ip addr show eth0; ip addr show bond0; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN1=`{ ip addr show eth0.1; ip addr show bond0.1; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN220=`{ ip addr show eth0.220; ip addr show bond0.220; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN222=`{ ip addr show eth0.222; ip addr show bond0.222; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+for IP in ${IPSRV199} ${IPVLAN1} ${IPVLAN220} ${IPVLAN222}; do
+    SRVNAME=`getent hosts ${IP} | awk '{ split($2,a,"."); print a[1]; }'`
+cat <<EOT | mailx -s "Request for service to be opened: Monitoring for ${OS} server ${SRVNAME}"  OPOCE-HELPDESK@publications.europa.eu ${WHOAMI}
+Hi,
+
+Could you please open the following ticket?
+
+Type:          Service
+CI:            UNIX
+Server:        nagios-pk
+Group:         INT-PROD-OPOCE
+Assignee name: WARINLO
+URGENCY:       low 
+IMPACT:        low
+Description:   Can you please set monitoring of server ${SRVNAME} (${IP}) in nagios?
+This server is located on site ${SITE}, running ${ENV} environment.
+
+Thanks and regards.
+_______________________________________
+ 
+Mathias Chauvin
+HALIAN
+Infrastructures/Exploitation/Syst?mes Ouverts de production
+Linux System Engineer
+______________________________________
+EOT
+done
+
+## If the server was already existing, then check the nagios interface to see the status of the server
+
+####
+## If the server hardware is an HP blade, then run the following on the server:
+cp /net/remus/export/install/linux-RHEL6/HPBlades/SPP-2012.01.0-0.zip /tmp/ && cd /tmp/ && unzip SPP-2012.01.0-0.zip && mount -o loop SPP2012010.2012_0119.47.iso /mnt/
+export DISPLAY=daria:0.0 ## /!\ replace daria by the name of the station you're working on (don't forget the xhost + ${SERVERNAME}")
+cd /mnt/hp/swpackages/
+./hpsum
+
+## Go through the process, enter the OS credentials, don't manage the chassis (managed by the Windows team)
+## Once the installation is complete, reboot the server, and run the HP Service Pack once more, to validate that 
+## everything is up to date
+
+####
+## As we've just rebooted
+## Set a couple of variable 
+## using vi/vim to edit this file while installing, for instance castor, you can do :%s/srvname/castor/g
+## if you are jesuis, do :%s/jesuis/jesuis/g
+export SERVERNAME=srvname
+export WHOAMI=jesuis
+## OS is one of "RHEL5", "RHEL6", "RHEL6.2"
+export OS=quelos
+## HARDWARE is on of "KVM guest", "HP Blade server", "HP Proliant DL580"
+export HARDWARE=quelhw
+export SITE=quelsite
+export ENV=quelenv
+
+cp /net/remus/export/install/linux-RHEL6/HPBlades/SPP-2012.01.0-0.zip /tmp/ && cd /tmp/ && unzip SPP-2012.01.0-0.zip && mount -o loop SPP2012010.2012_0119.47.iso /mnt/
+export DISPLAY=daria:0.0 ## /!\ replace daria by the name of the station you're working on (don't forget the xhost + ${SERVERNAME}")
+cd /mnt/hp/swpackages/
+./hpsum
+
+
+####
+## The installation is almost complete. But the ECC agent needs to be updated
+## Send an email to the Storage team
+cat <<EOT | mailx -s "ECC agent update after installation of ${OS} on ${SERVERNAME}" DL-OPOCE-INFRA-STORAGE@publications.europa.eu ${WHOAMI}
+Hello team,
+
+The server ${SERVERNAME} has just been installed with ${OS}.
+Can you please update the ECC agent from your console?
+Once it is done, we will update the inquiry tools.
+
+Thanks and regards
+_______________________________________
+
+Mathias Chauvin
+HALIAN
+Infrastructures/Exploitation/Syst?mes Ouverts de production
+Linux System Engineer
+______________________________________
+EOT
+
+
+####
+## Once the ECC agent has been copy the latest inq.linux tools in the MLR610 directory
+
+## If the server is a HP Blade with Emulex HBA:
+\cp /net/remus/export/install/linux-RHEL6/ECCagent/inq.linux /usr/ecc/exec/MLR610/inq.linux
+\cp /net/remus/export/install/linux-RHEL6/ECCagent/inq.LinuxAMD64 /usr/ecc/exec/MLR610/inq.LinuxAMD64
+\cp /net/remus/export/install/linux-RHEL6/ECCagent/inq.LinuxAMD64 /usr/ecc/exec/MLR610/inq.linux
+/usr/ecc/exec/MLR610/inq.linux -hba -fibre
+/usr/ecc/exec/MLR610/inq.linux -hba -fibre -hba_file /usr/ecc/exec/MLR610/HBA_FILE -create
+
+## If the server is a HP Proliant:
+\cp /net/remus/export/install/linux-RHEL6/ECCagent/inq.linux /usr/ecc/exec/MLR610/inq.linux
+\cp /net/remus/export/install/linux-RHEL6/ECCagent/inq.LinuxAMD64 /usr/ecc/exec/MLR610/inq.LinuxAMD64
+/usr/ecc/exec/MLR610/inq.linux -hba -fibre
+/usr/ecc/exec/MLR610/inq.linux -hba -fibre -hba_file /usr/ecc/exec/MLR610/HBA_FILE -create
+
+## Restart the ECC agent
+service eccmad stopall
+sleep 60
+service eccmad start
+
+####
+## Test the syslog configuration
+logger -p crit "This is a test message from `uname -n`"
+
+## Check the logs on infra-srv
+tail -f /var/adm/message
+## or
+grep "test message" /var/adm/message
+
+####
+## Run the first backup
+savegrp -c ${SERVERNAME} -l full EUFO_Linux_Test|EUFO_Linux_Prod|Mercier_Linux_Test|Mercier_Linux_Prod
+
+####
+## Ask for the CMDB entry
+IPSRV199=`{ ip addr show eth0; ip addr show bond0; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN1=`{ ip addr show eth0.1; ip addr show bond0.1; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN220=`{ ip addr show eth0.220; ip addr show bond0.220; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+IPVLAN222=`{ ip addr show eth0.222; ip addr show bond0.222; } | awk -F' ' '{ if ( $1 == "inet" ) { split($2,ip,"/"); print ip[1]; }}'`
+
+for IP in ${IPSRV199} ${IPVLAN1} ${IPVLAN220} ${IPVLAN222}; do
+    SRVNAME=`getent hosts ${IP} | awk '{ split($2,a,"."); print a[1]; }'`
+cat <<EOT | mailx -s "[CMDB][LINUX] Nouvelle entree ${SRVNAME}" OPOCE-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu jesuis
+Bonjour,
+Une nouvelle machine est en cours d installation :
+    Type :   ${HARDWARE}
+    Name :   ${SRVNAME}
+    Site :   ${SITE}
+    Env :    ${ENV}
+    OS :     ${OS}
+    IP :     ${IP}  
+
+Thanks and regards
+_______________________________________
+
+Mathias Chauvin
+HALIAN
+Infrastructures/Exploitation/Syst?mes Ouverts de production
+Linux System Engineer
+______________________________________
+EOT
+done
+
+####
+## The last step might be the acceptance:
+/home/jesuis/tmp/Acceptance/check_linux.sh -o html > /tmp/`uname -n`_acceptance.html && echo "Here attached the acceptance result for `uname -n`" | mailx -a /tmp/`uname -n`_acceptance.html -s "Acceptance for `uname -n`" ${WHOAMI}
+
+## Or to be signed by OP
+export WHOAMI="jesuis jesuis"
+{ 
+    rm -rf /tmp/`uname -n`_acceptance; 
+    mkdir /tmp/`uname -n`_acceptance; 
+    cp /home/jesuis/tmp/Acceptance/*.png /tmp/`uname -n`_acceptance/; 
+    /home/jesuis/tmp/Acceptance/check_linux.sh -o sig > /tmp/`uname -n`_acceptance/`uname -n`_acceptance.html; 
+    cd /tmp; 
+    zip -q -r /tmp/`uname -n`_acceptance.zip `uname -n`_acceptance; 
+    echo "Here attached the acceptance result for `uname -n`" | mailx -a /tmp/`uname -n`_acceptance.zip  -s "Acceptance for `uname -n`" ${WHOAMI}
+}

@@ -1,0 +1,29 @@
+####################################################################################################
+# rafraichir les parts san pour voir des luns nouvellement ajoutees
+####################################################################################################
+
+
+##### liste les ports san connectes
+{
+export N=0
+luxadm -e port | grep -v 'NOT CONNECTED' | awk '{print $1}' | while read PORT
+do
+	N=`echo $N + 1 | bc`
+	export "PORT${N}"="${PORT}"
+	echo PORT${N}: "${PORT}${N}"
+done
+}
+
+##### rafraichit le port donne
+{
+PORT=$PORT2
+luxadm -e forcelip $PORT
+sleep 2
+luxadm -e port
+}
+
+####################################################################################################
+# luxadm de compete, batise luxadm_carlo
+####################################################################################################
+
+/usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))'

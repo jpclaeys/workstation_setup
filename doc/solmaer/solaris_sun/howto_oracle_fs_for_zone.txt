@@ -1,0 +1,66 @@
+####################################################################################################
+# creation des fs (oralog orabin oradata) necessaires dans une zones pour une application
+####################################################################################################
+
+
+##### variables
+export diskgroup=eurovoc
+export appli=eurovoc
+export zone=eurovoc_tz
+export oracle_volumes="voralog:4G vorabin:6G voradata:20G"
+export oracle_fs="oralog orabin oradata"
+export disk=`vxdisk -e list | perl -ne 'if(/(.+?)\s+(.+?)\s+(.+?)\s+($ENV{appli})\s+(online)\s+(c.t.+d0s2)/) {print $3}'`
+
+##### arret de la zone
+zoneadm -z ${zone} halt
+
+##### verif 
+zoneadm list -ivc
+
+##### ajoute les volumes de $volumes_list au disk group 
+for v in $oracle_volumes
+do
+echo vxassist -g ${diskgroup} make ${v%%:*} ${v##*:} alloc=${disk}
+done
+
+##### verif
+vxprint -g ${diskgroup}
+vxdg -g ${diskgroup} free
+
+##### creation des file systems pour oracle
+for fs in oradata
+do
+echo newfs  -i2000000 -f 8192 -m 1 -c 128 /dev/vx/rdsk/${diskgroup}/v${fs}
+done
+for fs in orabin oralog
+do
+echo newfs /dev/vx/rdsk/${diskgroup}/v${fs}
+done
+
+##### ajout des file systems a la zone
+for fs in $oracle_fs; do 
+zonecfg -z ${zone} <<EOT
+add fs
+set special=/dev/vx/dsk/${appli}/v${fs}
+set dir=/applications/${appli}/${fs}
+set raw=/dev/vx/rdsk/${appli}/v${fs}
+set type=ufs
+end
+EOT
+done
+
+##### verif
+cat /etc/zones/${zone}.xml
+
+##### redemarrage de la zone
+zoneadm -z $zone boot
+
+##### connexion a la zone
+zlogin -C ${zone}
+
+##### verif des fs
+root@ceres_tz # df -h
+
+
+
+

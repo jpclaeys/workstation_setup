@@ -1,0 +1,165 @@
+#########################################################################################
+# suivre le log de nagios avec la date a la pace du timestamp
+#########################################################################################
+
+tail -f /applications/nagios/users/nagios/var/nagios.log | perl -ne 'if(m{^\[(.*?)\]}) {$t=`/home/betorma/bin/timestamp2date.pl $1`; chomp $t; print "$t $_" }'
+
+
+#########################################################################################
+# changement de site d'un host (en changeant le nom de son groupe)
+#########################################################################################
+
+
+export new_site=eufo
+{
+for host in dlib_pz opsrv163 opsrv191 opsrv084 opsrv034 
+do
+	export date=`date +%Y%m%d`
+	perl -i.${date} -pe 'if(m{^\s+hostgroups\s+(.*?)_}) {s/$1/$ENV{new_site}/}' /applications/nagios/users/nagios/etc/objects/hosts/${host}.cfg
+	echo "##### $host"
+	diff /applications/nagios/users/nagios/etc/objects/hosts/${host}.cfg /applications/nagios/users/nagios/etc/objects/hosts/${host}.cfg.${date}
+	echo
+done
+}
+
+/applications/nagios/users/nagios/etc/init.d/nagios checkconfig | tail -5
+
+#########################################################################################
+# ajouter une zone et son opsrv au monitoring nagios
+#########################################################################################
+
+##### variables
+export ZONE=<zone_name>
+export OPSRV_ZONE=<opsrv_zone>
+export OPSRV_ZONE_IP=<opsrv_zone_ip>
+export OPSRV_APP=<application_opsrv>
+export OPSRV_APP_IP=<application_ip>
+export SITE=<zone_site>								##### 'eufo' ou 'mercier'
+export ENVIRONMENT=<environment>							##### 'prod'ou 'test' ou 'developpement'
+
+##### creation du fichier de config pour le monitoring de l'opsrv applicatif
+% cat >/applications/nagios/users/nagios/etc/objects/hosts/${OPSRV_APP}.cfg <<EOF
+define host{
+        use                     solaris-host            ; Name of host template to use
+        host_name               ${OPSRV_APP}
+        alias                   ${OPSRV_APP}
+        hostgroups              ${SITE}_${ENVIRONMENT}_servers_solaris_virtualLH
+        address                 ${OPSRV_APP_IP}
+        check_command           check-host-alive
+        max_check_attempts      3
+        }
+
+EOF
+
+
+##### creation du fichier de config pour le monitoring de l'opsrv de la zone
+% cat >/applications/nagios/users/nagios/etc/objects/hosts/${OPSRV_ZONE}.cfg <<EOF
+define host{
+        use                     solaris-host            ; Name of host template to use
+        host_name               ${OPSRV_ZONE}
+        alias                   ${OPSRV_ZONE}
+        hostgroups              ${SITE}_${ENVIRONMENT}_servers_solaris_virtualLH
+        address                 ${OPSRV_ZONE_IP}
+        check_command           check-host-alive
+        max_check_attempts      3
+        }
+
+EOF
+
+
+##### creation du fichier de config pour le monitoring de la zone
+% cat >/applications/nagios/users/nagios/etc/objects/hosts/${ZONE}.cfg <<EOF
+define host{
+        use                     solaris-host            ; Name of host template to use
+        host_name               ${ZONE}
+        alias                   ${ZONE}
+        hostgroups              ${SITE}_${ENVIRONMENT}_servers_solaris_virtualZones
+        address                 ${OPSRV_ZONE_IP}
+        check_command           check-host-alive        
+        max_check_attempts      3
+        }
+
+EOF
+
+##### verif de la configuration de nagios
+% /applications/nagios/users/nagios/etc/init.d/nagios checkconfig
+
+##### redemarrage de nagios
+% /applications/nagios/users/system/init.d/nagios stop
+% /applications/nagios/users/system/init.d/nagios start
+% while true; do sleep 2; ls -l /applications/nagios/users/nagios/var/status.dat; done
+
+
+######################################################################################
+# ajout/modification d'une url au monitoring
+######################################################################################
+
+{
+export date=`date +%Y%m%d%H%M`
+for file in /applications/nagios/users/nagios/etc/check_applis_CONFIG.cfg /applications/nagios/users/nagios/etc/objects/servicegroups.cfg /applications/nagios/users/nagios/etc/objects/services/applications.cfg 
+do
+	cp -p $file ${file}.${date}
+	ls -l $file $file.${date}
+done
+}
+
+
+vi /applications/nagios/users/nagios/etc/check_applis_CONFIG.cfg
+vi /applications/nagios/users/nagios/etc/objects/servicegroups.cfg 
+vi /applications/nagios/users/nagios/etc/objects/services/applications.cfg 
+
+
+{
+for file in /applications/nagios/users/nagios/etc/check_applis_CONFIG.cfg /applications/nagios/users/nagios/etc/objects/servicegroups.cfg /applications/nagios/users/nagios/etc/objects/services/applications.cfg 
+do
+	echo "##### diff $file $file.${date}"
+	diff $file $file.${date}
+	echo
+done
+}
+
+######################################################################################
+# ajout/modification d'une base de donnees oracle au monitoring
+######################################################################################
+
+
+{
+export date=`date +%Y%m%d%H%M`
+for file in /applications/nagios/users/nagios/etc/check_oracle_CONFIG.cfg /applications/nagios/users/nagios/etc/objects/services/oracle.cfg
+do
+	cp -p $file ${file}.${date}
+	ls -l $file ${file}.${date}
+done
+}
+
+
+vi /applications/nagios/users/nagios/etc/check_oracle_CONFIG.cfg
+vi /applications/nagios/users/nagios/etc/objects/services/oracle.cfg
+
+
+{
+for file in /applications/nagios/users/nagios/etc/check_oracle_CONFIG.cfg /applications/nagios/users/nagios/etc/objects/services/oracle.cfg
+do
+	echo "##### diff $file ${file}.${date}"
+	diff $file ${file}.${date}
+	echo
+done
+}
+
+
+
+
+
+######################################################################################
+# aknowledge smnp uptime checks 
+######################################################################################
+
+
+##### on warning
+
+foreach i in `echo 'select max(s.start_time), h.alias from nagios_hosts h, nagios_objects o, nagios_servicechecks s where o.name1=h.alias and s.service_object_id=o.object_id and s.output like "SNMPUPTIME WARNING%" group by s.service_object_id order by s.output;' | /applications/nagios/users/system/mysql/bin/mysql -undouser --password=RhsZFt7fNt8 -h 127.0.0.1 ndoutils|awk '{print $3}'`; do /applications/nagios/users/system/nagios/bin/customScripts/setSvcAcknowledge.pl -p "Uptime check" -c "sma service restarted" -h $i; done
+
+##### on unknown
+
+foreach i in `echo 'select max(s.start_time), h.alias from nagios_hosts h, nagios_objects o, nagios_servicechecks s where o.name1=h.alias and s.service_object_id=o.object_id and s.output like "SNMPUPTIME UNKNOWN%" group by s.service_object_id order by s.output;' | /applications/nagios/users/system/mysql/bin/mysql -undouser --password=RhsZFt7fNt8 -h 127.0.0.1 ndoutils|awk '{print $3}'`; do /applications/nagios/users/system/nagios/bin/customScripts/setSvcAcknowledge.pl -p "Uptime check" -c "sma service restarted" -h $i; done
+ 

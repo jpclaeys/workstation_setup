@@ -1,0 +1,4 @@
+# deinstall staroffice
+pkginfo -x | cut -f1 -d " " | grep -i staroffice > /tmp/so_packages
+pkgrm -n -a none `cat /tmp/so_packages`
+pkgrm SUNWfreetype2

@@ -1,0 +1,273 @@
+IM0002046301
+RFS - P3 - : SIMAP-PZ - ajout disque
+
+
+Hi,
+Could you please open the Following Ticket
+Thanks.
+
+Bonjour,
+Pourriez-vous créer le ticket suivant.
+D'avance, merci.
+_______________________________________________________________________
+
+Incident Type: Request for Service
+
+Incident Title: RFS - P3 - : SIMAP-PZ - ajout disque
+
+Reported By: Elvis Ciurleo
+
+Configuration Item: ORACLE
+
+Assignment: UNIX-WEB -OPOCE
+
+Description:
+
+applications/simap/oradata 91% used - SIMAP-PZ
+
+Pourriez-vous ajouter du disque ?
+
+Merci,
+
+Have a nice Day !!!!!!!
+
+Elvis.
+
+#################################################################################################################################################################
+zone	requested	real	dec	hexa	host	device	array	replication	dec	hexa	host	device	array	hypers	device group
+simap-pz	16	16.86	238	EE	venus/vulcain	0D6	Sym_128	host based	238	EE	venus/vulcain	5DC	Sym_312	2	
+#################################################################################################################################################################
+
+root@venus # zpool status simap-pz
+  pool: simap-pz
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                       STATE     READ WRITE CKSUM
+        simap-pz                                   ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60060480000290103312533030313234d0  ONLINE       0     0     0
+            c3t6006048000028775112853594D324445d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+
+root@venus # /home/betorma/bin/luxadm_carlo 
+path: /dev/rdsk/c3t6006048000028775112853594D304630d0s2 ==> stor: 5006048c49aef607 lun 229 stor: 5006048c49aef608 lun 229 
+path: /dev/rdsk/c3t6006048000028775112853594D313632d0s2 ==> stor: 5006048c49aef607 lun 228 stor: 5006048c49aef608 lun 228 
+path: /dev/rdsk/c3t6006048000028775112853594D314334d0s2 ==> stor: 5006048c49aef607 lun 199 stor: 5006048c49aef608 lun 199 
+path: /dev/rdsk/c3t6006048000028775112853594D324445d0s2 ==> stor: 5006048c49aef607 lun 215 stor: 5006048c49aef608 lun 215 
+path: /dev/rdsk/c3t6006048000028775112853594D343734d0s2 ==> stor: 5006048c49aef607 lun 201 stor: 5006048c49aef608 lun 201 
+path: /dev/rdsk/c3t6006048000028775112853594D353645d0s2 ==> stor: 5006048c49aef607 lun 192 stor: 5006048c49aef608 lun 192 
+path: /dev/rdsk/c3t6006048000028775112853594D354334d0s2 ==> stor: 5006048c49aef607 lun 227 stor: 5006048c49aef608 lun 227 
+path: /dev/rdsk/c3t6006048000028775112853594D373845d0s2 ==> stor: 5006048c49aef607 lun 205 stor: 5006048c49aef608 lun 205 
+path: /dev/rdsk/c3t6006048000028775112853594D374441d0s2 ==> stor: 5006048c49aef607 lun 230 stor: 5006048c49aef608 lun 230 
+path: /dev/rdsk/c3t6006048000028775112853594D374630d0s2 ==> stor: 5006048c49aef607 lun 200 stor: 5006048c49aef608 lun 200 
+path: /dev/rdsk/c3t60060480000290103312533030373936d0s2 ==> stor: 5006048c52a80407 lun 230 stor: 5006048c52a80408 lun 230 
+path: /dev/rdsk/c3t60060480000290103312533030373441d0s2 ==> stor: 5006048c52a80408 lun 229 stor: 5006048c52a80407 lun 229 
+path: /dev/rdsk/c3t60060480000290103312533030334236d0s2 ==> stor: 5006048c52a80408 lun 228 stor: 5006048c52a80407 lun 228 
+path: /dev/rdsk/c3t60060480000290103312533030304443d0s2 ==> stor: 5006048c52a80408 lun 227 stor: 5006048c52a80407 lun 227 
+path: /dev/rdsk/c3t60060480000290103312533030313234d0s2 ==> stor: 5006048c52a80408 lun 215 stor: 5006048c52a80407 lun 215 
+path: /dev/rdsk/c3t60060480000290103312533030354445d0s2 ==> stor: 5006048c52a80408 lun 205 stor: 5006048c52a80407 lun 205 
+path: /dev/rdsk/c3t60060480000290103312533030323442d0s2 ==> stor: 5006048c52a80408 lun 201 stor: 5006048c52a80407 lun 201 
+path: /dev/rdsk/c3t60060480000290103312533030374132d0s2 ==> stor: 5006048c52a80408 lun 200 stor: 5006048c52a80407 lun 200 
+path: /dev/rdsk/c3t60060480000290103312533030323342d0s2 ==> stor: 5006048c52a80408 lun 199 stor: 5006048c52a80407 lun 199 
+path: /dev/rdsk/c3t60060480000290103312533030304234d0s2 ==> stor: 5006048c52a80407 lun 192 stor: 5006048c52a80408 lun 192 
+
+root@venus # luxadm -e port
+/devices/pci@2,600000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+root@venus # luxadm -e forcelip /devices/pci@2,600000/SUNW,qlc@0/fp@0,0:devctl
+root@venus # luxadm -e port                                                   
+/devices/pci@2,600000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+root@venus # luxadm -e forcelip /devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl 
+root@venus # luxadm -e port                                                                
+/devices/pci@2,600000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+
+root@venus # /home/betorma/bin/luxadm_carlo | grep 'lun 238'                               
+path: /dev/rdsk/c3t6006048000028775112853594D304236d0s2 ==> stor: 5006048c49aef608 lun 238 stor: 5006048c49aef607 lun 238 
+path: /dev/rdsk/c3t60060480000290103312533030354443d0s2 ==> stor: 5006048c52a80408 lun 238 stor: 5006048c52a80407 lun 238 
+
+
+root@vulcain # luxadm -e port
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+/devices/pci@1,700000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+root@vulcain # luxadm -e forcelip /devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl
+root@vulcain # luxadm -e port                                                               
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+/devices/pci@1,700000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+root@vulcain # luxadm -e forcelip /devices/pci@1,700000/SUNW,qlc@0/fp@0,0:devctl            
+root@vulcain # luxadm -e port                                                   
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+/devices/pci@1,700000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+
+root@vulcain # /home/betorma/bin/luxadm_carlo| grep 'lun 238'
+path: /dev/rdsk/c3t6006048000028775112853594D304236d0s2 ==> stor: 5006048c49aef608 lun 238 stor: 5006048c49aef607 lun 238 
+path: /dev/rdsk/c3t60060480000290103312533030354443d0s2 ==> stor: 5006048c52a80408 lun 238 stor: 5006048c52a80407 lun 238 
+
+
+root@venus # zpool add simap-pz mirror c3t6006048000028775112853594D304236d0 c3t60060480000290103312533030354443d0
+
+root@venus # zpool status simap-pz 
+  pool: simap-pz
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                       STATE     READ WRITE CKSUM
+        simap-pz                                   ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60060480000290103312533030313234d0  ONLINE       0     0     0
+            c3t6006048000028775112853594D324445d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t6006048000028775112853594D304236d0  ONLINE       0     0     0
+            c3t60060480000290103312533030354443d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+root@vulcain # zpool import
+  pool: simap-pz
+    id: 10659642843161248077
+ state: ONLINE
+status: The pool was last accessed by another system.
+action: The pool can be imported using its name or numeric identifier and
+        the '-f' flag.
+   see: http://www.sun.com/msg/ZFS-8000-EY
+config:
+
+        simap-pz                                   ONLINE
+          mirror                                   ONLINE
+            c3t60060480000290103312533030313234d0  ONLINE
+            c3t6006048000028775112853594D324445d0  ONLINE
+          mirror                                   ONLINE
+            c3t6006048000028775112853594D304236d0  ONLINE
+            c3t60060480000290103312533030354443d0  ONLINE
+
+
+root@venus # zpool list simap-pz
+NAME       SIZE   USED  AVAIL    CAP  HEALTH  ALTROOT
+simap-pz   202G   160G  41.4G    79%  ONLINE  /
+
+
+root@simap-pz # df -h /applications/simap/oradata
+Filesystem             Size   Used  Available Capacity  Mounted on
+simap-pz/applications/simap/oradata
+                       199G   135G        38G    78%    /applications/simap/oradata
+
+root@venus # cldevice list -v
+DID Device          Full Device Path
+----------          ----------------
+d1                  venus:/dev/rdsk/c0t0d0
+d2                  venus:/dev/rdsk/c0t3d0
+d3                  venus:/dev/rdsk/c0t1d0
+d4                  vulcain:/dev/rdsk/c0t3d0
+d5                  vulcain:/dev/rdsk/c0t0d0
+d6                  vulcain:/dev/rdsk/c0t1d0
+d7                  vulcain:/dev/rdsk/c3t60060480000290103312533030304443d0
+d7                  venus:/dev/rdsk/c3t60060480000290103312533030304443d0
+d8                  vulcain:/dev/rdsk/c3t60060480000290103312533030323442d0
+d8                  venus:/dev/rdsk/c3t60060480000290103312533030323442d0
+d9                  vulcain:/dev/rdsk/c3t60060480000290103312533030354445d0
+d9                  venus:/dev/rdsk/c3t60060480000290103312533030354445d0
+d10                 vulcain:/dev/rdsk/c3t60060480000290103312533030373936d0
+d10                 venus:/dev/rdsk/c3t60060480000290103312533030373936d0
+d11                 vulcain:/dev/rdsk/c3t60060480000290103312533030334236d0
+d11                 venus:/dev/rdsk/c3t60060480000290103312533030334236d0
+d12                 vulcain:/dev/rdsk/c3t60060480000290103312533030304234d0
+d12                 venus:/dev/rdsk/c3t60060480000290103312533030304234d0
+d13                 vulcain:/dev/rdsk/c3t60060480000290103312533030373441d0
+d13                 venus:/dev/rdsk/c3t60060480000290103312533030373441d0
+d14                 vulcain:/dev/rdsk/c3t60060480000290103312533030313234d0
+d14                 venus:/dev/rdsk/c3t60060480000290103312533030313234d0
+d15                 vulcain:/dev/rdsk/c3t60060480000290103312533030323342d0
+d15                 venus:/dev/rdsk/c3t60060480000290103312533030323342d0
+d16                 vulcain:/dev/rdsk/c3t60060480000290103312533030374132d0
+d16                 venus:/dev/rdsk/c3t60060480000290103312533030374132d0
+d17                 vulcain:/dev/rdsk/c3t6006048000028775112853594D373845d0
+d17                 venus:/dev/rdsk/c3t6006048000028775112853594D373845d0
+d18                 vulcain:/dev/rdsk/c3t6006048000028775112853594D343734d0
+d18                 venus:/dev/rdsk/c3t6006048000028775112853594D343734d0
+d19                 vulcain:/dev/rdsk/c3t6006048000028775112853594D313632d0
+d19                 venus:/dev/rdsk/c3t6006048000028775112853594D313632d0
+d20                 vulcain:/dev/rdsk/c3t6006048000028775112853594D304630d0
+d20                 venus:/dev/rdsk/c3t6006048000028775112853594D304630d0
+d21                 vulcain:/dev/rdsk/c3t6006048000028775112853594D374441d0
+d21                 venus:/dev/rdsk/c3t6006048000028775112853594D374441d0
+d22                 vulcain:/dev/rdsk/c3t6006048000028775112853594D354334d0
+d22                 venus:/dev/rdsk/c3t6006048000028775112853594D354334d0
+d23                 vulcain:/dev/rdsk/c3t6006048000028775112853594D314334d0
+d23                 venus:/dev/rdsk/c3t6006048000028775112853594D314334d0
+d24                 vulcain:/dev/rdsk/c3t6006048000028775112853594D353645d0
+d24                 venus:/dev/rdsk/c3t6006048000028775112853594D353645d0
+d25                 vulcain:/dev/rdsk/c3t6006048000028775112853594D324445d0
+d25                 venus:/dev/rdsk/c3t6006048000028775112853594D324445d0
+d26                 vulcain:/dev/rdsk/c3t6006048000028775112853594D374630d0
+d26                 venus:/dev/rdsk/c3t6006048000028775112853594D374630d0
+
+root@venus # cldevice populate
+Configuring DID devices
+did instance 27 created.
+did subpath venus:/dev/rdsk/c3t60060480000290103312533030354443d0 created for instance 27.
+did instance 28 created.
+did subpath venus:/dev/rdsk/c3t6006048000028775112853594D304236d0 created for instance 28.
+Configuring the /dev/global directory (global devices)
+obtaining access to all attached disks
+
+
+root@venus # cldevice list -v 
+DID Device          Full Device Path
+----------          ----------------
+d1                  venus:/dev/rdsk/c0t0d0
+d2                  venus:/dev/rdsk/c0t3d0
+d3                  venus:/dev/rdsk/c0t1d0
+d4                  vulcain:/dev/rdsk/c0t3d0
+d5                  vulcain:/dev/rdsk/c0t0d0
+d6                  vulcain:/dev/rdsk/c0t1d0
+d7                  vulcain:/dev/rdsk/c3t60060480000290103312533030304443d0
+d7                  venus:/dev/rdsk/c3t60060480000290103312533030304443d0
+d8                  vulcain:/dev/rdsk/c3t60060480000290103312533030323442d0
+d8                  venus:/dev/rdsk/c3t60060480000290103312533030323442d0
+d9                  vulcain:/dev/rdsk/c3t60060480000290103312533030354445d0
+d9                  venus:/dev/rdsk/c3t60060480000290103312533030354445d0
+d10                 vulcain:/dev/rdsk/c3t60060480000290103312533030373936d0
+d10                 venus:/dev/rdsk/c3t60060480000290103312533030373936d0
+d11                 vulcain:/dev/rdsk/c3t60060480000290103312533030334236d0
+d11                 venus:/dev/rdsk/c3t60060480000290103312533030334236d0
+d12                 vulcain:/dev/rdsk/c3t60060480000290103312533030304234d0
+d12                 venus:/dev/rdsk/c3t60060480000290103312533030304234d0
+d13                 vulcain:/dev/rdsk/c3t60060480000290103312533030373441d0
+d13                 venus:/dev/rdsk/c3t60060480000290103312533030373441d0
+d14                 vulcain:/dev/rdsk/c3t60060480000290103312533030313234d0
+d14                 venus:/dev/rdsk/c3t60060480000290103312533030313234d0
+d15                 vulcain:/dev/rdsk/c3t60060480000290103312533030323342d0
+d15                 venus:/dev/rdsk/c3t60060480000290103312533030323342d0
+d16                 vulcain:/dev/rdsk/c3t60060480000290103312533030374132d0
+d16                 venus:/dev/rdsk/c3t60060480000290103312533030374132d0
+d17                 vulcain:/dev/rdsk/c3t6006048000028775112853594D373845d0
+d17                 venus:/dev/rdsk/c3t6006048000028775112853594D373845d0
+d18                 vulcain:/dev/rdsk/c3t6006048000028775112853594D343734d0
+d18                 venus:/dev/rdsk/c3t6006048000028775112853594D343734d0
+d19                 vulcain:/dev/rdsk/c3t6006048000028775112853594D313632d0
+d19                 venus:/dev/rdsk/c3t6006048000028775112853594D313632d0
+d20                 vulcain:/dev/rdsk/c3t6006048000028775112853594D304630d0
+d20                 venus:/dev/rdsk/c3t6006048000028775112853594D304630d0
+d21                 vulcain:/dev/rdsk/c3t6006048000028775112853594D374441d0
+d21                 venus:/dev/rdsk/c3t6006048000028775112853594D374441d0
+d22                 vulcain:/dev/rdsk/c3t6006048000028775112853594D354334d0
+d22                 venus:/dev/rdsk/c3t6006048000028775112853594D354334d0
+d23                 vulcain:/dev/rdsk/c3t6006048000028775112853594D314334d0
+d23                 venus:/dev/rdsk/c3t6006048000028775112853594D314334d0
+d24                 vulcain:/dev/rdsk/c3t6006048000028775112853594D353645d0
+d24                 venus:/dev/rdsk/c3t6006048000028775112853594D353645d0
+d25                 vulcain:/dev/rdsk/c3t6006048000028775112853594D324445d0
+d25                 venus:/dev/rdsk/c3t6006048000028775112853594D324445d0
+d26                 vulcain:/dev/rdsk/c3t6006048000028775112853594D374630d0
+d26                 venus:/dev/rdsk/c3t6006048000028775112853594D374630d0
+d27                 venus:/dev/rdsk/c3t60060480000290103312533030354443d0
+d27                 vulcain:/dev/rdsk/c3t60060480000290103312533030354443d0
+d28                 venus:/dev/rdsk/c3t6006048000028775112853594D304236d0
+d28                 vulcain:/dev/rdsk/c3t6006048000028775112853594D304236d0
+

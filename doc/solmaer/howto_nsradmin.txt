@@ -1,0 +1,102 @@
+######################################################################################################
+# supprimer un client
+######################################################################################################
+
+# nsradmin
+nsradmin> delete type:nsr client; name: osiris
+
+#####################################################################################################
+# modifier la liste des administrateurs
+######################################################################################################
+
+nsradmin -p nsrexec -i - <<EOT
+print NSR system port ranges
+update administrator:*@localhost, administrator@opvmwsnmc01;
+EOT
+
+######################################################################################################
+# modifier un saveset
+######################################################################################################
+
+nsradmin -i - <<EOT
+print type: nsr client;comment: eurlex_pz unix client;name: opsrv199
+update save set: /, /applications/mtf;
+EOT
+
+######################################################################################################
+# modifier remote acces
+######################################################################################################
+
+nsradmin -i - <<EOT
+print name:atto-tz
+update remote access: root@atto-tz, oracle@atto-tz, root@restore_tz, oracle@restore_tz, root@mack;
+EOT
+
+######################################################################################################
+# liste des saveset d'un client
+######################################################################################################
+
+nsradmin -i - <<EOT
+show save set
+print type: NSR client;name: bart
+EOT
+
+
+######################################################################################################
+# liste des saveset des clients solaris
+######################################################################################################
+
+{
+nsradmin -i - <<EOT
+show name; aliases; save set
+print type: NSR client; client OS type: Solaris;
+EOT
+}| perl -pe 'chomp; s/\s+//g; s/name/\nname/g'
+
+
+######################################################################################################
+# rechercher dans les saveset a quel /applications/*/oradata correspond un ssid oracle
+######################################################################################################
+
+export ssid=LEXCOPCP
+export networker_server=opbk01
+{
+nsradmin -s ${networker_server} -i - <<EOT
+show save set; aliases
+print type: NSR client; client OS type: Solaris;
+EOT
+} | perl -pe 'chomp; s/\s+//g;' | perl -ne 'print "$3;/applications/$2/oradata\n" while(m{saveset:.*?(RMAN:$ENV{ssid}:appl:(.*?):redo_keep:.*?).*?;aliases:(.*?);}g)'
+
+
+
+######################################################################################################
+# changer de groupe (de site) d'un client de backup
+######################################################################################################
+
+##### client a modifier
+export client=opsrv125
+
+##### groupes auquels appartient le client
+{
+nsradmin -i - <<EOT
+show name;group
+print name:$client
+EOT
+}
+
+##### nom du nouveau site pour le client
+export new_stie=EUFO		# Mercier|EUFO
+
+
+##### changement du group correspondant au nouveau site
+{
+nsradmin -i - <<EOT
+show group
+print name:$client
+EOT
+} | perl -pe 'chomp; s/\s+|group:|;//g;' | perl -ne '$old_group = $_; s/^\w+?_/$ENV{new_stie}_/; s/,\w+?_/,$ENV{new_stie}_/g; print "
+nsradmin -i - <<EOT
+print name:$ENV{client}; group: $old_group;
+update group: $_;
+EOT
+"'

@@ -1,0 +1,45 @@
+
+##### variables
+
+dev_list='011A 011B 011C 011D 011E 011F 0120 0121 0122 0123 0124 0125 0126 0127 0128 0129 012A 012B 012C 012D 012E 012F'
+export zone=restore2-tz
+date=`date '+%Y%m%d%H%M'`
+
+
+
+##### refresh disk/info/cluster/...
+
+/home/betorma/bin/storage_info.pl -A | tee /home/betorma/tmp/storage_info_`uname -n`.out
+cldev populate
+
+for dev in $dev_list; do grep " $dev " /home/betorma/tmp/storage_info_`uname -n`.out; done | grep -i vmax
+
+
+
+##### update confirguration zone file
+
+cp -p /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date} 
+
+{
+echo "zonecfg -z ${zone} <<EOT" 
+for dev in $dev_list; do grep " $dev " /home/betorma/tmp/storage_info_`uname -n`.out; done | grep -i vmax | awk '{print $32}' | sort -u | while read did
+do
+	echo "add device"
+	echo "set match=/dev/did/*dsk/${did}s*"
+	echo "end"	
+done
+echo verify
+echo commit
+echo exit
+echo EOT
+}
+
+
+
+##### zone reboot
+
+
+##### change acl
+
+chown oracle:dba  /dev/did/rdsk/d*s0
+

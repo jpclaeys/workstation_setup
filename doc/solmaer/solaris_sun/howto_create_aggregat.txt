@@ -1,0 +1,28 @@
+root@romulus # dladm show-dev
+ce0             link: unknown   speed: 1000  Mbps       duplex: full
+ce1             link: unknown   speed: 1000  Mbps       duplex: full
+ce2             link: unknown   speed: 1000  Mbps       duplex: full
+ce3             link: unknown   speed: 1000  Mbps       duplex: full
+ce4             link: unknown   speed: 1000  Mbps       duplex: full
+ge0             link: unknown   speed: 0     Mbps       duplex: unknown
+eri0            link: unknown   speed: 100   Mbps       duplex: unknown
+ce5             link: unknown   speed: 1000  Mbps       duplex: full
+ce6             link: unknown   speed: 1000  Mbps       duplex: full
+ce7             link: unknown   speed: 1000  Mbps       duplex: full
+ce8             link: unknown   speed: 1000  Mbps       duplex: full
+ce9             link: unknown   speed: 1000  Mbps       duplex: full
+
+root@romulus # ifconfig ce4 unplumb
+root@romulus # ifconfig ce9 unplumb
+root@romulus # dladm create-aggr -d ce4 -d ce9 1
+
+
+
+# dladm show-aggr 1
+# ifconfig aggr1 plumb
+# ifconfig aggr1 10.1.10.1 netmask 255.255.255.0 up
+dladm show-aggr 1
+# dladm add-aggr -d e1000g1 -d e1000g2 1
+# dladm show-aggr 1
+# dladm remove-aggr -d ce4 1
+# dladm show-aggr 1

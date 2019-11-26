@@ -1,0 +1,597 @@
+
+
+cd /applications/esenview/
+groupadd esenview -g 8370
+
+adduser esenview -u 83002 -g 83703 -d /applications/esenview/users/esenview -s /sbin/nologin
+
+
+
+cd /applications/tedtoespd
+
+groupadd tedtoespd -g 83701
+adduser tedtoespd -u 83011 -g 83701 -d /applications/tedtoespd/users/tedtoespd -s /sbin/nologin
+
+
+usermod -a -G esenview i_esentool && usermod -a -G tedtoespd i_esentool
+
+
+
+
+
+
+  137  puppet resource --help
+  138  puppet resource --types
+  140  puppet resource user esenview
+  141  puppet resource group esenview
+  142  puppet resource user tedtoespd
+  143  puppet resource group tedtoespd
+  145  puppet resource file esenview
+  146  puppet resource file /applications/esenview
+  147  puppet resource file -r/applications/esenview
+  148  puppet resource file -r /applications/esenview
+  149  puppet resource --params
+  150  puppet resource --help
+  151  puppet resource --param
+  152  puppet resource --types
+  153  puppet resource file -r /applications/esenview/users/esenview/
+  154  puppet resource file /applications/esenview/users/esenview/
+  155  puppet resource --types | grep dir
+  159  for i in `find ./esenview/ -type d`; do puppet resource file $i >> /root/esenview-dir-puppet.txt  ; done;
+  163  for i in `find /applications/esenview -type d`; do puppet resource file $i >> /root/esenview-dir-puppet.txt  ; done;
+  164  for i in `find /applications/tedtoespd -type d`; do puppet resource file $i >> /root/tedtoespd-dir-puppet.txt  ; done;
+  250  puppet resource
+  251  puppet resource -e user toto
+  253  puppet resource --help
+  254  puppet resource user tat
+  256  puppet resource user toto
+  258  puppet resource user toto
+  260  puppet resource --types
+  261  puppet resource user --help
+  262  puppet resource filesystem--help
+  263  puppet resource filesystem --help
+  264  puppet resource --types
+  268  puppet resource mount /applications/esentool
+  269  puppet resource logical_volume main
+  270  puppet resource logical_volume esentool
+  271  puppet resource logical_volume main esentool
+  272  puppet resource logical_volume 
+  273  puppet resource logical_volume --help
+  274  puppet resource logical_volume --verbose
+  275  puppet resource logical_volume "main"
+  276  puppet resource logical_volume "main" "esentool"
+  277  puppet resource logical_volume "esentool" "main"
+  278  puppet resource --types
+  279  puppet resource physical_volume
+  280  puppet resource volume_group
+  281  puppet resource logical_volume
+  282  puppet resource filesystem
+  283  puppet resource host
+  286  puppet resource file
+  287  puppet resource file /applications/esentool
+  411  history | grep resource
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+user { 'esenview':
+  ensure           => 'present',
+  gid              => '83703',
+  home             => '/applications/esenview/users/esenview',
+  password         => '!!',
+  password_max_age => '99999',
+  password_min_age => '0',
+  shell            => '/sbin/nologin',
+  uid              => '83002',
+} ->
+
+group { 'esenview':
+  ensure => 'present',
+  gid    => '83703',
+}
+
+
+user { 'tedtoespd':
+  ensure           => 'present',
+  gid              => '83701',
+  home             => '/applications/tedtoespd/users/tedtoespd',
+  password         => '!!',
+  password_max_age => '99999',
+  password_min_age => '0',
+  shell            => '/sbin/nologin',
+  uid              => '83011',
+} ->
+
+group { 'tedtoespd':
+  ensure => 'present',
+  gid    => '83701',
+}
+
+
+user { 'i_esentool':
+  groups           => ['esenview', 'tedtoespd'],
+}
+
+
+
+
+file { '/applications/esenview':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '775',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/system':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/system/services':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/w_esenview':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/i_esenview':
+  ensure => 'directory',
+  group  => '83702',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/esenview':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '1775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/logs':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/data':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/xchange':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+
+file { '/applications/tedtoespd':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '775',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users/system':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users/system/services':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+file { '/applications/tedtoespd/users/tedtoespd':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '1775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users/i_tedtoespd':
+  ensure => 'directory',
+  group  => '83702',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users/w_tedtoespd':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/logs':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/data':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/xchange':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '775',
+  owner  => '0',
+  type   => 'directory',
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*******************************************************************************************************************************
+
+
+parted -a optimal -s /dev/mapper/cportalfs-tk_t2_data2 mklabel msdos unit % mkpart primary ntfs 0 100
+
+partprobe /dev/mapper/cportalfs-tk_t2_data2
+
+symdg -g cportalfs-tk show ld DEV003 | grep 'Device WWN'
+
+
+ virsh attach-device cportalfs-tk /home/bortodi/kvm/newdisk.xml --persistent 
+ virsh detach-disk cportalfs-tk /dev/mapper/cportalfs-tk_t2_data1p1 --persistent
+
+
+/home/admin/bin/removelun_rhel /dev/mapper/cportalfs-tk_t2_data1 | bash 
+
+picard :
+********
+
+mpathi (360000970000296700060533030353839) dm-269 EMC,SYMMETRIX
+size=80G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 5:0:1:38 sdtl 65:560  active ready running
+  |- 4:0:1:38 sdtk 65:544  active ready running
+  |- 3:0:1:38 sdtj 65:528  active ready running
+  `- 6:0:1:38 sdtm 65:576  active ready running
+
+
+
+    multipath {
+       wwid 360000970000296700060533030353839
+       alias cportalfs-tk_t2_data2
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030343545
+       alias cportalfs-tk_t2_data1
+    }
+
+
+
+riker :
+********     
+
+mpathi (360000970000296700060533030353839) dm-269 EMC,SYMMETRIX
+size=80G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 4:0:1:38 sdtk 65:544  active ready running
+  |- 3:0:1:38 sdtj 65:528  active ready running
+  |- 5:0:1:38 sdtl 65:560  active ready running
+  `- 6:0:1:38 sdtm 65:576  active ready running
+
+
+    multipath {
+       wwid 360000970000296700060533030353839
+       alias cportalfs-tk_t2_data2
+    }
+
+    multipath {
+       wwid 360000970000296700060533030343545
+       alias cportalfs-tk_t2_data1
+    }
+
+
+
+laforge :
+********
+
+mpathu (360000970000296700069533030353839) dm-267 EMC,SYMMETRIX
+size=80G features='1 queue_if_no_path' hwhandler='0' wp=ro
+`-+- policy='service-time 0' prio=1 status=active
+  |- 5:0:0:38 sdtl 65:560  active ready running
+  |- 4:0:0:38 sdtk 65:544  active ready running
+  |- 3:0:1:38 sdtj 65:528  active ready running
+  `- 6:0:1:38 sdtm 65:576  active ready running
+
+
+    multipath {
+       wwid 360000970000296700069533030353839
+       alias cportalfs-tk_t2_data2
+    }
+
+    multipath {
+       wwid 360000970000296700069533030343545
+       alias cportalfs-tk_t2_data1
+    }
+
+worf :
+********
+
+mpathi (360000970000296700069533030353839) dm-432 EMC,SYMMETRIX
+size=80G features='1 queue_if_no_path' hwhandler='0' wp=ro
+`-+- policy='service-time 0' prio=1 status=active
+  |- 5:0:0:38 sdgy 132:224 active ready running
+  |- 4:0:0:38 sdgx 132:208 active ready running
+  |- 3:0:0:38 sdgw 132:192 active ready running
+  `- 6:0:1:38 sdgz 132:240 active ready running
+
+    multipath {
+       wwid 360000970000296700069533030353839
+       alias cportalfs-tk_t2_data2
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030343545
+       alias cportalfs-tk_t2_data1
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+virt-install --connect=qemu:///system --os-variant=rhel7 --check-cpu --os-type=linux --accelerate --hvm --vnc --network bridge:br227  --mac=52:54:00:00:00:c1 --network bridge:brbkp --mac=52:54:00:01:00:c1 --keymap=en-us --pxe --name=esentool-tk --ram 8192 --vcpus=4,maxvcpus=4 --disk path=/dev/mapper/esentool-tk_t2_system1p1,sparse=false --disk path=/dev/mapper/esentool-tk_t2_data1p1,sparse=false
+
+
+52:54:00:00:00:c1
+52:54:00:01:00:c1
+
+
+
+
+
+[root@worf ~]# nslookup esentool-tk
+Server:		158.167.97.163
+Address:	158.167.97.163#53
+
+Non-authoritative answer:
+
+
+Name:	esentool-tk.opoce.cec.eu.int
+Address: 158.167.227.151
+
+[root@worf ~]# nslookup bkp-esentool-tk
+Server:		158.167.97.163
+Address:	158.167.97.163#53
+
+Non-authoritative answer:
+
+
+Name:	bkp-esentool-tk.opoce.cec.eu.int
+Address: 10.167.227.151
+
+
+
+
+/dev/mapper/esentool-tk_t2_system1
+/dev/mapper/esentool-tk_t2_data1
+
+
+
+laforge
+---------
+        
+mpatht (360000970000296700069533030353837) dm-264 EMC,SYMMETRIX
+size=40G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 4:0:0:35 sdtd 8:688   active ready running
+  |- 5:0:0:35 sdtf 8:720   active ready running
+  |- 3:0:1:35 sdtb 8:656   active ready running
+  `- 6:0:1:35 sdth 8:752   active ready running
+
+multipath {
+
+esentool-tk_t2_system1
+
+
+--
+
+
+
+mpaths (360000970000296700069533030353838) dm-263 EMC,SYMMETRIX
+size=70G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 4:0:0:36 sdte 8:704   active ready running
+  |- 5:0:0:36 sdtg 8:736   active ready running
+  |- 3:0:1:36 sdtc 8:672   active ready running
+  `- 6:0:1:36 sdti 65:512  active ready running
+
+esentool-tk_t2_data1
+
+worf 
+-----
+
+mpathh (360000970000296700069533030353838) dm-172 EMC,SYMMETRIX
+size=70G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 4:0:0:36 sdgr 132:112 active ready running
+  |- 5:0:0:36 sdgt 132:144 active ready running
+  |- 6:0:1:36 sdgv 132:176 active ready running
+  `- 3:0:0:36 sddu 71:192  active ready running
+--
+mpathg (360000970000296700069533030353837) dm-167 EMC,SYMMETRIX
+size=40G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 5:0:0:35 sdgs 132:128 active ready running
+  |- 4:0:0:35 sdgq 132:96  active ready running
+  |- 6:0:1:35 sdgu 132:160 active ready running
+  `- 3:0:0:35 sdck 69:128  active ready running
+
+
+picard 
+-------
+
+mpathh (360000970000296700060533030353837) dm-266 EMC,SYMMETRIX
+size=40G features='1 queue_if_no_path' hwhandler='0' wp=ro
+`-+- policy='service-time 0' prio=1 status=active
+  |- 4:0:1:35 sdtd 8:688   active ready running
+  |- 3:0:1:35 sdtb 8:656   active ready running
+  |- 5:0:1:35 sdtf 8:720   active ready running
+  `- 6:0:1:35 sdth 8:752   active ready running
+--
+mpathg (360000970000296700060533030353838) dm-265 EMC,SYMMETRIX
+size=70G features='1 queue_if_no_path' hwhandler='0' wp=ro
+`-+- policy='service-time 0' prio=1 status=active
+  |- 4:0:1:36 sdte 8:704   active ready running
+  |- 3:0:1:36 sdtc 8:672   active ready running
+  |- 5:0:1:36 sdtg 8:736   active ready running
+  `- 6:0:1:36 sdti 65:512  active ready running
+
+
+
+
+riker
+------
+mpathh (360000970000296700060533030353838) dm-266 EMC,SYMMETRIX
+size=70G features='1 queue_if_no_path' hwhandler='0' wp=ro
+`-+- policy='service-time 0' prio=1 status=active
+  |- 4:0:1:36 sdte 8:704   active ready running
+  |- 5:0:1:36 sdtg 8:736   active ready running
+  |- 6:0:1:36 sdti 65:512  active ready running
+  `- 3:0:1:36 sdtc 8:672   active ready running
+--
+mpathg (360000970000296700060533030353837) dm-265 EMC,SYMMETRIX
+size=40G features='1 queue_if_no_path' hwhandler='0' wp=ro
+`-+- policy='service-time 0' prio=1 status=active
+  |- 4:0:1:35 sdtd 8:688   active ready running
+  |- 5:0:1:35 sdtf 8:720   active ready running
+  |- 3:0:1:35 sdtb 8:656   active ready running
+  `- 6:0:1:35 sdth 8:752   active ready running
+
+------
+
+
+

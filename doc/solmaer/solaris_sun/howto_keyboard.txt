@@ -1,0 +1,17 @@
+########################################
+# set language keyboard
+########################################
+
+eeprom kbd-type keyboard-layout
+
+gunzip -c ~betorma/config_files/belgian_kbd.tgz | tar xvf - 
+
+eeprom kbd-type=Belgian
+#eeprom kbd-type=UK-English
+#eeprom kbd-type=US-English
+
+eeprom keyboard-layout=Belgian
+#eeprom keyboard-layout=UK-English
+#eeprom keyboard-layout=US-English
+
+/usr/sbin/svcadm restart keymap

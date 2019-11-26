@@ -1,0 +1,16 @@
+#####################################################################################################################
+# creation d'une machine virtuelle sur procyon
+#####################################################################################################################
+
+{
+export hostname=actarus
+export ram_size=500
+export file_disk_name=/virtual_machines/disk/actarus00.img
+export file_disk_size=5
+export network=network:default
+export cdrm_location=/virtual_machines/iso/rhel-server-6.0-x86_64-dvd.iso
+
+echo virt-install --name ${hostname} --ram ${ram_size} --disk path=${file_disk_name},size=${file_disk_size} --network ${network} --accelerate --vnc -c /virtual_machines/iso/rhel-server-6.0-x86_64-dvd.iso
+}
+
+

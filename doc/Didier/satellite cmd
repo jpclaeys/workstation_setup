@@ -1,0 +1,74 @@
+
+subscription-manager repos
+
+There are no enabled repos.
+
+ Run "yum repolist all" to see the repos you have.
+
+ To enable Red Hat Subscription Management repositories:
+     subscription-manager repos --enable <repo>
+
+ To enable custom repositories:
+     yum-config-manager --enable <repo>
+
+
+etat de la licence :
+
+subscription-manager list --consumed
+
+
+subscription-manager register --org="DG-OPOCE" --activationkey="RHEL6" --force
+
+
+
+
+hammer repository list --organization-label=DG-OPOCE
+hammer repository upload-content --id 40 --path /net/vdm-unix/xchange/Backup/Sources/9204/linux_x86_64/lgtoclnt-9.2.0.4-1.x86_64.rpm
+
+ 
+
+class opoce::linux {
+
+    if $::hostname =~ /vmws|-tk|-bk|-dk|-rk|-pk/ {
+
+      exec {'subscription':
+        command => 'subscription-manager auto-attach && subscription-manager refresh',
+        path    => ['/bin', '/sbin', '/usr/bin', '/usr/sbin'],
+      }
+
+
+
+[root@satellite-pk ~]# for i in pulp_resource_manager pulp_workers pulp_celerybeat; do service $i restart; done
+Redirecting to /bin/systemctl restart pulp_resource_manager.service
+Redirecting to /bin/systemctl restart pulp_workers.service
+Redirecting to /bin/systemctl restart pulp_celerybeat.service
+
+
+
+
+Capsule :
+**********
+
+
+
+- name: Add mappings to /etc/hosts for Red Hat Satellite Server
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      {{ item.ip }} {{ item.name }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+  with_items:
+    - { name: satellite-pk.opoce.cec.eu.int, ip: 158.167.99.53 }
+
+
+
+- name: Install Red Hat Satellite Server's CA certificate in the Capsule Server
+  yum:
+    name: http://satellite-pk.opoce.cec.eu.int/pub/katello-ca-consumer-latest.noarch.rpm
+    state: present
+
+
+name ~ otvmws* or name ~ orvmws* or name ~ obvmws* or name ~ odvmws*
+
+
+

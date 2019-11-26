@@ -1,0 +1,220 @@
+
+
+
+## ccentral1-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003020
+       alias ccentral1-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000302b
+       alias ccentral1-pk_hds_data1
+    }
+
+
+
+## centreonbo1-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000300b
+       alias centreonbo1-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000300c
+       alias centreonbo1-pk_hds_data1
+    }
+
+
+## centreonbo2-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000300d
+       alias centreonbo2-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000300e
+       alias centreonbo2-pk_hds_data1
+    }
+
+
+## centreonbo3-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000300f
+       alias centreonbo3-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003010
+       alias centreonbo3-pk_hds_data1
+    }
+
+
+## centreonbo4-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003011
+       alias centreonbo4-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003012
+       alias centreonbo4-pk_hds_data1
+    }
+
+
+## centreonfo-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003013
+       alias centreonfo-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000302c
+       alias centreonfo-pk_hds_data1
+    }
+
+
+## cpoller1-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003021
+       alias cpoller1-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003022
+       alias cpoller1-pk_hds_data1
+    }
+
+
+## cpoller2-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003023
+       alias cpoller2-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003024
+       alias cpoller2-pk_hds_data1
+    }
+
+
+## cpoller3-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003025
+       alias cpoller3-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003026
+       alias cpoller3-pk_hds_data1
+    }
+
+
+## cpoller4-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003027
+       alias cpoller4-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003028
+       alias cpoller4-pk_hds_data1
+    }
+
+
+## ldap1-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003014
+       alias ldap1-pk_hds_system1
+    }
+
+
+## ldapa-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003015
+       alias ldapa-pk_hds_system1
+    }
+
+
+
+## nagios-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003016
+       alias nagios-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003029
+       alias nagios-pk_hds_data1
+    }
+
+
+## opdns001
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003017
+       alias opdns001_hds_system1
+    }
+
+
+
+## opdns002
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003018
+       alias opdns002_hds_system1
+    }
+
+
+
+## oud-mer-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf00003019
+       alias oud-mer-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000301a
+       alias oud-mer-pk_hds_data1
+    }
+
+
+## oud-euf-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000301b
+       alias oud-euf-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000301c
+       alias oud-euf-pk_hds_data1
+    }
+
+
+## puppet-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000301d
+       alias puppet-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000301e
+       alias puppet-pk_hds_data1
+    }
+
+
+## svn-pk
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000301f
+       alias svn-pk_hds_system1
+    }
+    multipath {
+       wwid 360060e8007e6bf000030e6bf0000302a
+       alias svn-pk_hds_data1
+    }
+
+
+
+---
+
+
+## 
+    multipath {
+       wwid 
+       alias _hds_system1
+    }
+    multipath {
+       wwid 
+       alias _hds_data1
+    }
+
+
+
+
+
+
+

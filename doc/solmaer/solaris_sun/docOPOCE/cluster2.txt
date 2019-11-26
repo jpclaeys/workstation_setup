@@ -1,0 +1,21 @@
+vi /etc/vfstab
+#device         device          mount           FS      fsck    mount   mount #to mount       to fsck         point           type    pass    at boot options
+#
+fd      -       /dev/fd fd      -       no      -
+/proc   -       /proc   proc    -       no      -
+/dev/vx/dsk/bootdg/swapvol      -       -       swap    -       no      nologging
+/dev/vx/dsk/bootdg/rootvol      /dev/vx/rdsk/bootdg/rootvol     /       ufs     1       no      nologging
+/dev/vx/dsk/bootdg/var  /dev/vx/rdsk/bootdg/var /var    ufs     1       no      nologging
+#/dev/vx/dsk/bootdg/globaldevices       /dev/vx/rdsk/bootdg/globaldevices       /globaldevices  ufs     2  yes     logging
+/devices        -       /devices        devfs   -       no      -
+ctfs    -       /system/contract        ctfs    -       no      -
+objfs   -       /system/object  objfs   -       no      -
+swap    -       /tmp    tmpfs   -       yes     -
+#NOTE: volume rootvol () encapsulated partition c0t0d0s0
+#NOTE: volume swapvol () encapsulated partition c0t0d0s1
+#NOTE: volume var () encapsulated partition c0t0d0s5
+#NOTE: volume export () encapsulated partition c0t0d0s6
+#NOTE: volume global () encapsulated partition c0t0d0s7
+
+mkdir -p /global/.devices/node@1
+ /usr/cluster/bin/scinstall -ik  -G /dev/vx/rdsk/bootdg/globaldevices -C test  -F  -o -P task=quorum,state=INIT 

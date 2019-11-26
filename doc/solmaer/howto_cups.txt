@@ -1,0 +1,297 @@
+##############################################################################
+##### goal
+
+nous testons la derniere version de cups afin de verifier s'il est possible de faire des statistiques sur les impressions.
+les statistiques sont tres limitees avec la version actuellement installee.
+
+
+##############################################################################
+##### new ip
+
+System name	IP Address	VirtualOn	AllocDate	Comments
+opsrv083	158.167.98.83	cups_tz	        05/12/2012	
+
+##############################################################################
+##### download and uncompress
+
+% wget http://ftp.easysw.com/pub/cups/1.6.1/cups-1.6.1-source.tar.bz2
+
+0[121205/143708]root@cups_tz# cd /home/betorma/download 
+0[121205/143714]root@cups_tz# bunzip2 cups-1.6.1-source.tar.bz2 
+0[121205/143745]root@cups_tz# tar xf cups-1.6.1-source.tar 
+
+
+
+##############################################################################
+##### file system creation
+
+
+
+0[121205/143823]root@cups_tz# zfs list
+NAME                              USED  AVAIL  REFER  MOUNTPOINT
+cups_tz                          2.66G  7.12G    20K  /zpool/cups_tz
+cups_tz/applications             1.36G  7.12G    23K  none
+cups_tz/applications/cups        72.1M  7.12G    21K  none
+cups_tz/applications/cups/users  72.1M  7.12G  72.1M  /applications/cups/users
+cups_tz/applications/oraagent    1.29G   728M  1.29G  /u01/oraagent
+
+0[121205/143827]root@cups_tz# zfs create -o mountpoint=none cups_tz/applications/cups-1.6.1
+0[121205/143907]root@cups_tz# zfs create -o mountpoint=/applications/cups-1.6.1/users cups_tz/applications/cups-1.6.1/users 
+
+0[121205/143922]root@cups_tz# zfs list
+NAME                                    USED  AVAIL  REFER  MOUNTPOINT
+cups_tz                                2.66G  7.12G    20K  /zpool/cups_tz
+cups_tz/applications                   1.36G  7.12G    23K  none
+cups_tz/applications/cups              72.1M  7.12G    21K  none
+cups_tz/applications/cups-1.6.1          42K  7.12G    21K  none
+cups_tz/applications/cups-1.6.1/users    21K  7.12G    21K  /applications/cups-1.6.1/users
+cups_tz/applications/cups/users        72.1M  7.12G  72.1M  /applications/cups/users
+cups_tz/applications/oraagent          1.29G   728M  1.29G  /u01/oraagent
+
+
+
+
+##############################################################################
+##### folders creation
+
+ 
+0[121205/143930]root@cups_tz# mkdir -p /applications/cups-1.6.1/users/{cups,system}
+0[121205/144139]root@cups_tz# chown cups:cups /applications/cups-1.6.1/users/cups 
+0[121205/144156]root@cups_tz# ls -l /applications/cups-1.6.1/users               
+total 6
+drwxr-xr-x   2 cups     cups           2 Dec  5 14:41 cups
+drwxr-xr-x   2 root     root           2 Dec  5 14:41 system
+
+
+
+##############################################################################
+##### compilation
+
+
+0[121205/154222]root@cups_tz# export PATH=$PATH:/usr/ccs/bin:/usr/sfw/bin
+
+
+
+0[121206/085940]root@cups_tz# ./configure --prefix=/applications/cups-1.6.1/users/system/cups-1.6.1
+0[121206/090623]root@cups_tz# gmake                       
+--- snip ---
+Compiling ppdc-array.cxx...
+In file included from ../cups/http-private.h:68,
+                 from ../cups/cups-private.h:28,
+                 from ppdc-private.h:23,
+                 from ppdc-array.cxx:29:
+/usr/include/kerberosv5/krb5.h:11: warning: ignoring #pragma ident 
+In file included from ../cups/http-private.h:68,
+                 from ../cups/cups-private.h:28,
+                 from ppdc-private.h:23,
+                 from ppdc-array.cxx:29:
+/usr/include/kerberosv5/krb5.h:3122: error: expected declaration before '}' token
+In file included from ../cups/http-private.h:68,
+                 from ../cups/cups-private.h:28,
+                 from ppdc-private.h:23,
+                 from ppdc-array.cxx:29:
+/usr/include/kerberosv5/krb5.h:3121:1: unterminated #ifdef
+/usr/include/kerberosv5/krb5.h:8:1: unterminated #ifndef
+In file included from ../cups/cups-private.h:28,
+                 from ppdc-private.h:23,
+                 from ppdc-array.cxx:29:
+../cups/http-private.h:67:1: unterminated #ifdef
+../cups/http-private.h:44:1: unterminated #ifdef
+../cups/http-private.h:18:1: unterminated #ifndef
+In file included from ppdc-private.h:23,
+                 from ppdc-array.cxx:29:
+../cups/cups-private.h:18:1: unterminated #ifndef
+In file included from ppdc-array.cxx:29:
+ppdc-private.h:15:1: unterminated #ifndef
+gmake[1]: *** [ppdc-array.o] Error 1
+gmake: *** [all] Error 1
+--- snip ---
+
+
+
+
+2[121206/090626]root@cups_tz# ./configure --prefix=/applications/cups-1.6.1/users/system/cups-1.6.1 --disable-gssapi
+0[121206/090956]root@cups_tz# gmake 
+0[121206/091204]root@cups_tz# gmake install
+--- snip ---
+Installing desktop menu...
+chmod: WARNING: can't change /usr/share/applications
+cp: cannot create /usr/share/applications/#inst.18275#: Read-only file system
+gmake[1]: *** [install-data] Error 1
+gmake: *** [install-data] Error 1
+--- snip ---
+
+
+
+0[121210/130837]root@cups_tz# cp -p configure configure.orig
+0[121210/130919]root@cups_tz# diff configure configure.orig 
+5915,5916c5915
+<               #BUILDDIRS="filter backend berkeley cgi-bin monitor notifier ppdc scheduler systemv conf data desktop locale man doc examples templates"
+<               BUILDDIRS="filter backend berkeley cgi-bin monitor notifier ppdc scheduler systemv conf data locale man doc examples templates"
+---
+>               BUILDDIRS="filter backend berkeley cgi-bin monitor notifier ppdc scheduler systemv conf data desktop locale man doc examples templates"
+
+
+1[121206/154806]root@cups_tz# ./configure --prefix=/applications/cups-1.6.1/users/system/cups-1.6.1 --disable-gssapi --with-components=core 
+0[121206/154844]root@cups_tz# gmake 
+0[121206/154919]root@cups_tz# gmake install
+0[121213/141611]root@cups_tz# cd /applications/cups-1.6.1/users/system 
+0[121213/141711]root@cups_tz# ln -s cups-1.6.1 cups
+
+
+##### pas d'interface web d'administration
+
+
+0[121210/142908]root@cups_tz# ./configure --prefix=/applications/cups-1.6.1/users/system/cups-1.6.1 --disable-gssapi --enable-webif --with-log-level=debug2 --with-ipp-port=631
+0[121210/143012]root@cups_tz# gmake 
+0[121210/143019]root@cups_tz# gmake install
+
+
+
+##############################################################################
+##### exemplde d'ajout d'imprimante
+
+
+% cd ~/downloads
+% wget http://www.cups.org/ppd/hp/hp4200_7.ppd.gz
+% gunzip hp4200_7.ppd.gz
+
+# menu 'Administration'
+# bouton 'Add Printer'
+# selectionner 'AppSocket/HP JetDirect'
+# bouton 'Continue'
+# preciser 'socket://opprt84' dans le champs 'Connextion'
+# bouton 'Continue'
+# preciser 'opprt84' dans le champs 'Name'
+# preciser 'MER457' dans le champs 'Location
+# preciser 'HP LaserJet 4200' dans le champs 'Description'
+# preciser puis bouton 'Continue'
+# bouton 'Continue'
+# bouton 'Browse' pour fournir le driver hp4200_7.ppd precedement telecharge
+# bouton 'Add Printer'
+# choisir les option de l'imprimante
+
+
+
+
+##############################################################################
+##### test d'une imprimante
+
+# menu 'Administration'
+# bouton 'Manage Printer'
+# selectionner 'opprt84' 
+# selectionner 'Print Test Page' dans la liste deroulant 'Maintenance'
+
+0[121212/152744]root@cups_tz# head /home/betorma/popo.txt| /applications/cups-1.6.1/users/system/cups-1.6.1/bin/lpr -P opprt84
+/applications/cups-1.6.1/users/system/cups-1.6.1/bin/lpr: Unsupported document-format "text/plain".
+
+
+
+Si le message suivant apparait:
+Unable to print test page:
+    Unsupported format "application/vnd.cups-banner".
+
+il faut installer **cups-filters depuis OpenPrinting.org** , comme indiquer dans le bug **STR #4208: Unsupported format "application/vnd.cups-banner**
+
+##############################################################################
+#####installation de Ghostscript
+
+
+il faut d'abord installer ghostscript pour cups-filter:
+
+0[130122/113813]root@cups_tz# less /home/betorma/download/cups-filters-1.0.25/INSTALL 
+--- snip ---
+**** IF YOU HAVE A NON-POSTSCRIPT PRINTER AND ARE NOT       ****
+**** RUNNING MAC OS X, YOU WILL ALSO NEED TO INSTALL GPL    ****
+**** GHOSTSCRIPT WITH THE "cups" DRIVER AFTER YOU INSTALL   ****
+**** CUPS AND BEFORE YOU INSTALL THIS PACKAGE.              ****
+--- snip ---
+
+
+
+% cd ~/downloads
+% wget http://downloads.ghostscript.com/public/ghostscript-9.06.tar.gz
+0[121212/182919]root@cups_tz# gunzip ghostscript-9.06.tar.gz 
+0[121212/182928]root@cups_tz# tar xf ghostscript-9.06.tar 
+0[121212/183102]root@cups_tz# cd ghostscript-9.06
+
+
+
+0[121213/133446]root@cups_tz# ./configure --prefix=/applications/cups-1.6.1/users/system/ghostscript-9.06 
+0[121213/134327]root@cups_tz# gmake
+0[121213/134327]root@cups_tz# gmake install
+0[121213/141611]root@cups_tz# cd /applications/cups-1.6.1/users/system 
+0[121213/141723]root@cups_tz# ln -s ghostscript-9.06 ghostscript 
+
+
+
+
+
+
+
+##############################################################################
+##### installation de cups-filters
+
+
+
+% cd ~/dowlnoads
+% wget http://www.openprinting.org/download/cups-filters/cups-filters-1.0.25.tar.gz
+0[121212/150227]root@cups_tz# gunzip cups-filters-1.0.25.tar.gz
+0[121212/150249]root@cups_tz# tar xf cups-filters-1.0.25.tar
+1[121212/151627]root@cups_tz# cd cups-filters-1.0.25
+
+
+./configure --prefix=/applications/cups-1.6.1/users/system/cups-filters-1.0.25 --with-cups-config=/applications/cups-1.6.1/users/system/cups/bin
+
+PKG_CONFIG=/usr/bin/pkg-config ./configure --prefix=/applications/cups-1.6.1/users/system/cups-filters-1.0.25 --with-cups-config=/applications/cups-1.6.1/users/system/cups/bin
+
+        _pkg_min_version=0.20
+
+
+
+./configure --prefix=/home/betorma/applications/sun4u/5.10/pkg-config-0.27 --with-internal-glib
+
+
+
+
+    Poppler, libijs, freetype, fontconfig, and liblcms (liblcms2 recommended) 
+    must be installed to be able to compile this package.
+
+
+##############################################################################
+##### remarques
+
+utiliser l'option necessaire pour definir le port lors de la compilation
+definir cupsadmin comme utilisateur et voir s'il n'est pas possible de le preciser lors de la compilation
+/etc/init.d/cups est cree; peu etre un bug
+pas de resoltuion de nom pour autoriser des noms d'hotes dans le fichier etc/cupsd.conf dans la partie /admin
+changer le monitoring de cups vers son opsrv applicatif
+
+  --with-log-level        set default LogLevel value, default=warn
+  --with-cups-user        set default user for CUPS
+  --with-cups-group       set default group for CUPS
+
+
+
+
+  
+OPPRT84 
+Description: HP LaserJet 2300
+Location:
+Printer Driver: Local Raw Printer
+Printer State: idle, accepting jobs, published.
+Device URI: socket://opprt84 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

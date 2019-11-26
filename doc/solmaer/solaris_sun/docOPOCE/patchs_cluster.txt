@@ -1,0 +1,203 @@
+# Verif patch: verifier la valeur de la variable SUNW_PKG_ALLZONES de packages dont les patches modifient :
+# Pour cela:
+export pa=137111-08
+jar xvf ${pa} 
+cd ${pa}
+find . -name "pkginfo" -type f | xargs grep SUNW_PKG_ALLZONES
+# si tous les patches ont au moins un package avec SUNW_PKG_ALLZONES, les zones doivent etre presentes lors du patching
+# Faire un miroir de "/" SVM sur un d'autres disques internes
+# constater les disques internes qu'on a:
+echo | format
+export d1=c1t0d0
+export d2=c1t2d0
+# verifier que le disque choisi a rien
+metastat | grep ${d2}
+export d1=c1t0d0s0
+export d2=c1t2d0s0
+# copier/coller la table partitions vers le disque a mirrorer 
+prtvtoc /dev/rdsk/${d1} | fmthard -s - /dev/rdsk/${d2}
+# si la commande donne des problemes, tapez format -e et relabelisez le disque
+format ${d2}
+selecting c1t2d0s2
+[disk formatted]
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        repair     - repair a defective sector
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        save       - save new disk/partition definitions
+        inquiry    - show vendor, product and revision
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> verif
+
+Primary label contents:
+
+Volume name = <        >
+ascii name  = <SUN146G cyl 14087 alt 2 hd 24 sec 848>
+pcyl        = 14089
+ncyl        = 14087
+acyl        =    2
+nhead       =   24
+nsect       =  848
+Part      Tag    Flag     Cylinders         Size            Blocks
+  0       root    wm    1031 -  2061       10.01GB    (1031/0/0)   20982912
+  1       swap    wu       0 -  1030       10.01GB    (1031/0/0)   20982912
+  2     backup    wm       0 - 14086      136.71GB    (14087/0/0) 286698624
+  3 unassigned    wu       0                0         (0/0/0)             0
+  4 unassigned    wu       0                0         (0/0/0)             0
+  5 unassigned    wm    3097 -  7218       40.00GB    (4122/0/0)   83890944
+  6        var    wm    2062 -  3092       10.01GB    (1031/0/0)   20982912
+  7   reserved    wm    3093 -  3096       39.75MB    (4/0/0)         81408
+
+format> q
+# ajouter des copies de la metadb au disque a mirrorer ( pas necessaire de le faire maintenant )
+export d2=c1t2d0s7
+metadb -a -c3 ${d2}
+# creer des submirrors de chaque partition de disque a mirrorer
+export d2=c1t2d0s0
+metainit d13 1 1 /dev/rdsk/${d2}
+export d2=c1t2d0s1
+metainit d23 1 1 /dev/rdsk/${d2}
+export d2=c1t2d0s6
+metainit d33 1 1 /dev/rdsk/${d2}
+export d2=c1t2d0s5
+# celui ci change pour chaque noeud
+export su=d63
+export su=d43
+metainit ${su} 1 1 /dev/rdsk/${d2}
+# ajouter ces submirrors aux volumes
+metattach d10 d13
+metattach d20 d23
+metattach d30 d33
+# celui ci change pour chaque noeud
+export mi=d60
+export su=d63
+export mi=d40
+export su=d43
+metattach ${mi} ${su} 
+
+# Le jour du patching:
+# decrocher les miroirs
+metadetach d10 d13
+metadetach d20 d23
+metadetach d30 d33
+export mi=d60
+export su=d63
+export mi=d40
+export su=d43
+metadetach ${mi} ${su}
+# Installer la marque du boot sur le disque de tous les machines:
+installboot /usr/platform/`uname -i`/lib/fs/ufs/bootblk /dev/rdsk/c1t2d0s0
+
+# changer le quorum de device. 
+# il faudrait le mettre sur le disque miroir
+clq status 
+export qu=d7
+scdidadm -L | grep ${qu} | grep 2901033
+# si la commande precendente affiche quelque chose, on a pas besoin de changer de disque de quorum
+# sinon:
+scdidadm -L | grep 2901033
+# choper un des disques de la commande precedente
+export qu=d6
+clq add ${qu}
+# enlever le quorum du disque precedente
+export qu=d7
+clq remove ${qu}
+/usr/cluster/lib/sc/pgre -c pgre_scrub -d /dev/did/rdsk/${qu}s2
+# verif
+/usr/cluster/lib/sc/pgre -c pgre_inkeys -d /dev/did/rdsk/${qu}s2
+# vu que la variable SUNW_PKG_ALLZONES est a true, on est oblige de patcher avec la zone 
+# donc pour patcher en single user, il faut faire sortir la zone du cluster
+clrg offline +
+clrs disable +
+clrg unmanage +
+# descendre le machines et les clusters
+# REMARQUE: c'est pour eviter n'importe lequel changement qui puisse toucher le framework cluster
+cluster shutdown -y -g0
+# booter chaque noeud
+boot -sx
+# booter leur zones en single user pour un des noeuds
+# REMARQUE: Les patches devraient le faire eux-meme, mais si par hasard ils le font pas....:
+export zo="roma camel"
+export zo="opgtw oprvp"
+foreach i in ${zo}
+do
+zoneadm -z ${i} boot -s
+done
+# patcher
+cd /var/tmp/PATCHES/TO_INSTALL
+patchadd -n 125891-01.jar
+init 0
+boot -sx
+# booter leur zones comme il etait montre precedemment
+# verifs des services:
+svcs -x
+# afin de suivre l'indication qui vient dans le readme, faire ceci:
+svcadm disable svc:/system/fmd:default
+patchadd -n 127755-01.jar
+svcadm enable svc:/system/fmd:default
+patchadd -n 127127-11.jar
+init 0
+boot -sx
+svcs -x
+# booter leur zones comme il etait montre precedemment
+patchadd -n 137111-08.jar
+init 0
+boot -sx
+svcs -x
+# ensuite, installer les patches qui manquent pour le premier cas ouvert
+cd /var/tmp/PATCHES/TO_INSTALL_2
+patchadd -n 127866-05.jar
+patchadd -n 127892-06.jar
+patchadd -n 127986-01.jar
+patchadd -n 128306-05.jar
+patchadd -n 138056-02.jar
+patchadd -n 138074-01.jar
+init 0
+boot -sx
+svcs -x
+init 0
+
+# pour patcher l'autre noeud, on repete la procedure precedente depuis le premier boot -sx
+# mais avant ca:
+# exporter les zpool du noeud patcher
+zpool list
+export zp=opgtw
+export zp=oprvp
+export zp=roma
+export zp=camel
+zpool export ${zp}
+# importer les zpool sur les noeuds a patcher
+export zp=opgtw
+export zp=oprvp
+export zp=roma
+export zp=camel
+zpool import ${zp}
+# INSTALLER les patches comme on a fait pour le premier noeud
+....
+# boot de verif 
+init 0
+boot -sx
+svcs -x
+init 0
+
+# booter le cluster
+boot
+clrg online +
+clrs enable +
+clrg manage +
+
+
+
+

@@ -1,0 +1,39 @@
+##### dans la boite OPOCE INRA OPENSYSTEM LOGS, verifier la presence de l'email "OPOCE: REPORT STIRQGE TIER2 [JJMMAAAA:HHhMMmSS]" (genere tous les dimanches a 10h)
+
+##### copier le contenu de cet email dans un fichier texte
+ex: /home/betorma/tmp/storage_report.txt
+
+##### separer les infos en fonction des storages
+{
+file=/home/betorma/tmp/storage_report.txt
+ls -l ${file}
+for storage in gnole absynthe tordboyaux brizard peket stamper
+do 
+	grep "^${storage}" ${file} | sed -e 's/\./,/' >/home/betorma/tmp/storage_report_${storage}.txt
+	ls -l /home/betorma/tmp/storage_report_${storage}.txt
+done
+}
+
+##### creer un nouveau repertoire, portant la date du jour (YYYYMMJJ); dans G:\Exploitation\Systemes ouverts\Systeme_de_production\documentation\Unix_Web\SERVER_Management\Storage\REPORT_ARRAY
+##### y placer le fichier TIER2_STORAGES_REPORT_YYYYMMJJ.ods
+
+##### dans chaque onglet vol_gnole, vol_absynthe, ... copier le contenu des fichiers correspondants, precedement generes.
+
+##### referencer l'utilisation des licences dans l'onglet TOTAL
+
+##### recapituler les espaces disponibles de chaque storage dans l'onglet Recap (anteriorite de 13 mois)
+
+##### exporter le fichier au format pdf
+
+##### l'evoyer par email
+To: MEYER Patrick (OP) <patrick.meyer@publications.europa.eu>; OPDL A4 STORAGE BACKUP <OPDL-A4-STORAGE-BACKUP@publications.europa.eu>; OPOCE INFRA UNIX WEB (OPOCE-INFRA-UNIX-WEB@publications.europa.eu); SCHIFANO Antonio (OPOCE); VALLET Jean-Claude (OP-EXT) <jean-claude.vallet@ext.publications.europa.eu>
+Subject: OPOCE: Rapport Storage T2 du 16 novembre 2009
+
+Bonjour,
+Voici le rapport mensuel des storages T2 du 16 novembre 2009
+Cordialement.
+
+
+
+
+

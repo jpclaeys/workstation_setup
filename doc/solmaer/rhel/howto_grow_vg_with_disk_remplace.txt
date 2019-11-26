@@ -1,0 +1,196 @@
+export vm=
+export wwn_mercier=
+export wwn_eufo=
+
+##### rescan all cluster nodes for newly added disk
+
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done 
+
+
+##### check the new device on all cluster nodes
+
+multipath -ll | egrep "$wwn_mercier|$wwn_eufo" -A6
+
+
+
+##### update /etc/multipath/bindings on all cluster nodes
+
+export mpath=`multipath -ll | egrep "$wwn_mercier|$wwn_eufo" | awk '{print $1}'`
+export friendly_name="${vm}_t2_data2"
+echo $mpath
+echo $friendly_name
+
+
+egrep "$wwn_mercier|$wwn_eufo" /etc/multipath/bindings
+
+# replace $mpath by $friendly_name in /etc/multipath/bindings
+
+egrep "$wwn_mercier|$wwn_eufo" /etc/multipath/bindings
+
+multipath -f $mpath
+service multipathd reload
+
+multipath -ll $friendly_name
+
+
+
+
+##### on all cluster nodes, check who is primary node
+
+virsh list | grep $vm
+
+
+
+
+##### on primary node, create the disk partition
+
+echo parted -a optimal -s /dev/mapper/${friendly_name} mklabel msdos unit % mkpart primary ntfs 0 100 
+fdisk -l /dev/mapper/${friendly_name}
+
+
+
+##### check the new partition on all other cluster nodes
+
+partprobe /dev/mapper/${friendly_name}
+fdisk -l /dev/mapper/${friendly_name}
+
+
+
+##### on the VM, list the present disks
+
+ls /dev/vd*
+
+
+##### on primary node, attach the new disk to the vm
+
+{
+cd /tmp
+cat << EOF > newdisk.xml
+<disk type='block' device='disk'>
+    <driver name='qemu' type='raw' cache='none' io='native'/>
+    <source dev='/dev/mapper/${friendly_name}'/>
+    <target dev='vdc' bus='virtio'/>
+</disk>
+EOF
+cat newdisk.xml
+}
+
+virsh attach-device $vm ./newdisk.xml --persistent
+
+
+
+##### on the VM, check the new disk
+
+ls /dev/vd*
+export new_disk=
+
+fdisk -l /dev/${new_disk}
+
+fdisk /dev/${new_disk}
+n
+p
+1
+"default"
+"default"
+t
+8e
+w
+
+
+##### create pv
+
+pvcreate /dev/${new_disk}1
+pvs
+
+
+
+##### get old disk
+
+export vg=
+export old_disk=
+
+
+##### extend vg
+
+vgs
+vgextend $vg /dev/${new_disk}1
+vgs
+
+
+##### move data from the old disk to the new disk
+
+echo pvmove /dev/${old_disk}1 /dev/${new_disk}1
+
+
+
+
+##### remove the old disk
+
+vgreduce $vg /dev/${old_disk}1
+pvremove /dev/${old_disk}1
+
+fdisk /dev/${old_disk}
+p
+d
+p
+w
+
+
+
+
+##### on the primary node, detach the old disk
+
+virsh detach-disk $vm /dev/mapper/${old_friendly_name}p1 --persistent
+virsh dumpxml $vm >/home/betorma/export/tmp/${vm}.xml
+
+
+
+##### import new configuration on all other nodes
+
+virsh define /home/betorma/export/tmp/${vm}.xml
+
+
+##### get lun information
+0[170714/152744]root@chakotay# symaccess -sid 2560 show view cportaldiff1-pk
+02C29   05E:000   Not Visible                 f  (M)    347813
+03CE4   05E:000   Not Visible                1c          34781
+03CE5   05E:000   Not Visible                1d  (M)    173906
+
+
+{
+for vm in cportaldiff1-pk cportaldiff2-pk cportaldiff3-pk cportaldiff4-pk
+do
+	for dev in 003C1 03CEA 03CEB
+	do
+		for array in 2560 3453
+		do
+			echo "$vm $array $dev $(symdev show -sid $array $dev | grep '^        Device WWN' | awk '{print $4}')"
+		done
+	done
+done
+}
+
+##### remove old_lun from all cluster nodes
+
+/home/admin/bin/removelun_rhel /dev/mapper/${friendly_name}
+/home/admin/bin/removelun_rhel /dev/mapper/${friendly_name} | bash
+
+
+
+
+##### remove entry from /etc/multipath/bindings 
+
+vi /etc/multipath/bindings 
+grep $friendly_name /etc/multipath/bindings 
+
+service multipathd reload
+
+
+##### inform storage team to remove device
+
+
+
+
+
+
+

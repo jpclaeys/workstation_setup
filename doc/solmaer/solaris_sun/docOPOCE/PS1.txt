@@ -1,0 +1,1 @@
+ export PS1="%S%n@%m%s %T [%d] "

@@ -1,0 +1,185 @@
+##################################################
+# creation d'un package solaris
+##################################################
+
+
+root@guido# PATH=/usr/ccs/bin:$PATH
+root@guido# cd /home/betorma/download/rsync-3.0.9 
+
+root@guido# ./configure --prefix=/opt/OPrsync
+root@guido# make
+root@guido# make install                       
+
+
+
+
+
+root@guido# cd /opt/OPrsync
+root@guido# {
+echo 'i pkginfo=./pkginfo'
+find . -print | pkgproto
+} >prototype
+
+
+root@guido# cat <<EOF >pkginfo
+PKG="OPrsync"
+NAME="rsync"
+ARCH="sparc"
+VERSION="3.0.9"
+CATEGORY="application"
+VENDOR="apache.org"
+EMAIL=""
+PSTAMP=""
+BASEDIR="/opt/OPrsync"
+CLASSES="none"
+EOF
+
+
+root@guido# pkgmk -o -r `pwd` 
+## Building pkgmap from package prototype file.
+## Processing pkginfo file.
+## Attempting to volumize 9 entries in pkgmap.
+part  1 -- 2290 blocks, 25 entries
+## Packaging one part.
+/var/spool/pkg/OPrsync/pkgmap
+/var/spool/pkg/OPrsync/pkginfo
+/var/spool/pkg/OPrsync/reloc/bin/rsync
+/var/spool/pkg/OPrsync/reloc/prototype
+/var/spool/pkg/OPrsync/reloc/share/man/man1/rsync.1
+/var/spool/pkg/OPrsync/reloc/share/man/man5/rsyncd.conf.5
+## Validating control scripts.
+## Packaging complete.
+
+
+root@guido# pkgtrans -s /var/spool/pkg /home/betorma/tmp/OPrsync.pkg OPrsync
+Transferring <OPrsync> package instance
+
+root@guido# file /home/betorma/tmp/OPrsync.pkg
+/home/betorma/tmp/OPrsync.pkg:  package datastream
+
+
+root@guido# cd
+root@guido# rm -r /opt/OPrsync
+1[120625/154711]root@guido# pkgadd -d /home/betorma/tmp/OPrsync.pkg 
+
+The following packages are available:
+  1  OPrsync     rsync
+                 (sparc) 3.0.9
+
+Select package(s) you wish to process (or 'all' to process
+all packages). (default: all) [?,??,q]: 
+
+Processing package instance <OPrsync> from </home/betorma/tmp/OPrsync.pkg>
+
+rsync(sparc) 3.0.9
+apache.org
+
+The selected base directory </opt/OPrsync> must exist before
+installation is attempted.
+
+Do you want this directory created now [y,n,?,q] y
+Using </opt/OPrsync> as the package base directory.
+## Processing package information.
+## Processing system information.
+## Verifying disk space requirements.
+## Checking for conflicts with packages already installed.
+## Checking for setuid/setgid programs.
+
+Installing rsync as <OPrsync>
+
+## Installing part 1 of 1.
+/opt/OPrsync/bin/rsync
+/opt/OPrsync/prototype
+/opt/OPrsync/share/man/man1/rsync.1
+/opt/OPrsync/share/man/man5/rsyncd.conf.5
+[ verifying class <none> ]
+
+Installation of <OPrsync> was successful.
+
+
+
+
+
+##############################################################################
+# une autre version
+###############################################################################
+
+mdkir /var/tmp/OPlogch
+
+cp -pr DIR /var/tmp/OPlogch
+cd /var/tmp/OPlogch 
+
+find .  | pkgproto > prototype
+
+### remove line content prototype
+
+### create pkginfo file
+vi pkginfo 
+
+PSTAMP=20020910:10h00m00s
+VERSION=1.1.2
+ARCH=sparc
+PKG=OPlogch
+BASEDIR=/opt/OPloch
+CATEGORY=system
+DESC=Repackaged logcheck from SMClogch steve@smc.vnet.net
+EMAIL=
+HOTLINE=Please contact your local service provider
+MAXINST=1000
+NAME=logcheck
+SUNW_PKGTYPE=opt
+VENDOR=Craig Rowland
+SUNW_PKGVERS=1.0
+SUNW_PRODNAME=SunOS
+SUNW_PRODVERS=RELEASE/VERSION
+CLASSES=none
+
+
+#### postinstall and preremove
+add line into prototype after pkginfo
+
+i pkginfo=./pkginfo
+i postinstall=./postinstall
+i preremove=./preremove
+d none bin 0755 root root
+f none bin/logtail 0744 bin bin
+d none doc 0755 root root
+d none doc/logcheck 0755 root root
+f none doc/logcheck/README.keywords 0644 bin bin
+f none doc/logcheck/CHANGES 0644 bin bin
+f none doc/logcheck/CREDITS 0644 bin bin
+f none doc/logcheck/INSTALL 0644 bin bin
+f none doc/logcheck/LICENSE 0644 bin bin
+f none doc/logcheck/README 0644 bin bin
+f none doc/logcheck/README.how.to.interpret 0644 bin bin
+d none etc 0755 root root
+f none etc/logcheck.violations.ignore 0644 root other
+f none etc/logcheck.hacking 0644 root other
+f none etc/logcheck.ignore 0644 root other
+f none etc/logcheck.sh 0744 bin bin
+f none etc/logcheck.sh.bak 0744 bin bin
+f none etc/logcheck.violations 0644 bin bin
+
+
+
+
+
+
+cd /var/tmp
+pkgmk -o -r $(pwd)
+
+
+cd /var/spool/pkg
+
+
+pkgtrans -s /var/spool/pkg /tmp/OPlogch all
+rm -r  /export/software/Logger/OPlogch
+
+mv /tmp/OPlogch  /export/software/Logger/OPlogch
+
+
+
+
+
+
+

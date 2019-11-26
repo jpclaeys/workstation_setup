@@ -1,0 +1,271 @@
+# Ca efface le metaset sans rien dire au cluster framework
+metaset -s cordis-ds -C purge
+# et pour effacer du cluster framework aussi
+# sur les deux noeuds
+init 0
+boot -x
+cd /etc/cluster/ccr
+grep -l cordis-ds *
+grep -l cordis-ds * | xargs \rm
+# virer la ligne avec le fichier du fichier directory, sauvegarder et:
+/usr/cluster/lib/sc/ccradm -i directory -o
+# booter les deux noeuds
+init 6
+
+metaset -s cordis-ds -a -h mireille martoni
+# mediators
+metaset -s cordis-ds -a -m mireille martoni
+# ajoute des disques
+metaset -s cordis-ds -a /dev/did/rdsk/d11 /dev/did/rdsk/d12
+# verifs
+cldg status
+metaset
+metdstat -s cordis-ds
+
+#######################################################################################
+#######################################################################################
+
+# avec selection automatique de quorum
+# on dit qu'on ajoute l'autre noeud et on met toute la config reseaux
+scinstall 
+# deuxieme noeud, scinstall add to cluster
+scinstall
+
+# On cree les zpools
+# 
+export zp=cordiscms_p
+export zo=cordiscms_pz
+zpool create -f -m /zpool/${zo} ${zp} c4t6006048000028775112853594D304638d0
+zpool attach ${zp} c4t6006048000028775112853594D304638d0 c4t60060480000290103312533030354143d0
+zfs create ${zp}/zone
+zfs create ${zp}/applications
+zfs set mountpoint=/applications/cordiscms ${zp}/applications
+
+# on verifie le did du futur quorum device
+scdidadm -L | grep c4t6006048000028775112853594D304638d0
+
+# on enleve le device quorum choisi 
+clq add d7
+clq remove d4
+
+export zp=cordiscms_t
+export zo=cordiscms_tz
+zpool create -f -m /zpool/${zo} ${zp} c4t6006048000028775112853594D353141d0
+zpool attach ${zp} c4t6006048000028775112853594D353141d0 c4t60060480000290103312533030354232d0
+zfs create ${zp}/zone
+zfs create ${zp}/applications
+zfs set mountpoint=/applications/cordiscms ${zp}/applications
+
+
+export zp=cordiscms_p
+export zo=cordiscms_pz
+mkdir -p /zones/${zo}
+zfs set mountpoint=/zones/${zo} ${zp}/zone
+
+export zp=cordiscms_t
+export zo=cordiscms_tz
+mkdir -p /zones/${zo}
+zfs set mountpoint=/zones/${zo} ${zp}/zone
+
+
+# Avec les zpools crees, je cree les zones. 
+# Pour cela, je chope un fichier de config de zones d'autre noeud
+# depuis karamazov
+export zo=opgtw
+zonecfg -z ${zo} export > /net/coppola/xchange/cluster/cordis.cfg
+
+# je copie en local
+cp /net/coppola/xchange/cluster/cordis.cfg /var/tmp/
+
+# on change la carte reseau, ip address, et dataset ( zfs )
+vi /var/tmp/cordis.cfg
+
+export zo=cordiscms_pz
+export zo=cordiscms_tz
+cp /var/tmp/cordis.cfg /var/tmp/${zo}.cfg
+
+export zo=cordiscms_pz
+export zo=cordiscms_tz
+zonecfg -z ${zo} -f /var/tmp/${zo}.cfg
+chmod 700 /zones/${zo}
+zoneadm -z ${zo} install
+
+# je copie les fichiers /etc/zones/*.xml sur l'autre noeud
+
+
+# untar la copie des zones crees par Alex.
+#######################################################################
+
+# Apres on commence avec le cluster
+export rg=cordiscms_p-rg
+
+clrg create ${rg}
+clrg online -M  ${rg}
+
+clrt register SUNW.HAStoragePlus
+clrt register SUNW.gds
+
+export rg=cordiscms_p-rg
+export rs=cordiscms_p-zfs
+export zp=cordiscms_p
+
+# Creer ressource storage
+clrs create -g ${rg} -t SUNW.HAStoragePlus -p zpools=${zp} ${rs} 
+
+# Configuration fichier pour creer la ressource zone
+export rs=cordiscms_p-rs
+export rs2=cordiscms_p-zfs
+export rg=cordiscms_p-rg
+export zo=cordiscms_pz
+cat > /opt/SUNWsczone/sczbt/util/${rs} <<EOF
+RS=${rs}
+RG=${rg}
+PARAMETERDIR=/etc/zoneagentparams
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=${rs2}
+Zonename="${zo}"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOF
+
+# Verifier si c'est bon
+more /opt/SUNWsczone/sczbt/util/${rs}
+
+# Creer ressource zone
+/opt/SUNWsczone/sczbt/util/sczbt_register -f /opt/SUNWsczone/sczbt/util/${rs} 
+
+# Changer les properties pour le demarrage de la zone
+# Pour changer cela, c'est necessaire de deshabiliter la ressource 
+# Remarque: Si la zone etait deja cree, c'est une raison de plus pour deshabiliter la zone
+
+# Desabiliter la ressource
+export zo=cordiscms_pz
+export rs=cordiscms_p-rs
+clrs disable ${rs}
+
+# Profiter pour changer les scripts de demarrage
+# Changer les properties de la ressource zone pour son demarrage:
+export zo=cordiscms_pz
+export rs=cordiscms_p-rs
+clrs set -p Start_command="/etc/zoneagentparams/${zo}.sh start" ${rs}
+clrs set -p Stop_command="/etc/zoneagentparams/${zo}.sh stop" ${rs}
+
+clrs enable ${rs}
+
+#######################################################
+# Autre maniere de creer RG d'un cluster avec des zones
+
+# Faire un export d'une configuration d'un cluster qui ressemble a celui qu'on va creer
+export rg=cordiscms_p-rg
+export rs=cordiscms_p-rs
+clrg export ${rg} > /net/coppola/xchange/cluster/${rg}.xml
+clrs export + > /net/coppola/xchange/cluster/${rs}.xml
+
+# Valider le fichier xml
+# C'est bon, lorsque la commande affiche pas d'erreur.
+export rg=cordiscms_p-rg
+export rs=cordiscms_p-rs
+xmllint --valid /net/coppola/xchange/cluster/${rg}.xml
+xmllint --valid /net/coppola/xchange/cluster/${rs}.xml
+
+# Copier et modifier les fichiers pour les nouvelles ressources a creer
+export rg=cordiscms_p-rg
+export rs=cordiscms_p-rs
+export rg2=cordiscms_t-rg
+export rs2=cordiscms_t-rs
+cp /net/coppola/xchange/cluster/${rg}.xml /var/tmp/${rg2}.xml
+cp /net/coppola/xchange/cluster/${rs}.xml /var/tmp/${rs2}.xml
+
+# Changements pour la ressource group
+export rg=cordiscms_p-rg
+export rg2=cordiscms_t-rg
+(echo "%s/${rg}/${rg2}/g"; echo 'wq!') | ex -s /var/tmp/${rg2}.xml
+
+# Changements pour les ressources
+export rg=cordiscms_p-rg
+export rg2=cordiscms_t-rg
+export rs2=cordiscms_t-rs
+(echo "%s/${rg}/${rg2}/g"; echo 'wq!') | ex -s /var/tmp/${rs2}.xml
+export rs=cordiscms_p-zfs
+export rs2=cordiscms_t-zfs
+export rs3=cordiscms_t-rs
+(echo "%s/${rs}/${rs2}/g"; echo 'wq!') | ex -s /var/tmp/${rs3}.xml
+export rs=cordiscms_p-rs
+export rs2=cordiscms_t-rs
+(echo "%s/${rs}/${rs2}/g"; echo 'wq!') | ex -s /var/tmp/${rs2}.xml
+export zo=cordiscms_pz
+export zo2=cordiscms_tz
+export rs=cordiscms_t-rs
+(echo "%s/${zo}/${zo2}/g"; echo 'wq!') | ex -s /var/tmp/${rs}.xml
+export zp=cordiscms_p
+export zp2=cordiscms_t
+export rs=cordiscms_t-rs
+(echo "%s/${zp}/${zp2}/g"; echo 'wq!') | ex -s /var/tmp/${rs}.xml
+
+# Verifier s'il reste des choses qui pointent sur les anciennes ressources et ressource group 
+export pr=cordiscms_p
+export rg=cordiscms_t-rg
+export rs=cordiscms_t-rs
+grep ${pr} /var/tmp/${rg}.xml
+grep ${pr} /var/tmp/${rs}.xml
+
+# Validation syntaxe
+export rg=cordiscms_t-rg
+export rs=cordiscms_t-rs
+xmllint --valid /var/tmp/${rg}.xml
+xmllint --valid /var/tmp/${rs}.xml
+
+# REMARQUE: AVEC CETTE PROCEDURE ON PEUT PAS CREER DES RESSOURCES ZONES( GDS )
+# Creer la ressource Stockage et sa ressource group avec les fichiers xml
+export rg=cordiscms_t-rg
+clrg create --input /var/tmp/${rg}.xml ${rg}
+
+export rs=cordiscms_t-zfs
+export rs2=cordiscms_t-rs
+clrs create --input /var/tmp/${rs2}.xml ${rs}
+
+# Mettre online et managed la ressource group et sa ressource zfs ( necessaire pour les validations du script sczbt_register )
+export rg=cordiscms_t-rg
+clrg online -M ${rg}
+
+# Pour la ressource zone, on doit passer pour les outiles SUWsczone
+# Configuration fichier pour creer la ressource zone
+export rs=cordiscms_t-rs
+export rs2=cordiscms_t-zfs
+export rg=cordiscms_t-rg
+export zo=cordiscms_tz
+cat > /opt/SUNWsczone/sczbt/util/${rs} <<EOF
+RS=${rs}
+RG=${rg}
+PARAMETERDIR=/etc/zoneagentparams
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=${rs2}
+Zonename="${zo}"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOF
+
+# creer la ressource zone ( gds )
+export rs=cordiscms_t-rs
+/opt/SUNWsczone/sczbt/util/sczbt_register -f /opt/SUNWsczone/sczbt/util/${rs}
+
+export zo=cordiscms_tz
+export rs=cordiscms_t-rs
+clrs set -p Start_command="/etc/zoneagentparams/${zo}.sh start" ${rs}
+clrs set -p Stop_command="/etc/zoneagentparams/${zo}.sh start" ${rs}
+
+# Habiliter la ressource zone
+export zo=cordiscms_t-rs
+clrs enable ${zo}

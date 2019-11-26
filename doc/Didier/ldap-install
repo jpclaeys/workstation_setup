@@ -1,0 +1,383 @@
+[root@ldapa-tk tasks]# cat ./main.yml 
+---
+# tasks file for openldap-replica
+
+- name: Install OpenLDAP required packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - openldap
+    - openldap-clients
+    - openldap-servers
+    - migrationtools
+
+- name: Check if service slapd is running
+  command: systemctl status slapd
+  ignore_errors: yes
+  register: service_slapd_status
+
+- name: Delete the LDAP DB content
+  command: ldapdelete -h localhost -x -D "CN=Directory Manager,DC=opoce,DC=cec,DC=eu,DC=int" -w "{{ ldap_dm_password }}" -r DC=opoce,DC=cec,DC=eu,DC=int
+  when: service_slapd_status.rc == 0
+
+- name: Stop the running OpenLDAP service
+  service:
+    name: slapd
+    state: stopped
+    enabled: yes
+
+- name: Check if file db.opoce.cec.eu.int.YYYYMMDD.ldif exists
+  stat:
+    path: "/tmp/{{ ldap_ldif_file }}"
+  register: ldap_ldif
+
+- name: Remove existing LDAP configuration directory
+  file:
+    path: "/etc/openldap/slapd.d/{{ item }}"
+    state: absent
+  with_items:
+    - cn=config.ldif
+    - cn=config
+
+- name: Extract LDAP configuration directory
+  unarchive:
+    src: "{{ ldap_db_config_file }}"
+    dest: /etc/openldap/slapd.d
+    owner: ldap
+    group: ldap
+
+- name: Modify hardcoded path from OPOCE
+  replace:
+    path: /etc/openldap/slapd.d/cn=config/olcDatabase={2}hdb.ldif
+    regexp: '/applications/ldap/data/opoce'
+    replace: '/var/lib/ldap'
+
+- name: Copy the exported LDAP DB
+  copy:
+    src: "{{ ldap_ldif_file }}"
+    dest: "/tmp/{{ ldap_ldif_file }}"
+  when: ldap_ldif.stat.exists == false
+
+- name: Import the LDAP DB
+  command: slapadd -l "/tmp/{{ ldap_ldif_file }}"
+
+- name: Enforce LDAP database directory rights
+  file:
+    path: /var/lib/ldap
+    owner: ldap
+    group: ldap
+    recurse: yes
+
+- name: Start the SLAPD service
+  service:
+    name: slapd
+    state: started
+    enabled: yes
+
+- name: Remove the exported LDAP DB
+  file:
+    path: "/tmp/{{ ldap_ldif_file }}"
+    state: absent
+
+- name: Test SLAPD service
+  command: slaptest
+  register: test_ldap
+
+- debug:
+    var: test_ldap
+
+
+
+dn: olcDatabase={0}config,cn=config
+add: olcRootPW
+olcRootPW: {SSHA}CUoSm3RVN9sFhy7wCleaXAygvtO6uei7
+
+
+dn: olcDatabase={2}hdb,cn=config
+add: olcRootPW
+olcRootPW: {SSHA}CUoSm3RVN9sFhy7wCleaXAygvtO6uei7
+
+
+ldapmodify -x -D "cn=admin,cn=config" -W -H ldap://ldapb-tk.opoce.cec.eu.int -f ~/ldap-serverid.ldif 
+
+
+
+
+ ldap :
+********
+		export :
+
+		slapcat -F /applications/ldap/etc/slapd.d/ -n 0 -l ./db.config-25-05-18.ldif
+		slapcat -F /applications/ldap/etc/slapd.d/ -n 2 -l ./db.opoce-25-05-18.ldif
+
+
+  33 olcConfigDir: /applications/ldap/etc/slapd.d		-> delete
+  34 olcLogFile: /applications/ldap/logs/ldap.log		-> delete
+  35 olcTLSCACertificatePath: /applications/ldap/etc/ssl    	-> /etc/openldap/certs
+  37 olcServerID: 1 ldap://ldap1-pk.opoce.cec.eu.int		-> delete
+  38 olcServerID: 2 ldap://ldap2-pk.opoce.cec.eu.int		-> delete
+ 
+  41 olcTLSCertificateFile: /applications/ldap/etc/certs/ldap1-pk.opoce.cec.eu.int.pem		-> "OpenLDAP Server"
+  43 olcTLSCertificateKeyFile: /applications/ldap/etc/certs/ldap1-pk.opoce.cec.eu.int.key.pem   -> /etc/openldap/certs/password
+
+1963 olcDbDirectory: /applications/ldap/data/opoce		-> /var/lib/ldap
+
+
+yum install openldap-clients openldap-servers
+
+rm -rf /etc/openldap/slapd.d/* && rm -rf /var/lib/ldap/*
+
+slapadd -F /etc/openldap/slapd.d/ -n 0 -l ~/test/prod-export/db.config-25-05-18.ldif
+slapadd -F /etc/openldap/slapd.d/ -n 2 -l ~/test/prod-export/db.opoce-25-05-18.ldif
+
+chown ldap:ldap /var/lib/ldap/* && chown -R ldap:ldap  /etc/openldap/slapd.d
+
+slapindex -n 2
+
+ldap-serverid.ldif
+slapindex -n 2
+
+
+systemctl stop slapd.service && rm -rf /var/lib/ldap/* && slapadd -F /etc/openldap/slapd.d/ -n 2 -l /net/vdm-unix/xchange/ldap-dump-TEMP/db.opoce.cec.eu.int.20180602.ldif && chown ldap:ldap /var/lib/ldap/* && slapindex -n 2 && systemctl start slapd.service
+
+
+
+
+
+
+
+[root@ldapa-pk ~]# export http_proxy=http://xopl262:xo2562@158.169.131.13:8012  && export https_proxy=http://xopl262:xo2562@158.169.131.13:8012
+
+
+[root@ldapa-pk ~]# pip install --upgrade pip && pip install awscli --upgrade --user
+
+export PATH=~/.local/bin:$PATH
+
+aws configure
+AKIAI2SYVHBLLFWPCTZA
+Uz9jA7nxfjaXU+mtcuSeFAxIYrqMCLRrd8MAS8MC
+eu-west-1
+
+export http_proxys=http://xopl262:xo2562@158.169.131.13:8012
+aws s3 sync . s3://ldap-import/
+
+
+
+Pour ajuster le playbook de deploiement afin de prendre le dernier DUMP :
+
+
+Ansible , download the fiel from s3 
+http://docs.ansible.com/ansible/latest/modules/get_url_module.html
+
+Ansible change the template url
+http://docs.ansible.com/ansible/latest/modules/template_module.html
+
+aws s3 cp s3://ldap-import/db.opoce.cec.eu.int.ldif ./test.ldif  --profile op-identity
+
+aws lambda create-function --region eu-west-1 --function-name test-lambda --zip-file fileb:///home/bortodi/python-test.zip --role arn:aws:iam::739606708104:role/service-role/testdb --handler test-lambda.handler --runtime python2.7 --profile op-identity --timeout 30
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+test replica proxy :
+
+
+dn: cn=module{0},cn=config
+changetype: modify
+add: olcModuleLoad
+olcModuleLoad: back_ldap
+
+
+ldapadd -Y EXTERNAL -H ldapi:/// -f ~/backldap.ldif
+
+        database        ldap
+        # ignore conflicts with other databases, as we need to push out to same suffix
+        hidden              on
+        suffix          "dc=suretecsystems,dc=com"
+        rootdn          "cn=slapd-ldap"
+        uri             ldap://localhost:9012/
+
+dn: olcDatabase=ldap,cn=config
+olcDatabase: ldap
+olcSuffix: dc=opoce,dc=cec,dc=eu,dc=int
+olcRootDN: cn=slapd-ldap
+olcUri: ldap://localhost:9012/
+
+
+objectClass: olcDatabaseConfig
+objectClass: olcHdbConfig
+
+slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d/
+
+
+
+# AUTO-GENERATED FILE - DO NOT EDIT!! Use ldapmodify.
+# CRC32 7857ac7c
+dn: olcDatabase={2}ldap
+objectClass: olcDatabaseConfig
+objectClass: olcLDAPConfig
+olcDatabase: {2}ldap
+olcHidden: TRUE
+olcAddContentAcl: FALSE
+olcLastMod: TRUE
+olcMaxDerefDepth: 15
+olcReadOnly: FALSE
+olcRestrict: bind
+olcRestrict: add
+olcRestrict: modify
+olcRestrict: rename
+olcRestrict: delete
+olcRestrict: search
+olcRestrict: compare
+olcRestrict: extended
+olcSyncUseSubentry: FALSE
+olcMonitoring: FALSE
+olcDbURI: "ldap://localhost:9012"
+olcDbStartTLS: none  starttls=no
+olcDbRebindAsUser: FALSE
+olcDbChaseReferrals: TRUE
+olcDbTFSupport: no
+olcDbProxyWhoAmI: FALSE
+olcDbProtocolVersion: 3
+olcDbSingleConn: FALSE
+olcDbCancel: abandon
+olcDbUseTemporaryConn: FALSE
+olcDbConnectionPoolMax: 16
+olcDbSessionTrackingRequest: FALSE
+olcDbNoRefs: FALSE
+olcDbNoUndefFilter: FALSE
+olcDbOnErr: continue
+olcDbKeepalive: 0:0:0
+structuralObjectClass: olcLDAPConfig
+entryUUID: c2c72be2-0d9a-1038-80d6-a14a590c5b77
+creatorsName: cn=config
+createTimestamp: 20180626144131Z
+entryCSN: 20180626144131.473855Z#000000#000#000000
+modifiersName: cn=config
+modifyTimestamp: 20180626144131Z
+
+
+
+
+
+###########################################################################
+# 1.
+dn: olcDatabase={1}hdb,cn=config
+changetype: modify
+add: olcUpdateref
+olcUpdateref: ldap://ldaps.example.com
+
+--
+
+
+# 2.
+dn: cn=module{0},cn=config
+changetype: modify
+add: olcModuleLoad
+olcModuleLoad: {1}back_ldap
+
+# 3.
+dn: olcOverlay={0}chain,olcDatabase={1}hdb,cn=config
+objectClass: olcOverlayConfig
+objectClass: olcChainConfig
+olcOverlay: {0}chain
+olcChainReturnError: TRUE
+
+# 4.
+dn: olcDatabase={0}ldap,olcOverlay={0}chain,olcDatabase={1}hdb,cn=config
+objectClass: olcLDAPConfig
+objectClass: olcChainDatabase
+olcDatabase: {0}ldap
+olcDbURI: ldap://ldaps.example.com
+olcDbRebindAsUser: TRUE
+olcDbIDAssertBind: bindmethod=simple
+  binddn="cn=ldaps2,dc=example,dc=com"
+  credentials=bilineatus
+  mode=self
+###########################################################################
+µ
+
+
+
+
+
+The only way to work this out is by converting an old style configuration file into LDIF style. This show's quite a complex structure which isn't well documented.
+
+The structure creates LDAP database entries in the frontend to intercept referrer responses.
+
+To complicate matters, a schema validation conflicts with OpenLDAP's own configuration requirements (olcDbURI can not be used in the first entry). To work around this, the offline/direct modification must be made but remember that editing the LDIF directly with a text editor is strongly discouraged - See Working with OpenLDAP 2.4 LDIF config backend
+
+If you're on Ubuntu/Debian, ensure you load the back_ldap module - OpenLDAP Chain not found
+
+Create "chainoverlay.ldif":
+
+dn: olcOverlay=chain,olcDatabase={-1}frontend,cn=config
+objectClass: olcOverlayConfig
+objectClass: olcChainConfig
+olcOverlay: chain
+olcChainCacheURI: FALSE
+olcChainMaxReferralDepth: 1
+olcChainReturnError: TRUE
+As root, import indirectly:
+
+# ldapadd -Y EXTERNAL -H ldapi:/// -f chainoverlay.ldif
+Create "defaultldap.ldif":
+
+dn: olcDatabase=ldap,olcOverlay={0}chain,olcDatabase={-1}frontend,cn=config
+objectClass: olcLDAPConfig
+objectClass: olcChainDatabase
+olcDatabase: ldap
+Import defaultldap.ldif offline (This is to work around schema validation):
+
+# service slapd stop
+# slapadd -b cn=config -l defaultldap.ldif
+Fix a weird entry and perms:
+
+# rm "/etc/ldap/slapd.d/cn=config/olcDatabase={-1}over.ldif"
+# chown -R openldap:openldap "/etc/ldap/slapd.d/cn=config"
+Start slapd:
+
+# service slapd start
+Create a chain intercept configuration - chainedserver.ldif:
+
+dn: olcDatabase=ldap,olcOverlay={0}chain,olcDatabase={-1}frontend,cn=config
+objectClass: olcLDAPConfig
+objectClass: olcDatabaseConfig
+objectClass: olcConfig
+objectClass: top
+objectClass: olcChainDatabase
+olcDatabase: ldap
+olcDbURI: ldap://areferredserver.com
+
+
+
+
+
+systemctl stop slapd.service && rm -rf /var/lib/ldap/* /etc/openldap/slapd.d/*
+
+cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
+
+chown ldap:ldap -R /etc/openldap/slapd.d/* && chown ldap:ldap -R /var/lib/ldap/*
+
+
+
+
+
+
+
+
+
+

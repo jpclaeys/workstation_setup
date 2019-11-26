@@ -1,0 +1,108 @@
+######################################################################################################################
+# consultation des emails en console
+# en cours...
+######################################################################################################################
+
+#########################################################
+# configuration de fetchmail
+#########################################################
+
+alias fetchmail='~/applications/i386/5.10/bin/fetchmail -v'
+#alias fetchmail='~/applications/i386/5.10/bin/fetchmail -s -k'
+
+touch ~/.fetchmailrc
+chmod 600 ~/.fetchmailrc
+
+
+##### ajout d'un compte de messagerie dans ~/.fetchmailrc
+
+export mailserver=OPNLBNECA75
+export protocol=imap
+export port=143
+export username=betorma
+export password=xxx
+export interval=60
+export timeout=30
+export mda=~/applications/i386/5.10/bin/procmail
+
+cat >~/.fetchmailrc <<EOF
+##### opoce
+poll ${mailserver}
+	protocol ${protocol}
+	port ${port}
+	username ${username}
+	password ${password}
+	is ${username}
+	keep
+	#fetchall
+	#timeout ${timeout}
+	#interval ${interval}
+	mda ${mda}
+EOF
+
+cat ~/.fetchmailrc
+
+fetchmail
+
+
+##### log, authentification a voir...
+
+
+
+#########################################################
+# configuration de procmail
+#########################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#########################################################
+# configuration de mutt
+#########################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

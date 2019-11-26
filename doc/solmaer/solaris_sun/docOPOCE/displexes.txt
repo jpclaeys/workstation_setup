@@ -1,0 +1,5 @@
+#### dis plex
+vxplex -g rootdg dis export-02
+vxplex -g rootdg dis rootvol-02
+vxplex -g rootdg dis swapvol-02
+vxplex -g rootdg dis var-02

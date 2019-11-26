@@ -1,0 +1,880 @@
+
+
+#############################################################################################################################
+##### 
+##### variables
+#####
+
+
+
+
+##### define variables, on all nodes
+
+# server
+export zone_name=checklex2-pz
+export zone_alias=containeer
+export commentary='production zone for checklex'
+export primary_node=ulysse
+export secondary_node=penelope
+export brand=solaris
+export cluster_used=yes
+export physical_mem_capping=16G
+export swap_mem_capping=16G
+export cpu_capping=8
+
+# network	
+export zone_ip=158.167.99.137
+export zone_netmask=/22
+export vlan_id=1
+export appli_host_name=opsvc132
+export appli_host_ip=$zone_ip
+export network_interface=aggr1
+export default_router=158.167.96.251
+
+# application
+export appli_name=checklex
+export appli_project=$appli_name
+export appli_project_id=2280
+export appli_user=$appli_name
+export appli_uid=83100
+export comment_appli_user="${appli_user} user for ${appli_project} project"
+export w_appli_user="w_${appli_user}"
+export w_appli_uid=83101
+export comment_w_appli_user="${w_appli_user} wood user for ${appli_project} project"
+export appli_group=$appli_name
+export appli_gid=84400
+export test_used=no
+export oracle_used=no
+export documentum_used=no
+
+# storage
+export powerpath_used=yes
+export hex_lun_id_data_list='13'
+export dec_lun_id_data_list='19'
+export hex_lun_id_db_list=''
+#export dec_lun_id_db_list=''
+export local_site=`/home/admin/bin/getcmdb.sh host | grep $(uname -n) | awk -F';' '{print $5}' | awk '{print $1}'`
+
+# rdf storage
+export srdf_used=yes
+export rdf_device_groupe_name_data=${zone_name}-data
+export rdf_device_groupe_name_db=${zone_name}-db
+export rdf_dev_list_data='1115'
+export rdf_dev_list_db=''
+
+
+
+
+# other
+export tmp_dir=/net/opsvc058/systemstore/temp/${zone_name}
+mkdir -p $tmp_dir
+export date=`date +%Y%m%d%H%M`
+export storage_info_file=/home/betorma/docs/storage.txt
+
+
+
+#############################################################################################################################
+##### 
+##### lun check
+#####
+
+##### on all nodes
+
+cfgadm -al
+powermt check
+powermt display dev=all class=all
+symcfg discover
+symcfg scan
+symdev list pd
+
+cldev populate
+
+/home/betorma/bin/storage_info.pl -A >${tmp_dir}/storage_info_`uname -n`.out
+
+for dev in $hex_lun_id_data_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.out; done
+if [[ x${oracle_used} == xyes ]]; then
+	for dev in $hex_lun_id_db_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.out; done
+fi
+#for dev in $rdf_dev_list_data; do grep $dev ${tmp_dir}/storage_info_`uname -n`.out; done
+#for dev in $rdf_dev_list_db; do grep $dev ${tmp_dir}/storage_info_`uname -n`.out; done
+
+
+
+
+#############################################################################################################################
+##### 
+##### get the local baie name
+#####
+
+
+
+##### define/check rdf type, on each node
+
+{
+if [ $primary_node = `uname -n` ]; then
+	rdf_type=RDF1
+else 
+	rdf_type=RDF2
+fi
+if [ -z $rdf_type ]; then
+	echo "Can't determine primary node and RDF type for this node."
+	echo 'Please check or define RDF type manually.'
+else
+	echo $rdf_type
+fi
+}
+
+
+
+##### get the local baie on which the device is in $rdf_type
+
+{
+symcfg list | grep Local | awk '{print $1}' | while read storage
+do
+
+	for dev in $rdf_dev_list_data
+	do
+		symdev list -sid $storage -dev $dev 2>/dev/null | grep $dev | grep $rdf_type >/dev/null
+		if [[ $? == 0 ]]; then export local_storage=$storage; fi
+	done
+done
+echo  $local_storage
+}
+
+
+
+#############################################################################################################################
+##### 
+##### rdf device groups creation
+#####
+
+
+
+##### create rdf device group if it don't exists, on all nodes
+
+{
+symdg show ${rdf_device_groupe_name_data} >/dev/null
+if [[ $? != 0 ]]; then 
+	echo symdg -type $rdf_type create $rdf_device_groupe_name_data
+fi
+symdg show ${rdf_device_groupe_name_data}
+}
+
+
+
+{
+if [[ x${oracle_used} == xyes ]]; then
+	symdg show ${rdf_device_groupe_name_db} >/dev/null
+	if [[ $? != 0 ]]; then 
+		symdg -type $rdf_type create $rdf_device_groupe_name_db
+	fi
+	symdg show ${rdf_device_groupe_name_db}
+fi
+}
+
+
+
+##### add devices within rdf device groups
+
+
+{
+for dev in $rdf_dev_list_data; do echo symdg -g $rdf_device_groupe_name_data -sid $local_storage add dev $dev; done
+if [[ x${oracle_used} == xyes ]]; then for dev in $rdf_dev_list_db; do echo symdg -g $rdf_device_groupe_name_db -sid $local_storage add dev $dev; done; fi
+}
+
+
+
+##### check rdf sync, on primary node
+
+symrdf -g $rdf_device_groupe_name_data establish
+symrdf -g $rdf_device_groupe_name_data verify -synchronized
+if [[ x${oracle_used} == xyes ]]; then 
+	symrdf -g $rdf_device_groupe_name_db establish
+	symrdf -g $rdf_device_groupe_name_db verify -synchronized
+fi
+
+
+
+#############################################################################################################################
+##### 
+##### cluster device groups creation for data pool
+#####
+
+
+
+##### get concerned cluster devices, on each node
+
+{
+for dev in $rdf_dev_list_data
+do
+	grep " $dev #" /home/betorma/tmp/storage_info_`uname -n`.out | awk '{print $22}'
+done
+} | sort -u >${tmp_dir}/did.${rdf_type}
+
+
+
+##### combine cluster devices, on secondary/rdf2 node
+
+if [[ $rdf_type == 'RDF2' ]]; then 
+	echo cldev combine -t srdf -g ${rdf_device_groupe_name_data} -d `cat ${tmp_dir}/did.RDF1` `cat ${tmp_dir}/did.RDF2`
+	echo didadm -F scsi3 `cat ${tmp_dir}/did.RDF1`
+	echo cldev show `cat ${tmp_dir}/did.RDF1`
+else
+	echo; echo 'ERROR: you are not on RDF2 node to combine cluster devices.'
+fi
+
+
+cldg offline dsk/`cat ${tmp_dir}/did.RDF1`
+cldg disable dsk/`cat ${tmp_dir}/did.RDF1`
+cldg delete dsk/`cat ${tmp_dir}/did.RDF1`
+
+cldg offline dsk/`cat ${tmp_dir}/did.RDF2`
+cldg disable dsk/`cat ${tmp_dir}/did.RDF2`
+cldg delete dsk/`cat ${tmp_dir}/did.RDF2`
+
+
+
+##### create cluster device groupe, on primary node
+
+cldg create -n "${primary_node},${secondary_node}" -t rawdisk -d `cat ${tmp_dir}/did.RDF1` ${rdf_device_groupe_name_data}
+cldg show -v ${rdf_device_groupe_name_data}
+cldg status ${rdf_device_groupe_name_data}
+cldg online ${rdf_device_groupe_name_data}
+cldg status ${rdf_device_groupe_name_data}
+
+
+
+#############################################################################################################################
+##### 
+##### cluster device groups creation for db pool
+#####
+
+
+
+##### get concerned cluster devices, on each node
+
+{
+for dev in $rdf_dev_list_db
+do
+	grep " $dev #" /home/betorma/tmp/storage_info_`uname -n`.out | awk '{print $22}'
+done
+} | sort -u >${tmp_dir}/did.${rdf_type}
+
+
+
+##### combine cluster devices, on secondary/rdf2 node
+
+if [[ $rdf_type == 'RDF2' ]]; then 
+	echo cldev combine -t srdf -g ${rdf_device_groupe_name_db} -d `cat ${tmp_dir}/did.RDF1` `cat ${tmp_dir}/did.RDF2`
+	echo didadm -F scsi3 `cat ${tmp_dir}/did.RDF1`
+	echo cldev show `cat ${tmp_dir}/did.RDF1`
+else
+	echo; echo 'ERROR: you are not on RDF2 node to combine cluster devices.'
+fi
+
+
+cldg offline dsk/`cat ${tmp_dir}/did.RDF1`
+cldg disable dsk/`cat ${tmp_dir}/did.RDF1`
+cldg delete dsk/`cat ${tmp_dir}/did.RDF1`
+
+cldg offline dsk/`cat ${tmp_dir}/did.RDF2`
+cldg disable dsk/`cat ${tmp_dir}/did.RDF2`
+cldg delete dsk/`cat ${tmp_dir}/did.RDF2`
+
+
+
+##### create cluster device groupe, on primary node
+
+cldg create -n "${primary_node},${secondary_node}" -t rawdisk -d `cat ${tmp_dir}/did.RDF1` ${rdf_device_groupe_name_db}
+cldg show -v ${rdf_device_groupe_name_db}
+cldg online ${rdf_device_groupe_name_db}
+cldg status ${rdf_device_groupe_name_db}
+
+
+
+############################################################################################################################
+##### 
+##### powermt pseudo name alignement between hosts
+#####
+
+
+
+##### get the last emcpower device used
+last_emcpower=`/opt/EMCpower/bin/emcpadm getusedpseudos | grep emcpower | tail -1 | awk '{print 1}'`
+
+##### get 10 free emcpower devices names
+/opt/EMCpower/bin/emcpadm getfreepseudos -n 5 -b $last_emcpower
+
+
+#### to be continue...
+
+
+
+
+#############################################################################################################################
+##### 
+##### zpool creation
+##### 
+
+
+
+##### format disk to align blocks with EMC blocks, on primary node
+
+{
+for dev in $hex_lun_id_data_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.out | perl -ne 'print "/home/betorma/bin/format_s0.sh --emc $1\n" if(m{\s+(emcpower\d+.)\s+})' | sort -u ; done 
+if [[ x${oracle_used} == xyes ]]; then
+	for dev in $hex_lun_id_db_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.out | perl -ne 'print "/home/betorma/bin/format_s0.sh --emc $1\n" if(m{\s+(emcpower\d+.)\s+})' | sort -u ; done 
+fi
+}
+
+
+##### zpool creation, on primary node
+
+{
+if [[ x${srdf_used} == xyes ]]; then
+	for dev in $rdf_dev_list_data; do export dev; powermt display dev=all | perl -n0777e 'print "$1 " if(m{Pseudo name=(.*?)\nSymmetrix ID=.*?\nLogical device ID=$ENV{dev}\n})'; done | xargs echo zpool create ${zone_name}-data
+	if [[ x${oracle_used} == xyes ]]; then
+		for dev in $rdf_dev_list_db; do export dev; powermt display dev=all | perl -n0777e 'print "$1 " if(m{Pseudo name=(.*?)\nSymmetrix ID=.*?\nLogical device ID=$ENV{dev}\n})'; done | xargs echo zpool create ${zone_name}-db
+	fi
+else
+	primary_data_mirror_dev=$(grep -i ^$local_site $storages_info_file | awk '{print $3}' | while read wwn; do for dev in $hex_lun_id_data_list; do export wwn dev; perl -ne 'if(m{\s+$ENV{wwn}\s+.*?($ENV{dev}).*?\s+(emcpower\d+.)\s+}) {print "$2\n"}' ${tmp_dir}/storage_info_`uname -n`.out; done; done | sort -u)
+	secondary_data_mirror_dev=$(grep -iv ^$local_site $storages_info_file | awk '{print $3}' | while read wwn; do for dev in $hex_lun_id_data_list; do export wwn dev; perl -ne 'if(m{\s+$ENV{wwn}\s+.*?($ENV{dev}).*?\s+(emcpower\d+.)\s+}) {print "$2\n"}' ${tmp_dir}/storage_info_`uname -n`.out; done; done | sort -u)
+	echo zpool create ${zone_name}-data mirror $primary_data_mirror_dev $secondary_data_mirror_dev
+	if [[ x${oracle_used} == xyes ]]; then
+		primary_db_mirror_dev=$(grep -i ^$local_site $storages_info_file | awk '{print $3}' | while read wwn; do for dev in $hex_lun_id_db_list; do export wwn dev; 	perl -ne 'if(m{\s+$ENV{wwn}\s+.*?($ENV{dev}).*?\s+(emcpower\d+.)\s+}) {print "$2\n"}' ${tmp_dir}/storage_info_`uname -n`.out; done; done | sort -u)
+		secondary_db_mirror_dev=$(grep -iv ^$local_site $storages_info_file | awk '{print $3}' | while read wwn; do for dev in $hex_lun_id_db_list; do export wwn dev; perl -ne 'if(m{\s+$ENV{wwn}\s+.*?($ENV{dev}).*?\s+(emcpower\d+.)\s+}) {print "$2\n"}' ${tmp_dir}/storage_info_`uname -n`.out; done; done | sort -u)
+		echo zpool create ${zone_name}-data mirror $primary_db_mirror_dev $secondary_db_mirror_dev
+	fi
+fi
+}
+
+
+
+##### default zfs filesystems creation for zone and application data
+
+zfs set mountpoint=/zpool/${zone_name}-data ${zone_name}-data
+zfs create -o mountpoint=/zones/${zone_name} ${zone_name}-data/zone
+zfs create -o mountpoint=none -o zoned=on ${zone_name}-data/applications
+zfs create -o mountpoint=none ${zone_name}-data/applications/${appli_name}
+
+for FS in xchange users ; do
+	zfs create -o mountpoint=/applications/${appli_name}/${FS} ${zone_name}-data/applications/${appli_name}/${FS}
+	zfs set recordsize=128K ${zone_name}-data/applications/${appli_name}/${FS}
+	zfs set logbias=latency ${zone_name}-data/applications/${appli_name}/${FS}
+done
+
+zfs create -o mountpoint=/u01/oraagent ${zone_name}-data/applications/oraagent
+zfs set recordsize=128K ${zone_name}-data/applications/oraagent
+zfs set logbias=latency ${zone_name}-data/applications/oraagent
+
+
+zfs list -r ${zone_name}-data
+zfs get -r recordsize ${zone_name}-data
+zfs get -r logbias ${zone_name}-data
+
+
+
+###### if documentum is used
+
+{
+if [[ x${documentum_used} == xyes ]]; then
+	for FS in docdata; do
+		zfs create -o mountpoint=/applications/${appli_name}/${FS} ${zone_name}-data/applications/${appli_name}/${FS}
+		zfs set recordsize=128K ${zone_name}-data/applications/${appli_name}/${FS}
+		zfs set logbias=latency ${zone_name}-data/applications/${appli_name}/${FS}
+		zfs get recordsize,logbias ${zone_name}-data/applications/${appli_name}/${FS}
+	done
+	zfs list -rt all ${zone_name}-data
+fi
+}
+
+##### default zfs filesystems creation for application database
+
+{
+if [[ x${oracle_used} == xyes ]]; then
+	zpool create ${zone_name}-db
+	zfs set mountpoint=/zpool/${zone_name}-db ${zone_name}-db
+	zfs create -o mountpoint=none -o zoned=on ${zone_name}-db/applications
+	zfs create -o mountpoint=none ${zone_name}-db/applications/${appli_name}
+	
+	for FS in orabin oralog oradata oraflash oraonlinelog; do
+		zfs create -p -o mountpoint=/applications/${appli_name}/${FS} ${zone_name}-db/applications/${appli_name}/${FS}
+	done
+
+	zfs set recordsize=8K ${zone_name}-db/applications/${appli_name}/oradata
+	zfs set logbias=latency ${zone_name}-db/applications/${appli_name}/oradata
+	for FS in orabin oralog oraflash oraonlinelog ; do
+		zfs set recordsize=128K ${zone_name}-db/applications/${appli_name}/${FS}
+		zfs set logbias=latency ${zone_name}-db/applications/${appli_name}/${FS}
+	done
+
+	zfs list -r ${zone_name}-db
+	zfs get -r recordsize ${zone_name}-db
+	zfs get -r logbias ${zone_name}-db
+fi
+}
+
+
+#############################################################################################################################
+##### 
+##### zone creation and configuration
+##### 
+
+
+
+##### creation, on primary node
+
+{
+zonecfg -z ${zone_name} <<EOF
+create -b
+set zonepath=/zones/${zone_name}
+set autoboot=false
+set bootargs="-m verbose"
+
+set ip-type=exclusive
+add anet
+set linkname=net0_1
+set allowed-address="${zone_ip}"
+set lower-link=${network_interface}
+set defrouter=${default_router}
+set vlan-id=${vlan_id}
+set mac-address=random
+set configure-allowed-address=true
+end
+
+add attr
+set name=comment
+set type=string
+set value="zone"
+end
+
+add attr
+set name=osc-ha-zone
+set type=boolean
+set value=true
+end
+
+add dataset
+set name=${zone_name}-data/applications
+set alias=${zone_name}-data_applications
+end
+
+commit
+exit
+EOF
+}
+
+
+{
+if [[ x${oracle_used} == xyes ]]; then
+zonecfg -z ${zone_name} <<EOF
+add dataset
+set name=${zone_name}-db/applications
+set alias=${zone_name}-db_applications
+end
+EOF
+fi
+}
+
+zoneadm -z ${zone_name} install -c /home/admin/unix/opoce-zone-sysconfig.xml -m /home/admin/unix/opoce-zone-manifest.xml
+
+
+
+##### /etc/inet/hosts
+
+{
+if [[ $zone_ip == $appli_host_ip ]]; then
+	export inet_host="$zone_ip $zone_name $appli_host_name"
+else
+	export inet_host="$zone_ip $zone_name\n$appli_host_ip $appli_host_name"
+fi
+}
+
+cat <<EOF >/zones/${zone_name}/root/etc/inet/hosts
+::1 localhost
+127.0.0.1 localhost
+$inet_host
+EOF
+cat /zones/${zone_name}/root/etc/inet/hosts
+
+
+
+##### boot and connection
+
+zoneadm -z ${zone_name} boot && zlogin -C ${zone_name}
+~~.
+
+
+#############################################################
+# 
+# on the zone
+#
+
+##### puppet agent
+
+
+svccfg import /net/opsrv082/systemstore/puppet/puppet.xml
+svcadm enable puppet:agent
+
+
+
+
+#############################################################
+# 
+# on puppet server
+#
+
+puppet cert --list
+puppet cert --list | awk -F'"' '{print "puppet cert sign "$2}' 
+
+
+
+#############################################################
+# 
+# on foreman web interface
+#
+
+# configure host
+
+
+
+#############################################################
+# 
+# on the zone
+#
+
+##### puppet agent
+
+puppet agent -t --noop
+puppet agent -t 
+
+
+
+##### change root password to match with algorythm
+
+passwd root
+
+
+
+##### other packages
+
+pkg install -q \
+pkg:/developer/build/make \
+pkg:/developer/build/gnu-make \
+pkg:/compatibility/ucb \
+pkg:/developer/gcc-45 \
+pkg:/library/motif \
+pkg:/x11/library/libxp \
+pkg:/x11/session/xauth \
+pkg:/x11/xclock \
+pkg:/x11/diagnostic/x11-info-clients \
+pkg:/x11/x11-server-utilities \
+pkg:/developer/assembler
+
+
+##### /etc/project
+
+echo "grid.dba:1601:Grid:grid,oracle:grid:process.max-file-descriptor=(basic,1024,deny);process.max-sem-nsems=(privileged,1024,deny);process.max-sem-ops=(privileged,512,deny);project.max-msg-ids=(privileged,4096,deny);project.max-sem-ids=(privileged,65535,deny);project.max-shm-ids=(privileged,4096,deny);project.max-shm-memory=(privileged,8589934592,deny);project.max-tasks=(priv,131072,deny)" >> /etc/project
+
+
+
+##### ftp
+
+svcadm enable svc:/network/ftp:default
+
+
+
+##### restart and check
+
+init 6 
+svcs -xv
+dmesg
+
+
+
+
+
+
+#############################################################################################################################
+##### 
+##### cluster integration with srdf
+##### 
+
+
+
+##### check resource type registration
+
+/usr/cluster/bin/clresourcetype  list SUNW.HAStoragePlus || clresourcetype register SUNW.HAStoragePlus
+/usr/cluster/bin/clresourcetype  list SUNW.gds || clresourcetype register SUNW.gds
+
+
+
+##### stop and detach zone
+
+zlogin $zone_name init 0 && zlogin -C $zone_name 
+~~.
+zoneadm -z $zone_name detach
+grep $zone_name /etc/zones/index > ${tmp_dir}/index
+
+
+
+##### create resources for rdf disk group and zpool
+
+clrg create ${zone_name}-rg
+clrg manage ${zone_name}-rg
+clrg set -p Nodelist=${primary_node},${secondary_node} ${zone_name}-rg
+#clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p GlobalDevicePaths="${zone_name}-db,${zone_name}-data" ${zone_name}-srdf
+clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p GlobalDevicePaths="${zone_name}-data" ${zone_name}-srdf
+#clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p zpools="${zone_name}-db,${zone_name}-data" -p Resource_dependencies="${zone_name}-srdf" ${zone_name}-zfs
+clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p zpools="${zone_name}-data" -p Resource_dependencies="${zone_name}-srdf" ${zone_name}-zfs
+
+
+
+##### create resource for zone, on both nodes
+
+cat <<- EOT >/opt/SUNWsczone/sczbt/util/sczbt_${zone_name}-rs
+RS=${zone_name}-rs
+RG=${zone_name}-rg
+PARAMETERDIR=/etc/zones
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=${zone_name}-zfs
+Zonename="${zone_name}"
+Zonebrand="solaris"
+Zonebootopt=""
+Milestone="multi-user-server"
+Migrationtype="cold"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOT
+
+
+
+##### on primary node
+
+clrg online ${zone_name}-rg
+clrg status ${zone_name}-rg
+
+cp /etc/zones/${zone_name}.xml ${tmp_dir}
+
+
+
+##### on secondary node
+
+cp ${tmp_dir}/${zone_name}.xml /etc/zones
+cat ${tmp_dir}/index >>/etc/zones/index
+
+
+
+##### on primary node, create and enable resoucr for zone
+
+/opt/SUNWsczone/sczbt/util/sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_${zone_name}-rs
+clrs enable ${zone_name}-rs
+clrs status ${zone_name}-rs
+clrs unmonitor ${zone_name}-rs
+clrs status ${zone_name}-rs
+
+
+
+##### switch test
+
+timex clrg switch -n ${secondary_node} ${zone_name}-rg
+clrs status -g ${zone_name}-rg
+timex clrg switch -n ${primary_node} ${zone_name}-rg
+clrs status -g ${zone_name}-rg
+
+
+
+#############################################################################################################################
+##### 
+##### users, on the zone
+##### 
+
+???????????????????????????????????????
+
+##### puppet
+# create an application class "modules/applications/manifests/<application_name>.pp" in your local git repository for puppet
+# create a "modules/applications/files/Solaris/etc/user_attr.d/<application_name>.OPinttest" in your local git repository for puppet
+##################################### create a "modules/applications/files/Solaris/etc/project.<application_name>" in your local git repository for puppet ##### la classe puppet de l'aplication doit integrer le contenu de ce fichie dans le fichier /etc/project existant
+# deploy your puppet configuration
+# execute puppet agent on the zone
+
+
+
+##### variables
+
+export oracle_used=yes
+
+
+
+##### change some acls
+
+{
+if [[ ${oracle_used} == yes ]]; then
+	for rep in orabin oradata oralog oraflash
+	do
+		if [ -d /applications/${appli_project}/$rep ]; then
+			chown 55:55 /applications/${appli_project}/$rep
+			ls -ld /applications/${appli_project}/$rep
+		fi
+	done
+fi
+}
+
+
+
+##### change user passwords
+
+passwd ${appli_user}
+passwd ${w_appli_user}
+
+
+
+##### add documentum configuration 
+
+{
+if [[ ${documentum_used} == yes ]]
+then
+mkdir -p /applications/${appli_project}/users/dmadmin
+mkdir -p /applications/${appli_project}/users/pdocu
+mkdir -p /applications/${appli_project}/users/docuser
+roleadd -d /home/dmadmin -u 81800 -g ${appli_group} -s /bin/pfksh dmadmin
+roleadd -d /home/pdocu -u 81801 -g ${appli_group} -s /bin/pfksh pdocu
+roleadd -d /home/docuser -u 81802 -g ${appli_group} -s /bin/pfksh docuser
+echo "dmadmin     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+echo "pdocu     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+echo "docuser     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+chown dmadmin:${appli_group} /applications/${appli_project}/users/dmadmin
+chown pdocu:${appli_group} /applications/${appli_project}/users/pdocu
+chown docuser:${appli_group} /applications/${appli_project}/users/docuser
+fi
+}
+
+
+
+
+
+
+##### test user connexion
+
+{
+for users in ${appli_user} ${w_appli_user} rootdba oracle dmadmin pdocu docuser
+do
+echo "##### $users"
+su - $users -c 'id;pwd'
+echo	
+done
+}
+
+
+#############################################################################################################################
+##### 
+##### cmdb
+##### 
+
+##### on the primary node
+
+{
+echo "nom de la zone:\t\t\t\t${zone_name} (${zone_ip})"
+echo "OS version:\t\t\t\t"`head -1 /zones/${zone_name}/root/etc/release`
+echo "hote de l'application:\t\t\t${appli_host_name} (${appli_host_ip})"
+echo "vlan configured:\t\t\t"`zonecfg -z ${zone_name} info | grep vlan-id | awk '{print $2}'`
+echo "alias de la zone:\t\t\t${zone_alias}"
+echo
+echo "capping cpu:\t\t\t`zonecfg -z ${zone_name} info capped-cpu | grep ncpus: | awk '{print $2}' | sed -e 's/\]//g'`"
+echo "capping memoire physique:\t`zonecfg -z ${zone_name} info capped-memory | grep physical: | awk '{print $2}'`"
+echo "capping swap:\t\t\t`zonecfg -z ${zone_name} info capped-memory | grep swap: | awk '{print $2}' | sed -e 's/\]//g'`"
+echo
+echo "file systems:"
+zonecfg -z ${zone_name} info | perl -n0777e 'while(m{dataset:\s+name:\s+(.*?)/.*?\s+}g) {print "$1 "}' | xargs zfs list -r -o name,mountpoint
+echo
+if [[ ${cluster_used} == yes ]]
+then
+	clrg show -p nodelist  ${zone_name}-rg | grep 'Nodelist:' | perl -ne 'if(m{Nodelist:\s+(.*?)\s+(.*?)\s+}) {print "primary cluster node:\t\t$1\nsecondary cluster node:\t\t$2\n"}'
+else
+        echo "hote physique:\t\t\t$`uname -n`"
+fi
+} | mailx -s "mise a jour de la cmdb: ${zone_name}" -r mathieu.betori@ext.publications.europa.eu -c mathieu.betori@ext.publications.europa.eu OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
+
+
+
+#############################################################################################################################
+##### 
+##### monitoring
+##### 
+
+
+
+{
+cat <<EOT
+Pouvez-vous s'il vous plait créer le ticket suivant:
+
+Reported by:            Mathieu Betori
+Type:                   request for service 
+CI:                     unix
+Server:                 centreon-pk
+Group:                  OP-PROD-OPOCE
+Urgency:                mid
+Impact:                 mid
+
+
+Description:
+Hi,
+Could you please create monitoring clients for 
+ - $zone_name
+ - $appli_host_name
+Thanks in advance.
+EOT
+} | mailx -s "ouverture de ticket: monitoring creation for $zone_name" -r mathieu.betori@ext.publications.europa.eu -c mathieu.betori@ext.publications.europa.eu OPOCE-HELPDESK@publications.europa.eu
+
+
+
+#############################################################################################################################
+##### 
+##### backup
+##### 
+
+
+##### preciser le site du primary node
+
+
+
+{
+cat <<EOT
+Hi,
+
+Can you please create backup client for $zone_name ?
+His primary node is ${primary_node}.
+
+Thanks in advance.
+
+EOT
+} | mailx -s "backup client creation for $zone_name" -r mathieu.betori@ext.publications.europa.eu -c mathieu.betori@ext.publications.europa.eu OPDL-A4-STORAGE-BACKUP@publications.europa.eu
+
+
+
+
+#############################################################################################################################
+##### 
+##### inform integration an db teams that the environment is ready
+##### 
+
+
+{
+cat <<EOT
+Hi,
+
+$zone_name is ready and available.
+
+EOT
+} | mailx -s "$zone_name" betorma
+
+
+
+
+
+
+
+

@@ -1,0 +1,521 @@
+###########################################################################################################
+# installation de sun cluster 3.3
+###########################################################################################################
+
+
+######################## NODE 1
+############ snapshot
+### snapshot
+zfs list 
+zfs snapshot -r rpool@before_cluster
+zfs list 
+
+
+
+
+#############################################
+cp -p /net/remus/export/software/Suncluster/SunCluster3_3.tar /var/tmp
+cd /var/tmp
+tar xvfp SunCluster3_3.tar
+cd Sparc_3_3/
+
+
+##### Install Suncluster 3.3
+
+#xhost +
+#export DISPLAY=vespa:10
+#/var/tmp/Sparc_3_3/Product/Solaris_sparc/installer
+/var/tmp/Sparc_3_3/Product/Solaris_sparc/installer -noconsole -nodisplay -state /home/betorma/tmp/state_file_solaris_cluster_33.txt 
+
+### In order to notify you of potential updates, we need to confirm an internet connection. Do you want to proceed [Y/N] : N
+
+
+
+# Install Patches 07/12/11
+cd /var/tmp/Sparc_3_3/Patches
+for i in `ls *.zip`
+do
+unzip -o ${i}
+done
+\rm *.zip
+
+rm  patch.ksh
+touch patch.ksh
+chmod +x patch.ksh 
+ls | grep -v patch.ksh | while read PATCHES
+do
+echo "patchadd $PATCHES" >> patch.ksh
+done
+./patch.ksh
+
+#### Only 3 patches are installed on the Solaris Cluster Release (not quorum server)
+cd /var/sadm/patch
+ls -alrt
+#145333-10
+#145638-05
+#146085-04
+
+
+### reboot 
+init 6
+
+
+
+######################## CONFIGURE
+zfs list 
+zfs snapshot -r rpool@before_scinstall
+zfs list 
+
+##### add 2nd node into hosts file
+cp -p /etc/inet/hosts  /etc/inet/hosts.orig
+vi /etc/inet/hosts
+
+##### add quorum server
+echo '10.199.99.201   scqs-prod' >>/etc/inet/hosts
+
+10.199.99.31    seymour ### seymour_skinner node 1
+10.199.99.33    skinner ### seymour_skinner node 2
+10.199.99.201   scqs-prod ### quorum server
+
+
+#### add access RPC
+svccfg
+select network/rpc/bind
+setprop config/local_only=false
+quit
+svcadm refresh network/rpc/bind:default
+svcprop network/rpc/bind:default | grep local_only
+
+#### enable The Common Agent Container
+/usr/sbin/cacaoadm enable
+
+
+
+# Configuration cluster
+scinstall
+    #Do you want to turn off global fencing (yes/no) [no]?
+    #Do you want to disable automatic quorum device selection (yes/no) [no]?  yes
+
+
+      scinstall -i \ 
+           -C guido_ramone \ 
+           -F \ 
+           -G lofi \ 
+           -T node=guido,node=ramone,authtype=sys \ 
+           -w netaddr=172.16.0.0,netmask=255.255.240.0,maxnodes=64,maxprivatenets=10,numvirtualclusters=12 \ 
+           -A trtype=dlpi,name=e1000g2 -A trtype=dlpi,name=e1000g3 \ 
+           -B type=switch,name=switch1 -B type=switch,name=switch2 \ 
+           -m endpoint=:e1000g2,endpoint=switch1 \ 
+           -m endpoint=:e1000g3,endpoint=switch2 \ 
+           -P task=quorum,state=INIT
+
+      scinstall -i \ 
+           -C hercule_heracles \ 
+           -F \ 
+           -G lofi \ 
+           -T node=hercule,node=heracles,authtype=sys \ 
+           -w netaddr=172.16.0.0,netmask=255.255.240.0,maxnodes=64,maxprivatenets=10,numvirtualclusters=12 \ 
+           -A trtype=dlpi,name=bge0 -A trtype=dlpi,name=bge1 \ 
+           -B type=switch,name=switch1 -B type=switch,name=switch2 \ 
+           -m endpoint=:bge0,endpoint=switch1 \ 
+           -m endpoint=:bge1,endpoint=switch2
+
+
+
+#disques internes:
+cldev list -v
+clnode set -p reboot_on_path_failure=enabled $(hostname)
+
+# unmonitor des disques internes:
+cldev unmonitor d1
+cldev unmonitor d2
+cldev status
+
+# setter les disques internes en autogen et localonly
+cldg set -p localonly=true  dsk/d1
+cldg set -p localonly=true  dsk/d2
+cldg show -v
+
+
+#### start pools/dynamic
+svcs "*pools*"
+svcadm enable pools/dynamic
+svcs "*pools*"
+
+##### console
+/usr/share/webconsole/private/bin/wcremove -i console
+svcadm clear system/webconsole:console
+
+svccfg
+select system/webconsole
+setprop options/tcp_listen=true
+quit
+svcprop /system/webconsole:console | grep tcp_listen
+
+
+
+cacaoadm stop
+cacaoadm create-keys --force
+cacaoadm start
+cacaoadm status
+netstat -a | grep 6789
+svcs -a | grep system/webconsole:console
+
+#### cluster check
+cluster check -v
+
+############ resolver
+grep cluster /etc/nsswitch.conf
+perl -pi.orig -e 's:cluster::g' /etc/nsswitch.conf
+diff /etc/nsswitch.conf /etc/nsswitch.conf.orig
+
+#### check cluster config in netmask file
+cat /etc/inet/netmasks
+
+
+cat>>/etc/inet/hosts <<EOT
+#############Cluster Recommendations
+172.16.0.129    clusternode1-priv-physical1
+172.16.1.1      clusternode1-priv-physical2
+172.16.4.1      clusternode1-priv
+172.16.0.130    clusternode2-priv-physical1
+172.16.1.2      clusternode2-priv-physical2
+172.16.4.2      clusternode2-priv
+EOT
+
+cat /etc/hosts
+
+
+# Change crontab
+export EDITOR=vi 
+crontab -e
+#	20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/eventlog
+#	25 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/DS
+#	30 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/commandlog
+
+######### clear device 
+cldevice populate -v
+cldev refresh -v
+devfsadm -Cv
+cldev clear
+cldev status
+
+
+# Oracle recommandations
+cp -p /etc/profile /etc/profile.orig
+echo "########oracle recommendations" >> /etc/profile
+echo "NOINUSE_CHECK=1" >> /etc/profile
+echo "export NOINUSE_CHECK" >> /etc/profile
+
+
+
+######################################################################################################
+# SCSYMON 
+svcadm -v disable /system/cluster/scsymon-srv
+cp -p /usr/cluster/lib/svc/method/svc_cl_svc_enable /usr/cluster/lib/svc/method/svc_cl_svc_enable.cluster
+# comment line scsymon
+vi /usr/cluster/lib/svc/method/svc_cl_svc_enable
+    #if [ ${major_os} -lt 5 ] || [ ${major_os} -eq 5 ] && [ ${minor_os} -le 10 ]; then
+    #       $SVCADM enable svc:/system/cluster/scsymon-srv:default
+    #fi
+perl -pi.cluster -e 's:enable_scsymon=1:enable_scsymon=0:g' /usr/cluster/lib/svc/method/svc_boot_check
+
+
+##### test reboot
+init 6
+
+
+################## NODE 2
+############ snapshot
+### snapshot
+zfs list 
+zfs snapshot -r rpool@before_cluster
+zfs list 
+
+
+
+
+#############################################
+cp -p /net/remus/export/software/Suncluster/SunCluster3_3.tar /var/tmp
+cd /var/tmp
+tar xvfp SunCluster3_3.tar
+cd Sparc_3_3/
+
+
+##### Install Suncluster 3.3
+
+#xhost +
+#export DISPLAY=vespa:10
+#/var/tmp/Sparc_3_3/Product/Solaris_sparc/installer
+/var/tmp/Sparc_3_3/Product/Solaris_sparc/installer -noconsole -nodisplay -state /home/betorma/tmp/state_file_solaris_cluster_33.txt 
+
+
+### In order to notify you of potential updates, we need to confirm an internet connection. Do you want to proceed [Y/N] : N
+
+
+
+# Install Patches 07/12/11
+cd /var/tmp/Sparc_3_3/Patches
+for i in `ls *.zip`
+do
+unzip -o ${i}
+done
+\rm *.zip
+
+rm  patch.ksh
+touch patch.ksh
+chmod +x patch.ksh 
+ls | grep -v patch.ksh | while read PATCHES
+do
+echo "patchadd $PATCHES" >> patch.ksh
+done
+./patch.ksh
+
+#### Only 3 patches are installed on the Solaris Cluster Release (not quorum server)
+cd /var/sadm/patch
+ls -alrt
+#145333-10
+#145638-05
+#146085-04
+
+
+### reboot 
+init 6
+
+
+
+######################## CONFIGURE
+zfs list 
+zfs snapshot -r rpool@before_scinstall
+zfs list 
+
+##### add 1st node into hosts file
+cp -p /etc/inet/hosts  /etc/inet/hosts.orig
+vi /etc/inet/hosts
+
+##### add quorum server
+echo '10.199.99.201   scqs-prod' >>/etc/inet/hosts
+
+#### add access RPC
+svccfg
+select network/rpc/bind
+setprop config/local_only=false
+quit
+svcadm refresh network/rpc/bind:default
+svcprop network/rpc/bind:default | grep local_only
+
+#### enable The Common Agent Container
+/usr/sbin/cacaoadm enable
+
+
+
+# Configuration cluster
+scinstall
+    #Do you want to turn off global fencing (yes/no) [no]?
+    #Do you want to disable automatic quorum device selection (yes/no) [no]?  yes
+
+
+
+      scinstall -i \ 
+           -C guido_ramone \ 
+           -N guido \ 
+           -G lofi \ 
+           -A trtype=dlpi,name=e1000g2 -A trtype=dlpi,name=e1000g3 \ 
+           -m endpoint=:e1000g2,endpoint=switch1 \ 
+           -m endpoint=:e1000g3,endpoint=switch2
+
+      scinstall -i \ 
+           -C hercule_heracles \ 
+           -N hercule \ 
+           -G lofi \ 
+           -A trtype=dlpi,name=bge0 -A trtype=dlpi,name=bge1 \ 
+           -m endpoint=:bge0,endpoint=switch1 \ 
+           -m endpoint=:bge1,endpoint=switch2
+
+
+#disques internes:
+cldev list -v
+clnode set -p reboot_on_path_failure=enabled $(hostname)
+
+# unmonitor des disques internes:
+cldev unmonitor d3
+cldev unmonitor d4
+cldev status
+
+# setter les disques internes en autogen et localonly
+cldg set -p localonly=true  dsk/d3
+cldg set -p localonly=true  dsk/d4
+cldg show -v
+
+
+#### start pools/dynamic
+svcs "*pools*"
+svcadm enable pools/dynamic
+svcs "*pools*"
+
+##### console
+/usr/share/webconsole/private/bin/wcremove -i console
+svcadm clear system/webconsole:console
+
+svccfg
+select system/webconsole
+setprop options/tcp_listen=true
+quit
+svcprop /system/webconsole:console | grep tcp_listen
+
+
+
+##### sur tous les nodes
+cacaoadm stop
+
+##### sur un des nodes
+cacaoadm create-keys --force
+cacaoadm start
+cd /etc/cacao/instances/default
+tar cf /home/betorma/tmp/SECURITY.tar security
+
+##### sur tous les autres nodes
+cd /etc/cacao/instances/default
+tar xf /home/betorma/tmp/SECURITY.tar
+cacaoadm start
+
+
+svcadm disable svc:/system/webconsole:console
+svcadm enable svc:/system/webconsole:console
+netstat -a | grep 6789
+svcs -a | grep system/webconsole:console
+
+#### cluster check
+cluster check -v
+
+
+############ resolver
+grep cluster /etc/nsswitch.conf
+perl -pi.orig -e 's:cluster::g' /etc/nsswitch.conf
+diff /etc/nsswitch.conf /etc/nsswitch.conf.orig
+
+#### check cluster config in netmask file
+cat /etc/inet/netmasks
+
+
+cat>>/etc/inet/hosts <<EOT
+#############Cluster Recommendations
+172.16.0.129    clusternode1-priv-physical1
+172.16.1.1      clusternode1-priv-physical2
+172.16.4.1      clusternode1-priv
+172.16.0.130    clusternode2-priv-physical1
+172.16.1.2      clusternode2-priv-physical2
+172.16.4.2      clusternode2-priv
+EOT
+
+cat /etc/hosts
+
+
+# Change crontab
+export EDITOR=vi 
+crontab -e
+#	20 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/eventlog
+#	25 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/DS
+#	30 4 * * 0 /usr/cluster/lib/sc/newcleventlog /var/cluster/logs/commandlog
+
+######### clear device 
+cldevice populate -v
+cldev refresh -v
+devfsadm -Cv
+cldev clear
+cldev status
+
+
+# Oracle recommandations
+cp -p /etc/profile /etc/profile.orig
+echo "########oracle recommendations" >> /etc/profile
+echo "NOINUSE_CHECK=1" >> /etc/profile
+echo "export NOINUSE_CHECK" >> /etc/profile
+
+
+
+######################################################################################################
+# SCSYMON 
+svcadm -v disable /system/cluster/scsymon-srv
+cp -p /usr/cluster/lib/svc/method/svc_cl_svc_enable /usr/cluster/lib/svc/method/svc_cl_svc_enable.cluster
+# comment line scsymon
+vi /usr/cluster/lib/svc/method/svc_cl_svc_enable
+    #if [ ${major_os} -lt 5 ] || [ ${major_os} -eq 5 ] && [ ${minor_os} -le 10 ]; then
+    #       $SVCADM enable svc:/system/cluster/scsymon-srv:default
+    #fi
+perl -pi.cluster -e 's:enable_scsymon=1:enable_scsymon=0:g' /usr/cluster/lib/svc/method/svc_boot_check
+
+
+##### test reboot
+init 6
+
+
+################## QUORUM SERVER
+############ snapshot
+### snapshot
+zfs list 
+zfs snapshot -r rpool@before_cluster
+zfs list 
+
+
+
+
+########################### ON SCQS
+
+######################## CONFIGURE
+zfs list 
+zfs snapshot -r rpool@before_scinstall
+zfs list 
+
+
+##### add 2 node into hosts file
+
+getent hosts <node1> <node2>
+
+cp -p /etc/inet/hosts  /etc/inet/hosts.$(date +%y%m%d)
+vi /etc/inet/hosts
+
+
+
+###### configure quorum server
+
+mkdir /var/scqsd/<node1>_<node2>
+
+cd /etc/scqsd/
+cp -p scqsd.conf scqsd.conf.$(date +%y%m%d)
+
+##### update scqsd.conf
+##### dev/test [8901-8950]
+##### prod [8951-8999]
+vi scqsd.conf 
+
+##### restart
+svcadm restart svc:/system/cluster/quorumserver:default
+svcs -a | grep svc:/system/cluster/quorumserver:default
+pgrep -fl scqsd
+
+##### in case of on the scqc #### william
+#/home/admin/bin/switch_quorum_server.bash scqs-prod enable
+
+
+##### on cluster a node
+/usr/cluster/bin/clquorum add -t quorum_server -p qshost=scqs-prod -p port=<port> scqs-prod
+clq reset
+
+
+##### on scqs
+netstat -na | grep <port>
+
+##### install mode on a node
+cluster set -p installmode=disabled
+
+
+##### destroy zfs snapshots on all nodes
+
+
+
+##### check monitoring
+
+##### update cmdb
+
+

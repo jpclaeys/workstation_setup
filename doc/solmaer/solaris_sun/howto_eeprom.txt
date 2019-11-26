@@ -1,0 +1,32 @@
+#############################################################################################################
+##### variables nvramrc pour boot
+#############################################################################################################
+
+export rootdisk_device=/pci@1d,700000/pci@1/scsi@2/disk@0,0:a
+export rootmirror_device=/pci@1d,700000/pci@1/scsi@2/disk@1,0:a
+export network_device=/pci@1d,700000/pci@1/network@0
+export serial=0449MM20C2
+
+
+eeprom nvramrc="devalias rootdisk ${rootdisk_device}
+devalias rootmirror ${rootmirror_device} 
+.\" ChassisSerialNumber ${serial} \" cr devalias jump ${network_device}"
+
+
+#############################################################################################################
+##### divers
+#############################################################################################################
+
+eeprom "auto-boot?"=true
+
+eeprom boot-device="rootdisk rootmirror jump"
+
+
+eeprom | grep 'local-mac-address?=true' 
+
+eeprom oem-banner=`hostname`
+eeprom oem-banner
+
+
+
+

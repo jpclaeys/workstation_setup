@@ -1,0 +1,2 @@
+# state and process through regular expression
+svcs -p "*bb*"

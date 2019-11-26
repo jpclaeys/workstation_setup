@@ -1,0 +1,23 @@
+###########################################################################################################################
+# howto add a new user within /etc/user_attr file, with the same roles of an other user
+###########################################################################################################################
+
+
+
+##### edit /var/cfengine/master/inputs/cf.solaris_10 file on cfengine server; there must be these lines for the new user (maffima for example):
+--- snip ---
+editfiles:
+        { /etc/user_attr
+                SetScript "/var/cfengine/misc/add_user_in_user_attr.sh "
+                RunScriptIfNoLineMatching "^maffima::::"
+        }
+--- snip ---
+
+
+##### edit /var/cfengine/master/SCRIPTS/add_user_in_user_attr.sh script on cfengine server; change the new_user and template_user variables:
+- new_user is the user to add in /etc/user_attr on all servers (for example maffima) 
+- template_user is the user whose new_user must have the same roles (for examplde pierrph: so maffima will have the same roles of pierrph)
+
+
+##### execute /var/cfengine/bin/cfagent -v -q on clients or wait the scheduled execution at each hours.
+

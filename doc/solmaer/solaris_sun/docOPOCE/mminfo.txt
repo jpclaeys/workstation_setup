@@ -1,0 +1,10 @@
+/usr/sbin/mminfo -t 'yesterday' -q 'pool="Backup 9940B",client=dopey,name=/applications/planjo/docdata'  -r 'ssid,volume,volretent,client,savetime(25),ssretent,nsavetime'
+
+
+
+mminfo -q 'client=camel' -t today -r 'volume,ssid,savetime(20),ssflag s,sumsize,level,name'
+
+
+
+
+mminfo -q "savetime>1 day ago, incomplete" -r "client,name,level,sscreate(22)"

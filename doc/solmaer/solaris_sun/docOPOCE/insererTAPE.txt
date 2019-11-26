@@ -1,0 +1,4 @@
+nsrjb -d / nsrjb -d [-P 1] [-S 74]
+( apres non a la question)
+nsrjb -C / nsrjb -v ( Slot avec le tiret )
+nsrjb -I -S 74

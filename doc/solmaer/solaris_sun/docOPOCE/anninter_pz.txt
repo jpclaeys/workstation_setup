@@ -1,0 +1,405 @@
+# Creation des zones sur vxvm 
+
+# regardez si on a la lun
+# REMARQUE: Faites attention, il se peut que la copie de la commande marche pas a cause de sa longueur
+export lu=14
+/usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))' | grep "lun ${lu}"
+
+path: /dev/rdsk/c8t6006048000028775112853594D303343d0s2 ==> stor: 5006048c49aef608 lun 14 stor: 5006048c49aef607 lun 14
+
+# constatez qu'il s'agit de la lun correcte et que cela a ete deja pris
+export de=c8t6006048000028775112853594D303343d0
+vxdisk -e list | grep ${de}
+zpool status | grep ${de}
+
+# Donc, elle etait pas prise, on peux continuer
+
+# Labelisez le device 
+export de=c8t6006048000028775112853594D303343d0
+format  ${de}
+selecting c8t6006048000028775112853594D303343d0
+[disk formatted]
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        repair     - repair a defective sector
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        inquiry    - show vendor, product and revision
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> label
+Ready to label disk, continue? y
+
+format> quit
+
+# Rafraichissez la config VxVM pour que ca chope le nouveau disque
+vxconfigd -k
+
+# Confirmez qu'il est maintenant dans la config
+export de=c8t6006048000028775112853594D303343d0
+vxdisk -e list | grep ${de}
+fabric_36    auto      -             -            online       c8t6006048000028775112853594D303343d0
+
+# Avec le device qui s'affiche avec le vxdisk precedent, mettez le disque a disposition de VxVM
+export dsk=fabric_36
+/etc/vx/bin/vxdisksetup -i ${dsk}
+
+# Creez d'abord le diskgroup vxvm qui va heberger les volumes
+export dg=anninter
+export dev=DMX2000_14
+export dsk=fabric_36
+vxdg init ${dg} ${dev}=${dsk}
+
+# Verifiez
+export dg=anninter
+vxdisk -e list | grep ${dg}
+
+# Creez les volumes vzone et vusers ( minimum ) mais prevoir la creation de voradata, vorabin et voralog aussi
+# Pour vzone, estimer 8g toujours
+export dg=anninter
+export vo=vzone
+vxassist -g ${dg} make ${vo} 8g
+export dg=anninter
+export vo=vusers
+vxassist -g ${dg} make ${vo} 10g
+export dg=anninter
+export vo=vorabin
+vxassist -g ${dg} make ${vo} 4g
+export dg=anninter
+export vo=voradata
+vxassist -g ${dg} make ${vo} 6g
+export dg=anninter
+export vo=voralog
+vxassist -g ${dg} make ${vo} 2g
+
+# Creez leur FS
+export dg=anninter
+export vo=vzone
+echo y | newfs -i2000000 -f 8192 -m 1 -c 128 /dev/vx/rdsk/${dg}/${vo}
+export vo=vusers
+echo y | newfs -i2000000 -f 8192 -m 1 -c 128 /dev/vx/rdsk/${dg}/${vo}
+export vo=vorabin
+echo y | newfs -i2000000 -f 8192 -m 1 -c 128 /dev/vx/rdsk/${dg}/${vo}
+export vo=voradata
+echo y | newfs -i2000000 -f 8192 -m 1 -c 128 /dev/vx/rdsk/${dg}/${vo}
+export vo=voralog
+echo y | newfs -i2000000 -f 8192 -m 1 -c 128 /dev/vx/rdsk/${dg}/${vo}
+
+# Editez le fichier vfstab pour ajouter le FS vzone
+cp /etc/vfstab /etc/vfstab.20081204
+cat >> /etc/vfstab <<EOF
+# Zone anninter PROD
+/dev/vx/dsk/anninter/vzone        /dev/vx/rdsk/anninter/vzone       /zones/anninter_pz        ufs     3  yes    -
+EOF
+
+# Montez le FS vzone ( comme ca, on saura si le changement sur vfstab est bon )
+export zo=anninter_pz
+mkdir -p /zones/${zo}
+mount /zones/${zo}
+
+# Prenez une configuration de zone qui ressemble a celle qu'on va creer
+export zo=anninter_tz
+zonecfg -z ${zo} export > /net/coppola/xchange/${zo}.cfg
+
+# Copiez et modifiez le fichier de configuration de la zone en accordance avec la carte de reseau du serveur, ip/s alloues a cette zone
+# le dossier ou FS ou ca tourne et les FS crees
+export zo=anninter_tz
+export zo2=anninter_pz
+cp /net/coppola/xchange/${zo}.cfg /var/tmp/${zo2}.cfg
+
+# Verifiez le fichier
+cat /var/tmp/${zo2}.cfg
+
+# Changez l'ip addr 
+export ip=158.167.98.178
+export zo=anninter_pz
+(echo "%s/set address\=.*$/set address=${ip}/"; echo 'wq!') | ex -s /var/tmp/${zo}.cfg
+
+# Changez la carte reseau
+# Verifier quelle carte on a
+ifconfig -a
+export re=ce3
+(echo "%s/set physical\=.*$/set physical=${re}/"; echo 'wq!') | ex -s /var/tmp/${zo}.cfg
+
+# Changez le commentaire de la zone
+export co="Zone anninter_pz"
+(echo '%s/set value\=\"Zone.*$/set value="'${co}'"/'; echo 'wq!') | ex -s /var/tmp/${zo}.cfg
+
+# Changez zle zonepath
+export zo=anninter_pz
+(echo "%s/set zonepath\=\/zones\/.*$/set zonepath=\/zones\/${zo}"; echo 'wq!') | ex -s /var/tmp/${zo}.cfg
+
+# Changez tous les references a la zone de procedence qui puissent encore rester
+export pa2=simap
+export pa=anninter
+export zo=anninter_pz
+(echo "%s/${pa2}/${pa}/g"; echo 'wq!') | ex -s /var/tmp/${zo}.cfg
+
+# Verifiez qu'il manque rien pour y changer
+export zo=anninter_pz
+cat /var/tmp/${zo}.cfg
+
+################################
+# Configurez et installez la zone
+export zo=anninter_pz
+zonecfg -z ${zo} -f /var/tmp/${zo}.cfg
+chmod 700 /zones/${zo}
+zoneadm -z ${zo} install
+
+# Verifiez des possibles erreurs
+# REMARQUE: On devrait voir que des erreurs de VxVM
+export zo=anninter_pz
+grep -i err /zones/${zo}/root/var/sadm/system/logs/install_log
+
+# Preparez le premier boot de la zone et donc ajoutez tout cela a sa configuration
+export zo=anninter_pz
+export ip=158.167.98.178
+cat >/zones/${zo}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+system_locale=C
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${zo} ip_address=${ip} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOF
+
+cat >/zones/${zo}/root/etc/resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOT
+
+echo "opoce.cec.eu.int" > /zones/${zo}/root/etc/defaultdomain
+
+echo "158.167.98.178	anninter_pz	opsrv178" >> /zones/${zo}/root/etc/inet/hosts
+
+cd / && tar cf - nsr | ( cd /zones/${zo}/root ; tar xf - )
+cp /etc/init.d/networker /zones/${zo}/root/etc/init.d/
+
+cp /var/ldap/ldap_client_cred /zones/${zo}/root/var/ldap/
+cp /var/ldap/ldap_client_file /zones/${zo}/root/var/ldap/
+
+# Bootez la zone
+export zo=anninter_pz
+zoneadm -z ${zo} boot
+
+# Habilitez ldap
+export zo=anninter_pz
+zlogin -l root ${zo} svcadm disable ldap/client
+export zo=anninter_pz
+zlogin -l root ${zo} svcadm enable ldap/client
+
+# Copiez le nsswitch.conf ( faites attention s'il s'agit d'un cluster )
+export zo=anninter_pz
+cp /etc/nsswitch.conf /zones/${zo}/root/etc/nsswitch.conf
+
+# Synchronizez avec cfengine
+# Copiez la cle publique au dossier xchange
+export zo=anninter_pz
+export ip=158.167.98.178
+cp /zones/${zo}/root/var/cfengine/ppkeys/localhost.pub /net/coppola/xchange/root-${ip}.pub
+
+# Depuis infra-srv ou serveur cfengine, copiez la cle publique de la zone
+export ip=158.167.98.178
+cp /net/coppola/xchange/root-${ip}.pub   /var/cfengine/ppkeys
+# Depuis infra-srv, editez et ajoutez la nouvelle zone
+# dans le fichier /var/cfengine/master/inputs/cf.groups et aussi pour gagner du temps dans /var/cfengine/inputs/cf.groups
+# REMARQUE: FAITES ATTENTION, laissez un espace ou des espaces entre les noms et les ')'
+vi /var/cfengine/master/inputs/cf.groups
+vi /var/cfengine/inputs/cf.groups
+
+export zo=anninter_pz
+zlogin -l root ${zo} /var/cfengine/bin/cfagent --no-splay
+
+# Creez des liens pour le script du demarrage de networker
+export zo=anninter_pz
+zlogin -l root ${zo} ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+export zo=anninter_pz
+zlogin -l root ${zo} ln -s /etc/init.d/networker /etc/rc0.d/K05networker
+
+# S'il y aura des bases de donnees dans la zone, creez les utlisateurs, ajoutez les privileges pour les dbas, etc. 
+export zo=anninter_pz
+mkdir -p /zones/${zo}/root/u01/home/oracle
+mkdir -p /zones/${zo}/root/u01/home/rootdba
+mkdir -p /zones/${zo}/root/u02
+echo "rootdba	\$HOST:/u01/home/&" >> /zones/${zo}/root/etc/auto_home
+echo "oracle	\$HOST:/u01/home/&" >> /zones/${zo}/root/etc/auto_home
+echo 'dba::55:oracle' >> /zones/${zo}/root/etc/group
+echo 'oracle:x:55:55:Oracle Role:/home/oracle:/bin/pfksh' >> /zones/${zo}/root/etc/passwd
+echo 'rootdba:x:20000:1:DBA Role:/home/rootdba:/bin/pfksh' >> /zones/${zo}/root/etc/passwd
+
+cat >> /zones/${zo}/root/etc/user_attr <<EOF
+rootdba::::type=role;profiles=Primary Administrator
+oracle::::type=role;profiles=All
+crochph::::type=normal;roles=oracle,rootdba
+maurist::::type=normal;roles=oracle,rootdba
+ciurlel::::type=normal;roles=oracle,rootdba
+EOF
+
+export zo=anninter_pz
+zlogin -l root ${zo} pwconv
+
+
+
+# Faites les recommendations du script
+# Ajoutez le ftp service au fichier pam.conf
+export zo=anninter_pz
+echo "ftp account required pam_unix_account.so.1' to /etc/pam/conf" >> /zones/${zo}/root/etc/pam.conf
+
+# Changez le calendrier
+export zo=anninter_pz
+perl -pi -e 's:2007:2008:' /zones/${zo}/root/etc/acct/holidays
+
+# Creez un dossier pour des cores
+export zo=anninter_pz
+mkdir -p /zones/${zo}/root/var/cores
+zlogin -l root ${zo} coreadm -i /var/cores/%f_%p_%u_%g.core
+
+# Lancez le script de validations d'Alex, sauf peut-etre des indications pour RMAN
+# REMARQUE: Constatez que son path a pas change
+# REMARQUE: Si cela donne des problemes,verifiez que le dns est actualise avec un nslookup ${zo}
+export zo=anninter_pz
+zlogin -l root ${zo} svcadm restart autofs
+zlogin -l root ${zo} /home/leidial/devel/svnco/admin/check_host/check_host.sh
+
+# Rebootez la zone pour verifier que cela marche
+export zo=anninter_pz
+\rm /zones/${zo}/root/etc/sysidcfg
+zlogin -l root ${zo} init 6
+
+# Constatez qu'on a que printers comme service avec des problemes ou disabled
+# ( il faut attendre quelque minutes )
+export zo=anninter_pz
+zlogin -l root ${zo} svcs -xv
+
+# Depuis la zone, loguez vous sur la zone et changez les mot de passe de rootdba et oracle
+# REMARQUE: oracle/oracle
+# REMARQUE: rootdba/dba
+export zo=anninter_pz
+zlogin ${zo}
+passwd oracle
+passwd rootdba
+
+# Depuis orwell, verifier que snmp voit bien la zone
+export zo=anninter_pz
+snmpwalk -c specOPOCE -v2c ${zo}
+< CTRL + C > 
+
+####################################################
+#
+# Configuration de son backup
+
+# Executer cette commande sur coppola 
+
+export zo=anninter_pz
+export co="ZONE ANNINTER_PZ SUR THOR"
+export gr="Unix_Servers"
+export di="Solaris 10 zones with compression"
+export op=opsrv178
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+${zo};${co};root@${zo};${gr};${di};${op}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive","opsrv"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int, $c{opsrv}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+# Si la zone va utiliser des bases de donnees, constatez que le serveur ( global zone ) a le perl saverman.pl
+# Depuis la global zone ou serveur physique 
+# REMARQUE: si on trouve pas le fichier, prenez-le d'un autre serveur de memes caracteristiques
+ls -l /usr/sbin/saverman.pl
+# Et la librerie networker pour RMAN:
+# REMARQUE: si on trouve pas le fichier, installez le package LGTOnmo version 4.2 ( vous pouvez le trouver sur talisker )
+# REMARQUE: /usr/lib/libnwora.so doit etre un lien
+ls -l /lib/libnwora.so
+ls -l /usr/lib/libnwora.so
+# En plus, validez la version de cette librerie qui doit etre 4.2
+what /lib/libnwora.so
+
+/lib/libnwora.so:
+         Module Name:  NetWorker Module for Oracle
+         Module Vers:  4.2
+         Product:      NetWorker
+         Release:      LNMs_2004.Build.273
+         Build number: 273
+         Build date:   Thu Apr 14 19:10:43 2005
+         Build arch.:  solaris7w
+         Build info:   DBG=0,OPT=-O3 -fno-strict-aliasing
+
+# Copiez le rman_backup.ksh d'une autre zone
+export zo=eurovoc_tz
+cp /zones/${zo}/root/nsr/scripts/rman_backup.ksh /net/coppola/xchange
+# Depuis la zone global
+export zo=anninter_pz
+mkdir -p /zones/${zo}/root/nsr/scripts
+cp /net/coppola/xchange/rman_backup.ksh /zones/${zo}/root/nsr/scripts
+
+# Depuis aussi la global-zone ou le serveur physique, ajoutez une directive pour que networker evite de backuper le dossier /zones/${zo}
+export zo=anninter_pz
+cat >> /.nsr  <<EOF
+<< /zones/${zo} >>
+     skip: *
+EOF
+
+# Faites un save pour verifier que le backup est configure
+export cl=anninter_pz
+save -c ${cl} -b 'Backup 9940B' /etc/inet/hosts
+
+# Ajoutez son opsrv comme client networker 
+# REMARQUE: On le cree sans l'ajouter a aucun group et aucune directive pour l'instant
+# REMARQUE: Il faut la lancer deux fois. La premiere va echouer, la deuxieme va ajouter le client
+export zo=anninter_pz
+export co="RMAN ANNINTER_PZ"
+export op=opsrv178
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+${op};${co};root@${zo},root@${op}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+# Depuis coppola, ajoutez la zone au script de checking du backup.
+cp -p /nsr/dev/list_client /nsr/dev/list_client.20081208
+export zo=anninter_pz
+echo anninter_pz >> /nsr/dev/list_client

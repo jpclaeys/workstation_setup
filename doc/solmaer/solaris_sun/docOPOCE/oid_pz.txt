@@ -1,0 +1,311 @@
+clq add d6
+clq remove d7
+
+zpool create -f -m /zpool/oid oid mirror c6t6006048000028775112853594D324245d0 c6t60060480000290103312533030343438d0
+zfs create oid/zone
+
+clq add d7
+clq remove d6
+
+zfs set mountpoint=/zones/oid_pz oid/zone
+zfs create oid/applications
+zfs set mountpoint=/applications/oid oid/applications
+
+zonecfg -z roma export > /net/opsrv020/xchange/cluster/roma.cfg
+cp /net/opsrv020/xchange/cluster/roma.cfg /var/tmp/oid.cfg
+vi /var/tmp/oid.cfg
+
+zonecfg -z oid_pz -f /var/tmp/oid.cfg
+chmod 700 /zones/oid_pz
+zoneadm -z oid_pz install
+
+clrg create oid-rg
+clrg online -M  oid-rg
+clrt register SUNW.HAStoragePlus
+clrt register SUNW.gds
+
+# IMPORTANT: A cause du BUG 6745570, on doit faire un zpool export avant de creer la ressource zfs!!!!! 
+zpool export oid
+clrs create -g oid-rg -t SUNW.HAStoragePlus -p Zpools=oid oid_zfs 
+zpool import oid
+
+cd /opt/SUNWsczone/sczbt/util/
+cp -p sczbt_config sczbt_config_orig
+grep -v "\#" sczbt_config > sczbt_oid_pz
+
+vi sczbt_oid_pz
+==>
+RS=oid-rs
+RG=oid-rg
+PARAMETERDIR=/etc/zoneagentparams
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=oid-zfs
+Zonename="oid_pz"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+==>
+
+mkdir /etc/zoneagentparams
+
+./sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_oid_pz
+
+# Copie oid_pz.xml et index sur remus
+
+export zo=oid_pz
+export ip=158.167.98.159
+export op=opsrv159
+cat >/zones/${zo}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+system_locale=C
+timezone=MET
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${zo} ip_address=${ip} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOF
+
+cat >/zones/${zo}/root/etc/resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOT
+
+echo "opoce.cec.eu.int" > /zones/${zo}/root/etc/defaultdomain
+
+echo "${ip}	${zo}	${op}" >> /zones/${zo}/root/etc/inet/hosts
+
+cd / && tar cf - nsr | ( cd /zones/${zo}/root ; tar xf - )
+cp /etc/init.d/networker /zones/${zo}/root/etc/init.d/
+
+cp /var/ldap/ldap_client_cred /zones/${zo}/root/var/ldap/
+cp /var/ldap/ldap_client_file /zones/${zo}/root/var/ldap/
+
+
+vi /etc/zoneagentparams/oid_pz.sh
+#!/bin/ksh
+
+PATH=/usr/bin:/usr/sbin
+
+DefaultRouter="158.169.96.1"
+
+ZoneAddr="158.169.98.159"
+
+BlackholeAddr=""
+
+
+defaultrouter () {
+
+action=$1
+
+route get default $DefaultRouter > /dev/null 2>&1
+ if [ ! $? = 0 ]
+  then
+  route $action default $DefaultRouter
+ fi
+}
+
+
+zone_addr_blackhole () {
+
+action=$1
+
+for Addr1 in $ZoneAddr
+do
+ for Addr2 in $BlackholeAddr
+ do
+ route get $Addr2 $Addr1 > /dev/null 2>&1
+ if [ ! $? = 0 ]
+ then
+  if [ $action = "add" ]
+  then
+  route $action $Addr2 $Addr1 -blackhole
+  fi
+ else
+  if [ $action = "delete" ]
+  then
+  route $action $Addr2 $Addr1 -blackhole
+  fi
+ fi
+ done
+done
+
+}
+
+start_zone () {
+
+/opt/SUNWsczone/sczbt/bin/start_sczbt -R oid-rs -G oid-rg -P /etc/zoneagentparams
+
+}
+
+stop_zone () {
+
+/opt/SUNWsczone/sczbt/bin/stop_sczbt -R oid-rs -G oid-rg -P /etc/zoneagentparams
+
+}
+
+
+
+case "$1" in
+'start')
+
+        start_zone
+        ;;
+'stop')
+        stop_zone
+         ;;
+esac
+
+# copie des fichiers /etc/zoneagentparams sur remus
+
+export zo=oid_pz
+export rs=oid-rs
+clrs set -p Start_command="/etc/zoneagentparams/${zo}.sh start" ${rs}
+clrs set -p Stop_command="/etc/zoneagentparams/${zo}.sh stop" ${rs}
+# Ca fait aussi le premier boot de la zone
+clrs enable ${rs}
+
+export zo=oid_pz
+zlogin -l root ${zo} svcadm disable ldap/client
+export zo=oid_pz
+zlogin -l root ${zo} svcadm enable ldap/client
+
+export zo=oid_pz
+cp /etc/nsswitch.conf /zones/${zo}/root/etc/nsswitch.conf
+
+# copie la clef pub de cfengine sur infra-srv
+export zo=oid_pz
+export ip=158.167.98.159
+cp /zones/${zo}/root/var/cfengine/ppkeys/localhost.pub /net/opsrv020/xchange/root-${ip}.pub
+cp /net/opsrv020/xchange/root-${ip}.pub   /var/cfengine/ppkeys
+vi /var/cfengine/master/inputs/cf.groups
+vi /var/cfengine/inputs/cf.groups
+
+export zo=oid_pz
+zlogin -l root ${zo} /var/cfengine/bin/cfagent --no-splay
+
+export zo=oid_pz
+zlogin -l root ${zo} ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+export zo=oid_pz
+zlogin -l root ${zo} ln -s /etc/init.d/networker /etc/rc0.d/K05networker
+
+export zo=oid_pz
+mkdir -p /zones/${zo}/root/u01/home/oracle
+mkdir -p /zones/${zo}/root/export/users/rootdba
+mkdir -p /zones/${zo}/root/u02
+echo "rootdba	\$HOST:/u01/home/&" >> /zones/${zo}/root/etc/auto_home
+echo "oracle	\$HOST:/u01/home/&" >> /zones/${zo}/root/etc/auto_home
+echo 'dba::55:oracle' >> /zones/${zo}/root/etc/group
+echo 'oracle:x:55:55:Oracle Role:/home/oracle:/bin/pfksh' >> /zones/${zo}/root/etc/passwd
+echo 'rootdba:x:20000:1:DBA Role:/home/rootdba:/bin/pfksh' >> /zones/${zo}/root/etc/passwd
+echo 'oracle:N1adVIyiQ/ufM:12577::::::' >> /zones/${zo}/root/etc/shadow
+echo 'rootdba:c1B14rQDdgzPY:12500::::::' >> /zones/${zo}/root/etc/shadow
+zlogin -l root ${zo} pwconv
+
+cat >> /zones/${zo}/root/etc/user_attr <<EOF
+rootdba::::type=role;profiles=Primary Administrator
+oracle::::type=role;profiles=All
+crochph::::type=normal;roles=oracle,rootdba
+maurist::::type=normal;roles=oracle,rootdba
+ciurlel::::type=normal;roles=oracle,rootdba
+EOF
+
+export zo=oid_pz
+echo "ftp account required pam_unix_account.so.1' to /etc/pam/conf" >> /zones/${zo}/root/etc/pam.conf
+
+export zo=oid_pz
+perl -pi -e 's:2008:2009:' /zones/${zo}/root/etc/acct/holidays
+
+export zo=oid_pz
+mkdir -p /zones/${zo}/root/var/cores
+zlogin -l root ${zo} coreadm -i /var/cores/%f_%p_%u_%g.core
+
+export zo=oid_pz
+zlogin -l root ${zo} svcadm restart autofs
+zlogin -l root ${zo} /home/admin/bin/check_host.sh
+
+
+# Chez romulus/remus
+export zo=oid_pz
+cat >> /.nsr  <<EOF
+<< /zones/${zo} >>
+     skip: *
+EOF
+
+
+# depuis coppola
+export zo=oid_pz
+export co="ZONE OID_PZ SUR ROMULUS/REMUS"
+export gr="Unix_Servers"
+export di="Solaris 10 zones with compression"
+export op=opsrv159
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+${zo};${co};root@${zo};${gr};${di};${op}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access","groups","directive","opsrv"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int, $c{opsrv}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+export zo=oid_pz
+export co="RMAN OID_PZ"
+export op=opsrv159
+(cat <<EOT
+#client_name;comment;remote_access;groups;savesets
+${op};${co};root@${zo},root@${op}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","comment","remote_access"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: coppola;
+                     comment: $c{comment};
+            archive services: Disabled;
+                    schedule: Default;
+               browse policy: Quarter;
+            retention policy: Quarter;
+               remote access: $c{remote_access};
+                        ndmp: No;
+                     aliases: $c{client_name}, $c{client_name}.opoce.cec.eu.int;
+               storage nodes: nsrserverhost
+EOT
+;print "$cmd\n";'|nsradmin  -i -
+
+#
+export zo=oid_pz
+mkdir -p /zones/${zo}/root/nsr/scripts
+cp /net/opsrv020/xchange/rman_backup.ksh /zones/${zo}/root/nsr/scripts
+
+# depuis remus/romulus:
+cp /net/opsrv020/xchange/libnwora.so /lib/
+ln -s /lib/libnwora.so /usr/lib/libnwora.so
+
+# depuis remus/romulus:
+cp /net/opsrv020/xchange/saverman.pl /usr/sbin
+
+
+export zo=oid_pz
+snmpwalk -c specOPOCE -v2c ${zo}
+
+

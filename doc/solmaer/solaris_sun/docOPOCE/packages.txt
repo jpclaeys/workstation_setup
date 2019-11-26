@@ -1,0 +1,17 @@
+# C'est comme fouiller dans /var/sadm/install/contents mais plus propre
+pkgchk -lp /usr/bin/ls
+pkgchk -l LGTOnmo | grep Pathname
+# PATCHES d'un packages
+pkgparam SUNWsmbar PATCHLIST
+# VERSION d'un package
+pkgparam VRTSvxvm VERSION
+# comportement lors d'un pkgrm pkgadd. C'est ce fichier qui contient les choix
+ls -l /var/sadm/install/admin/default
+# pour alterer donc le fonctionnement d'un pkgrm/pkgadd...
+pkgrm -a none SUNWscr
+# changer le path d'installation du pkg
+echo "basedir=/opt" > /var/sadm/install/admin/custom
+pkgadd -a custom <pkg>
+#ou
+echo "basedir=/opt/$PKGINST" > /var/sadm/install/admin/custom
+pkgadd -a custom <pkg>

@@ -1,0 +1,9 @@
+nohup /opt/OPrsync/bin/rsync -A -l -p -o -g -H -r -t /applications/procatxml/ /mnt2
+# a une autre machine
+/opt/OPrsync/bin/rsync -A -l -p -o -g -H -r -t -e ssh  --rsync-path=/opt/OPrsync/bin/rsync  --stats /applications/eub/data/FileCache/PUBPDF/ root@eub2_tz:/applications/eub2/data/FileCache/PUBPDF/
+# incremental
+/opt/OPrsync/bin/rsync -a --update --delete  --rsync-path=/opt/OPrsync/bin/rsync -e ssh /applications/portal/  root@portal_pz:/applications/portal/
+#incremental des gw
+export zname=roma
+export zname=camel
+/opt/OPrsync/bin/rsync -a --update --delete  --rsync-path=/opt/OPrsync/bin/rsync -e ssh /zones/${zname}/root/applications/  root@emile:/zones/${zname}/root/applications/

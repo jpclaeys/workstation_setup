@@ -1,0 +1,15 @@
+#################################################################################################################
+# creation d'un zpool
+#################################################################################################################
+
+
+% export zpool=<zpool>
+% export lun=<lun_number>
+
+% /home/betorma/bin/luxadm_carlo| grep "lun ${lun}"
+
+% export disk=
+
+% echo zpool create ${zpool} ${disk}
+% zpool status ${zpool}
+% zpool list ${zpool}

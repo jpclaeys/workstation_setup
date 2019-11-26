@@ -1,0 +1,27 @@
+
+
+RH Satellite , install OS :
+****************************
+
+
+host group : basic linux
+content view : opoce-rhel7-global
+
+puppet class :
+***************
+
+interface :
+***********
+interface : recuperer mac interface 1
+device id : eth0
+ip addr : 
+choisir le vlan
+
+os :
+****
+
+rh 7.4
+partition : opoce thel7
+passwd root temporaire
+
+	

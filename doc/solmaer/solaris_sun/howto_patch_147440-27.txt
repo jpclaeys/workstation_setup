@@ -1,0 +1,86 @@
+#########################################################################################################
+# howto install 147440-27 kernel patch
+#########################################################################################################
+
+
+##### choose one node to begin
+
+##### switch all resource groups from this node
+
+0[131118/104601]root@heracles# clrg evacuate -n heracles
+
+
+0[131118/105208]root@heracles# clrg status -n heracles
+
+=== Cluster Resource Groups ===
+
+Group Name       Node Name       Suspended      Status
+----------       ---------       ---------      ------
+0[131118/105217]root@heracles# 
+
+
+##### hide all zones
+
+cp -p /etc/zones/index /etc/zones/index.`date +%Y%m%d`
+
+0[131118/105356]root@heracles# diff /etc/zones/index /etc/zones/index.`date +%Y%m%d` 
+10,13c10,13
+< #cedefop-pz:installed:/zones/cedefop-pz:83af7c29-42bd-c7b5-8c3e-aa0e822716b2
+< #eudorsqc-pz:installed:/zones/eudorsqc-pz:d0d9daff-9f17-c02e-c4a3-d5a895d9bb9b
+< #metaconv-pz:installed:/zones/metaconv-pz:90d46daa-82ec-64e6-b206-d48d006a5dae
+< #cellarmain-pz:installed:/zones/cellarmain-pz:5f536798-a63a-6101-b15a-f71331a365a9
+---
+> cedefop-pz:installed:/zones/cedefop-pz:83af7c29-42bd-c7b5-8c3e-aa0e822716b2
+> eudorsqc-pz:installed:/zones/eudorsqc-pz:d0d9daff-9f17-c02e-c4a3-d5a895d9bb9b
+> metaconv-pz:installed:/zones/metaconv-pz:90d46daa-82ec-64e6-b206-d48d006a5dae
+> cellarmain-pz:installed:/zones/cellarmain-pz:5f536798-a63a-6101-b15a-f71331a365a9
+
+
+1[131118/105359]root@heracles# zoneadm list -cv
+  ID NAME             STATUS     PATH                           BRAND    IP    
+   0 global           running    /                              native   shared
+0[131118/105412]root@heracles# 
+
+
+
+##### install patch on the empty node
+
+
+cp -r /home/betorma/tmp/147440-27 /var/tmp 
+patchadd -d /var/tmp/147440-27
+egrep -i 'warning|error|fail' /var/sadm/patch/147440-27/log
+
+
+
+##### recover all zones
+
+cp -p /etc/zones/index.`date +%Y%m%d` /etc/zones/index
+
+
+##### install patch on the full resources node
+
+cp -r /home/betorma/tmp/147440-27 /var/tmp 
+patchadd -d /var/tmp/147440-27
+egrep -i 'warning|error|fail' /var/sadm/patch/147440-27/log
+
+
+##### restart the first patched node
+
+0[131118/112208]root@heracles# init 6
+
+
+##### restart the secondary patched node
+
+
+
+##### check kernel release on both nodes
+
+
+
+##### update cmdb with the new kernel release
+
+
+
+
+
+

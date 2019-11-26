@@ -1,0 +1,456 @@
+######################################################################
+# cleanup of /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/EXPORT
+######################################################################
+
+# for dir in 2009-1?? 2009-20?
+do
+echo -n $dir ":"
+tar cf - $dir |gzip -c > ${dir}.tgz
+ls -l ${dir}.tgz
+done
+
+
+# rm -rf 2009-1?? 2009-20?
+
+# df -k .
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 96549878 12124381    89%    /applications/ojs/users
+
+
+######################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/PAPER 
+######################################################################
+
+# cd /home/ojs/SEI-JOS/data/ORIGINAL/PAPER
+
+# for dir in 07-065 07-066 07-067 07-068 07-069 07-071 07-072 07-073 07-074 07-075 07-076
+do
+type="PAPER"
+echo -n $dir " --> "
+mv $dir /applications/ojs/archive/${type}
+ln -s  /applications/ojs/archive/${type}/${dir} $dir
+chown -h oracle:ojs ${dir}
+ls -l $dir
+done
+
+# rm -rf 06-*
+
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vpaper
+                     51609487 14661285 36432108    29%    /applications/ojs/archive/PAPER
+
+# cd /applications/ojs/users/ojs/SEI-JOS/data/ORIGINAL/PAPER 
+# rm 05-??? 06-???
+
+
+# for dir in 07-370 07-40? 07-41?
+do
+type="PAPER"
+echo -n $dir " --> "
+mv $dir /applications/ojs/archive/${type}
+ln -s  /applications/ojs/archive/${type}/${dir} $dir
+chown -h oracle:ojs ${dir}
+ls -l $dir
+done
+
+# du -sk 08-??? | perl -nae '$t+=$F[0]; print "$t $_"'
+...
+19145257 78013  08-259
+19212866 67609  08-260
+19273015 60149  08-261
+19310293 37278  08-262
+19402198 91905  08-263
+19444154 41956  08-264
+19487532 43378  08-265
+19581171 93639  08-266
+19649952 68781  08-267
+19663954 14002  08-268
+
+
+# df -k /applications/ojs/archive/PAPER
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vpaper
+                     51609487 15861864 35231529    32%    /applications/ojs/archive/PAPER
+
+
+# for dir in 08-???
+do
+type="PAPER"
+echo -n $dir " --> "
+mv $dir /applications/ojs/archive/${type}
+ln -s  /applications/ojs/archive/${type}/${dir} $dir
+chown -h oracle:ojs ${dir}
+ls -l $dir
+done
+
+
+# df -k /applications/ojs/archive/PAPER /applications/ojs/users/ | grep ojs                                    
+/dev/vx/dsk/ojs/vpaper 51609487 35599433 15493960    70%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vbase 109771978 75903853 32770406    70%    /applications/ojs/users
+
+
+# for dir in 09-0[0-4]?
+do
+type="PAPER"
+echo -n $dir " --> "
+mv $dir /applications/ojs/archive/${type}
+ln -s  /applications/ojs/archive/${type}/${dir} $dir
+chown -h oracle:ojs ${dir}
+ls -l $dir
+done
+
+# df -k /applications/ojs/archive/PAPER /applications/ojs/users/ | grep ojs                                     
+/dev/vx/dsk/ojs/vpaper 51609487 38901245 12192148    77%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vbase 109771978 72691268 35982991    67%    /applications/ojs/users
+
+
+
+
+######################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/EXTERNAL_CONTRACTOR
+######################################################################
+
+# df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 72703314 35970945    67%    /applications/ojs/users
+
+
+# cd /home/ojs/SEI-JOS/data/ORIGINAL/EXTERNAL_CONTRACTOR
+
+# find 09-1[789]? 09-2?? -local -mount -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls | perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'
+# find 09-1[789]? 09-2?? -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'|tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"' | xargs -n 100 /bin/rm
+
+# df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 69367498 39306761    64%    /applications/ojs/users
+
+
+# df -k /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch01
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/1          10316795 10095719  117909    99%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch01
+
+# df -k /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/2          10316795 2843855 7369773    28%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+
+# du -sk 09-17? | perl -nae '$t+=$F[0]; print "$t $_"'
+180065 180065   09-170
+350062 169997   09-171
+552035 201973   09-172
+733794 181759   09-173
+908314 174520   09-174
+1069301 160987  09-175
+1242424 173123  09-176
+1414102 171678  09-177
+1595768 181666  09-178
+1780941 185173  09-179
+
+# for dir in 09-17?
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+# df -k /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/2          10316795 2955351 7258277    29%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+
+
+# for dir in 09-17?
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+
+
+# df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 69359639 39314620    64%    /applications/ojs/users
+
+
+
+
+
+
+
+######################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/RESUME_TEXT
+######################################################################
+
+# df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 69362968 39311291    64%    /applications/ojs/users
+
+# cd /home/ojs/SEI-JOS/data/ORIGINAL/RESUME_TEXT
+
+# df -k /applications/ojs/archive/RESUME_TEXT/arch02
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/6          3439482 2318277 1086811    69%    /applications/ojs/archive/RESUME_TEXT/arch02
+
+# du -sk 09-1[2-7]? | perl -nae '$t+=$F[0]; print "$t $_"'
+98937 98937     09-120
+211711 112774   09-121
+327465 115754   09-122
+448408 120943   09-123
+555976 107568   09-124
+664634 108658   09-125
+769862 105228   09-126
+891412 121550   09-127
+1004686 113274  09-128
+1098692 94006   09-129
+
+
+
+# for dir in 09-12?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+# df -k /applications/ojs/archive/RESUME_TEXT/arch02
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/6          3439482 2362893 1042195    70%    /applications/ojs/archive/RESUME_TEXT/arch02
+
+
+# for dir in 09-12?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+echo "done"
+done
+
+
+# df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 68545867 40128392    64%    /applications/ojs/users
+
+
+# du -sk 09-1[3-7]? | perl -nae '$t+=$F[0]; print "$t $_"'
+108354 108354   09-130
+215357 107003   09-131
+323872 108515   09-132
+437103 113231   09-133
+558029 120926   09-134
+665158 107129   09-135
+782842 117684   09-136
+881620 98778    09-137
+994917 113297   09-138
+1114649 119732  09-139
+1237154 122505  09-140
+1350735 113581  09-141
+1464123 113388  09-142
+1577477 113354  09-143
+1705221 127744  09-144
+1814944 109723  09-145
+1928356 113412  09-146
+2018991 90635   09-147
+2117424 98433   09-148
+2234889 117465  09-149
+2350260 115371  09-150
+2471197 120937  09-151
+2579059 107862  09-152
+2693925 114866  09-153
+2804759 110834  09-154
+2909346 104587  09-155
+3030294 120948  09-156
+3148359 118065  09-157
+3259226 110867  09-158
+3373162 113936  09-159
+3475916 102754  09-160
+3597948 122032  09-161
+3719400 121452  09-162
+3838372 118972  09-163
+3940893 102521  09-164
+4065594 124701  09-165
+4168355 102761  09-166
+4285697 117342  09-167
+4411199 125502  09-168
+4517121 105922  09-169
+4635857 118736  09-170
+4745608 109751  09-171
+4879158 133550  09-172
+4996412 117254  09-173
+5110078 113666  09-174
+5215444 105366  09-175
+5326482 111038  09-176
+5437443 110961  09-177
+5557328 119885  09-178
+5677234 119906  09-179
+
+
+# for dir in 09-1[345]?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+# df -k /applications/ojs/archive/RESUME_TEXT/arch02
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/6          3439482 2498934  906154    74%    /applications/ojs/archive/RESUME_TEXT/arch02
+
+
+# for dir in 09-1[345]?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+echo "done"
+done
+
+
+# df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 65383315 43290944    61%    /applications/ojs/users
+
+
+# for dir in 09-16?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+# df -k /applications/ojs/archive/RESUME_TEXT/arch02
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/6          3439482 2546086  859002    75%    /applications/ojs/archive/RESUME_TEXT/arch02
+
+# for dir in 09-16?
+do
+arch="arch02"
+type="RESUME_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+echo "done"
+done
+
+# df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 64281096 44393163    60%    /applications/ojs/users
+
+
+######################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/ORIGINAL_TEXT
+######################################################################
+
+# df -k /applications/ojs/archive/ORIGINAL_TEXT/arch01
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/10         10316795 3550777 6662851    35%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+
+# cd /home/ojs/SEI-JOS/data/ORIGINAL/ORIGINAL_TEXT
+
+# du -sk 09-1[67]? | perl -nae '$t+=$F[0]; print "$t $_"'
+12903 12903     09-160
+28385 15482     09-161
+43903 15518     09-162
+59956 16053     09-163
+72396 12440     09-164
+87748 15352     09-165
+100763 13015    09-166
+115283 14520    09-167
+132472 17189    09-168
+145452 12980    09-169
+159276 13824    09-170
+172730 13454    09-171
+188101 15371    09-172
+202290 14189    09-173
+215775 13485    09-174
+228182 12407    09-175
+241725 13543    09-176
+254955 13230    09-177
+268838 13883    09-178
+283431 14593    09-179
+
+# for dir in 09-1[67]?
+do
+arch="arch01"
+type="ORIGINAL_TEXT"
+echo -n $dir " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+# df -k /applications/ojs/archive/ORIGINAL_TEXT/arch01
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/lofi/10         10316795 3596946 6616682    36%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+
+# for dir in 09-1[67]?
+do
+arch="arch01"
+type="ORIGINAL_TEXT"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+chmod 775 ${dir}
+chmod g-s ${dir}
+echo "done"
+done
+
+
+# df -k /applications/ojs/users
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                     109771978 64022842 44651417    59%    /applications/ojs/users
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,124 @@
+######################################################################
+# wood user/password
+######################################################################
+
+wood@opgtwint-pz:~$ cd etc/
+bash-4.1$ /applications/wood/users/system/wood/bin/aes.pl -k OPOCE -d .ftp.users | grep ftp_co
+opgtw001                        ftp_co                  rHY6tm
+
+
+
+######################################################################
+# recherche les fichiers dans les FAILURES du wood par application
+######################################################################
+
+export application=dlib
+find /applications/${application}/users/w_${application}/queues/*/*/FAILURE -type f -ls | perl -nae '$t+=$F[6]; print "$t $_"'
+
+find /applications/*/users/w_*/queues/*/*/FAILURE -type f -ls | perl -nae '$t+=$F[6]; print "$t $_"'
+
+
+
+######################################################################
+# installation des binaires wood
+######################################################################
+
+##### creer le repertoire d'accueil du wood
+mkdir -p /applications/wood/users/system/wood
+
+##### recuperer les binaires wood deployes par cfengine
+/var/cfengine/bin/cfagent --no-splay
+
+##### configurer le wood automatiquement
+/home/leidial/devel/svnco/apps/wood/admin_stuff/webinterface-install.sh <application_name> <w_xxx wood user> <opsrvxxx or server_name>
+
+##### configurer le wood manuellement
+# suivre les indications dans /home/leidial/devel/svnco/apps/wood/admin_stuff/webinterface-install
+
+
+
+####################################################################################################
+# lister les acces FTP sur bari; decrypter les utilisateur/password
+####################################################################################################
+
+##### connexion a bari en tant que wood
+ssh wood@bari
+
+##### lister les acces
+/applications/wood/users/system/wood/bin/aes.pl -k OPOCE -d /home/wood/etc/.ftp.users
+
+
+####################################################################################################
+# access.pl: pour definir les droits d'acces aux chaines wood dans l'interface wood display
+####################################################################################################
+
+##### repertoire de travail
+export target_folder=/home/betorma/tmp/wood
+rm -rf ${target_folder}
+mkdir -p ${target_folder}
+
+##### choisir snv en fontion de l'architecture
+alias svn=/home/admin/Apps/i86pc/5.10/bin/svn
+##### ou
+alias svn=/home/admin/Apps/sun4u/5.10/bin/svn
+
+##### verifier la presence du fichier access.pl dans le depot svn
+svn list file:///home/admin/SVN/trunk/apps/wood/www/cgi-bin/access.pl
+
+##### recuperer le repertoire cgi-bin depuis le depot svn
+svn checkout file:///home/admin/SVN/trunk/apps/wood/www/cgi-bin/ ${target_folder}
+
+##### modifier le fichier access.pl
+vi ${target_folder}/access.pl
+
+##### verifier les modifications
+svn diff ${target_folder}
+
+##### mettre a jour le depot
+svn update ${target_folder}
+svn commit ${target_folder}
+
+##### se connecter a infra-srv et copier le fichier acces.pl dans les sources cfengine
+export wood_source_cfengine=/var/cfengine/master/WOOD_FILES/NEW_WOOD/wood/www/cgi-bin
+export target_folder=/home/betorma/tmp/wood
+cp ${target_folder}/access.pl ${wood_source_cfengine}
+
+
+
+####################################################################################################
+# header.pl: pour definir la liste des serveurs wood dans l'interface wood display
+####################################################################################################
+
+
+##### repertoire de travail
+export target_folder=/home/betorma/tmp/wood
+rm -rf ${target_folder}
+mkdir -p ${target_folder}
+
+##### choisir snv en fontion de l'architecture
+alias svn=/home/admin/Apps/i86pc/5.10/bin/svn
+##### ou
+alias svn=/home/admin/Apps/sun4u/5.10/bin/svn
+
+##### verifier la presence du fichier header.pl dans le depot svn
+svn list file:///home/admin/SVN/trunk/apps/wood/www/cgi-bin/header.pl
+
+##### recuperer le repertoire cgi-bin depuis le depot svn
+svn checkout file:///home/admin/SVN/trunk/apps/wood/www/cgi-bin/ ${target_folder}
+
+##### modifier le fichier header.pl
+vi ${target_folder}/header.pl
+
+##### verifier les modifications
+svn diff ${target_folder}
+
+##### mettre a jour le depot
+svn update ${target_folder}
+svn commit ${target_folder}
+
+##### se connecter a infra-srv et copier le fichier acces.pl dans les sources cfengine
+export wood_source_cfengine=/var/cfengine/master/WOOD_FILES/NEW_WOOD/wood/www/cgi-bin
+export target_folder=/home/betorma/tmp/wood
+cp ${target_folder}/header.pl ${wood_source_cfengine}
+
+

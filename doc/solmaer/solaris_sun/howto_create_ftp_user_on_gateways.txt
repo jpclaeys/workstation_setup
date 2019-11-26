@@ -1,0 +1,5 @@
+##################################################################################################################
+# creation d'utilisateur ftp sur gateways internes et externes
+##################################################################################################################
+
+Executer le script suivant et suivre les instructions: /applications/wood/ftpusers/create_guest_account ftp_copub

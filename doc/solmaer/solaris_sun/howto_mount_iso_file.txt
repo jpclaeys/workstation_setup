@@ -1,0 +1,21 @@
+#####################################################################################################
+# monter une image iso
+#####################################################################################################
+
+
+##### fichier iso a monter
+root@sneezy # ls -l  /net/remus/export/software/verity/Verity5.5_K2Enterprise_Unix.iso 
+-rwxr--r--   1 root     root     690008064 Feb  9 11:25 /net/remus/export/software/verity/Verity5.5_K2Enterprise_Unix.iso
+
+##### montage nfs, pour ne pqs utiliser d'autofs
+root@sneezy # mount remus:/export /mnt      
+
+##### creation d'un fichier lofi a partir de l'iso
+root@sneezy # lofiadm -a /mnt/software/verity/Verity5.5_K2Enterprise_Unix.iso 
+/dev/lofi/1
+
+##### montage du fichier lofi
+root@sneezy # mkdir /verity_iso
+root@sneezy # mount -F hsfs /dev/lofi/1 /verity_iso 
+root@sneezy # ls /verity_iso 
+doc   unix

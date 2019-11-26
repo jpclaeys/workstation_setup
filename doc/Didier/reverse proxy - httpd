@@ -1,0 +1,629 @@
+alias :
+********
+dbrp-test             ->            otvmwsrvpxy.opoce.cec.eu.int
+
+bdc4-testnew				->  otvmwsrvpxy
+acf4-testnew				->  otvmwsrvpxy
+
+
+Solaris :
+**********
+
+camel prod :
+/applications/rproxy/users/system/proxy4/proxy-opsrv044/config
+
+lama test :
+/applications/rproxy/users/system/proxy4/proxy-opsrv151/config
+
+
+A migrer TEST env :
+*******************
+
+acf4-test -- acf4-test.opoce.cec.eu.int	-- canonical name = opsrv151.opoce.cec.eu.int.
+Name:	opsrv151.opoce.cec.eu.int
+Address: 158.167.227.151
+
+
+bdc4-test -- bdc4-test.opoce.cec.eu.int	-- canonical name = opsrv151.opoce.cec.eu.int.
+Name:	opsrv151.opoce.cec.eu.int
+Address: 158.167.227.151
+
+
+
+
+
+root@lama # cat ./obj.conf 
+
+NameTrans fn="virt-map" host-regex="acf4-test(|.opoce.cec.eu.int)(|:80)" to-prefix="http://otvmwscfm02:8940"
+NameTrans fn="virt-map" host-regex="bdc4-test(|.opoce.cec.eu.int)(|:80)" to-prefix="http://otvmwscfm02:8942"
+
+
+
+A migrer PROD env :
+*******************
+
+NameTrans fn="virt-map" host-regex="dempub(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm01:8914"
+NameTrans fn="virt-map" host-regex="consleg(|.opoce.cec.eu.int)(|:80)" to-prefix="http://steiner/conslegfmxv4"
+
+NameTrans fn="virt-map" host-regex="gdcp4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm02:8943"
+NameTrans fn="virt-map" host-regex="acf4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm02:8940"
+NameTrans fn="virt-map" host-regex="ic4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm02:8941"
+NameTrans fn="virt-map" host-regex="bdc4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm02:8942"
+
+
+
+
+NameTrans fn="virt-map" host-regex="itr4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm01:8944"
+
+?? #NameTrans fn="virt-map" host-regex="budget(|.opoce.cec.eu.int)(|:80)/seicr" to-prefix="http://opsrv187:8080"
+		budget.opoce.cec.eu.int	canonical name = opsrv012.opoce.cec.eu.int.
+
+
+?? NameTrans fn="virt-map" host-regex="etendering.publications.europa.eu(|:80)" to-prefix="http://opsrv078/etendering_ol
+		Address: 158.167.227.44
+
+
+
+root@camel # ifconfig -a
+lo0:2: flags=2001000849<UP,LOOPBACK,RUNNING,MULTICAST,IPv4,VIRTUAL> mtu 8232 index 1
+        inet 127.0.0.1 netmask ff000000 
+aggr1001:1: flags=201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS> mtu 1500 index 4
+        inet 158.167.96.68 netmask fffffc00 broadcast 158.167.99.255
+aggr1001:2: flags=201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS> mtu 1500 index 4
+        inet 158.167.98.45 netmask fffffc00 broadcast 158.167.99.255
+aggr1001:3: flags=201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS> mtu 1500 index 4
+        inet 158.167.99.162 netmask fffffc00 broadcast 158.167.99.255
+aggr167001:2: flags=201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS> mtu 1500 index 5
+        inet 10.167.96.68 netmask ffff0000 broadcast 10.167.255.255
+aggr227001:1: flags=201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS> mtu 1500 index 9
+        inet 158.167.227.78 netmask ffffff00 broadcast 158.167.227.255
+aggr227001:2: flags=201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS> mtu 1500 index 9
+        inet 158.167.227.10 netmask ffffff00 broadcast 158.167.227.255
+aggr227001:3: flags=201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS> mtu 1500 index 9
+        inet 158.167.227.12 netmask ffffff00 broadcast 158.167.227.255
+aggr227001:4: flags=201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS> mtu 1500 index 9
+        inet 158.167.227.44 netmask ffffff00 broadcast 158.167.227.255
+
+
+
+
+
+
+
+non fonctionnel :
+------------------
+
+NameTrans fn="reverse-map" from="http://158.167.227.56:8080/superadmin" to="http://simaptest/superadmin"
+NameTrans fn="map" from="/superadmin" to="http://158.167.227.56:8080/superadmin"
+
+NameTrans fn="reverse-map" from="http://158.167.227.56:8080/simap" to="http://simaptest.opoce.cec.eu.int/simap"
+?NameTrans fn="virt-map" host-regex="simaptest(|.opoce.cec.eu.int)(|:80)" to-prefix="http://doteu.staging.cc.cec.eu.int:5290"
+
+NameTrans fn="reverse-map" from="http://158.167.227.4:8082/enotice-23/forms" to="http://simaptest.opoce.cec.eu.int/enotice-23/forms" rewrite-location="true"
+NameTrans fn="map" from="/enotice-23/forms" to="http://158.167.227.4:8082/enotice-23/forms" rewrite-location="true"
+NameTrans fn="reverse-map" from="http://158.167.227.4:8085/enotice-23" to="http://simaptest.opoce.cec.eu.int/enotice-23" rewrite-location="true"
+NameTrans fn="reverse-map" from="http://opsrv004:8085/enotice-23" to="http://simaptest.opoce.cec.eu.int/enotice-23" rewrite-location="true"
+NameTrans fn="map" from="/enotice-23" to="http://158.167.227.4:8085/enotice-23" rewrite-location="true"
+
+
+ok :
+-----
+
+
+*NameTrans fn="reverse-map" from="http://jira-test:80/publications/jira" to="http://simaptest.opoce.cec.eu.int/publications/jira" rewrite-location="true"
+*NameTrans fn="map" from="/publications/jira" to="http://jira-test:80/publications/jira"
+
+*NameTrans fn="reverse-map" from="http://opsrv141:8081/webdav" to="http://simaptest.opoce.cec.eu.int/webdav" rewrite-location="true"
+*NameTrans fn="map" from="/webdav" to="http://opsrv141:8081/webdav" rewrite-location="true"
+
+
+*NameTrans fn="reverse-map" from="http://opsrv141:8081/enotices/tutorial" to="http://simaptest.opoce.cec.eu.int/enotices/tutorial" rewrite-location="true"
+*NameTrans fn="map" from="/enotices/tutorial" to="http://opsrv141:8081/enotices/tutorial" rewrite-location="true"
+
+
+*NameTrans fn="reverse-map" from="http://opsrv141:8282/enotices/forms2" to="http://simaptest.opoce.cec.eu.int/enotices/forms2" rewrite-location="true"
+*NameTrans fn="map" from="/enotices/forms2" to="http://opsrv141:8282/enotices/forms2" rewrite-location="true"
+
+*NameTrans fn="reverse-map" from="http://opsrv141:8282/enotices/forms" to="http://simaptest.opoce.cec.eu.int/enotices/forms" rewrite-location="true"
+*NameTrans fn="map" from="/enotices/forms" to="http://opsrv141:8282/enotices/forms" rewrite-location="true"
+
+
+*NameTrans fn="reverse-map" from="http://opsrv141:8180/enotices/eNoticeWsParser" to="http://simaptest.opoce.cec.eu.int/enotices/eNoticeWsParser" rewrite-location="true"
+*NameTrans fn="map" from="/enotices/eNoticeWsParser" to="http://opsrv141:8180/enotices/eNoticeWsParser" rewrite-location="true"
+
+*NameTrans fn="reverse-map" from="http://opsrv141:8180/enotices/eNoticeWsWeb" to="http://simaptest.opoce.cec.eu.int/enotices/eNoticeWsWeb" rewrite-location="true"
+*NameTrans fn="map" from="/enotices/eNoticeWsWeb" to="http://opsrv141:8180/enotices/eNoticeWsWeb" rewrite-location="true"
+
+*NameTrans fn="reverse-map" from="http://opsrv141:8180/enotices/eNoticeWs" to="http://simaptest.opoce.cec.eu.int/enotices/eNoticeWs" rewrite-location="true"
+*NameTrans fn="map" from="/enotices/eNoticeWs" to="http://opsrv141:8180/enotices/eNoticeWs" rewrite-location="true"
+
+
+*NameTrans fn="reverse-map" from="http://opsrv141:8281/enotices" to="http://simaptest.opoce.cec.eu.int/enotices" rewrite-location="true"
+*NameTrans fn="map" from="/enotices" to="http://opsrv141:8281/enotices" rewrite-location="true"
+
+*NameTrans fn="map" from="/TED-ESENDERS/ParserViewer" to="http://opsrv141:8180/enotices/eNoticeWsParser" rewrite-location="true"
+
+
+*NameTrans fn="redirect" from="/SEIJOS-CGI" to="http://simaptest.opoce.cec.eu.int/TED-ESENDERS/ParserViewer"
+?NameTrans fn="reverse-map" from="http://opsrv141:8281/enotices/" to="http://simaptest.opoce.cec.eu.int/enotice/" rewrite-location="true"
+
+*NameTrans fn="redirect" from="/enotice" url="http://simaptest.opoce.cec.eu.int/enotices" 
+?NameTrans fn="map" from="/enotice/" to="http://opsrv141:8281/enotices/" rewrite-location="true"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[root@opvmwsrvpxy conf.d]# nslookup tedtraining
+Server:		158.167.97.163
+Address:	158.167.97.163#53
+
+Non-authoritative answer:
+Name:	tedtraining.opoce.cec.eu.int
+Address: 158.167.99.162
+
+[root@opvmwsrvpxy conf.d]# nslookup 158.167.99.162
+Server:		158.167.97.163
+Address:	158.167.97.163#53
+
+Non-authoritative answer:
+162.99.167.158.in-addr.arpa	name = tedtraining.opoce.cec.eu.int.
+
+Authoritative answers can be found from:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+root@lama # pfexec /applications/rproxy/users/system/init.d/rproxy status
+STATE          STIME    FMRI
+disabled       Oct_24   svc:/applications/rproxy:proxy-opsrv151
+disabled       Nov_08   svc:/applications/rproxy:proxy-opsrv151-sec
+disabled       Nov_08   svc:/applications/rproxy:proxy-opsrv229
+online         Oct_15   svc:/applications/rproxy:proxy-simap
+online         Oct_15   svc:/applications/rproxy:admin_server
+
+
+
+158.166.133.90 	name = rps12bru.snmc.cec.eu.int.
+158.167.133.90 	name = rps12lux.snmc.cec.eu.int.
+
+158.167.39.95 	name = armstrong.cc.cec.eu.int.
+
+158.167.101.167 name = oppc417.opoce.cec.eu.int.
+158.167.99.69 	name = simap-tz.opoce.cec.eu.int.
+
+
+
+
+
+
+
+
+      #RequestHeader set Host dbrp-test
+        #RequestHeader append MirrorID "mirror 12"
+        #Header add referer "http://dbrp-test"
+        #RequestHeader set referer "http://dbrp-test"
+
+        #ProxyHTMLExtended On
+        #ProxyHTMLURLMap http://acf4-test/templates/acf.css  http://dbrp-test/templates/acf.css
+       ## <location />
+                 # Set url
+         ##        ProxyPass http://dbrp-test/
+                     
+                 # Ouput html from proxy filter
+         ##        SetOutputFilter proxy-html
+                                                         
+                 # Add teferer hack (if the site uses referrer as security)
+         ##        Header add referer "http://dbrp-test"
+         ##        RequestHeader set referer "http://dbrp-test"
+                                                                                                                          
+                 # Overwrite html, exchange urls with proxied (like href, src, etc.)
+         ##        ProxyHTMLExtended On
+         ##        ProxyHTMLURLMap http://acf4-test  http://dbrp-test
+                                                                                                                                                                           
+                 # You can add more url maps to overwrite if there are subdomains
+                 # that you want/need to override
+         ##        ProxyHTMLURLMap http://static.domain.dev  http://10.0.0.10
+                                                                                                                                                                                                            
+                 # Rewrite Cookie domain if the site uses sessions as an identifier
+                 # i.e. PHPSESSID
+                 # ProxyPassReverseCookieDomain .domain.dev 10.0.0.10
+        ## </location>
+
+
+
+
+
+CAMEL (prod)
+
+online         Oct_13   svc:/applications/rproxy:proxy-budget
+online         Oct_13   svc:/applications/rproxy:proxy-opsrv044
+online         Oct_13   svc:/applications/rproxy:proxy-wood
+online         Oct_13   svc:/applications/rproxy:proxy-tedtraining
+online         Oct_13   svc:/applications/rproxy:admin_server
+
+
+[root@opvmwsrvpxy conf.d]# nslookup dempub
+Server:		158.167.97.163
+Address:	158.167.97.163#53
+
+Non-authoritative answer:
+dempub.opoce.cec.eu.int	canonical name = opsrv044.opoce.cec.eu.int.
+Name:	opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+
+bortodi@baghera:[~] $ nslookup budget
+Server:		158.167.97.161
+Address:	158.167.97.161#53
+
+Non-authoritative answer:
+budget.opoce.cec.eu.int	canonical name = opsrv012.opoce.cec.eu.int.
+Name:	opsrv012.opoce.cec.eu.int
+Address: 158.167.227.12
+
+
+online         Dec_14   svc:/applications/rproxy:proxy-wood
+
+
+
+root@camel # nslookup bdc4
+Server:         158.167.97.161
+Address:        158.167.97.161#53
+
+Non-authoritative answer:
+bdc4.opoce.cec.eu.int   canonical name = opsrv044.opoce.cec.eu.int.
+Name:   opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+root@camel # nslookup acf4
+Server:         158.167.97.161
+Address:        158.167.97.161#53
+
+Non-authoritative answer:
+acf4.opoce.cec.eu.int   canonical name = opsrv044.opoce.cec.eu.int.
+Name:   opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+root@camel # nslookup gdcp4
+Server:         158.167.97.161
+Address:        158.167.97.161#53
+
+Non-authoritative answer:
+gdcp4.opoce.cec.eu.int  canonical name = opsrv044.opoce.cec.eu.int.
+Name:   opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+root@camel # nslookup ic4  
+Server:         158.167.97.161
+Address:        158.167.97.161#53
+
+Non-authoritative answer:
+ic4.opoce.cec.eu.int    canonical name = opsrv044.opoce.cec.eu.int.
+Name:   opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+root@camel # nslookup budget
+Server:         158.167.97.161
+Address:        158.167.97.161#53
+
+Non-authoritative answer:
+budget.opoce.cec.eu.int canonical name = opsrv012.opoce.cec.eu.int.
+Name:   opsrv012.opoce.cec.eu.int
+Address: 158.167.227.12
+
+
+
+
+
+
+
+A migrer PROD env :
+*******************
+
+NameTrans fn="virt-map" host-regex="dempub(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm01:8914"
+
+NameTrans fn="virt-map" host-regex="consleg(|.opoce.cec.eu.int)(|:80)" to-prefix="http://steiner/conslegfmxv4"
+NameTrans fn="virt-map" host-regex="gdcp4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm02:8943"
+NameTrans fn="virt-map" host-regex="acf4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm02:8940"
+NameTrans fn="virt-map" host-regex="ic4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm02:8941"
+NameTrans fn="virt-map" host-regex="bdc4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm02:8942"
+NameTrans fn="virt-map" host-regex="itr4(|.opoce.cec.eu.int)(|:80)" to-prefix="http://opvmwscfm01:8944"
+
+
+
+?? #NameTrans fn="virt-map" host-regex="budget(|.opoce.cec.eu.int)(|:80)/seicr" to-prefix="http://opsrv187:8080"
+		budget.opoce.cec.eu.int	canonical name = opsrv012.opoce.cec.eu.int.
+
+
+?? NameTrans fn="virt-map" host-regex="etendering.publications.europa.eu(|:80)" to-prefix="http://opsrv078/etendering_ol
+		Address: 158.167.227.44
+
+
+
+
+
+
+
+
+bortodi@baghera:[~] $ nslookup itr4
+Server:		158.167.97.161
+Address:	158.167.97.161#53
+
+Non-authoritative answer:
+itr4.opoce.cec.eu.int	canonical name = opsrv044.opoce.cec.eu.int.
+Name:	opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+bortodi@baghera:[~] $ nslookup acf4
+Server:		158.167.97.161
+Address:	158.167.97.161#53
+
+Non-authoritative answer:
+acf4.opoce.cec.eu.int	canonical name = opsrv044.opoce.cec.eu.int.
+Name:	opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+bortodi@baghera:[~] $ nslookup ic4
+Server:		158.167.97.161
+Address:	158.167.97.161#53
+
+Non-authoritative answer:
+ic4.opoce.cec.eu.int	canonical name = opsrv044.opoce.cec.eu.int.
+Name:	opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+bortodi@baghera:[~] $ nslookup bdc4
+Server:		158.167.97.161
+Address:	158.167.97.161#53
+
+Non-authoritative answer:
+bdc4.opoce.cec.eu.int	canonical name = opsrv044.opoce.cec.eu.int.
+Name:	opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+bortodi@baghera:[~] $ nslookup gdcp4
+Server:		158.167.97.161
+Address:	158.167.97.161#53
+
+Non-authoritative answer:
+gdcp4.opoce.cec.eu.int	canonical name = opsrv044.opoce.cec.eu.int.
+Name:	opsrv044.opoce.cec.eu.int
+Address: 158.167.227.44
+
+
+
+
+
+gdcp4
+bdc4
+ic4
+acf4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<VirtualHost *:80>
+    
+	ServerName opsrv044.opoce.cec.eu.int
+	ServerAlias opsrv044
+	# for Wood prod and test
+
+        ErrorLog "/var/log/httpd/opsrv044-error_log"
+        CustomLog "/var/log/httpd/opsrv044-access_log" common
+
+        RewriteEngine On
+
+	# ProxyPassReverse  "/ns-icons" dir="/export/iplanet/ns-icons"
+
+        ProxyPassMatch          "^/wood"	 "http://opgtw001.opoce.cec.eu.int:42468"
+	ProxyPassReverse  	"/wood"   	 "http://opgtw001.opoce.cec.eu.int:42468"
+
+ 	ProxyPassMatch          "^/(.*)$"        "http://$1.opoce.cec.eu.int:42468"
+
+      	# WOOD Prod 
+
+	ProxyPassReverse  "/opgtw"   	"http://opgtw.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opgtw001"   "http://opgtw001.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/spectrum1"  "http://spectrum1.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc295"   "http://opsvc295.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv158"   "http://opsrv158.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc024"   "http://opsvc024.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc286"   "http://opsvc286.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc289"   "http://opsvc289.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv529"   "http://opsrv529.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv118"   "http://opsrv118.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc093"   "http://opsvc093.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc028"   "http://opsvc028.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv763"   "http://opsrv763.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv013"   "http://opsrv013.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv019"   "http://opsrv019.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc061"   "http://opsvc061.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv033"   "http://opsrv033.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv034"   "http://opsrv034.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv038"   "http://opsrv038.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc327"   "http://opsvc327.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv040"   "http://opsrv040.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv050"   "http://opsrv050.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv069"   "http://opsrv069.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv084"   "http://opsrv084.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv085"   "http://opsrv085.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv092"   "http://opsrv092.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv093"   "http://opsrv093.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv095"   "http://opsrv095.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv101"   "http://opsrv101.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv107"   "http://opsrv107.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv113"   "http://opsrv113.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc278"   "http://opsvc278.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc131"   "http://opsvc131.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv137"   "http://opsrv137.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc027"   "http://opsvc027.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc247"   "http://opsvc247.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv149"   "http://opsrv149.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv152"   "http://opsrv152.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv077"   "http://opsrv077.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv159"   "http://opsrv159.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv165"   "http://opsrv165.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv169"   "http://opsrv169.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv172"   "http://opsrv172.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv174"   "http://opsrv174.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv065"   "http://opsrv065.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv187"   "http://opsrv187.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv189"   "http://opsrv189.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv191"   "http://opsrv191.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv193"   "http://opsrv193.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv199"   "http://opsrv199.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv024"   "http://opsrv024.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc136"   "http://opsvc136.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv043"   "http://opsrv043.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv221"   "http://opsrv221.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv232"   "http://opsrv232.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv222"   "http://opsrv222.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv223"   "http://opsrv223.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv239"   "http://opsrv239.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv198"   "http://opsrv198.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv004"   "http://opsrv004.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv263"   "http://opsrv263.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc122"   "http://opsvc122.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv752"   "http://opsrv752.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc177"   "http://opsvc177.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv760"   "http://opsrv760.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv761"   "http://opsrv761.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc212"   "http://opsvc212.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc293"   "http://opsvc293.opoce.cec.eu.int:42468"
+
+	# WOOD TEST
+
+	ProxyPassReverse  "/opgtw005"   "http://opgtw005.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opgtw002"   "http://opgtw002.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opgtw121"   "http://opgtw121.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc025"   "http://opsvc025.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc021"   "http://opsvc021.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc279"   "http://opsvc279.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc214"   "http://opsvc214.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv525"   "http://opsrv525.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc144"   "http://opsvc144.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/dwcom_tz"   "http://dwcom_tz.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc105"   "http://opsvc105.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc095"   "http://opsvc095.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc085"   "http://opsvc085.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv175"   "http://opsrv175.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv056"   "http://opsrv056.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv182"   "http://opsrv182.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv009"   "http://opsrv009.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv019"   "http://opsrv019.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv032"   "http://opsrv032.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv036"   "http://opsrv036.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv062"   "http://opsrv062.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv049"   "http://opsrv049.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc022"   "http://opsvc022.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv067"   "http://opsrv067.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv140"   "http://opsrv140.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv068"   "http://opsrv068.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc062"   "http://opsvc062.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc190"   "http://opsvc190.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv071"   "http://opsrv071.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc337"   "http://opsvc337.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv073"   "http://opsrv073.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv082"   "http://opsrv082.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv055"   "http://opsrv055.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv086"   "http://opsrv086.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv102"   "http://opsrv102.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv150"   "http://opsrv150.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv104"   "http://opsrv104.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv111"   "http://opsrv111.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv116"   "http://opsrv116.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv130"   "http://opsrv130.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc209"   "http://opsvc209.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv141"   "http://opsrv141.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv153"   "http://opsrv153.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv534"   "http://opsrv534.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv154"   "http://opsrv154.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc249"   "http://opsvc249.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv161"   "http://opsrv161.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc201"   "http://opsvc201.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc060"   "http://opsvc060.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv179"   "http://opsrv179.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv186"   "http://opsrv186.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv195"   "http://opsrv195.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv196"   "http://opsrv196.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv201"   "http://opsrv201.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv202"   "http://opsrv202.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv212"   "http://opsrv212.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv220"   "http://opsrv220.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv228"   "http://opsrv228.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv231"   "http://opsrv231.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv242"   "http://opsrv242.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv245"   "http://opsrv245.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv247"   "http://opsrv247.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv099"   "http://opsrv099.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc011"   "http://opsvc011.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv888"   "http://opsrv888.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv889"   "http://opsrv889.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv952"   "http://opsrv952.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv100"   "http://opsrv100.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv215"   "http://opsrv215.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc225"   "http://opsvc225.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv146"   "http://opsrv146.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc308"   "http://opsvc308.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv959"   "http://opsrv959.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv964"   "http://opsrv964.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsrv963"   "http://opsrv963.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc294"   "http://opsvc294.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc271"   "http://opsvc271.opoce.cec.eu.int:42468"
+	ProxyPassReverse  "/opsvc280"   "http://opsvc280.opoce.cec.eu.int:42468"
+
+</VirtualHost>
+

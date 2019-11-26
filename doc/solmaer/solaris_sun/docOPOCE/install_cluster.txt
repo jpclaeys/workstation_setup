@@ -1,0 +1,193 @@
+# Telechargez le dernier update de SC
+# REMARQUE: il suffirait avec le release qu'on a sur osiris/talisker et les patches de l'eiscd
+http://www.sun.com/software/solaris/cluster/get.html
+
+# Decompressez en local
+unzip  /net/osiris.opoce.cec.eu.int/export/software/suncluster-3_2u1-ga-solaris-sparc.zip -d /var/tmp/
+
+# Installez le software sur les deux noueds:
+# REMARQUE: Si on a pas les X habilites, l'installer declenche tout de meme
+# REMARQUE: Installez Sun Cluster et les agents pertinents ( pas tous )
+export DISPLAY=vespa:0
+/var/tmp/Solaris_sparc/installer
+
+
+# Verifiez les cartes reseaux disponibles pour creer le cluster. Elles sont privees au cluster.
+# Demandez aussi au team reseau
+# REMARQUE: SC a comme requis deux cartes reseau pour le cluster
+dladm show-dev
+export re=ce0
+export re=ce1
+ifconfig ${re} plumb
+snoop -d ${re} &
+ping -s 224.0.0.1 > /dev/null
+kill %1
+
+# Creez un FS pour le FS globaldevices sur chaque noeud
+# REMARQUE: Le volume ou metadevice doit s'appeler differemment car ces FS sont montes avec le choix global
+# Pour ces FS la, creez la partition sur chaque de chaque noeud
+# depuis le noeud 1:
+export dsk=c6t2000001D3839F43Ad0
+export dsk=c6t2000001D3839F65Dd0
+# depuis le noeud 2:
+export dsk=c6t2000001862806EF5d0
+export dsk=c6t200000186280786Fd0
+format ${dsk}
+# Apres par exemple les choix a prendre
+par
+5
+<enter>
+wm
+3098
+10989c
+lab
+qu
+qu
+# Pour ces FS la, creez les metadevices
+# depuis le noeud 1:
+export pa=c6t2000001D3839F43Ad0s5
+export pa=c6t2000001D3839F65Dd0s5
+metainit -f d41 1 1 ${pa}
+metainit d42 1 1 ${pa}
+metainit d40 -m d41
+metattach d40 d42
+# Voila la soft partition pour globaldevices
+metainit d50 -p d40 512m
+echo y | newfs -i 4096 /dev/md/rdsk/d50
+
+cp -p /etc/vfstab /etc/vfstab.20081219
+echo "/dev/md/dsk/d50        /dev/md/rdsk/d50        /globaldevices  ufs     2       yes     -" >> /etc/vfstab
+mkdir -p /globaldevices
+mount /globaldevices
+
+# depuis le noeud 2:
+export pa=c6t2000001862806EF5d0s5
+export pa=c6t200000186280786Fd0s5
+metainit -f d61 1 1 ${pa}
+metainit d62 1 1 ${pa}
+metainit d60 -m d61
+metattach d60 d62
+# Voila la soft partition pour globaldevices
+metainit d70 -p d60 512m
+echo y | newfs -i 4096 /dev/md/rdsk/d70
+
+cp -p /etc/vfstab /etc/vfstab.20081219
+echo "/dev/md/dsk/d70        /dev/md/rdsk/d70        /globaldevices  ufs     2       yes     -" >> /etc/vfstab
+mkdir -p /globaldevices
+mount /globaldevices
+
+# Configuration d'un noeud a la fois
+# depuis noued 1:
+scinstall
+# Apres les choix prises:
+1
+2
+yes
+2
+infrastructure
+no
+remus
+yes
+no
+yes
+yes
+yes
+yes
+<enter>
+<enter>
+1
+yes
+yes
+<enter>
+yes
+6
+yes
+yes
+<enter>
+yes
+yes
+no
+yes
+yes
+yes
+<-----scinstall fait son reboot
+# REMARQUE: Ces choix la sont de configurer le cluster que sur un de deux noueds, d'ajouter toutefois le deuxieme noeud, 
+# REMARQUE: de repondre oui pour la selection automatique de quorum, non pour le sccheck, oui pour la detection automatique des cartes reseaux,
+# REMARQUE: oui pour les noms de switches, etc
+
+# depuis noeud 2:
+1
+3
+2
+romulus
+infrastructure
+<enter>
+no
+yes
+no
+yes
+yes
+<enter>
+<enter>
+1
+yes
+<enter>
+yes
+6
+yes
+<enter>
+yes
+yes
+yes
+yes
+yes
+<------scinstall fait son reboot
+# REMARQUE: Ces choix la entrainent d'ajouter le deuxieme noeud au cluster deja configure, de repondre oui pour qu'il trouve
+# REMARQUE: automatiquement le cluster et le noeud sponsoree, non pour le sccheck. On selectionne les cartes reseaux, on repond oui au questions des noms switches, etc..
+
+# Depuis un des noeuds:
+# Verifiez quel etait le quorum choisi par scinstall.
+# Il est possible qu'on doive le changer pour un autre disque partage
+# Ici, on doit changer le disque:
+# REMARQUE: la consigne est que le disque doit etre au meme endroit physique que la machine
+clq status
+export di=d7
+clq add ${di}
+export di=d6
+clq remove ${di}
+clq status
+
+# Depuis un des noeuds:
+# Mettez unmonitored les disques internes de deux machines, c'est-a-dire, pour ceux que la commande suivant affiche un "1"
+# REMARQUE: C'est pas grave si la commande affiche des erreurs pour les cdrom/dvds
+cldev list -v | awk '$1 ~ /^d/ { print $1 }' | uniq -c
+export dsk="d1 d2 d3 d4 d5 d8 d9 d10 d11 d12"
+for i in `echo ${dsk}`
+do
+cldev unmonitor $i
+done
+cldev status
+
+# Depuis un des noeuds:
+# Mettez les variables autogen et localonly a true pour tous les disques internes:
+cldev list -v | awk '$1 ~ /^d/ { print $1 }' | uniq -c
+export dsk="d1 d2 d3 d4 d5 d8 d9 d10 d11 d12"
+for i in `echo ${dsk}`
+do
+cldg set -p autogen=true  dsk/${i}
+done
+
+export dsk="d1 d2 d3 d4 d5 d8 d9 d10 d11 d12"
+for i in `echo ${dsk}`
+do
+cldg set -p localonly=true  dsk/${i}
+done
+
+# Verifiez ce que vous venez de faire
+export dsk="d1 d2 d3 d4 d5 d8 d9 d10 d11 d12"
+for i in `echo ${dsk}`
+do
+cldg show dsk/${i} | egrep "(localonly|autogen)"
+done
+
+

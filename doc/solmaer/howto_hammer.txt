@@ -1,0 +1,10 @@
+################################################################################
+##### add a package to a product
+
+betorma@satellite-pk% hammer -u betorma -p <my_password> \
+	repository upload-content /
+	--path /home/betorma/download/elasticsearch-5.4.3.rpm \
+	--product "Elastic Stack" \
+	--organization DG-OPOCE \
+	--name elasticsearch-5.x
+

@@ -1,0 +1,4 @@
+# Verif mounted FS
+/usr/sfw/bin/snmpdf -c specOPOCE -v 1 doc
+# Tous les verifs
+snmpwalk -c specOPOCE -v2c <host>

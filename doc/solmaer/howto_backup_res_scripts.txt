@@ -1,0 +1,62 @@
+############################################################################################################
+# script pour arret/redemarrage d'application pour pre/post commandes de backup
+############################################################################################################
+
+
+export application=virtua
+export backup_group=Mercier_Unix_Prod
+export date=`date +%Y%m%d`
+cp -p /nsr/scripts/backup.ksh /nsr/scripts/backup.ksh.${date}
+cp -p /nsr/res/${backup_group}.res /nsr/res/${backup_group}.res.${date}
+
+{
+cat <<EOT >/nsr/scripts/backup.ksh
+#!/bin/ksh 
+PATH=/usr/bin:/usr/sbin
+
+DATE=`date +%Y%m%d`
+
+stop_app () { 
+        /applications/${application}/users/system/init.d/${application} stop
+        }
+
+start_app () { 
+        /applications/${application}/users/system/init.d/${application} start
+        }               
+  
+
+case "\$1" in
+'precmd')  
+         # Re-directing output into a file
+         exec >> /nsr/logs/backup_\${DATE}.log 2>&1
+          printf "\${DATE} : stopping ${application}....\n"
+          stop_app
+          printf "\${DATE} : end of precmd....\n"
+          ;;
+'pstcmd') 
+         # Re-directing output into a file 
+         exec >> /nsr/logs/backup_\${DATE}.log 2>&1
+          printf "\${DATE} : starting ${application}....\n" 
+          start_app
+          printf "\${DATE} : end of pstcmd....\n"
+          ;;
+
+esac
+EOT
+}
+
+
+diff /nsr/scripts/backup.ksh /nsr/scripts/backup.ksh.${date}
+
+vi /nsr/res/${backup_group}.res
+
+diff /nsr/res/${backup_group}.res /nsr/res/${backup_group}.res.${date}
+
+
+
+
+
+
+
+
+

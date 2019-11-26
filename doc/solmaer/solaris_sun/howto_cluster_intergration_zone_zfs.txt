@@ -1,0 +1,105 @@
+#########################################################################################################################################################
+# integration d'un zone en cluster
+#########################################################################################################################################################
+
+# resource groups et leur resources
+export rgname=<zone_name>-rg
+export rsnamestorage=<zone_name>-zfs
+export zpool=<zpool>
+export zname=<zone_name>
+export server_source=<primary_node>
+export server_target=<secondary_node>
+export date=`date +%Y%m%d%H%M`
+echo $date
+
+################## POUR LE RESOURCE GROUP
+
+clrg create ${rgname}
+clrg manage ${rgname}
+clrg online ${rgname}
+clrg status
+
+
+# Il faut le register du HAStoragePlus avant de l'utiliser
+#clresourcetype register SUNW.HAStoragePlus
+#clresourcetype register SUNW.gds
+
+clresourcetype list
+
+################## POUR LE ZPOOL
+
+# resource pour le storage
+clrg switch -n ${server_source} ${rgname}
+clrs create -g ${rgname} -t SUNW.HAStoragePlus -p zpools=${zpool} ${rsnamestorage}
+clrs status
+
+
+################## POUR LA ZONE
+
+# ce qu'on change pour roma par exemple:
+# Attention: opgtw/oprvp ont pas LH donc SC_NETWORK=false
+
+
+cat <<EOT >/opt/SUNWsczone/sczbt/util/sczbt_${zname}
+RS=<zone_name>-rs
+RG=<zone_name>-rg
+PARAMETERDIR=/etc/zones
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=<zpool>-zfs
+Zonename="<zone_name>"
+Zonebrand="native"
+Zonebootopt=""
+Milestone="multi-user-server"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOT
+
+cat /opt/SUNWsczone/sczbt/util/sczbt_${zname}
+
+################# CREATION RS ZONE
+# on copie notre scratch sur la bonne copie
+cp -p /opt/SUNWsczone/sczbt/util/sczbt_${zname} /opt/SUNWsczone/sczbt/util/sczbt_config
+cd /opt/SUNWsczone/sczbt/util
+./sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_config
+clrg status
+clrs enable <zone_name>-rs
+clrs status
+clrs unmonitor <zone_name>-rs
+clrs status
+
+######################### COPIE
+
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster
+mkdir -p $tmp_dir
+
+##### SOURCE
+
+cd /opt/SUNWsczone/sczbt/util
+tar cvfp $tmp_dir/sczbt_${zname}.tar sczbt_${zname}
+cd /etc
+tar cvfp $tmp_dir/zones.tar zones
+
+##### TARGET
+
+export tmp_dir=/net/opsrv082/xchange/mb/cluster
+export zname=<zone_name>
+export date=`date +%Y%m%d%H%M`
+cd /opt/SUNWsczone/sczbt/util
+tar xvfp $tmp_dir/sczbt_${zname}.tar 
+cd /etc
+cp -p zones/index zones/index.${date}
+tar xvfp $tmp_dir/zones.tar
+
+
+
+############# TEST DE SWITCH
+echo timex clrg switch -n $server_target $rgname
+clrs status
+echo timex clrg switch -n $server_source $rgname
+clrs status
+
+#### ensuite on decide ou cela doit rester :-))))

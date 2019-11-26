@@ -1,0 +1,1196 @@
+##############################################################################################################################################
+# howto create solaris 11 clustered zone with zfs on srdf 
+##############################################################################################################################################1110
+
+
+
+#######################################################################
+##### storage provisionning
+
+
+ 	Size	Lun	 	Master Device	 	 	Replica Device
+Device	GB	Type	Dec	Hexa	Host	LUN ID	Array	Replication	Host	LUN ID	Array
+cellarfodb2-tz (data)	300	NL-SAS/RAID6	30	1E	Kusha	338	VNX_0476	 	 
+cellarfodb2-tz (data)	300	NL-SAS/RAID6	31	1F	Kusha	339	VNX_0476	 	 
+cellarfodb2-tz (db)	200	SAS/RAID5	32	20	Kusha	340	VNX_0476	 	 
+cellarfodb2-tz (db)	200	SAS/RAID5	33	21	Kusha	341	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	34	22	Kusha	342	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	35	23	Kusha	343	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	36	24	Kusha	344	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	37	25	Kusha	345	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	38	26	Kusha	346	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	39	27	Kusha	347	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	40	28	Kusha	348	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	41	29	Kusha	349	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraredo	40	SAS/RAID5	42	2A	Kusha	350	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraredo	40	SAS/RAID5	43	2B	Kusha	351	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraFRA	50	SAS/RAID5	44	2C	Kusha	352	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraFRA	50	SAS/RAID5	45	2D	Kusha	353	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraFRA	50	SAS/RAID5	46	2E	Kusha	354	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraFRA	50	SAS/RAID5	47	2F	Kusha	355	VNX_0476	 
+
+
+
+
+
+#######################################################################
+##### check lun visiblity
+
+/home/betorma/bin/luxadm_carlo -z | egrep ' 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47' | sort -k 4
+
+
+18[131213/100023]root@kusha#  /home/betorma/bin/luxadm_carlo -z | egrep ' 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47' | sort -k 4
+ Error: SCSI failure. - /dev/rdsk/c0t6006016048103200764494E28761E311d0s2.
+
+/dev/rdsk/c0t6006016048103200B65801F6A361E311d0s2 ==> 500601603ea42f5e 30 500601623ea42f5e 30 500601683ea42f5e 30 5006016a3ea42f5e 30  []
+/dev/rdsk/c0t6006016048103200B85801F6A361E311d0s2 ==> 500601603ea42f5e 31 500601623ea42f5e 31 500601683ea42f5e 31 5006016a3ea42f5e 31  []
+/dev/rdsk/c0t60060160481032009C5ADD18A461E311d0s2 ==> 500601603ea42f5e 32 500601623ea42f5e 32 500601683ea42f5e 32 5006016a3ea42f5e 32  []
+/dev/rdsk/c0t60060160481032009E5ADD18A461E311d0s2 ==> 500601603ea42f5e 33 500601623ea42f5e 33 500601683ea42f5e 33 5006016a3ea42f5e 33  []
+/dev/rdsk/c0t6006016048103200A05ADD18A461E311d0s2 ==> 500601603ea42f5e 34 500601623ea42f5e 34 500601683ea42f5e 34 5006016a3ea42f5e 34  []
+/dev/rdsk/c0t6006016048103200A25ADD18A461E311d0s2 ==> 500601603ea42f5e 35 500601623ea42f5e 35 500601683ea42f5e 35 5006016a3ea42f5e 35  []
+/dev/rdsk/c0t6006016048103200A45ADD18A461E311d0s2 ==> 500601603ea42f5e 36 500601623ea42f5e 36 500601683ea42f5e 36 5006016a3ea42f5e 36  []
+/dev/rdsk/c0t6006016048103200A65ADD18A461E311d0s2 ==> 500601603ea42f5e 37 500601623ea42f5e 37 500601683ea42f5e 37 5006016a3ea42f5e 37  []
+/dev/rdsk/c0t6006016048103200A85ADD18A461E311d0s2 ==> 500601603ea42f5e 38 500601623ea42f5e 38 500601683ea42f5e 38 5006016a3ea42f5e 38  []
+/dev/rdsk/c0t6006016048103200AA5ADD18A461E311d0s2 ==> 500601603ea42f5e 39 500601623ea42f5e 39 500601683ea42f5e 39 5006016a3ea42f5e 39  []
+/dev/rdsk/c0t6006016048103200AC5ADD18A461E311d0s2 ==> 500601603ea42f5e 40 500601623ea42f5e 40 500601683ea42f5e 40 5006016a3ea42f5e 40  []
+/dev/rdsk/c0t6006016048103200AE5ADD18A461E311d0s2 ==> 500601603ea42f5e 41 500601623ea42f5e 41 500601683ea42f5e 41 5006016a3ea42f5e 41  []
+/dev/rdsk/c0t6006016048103200C0AB0544A461E311d0s2 ==> 500601603ea42f5e 42 500601623ea42f5e 42 500601683ea42f5e 42 5006016a3ea42f5e 42  []
+/dev/rdsk/c0t6006016048103200C2AB0544A461E311d0s2 ==> 500601603ea42f5e 43 500601623ea42f5e 43 500601683ea42f5e 43 5006016a3ea42f5e 43  []
+/dev/rdsk/c0t6006016048103200881A545FA461E311d0s2 ==> 500601603ea42f5e 44 500601623ea42f5e 44 500601683ea42f5e 44 5006016a3ea42f5e 44  []
+/dev/rdsk/c0t60060160481032008A1A545FA461E311d0s2 ==> 500601603ea42f5e 45 500601623ea42f5e 45 500601683ea42f5e 45 5006016a3ea42f5e 45  []
+/dev/rdsk/c0t60060160481032008C1A545FA461E311d0s2 ==> 500601603ea42f5e 46 500601623ea42f5e 46 500601683ea42f5e 46 5006016a3ea42f5e 46  []
+/dev/rdsk/c0t60060160481032008E1A545FA461E311d0s2 ==> 500601603ea42f5e 47 500601623ea42f5e 47 500601683ea42f5e 47 5006016a3ea42f5e 47  []
+
+
+
+#######################################################################
+##### variables
+
+
+export zone=cellarfodb2-tz
+export data_zpool=${zone}-data 
+export db_zpool=${zone}-db 
+
+export application=cellar
+
+export zone_ip=158.167.224.46
+export netmask='/26'
+export zone_defrouter=158.167.224.187
+export vlan_id=222
+export application_ip=158.167.224.47
+export global_network_interface=aggr1
+export tmp_folder=/home/betorma/export/zones/${zone}
+mkdir -p ${tmp_folder}
+
+
+
+#######################################################################
+##### zpool creation
+##### on first node
+
+
+cellarfodb2-tz (data)	300	NL-SAS/RAID6	30	1E	Kusha	338	VNX_0476	 	 
+cellarfodb2-tz (data)	300	NL-SAS/RAID6	31	1F	Kusha	339	VNX_0476	
+
+/dev/rdsk/c0t6006016048103200B65801F6A361E311d0s2 ==> 500601603ea42f5e 30 500601623ea42f5e 30 500601683ea42f5e 30 5006016a3ea42f5e 30  []
+/dev/rdsk/c0t6006016048103200B85801F6A361E311d0s2 ==> 500601603ea42f5e 31 500601623ea42f5e 31 500601683ea42f5e 31 5006016a3ea42f5e 31  []
+
+zpool create cellarfodb2-tz-data c0t6006016048103200B65801F6A361E311d0 c0t6006016048103200B85801F6A361E311d0
+
+0[131213/170834]root@kusha# zpool create cellarfodb2-tz-data c0t6006016048103200B65801F6A361E311d0 c0t6006016048103200B85801F6A361E311d0
+'cellarfodb2-tz-data' successfully created, but with no redundancy; failure of one
+device will cause loss of the pool
+0[131213/170904]root@kusha# zpool status cellarfodb2-tz-data
+  pool: cellarfodb2-tz-data
+ state: ONLINE
+  scan: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        cellarfodb2-tz-data                      ONLINE       0     0     0
+          c0t6006016048103200B65801F6A361E311d0  ONLINE       0     0     0
+          c0t6006016048103200B85801F6A361E311d0  ONLINE       0     0     0
+
+errors: No known data errors
+0[131213/170914]root@kusha# zpool list cellarfodb2-tz-data
+NAME                 SIZE  ALLOC  FREE  CAP  DEDUP  HEALTH  ALTROOT
+cellarfodb2-tz-data  596G    88K  596G   0%  1.00x  ONLINE  -
+
+
+
+cellarfodb2-tz (db)	200	SAS/RAID5	32	20	Kusha	340	VNX_0476	 	 
+cellarfodb2-tz (db)	200	SAS/RAID5	33	21	Kusha	341	VNX_0476	 	 
+
+/dev/rdsk/c0t60060160481032009C5ADD18A461E311d0s2 ==> 500601603ea42f5e 32 500601623ea42f5e 32 500601683ea42f5e 32 5006016a3ea42f5e 32  []
+/dev/rdsk/c0t60060160481032009E5ADD18A461E311d0s2 ==> 500601603ea42f5e 33 500601623ea42f5e 33 500601683ea42f5e 33 5006016a3ea42f5e 33  []
+
+
+0[131213/170952]root@kusha# zpool create cellarfodb2-tz-db c0t60060160481032009C5ADD18A461E311d0 c0t60060160481032009E5ADD18A461E311d0
+'cellarfodb2-tz-db' successfully created, but with no redundancy; failure of one
+device will cause loss of the pool
+0[131213/170954]root@kusha# zpool status cellarfodb2-tz-db
+  pool: cellarfodb2-tz-db
+ state: ONLINE
+  scan: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        cellarfodb2-tz-db                        ONLINE       0     0     0
+          c0t60060160481032009C5ADD18A461E311d0  ONLINE       0     0     0
+          c0t60060160481032009E5ADD18A461E311d0  ONLINE       0     0     0
+
+errors: No known data errors
+0[131213/171001]root@kusha# zpool list cellarfodb2-tz-db
+NAME               SIZE  ALLOC  FREE  CAP  DEDUP  HEALTH  ALTROOT
+cellarfodb2-tz-db  398G    88K  398G   0%  1.00x  ONLINE  -
+
+
+
+#############################################################################################################################
+##### zfs
+
+
+export data_zpool=cellar3-tz-data
+export db_zpool=cellar3-tz-db
+export application=cellar
+
+
+zfs set mountpoint=/zpool/${data_zpool} ${data_zpool}
+zfs set mountpoint=/zpool/${db_zpool} ${db_zpool}
+
+zfs create -o mountpoint=none -o zoned=on ${data_zpool}/applications
+zfs create -o mountpoint=none -o zoned=on ${data_zpool}/applications/${application}
+zfs create -o mountpoint=/applications/${application}/users -o zoned=on ${data_zpool}/applications/${application}/users
+zfs create -o mountpoint=/applications/${application}/xchange -o zoned=on ${data_zpool}/applications/${application}/xchange
+zfs create -o mountpoint=/u01/oraagent -o zoned=on ${data_zpool}/applications/oraagent
+zfs create -o mountpoint=/zones/${zone} ${data_zpool}/zone
+
+
+zfs create -o mountpoint=none -o zoned=on ${db_zpool}/applications
+zfs create -o mountpoint=none -o zoned=on ${db_zpool}/applications/${application}
+zfs create -o mountpoint=/applications/${application}/orabin -o zoned=on ${db_zpool}/applications/${application}/orabin
+zfs create -o mountpoint=/applications/${application}/oradata -o zoned=on -o recordsize=8k ${db_zpool}/applications/${application}/oradata
+zfs create -o mountpoint=/applications/${application}/oralog -o zoned=on ${db_zpool}/applications/${application}/oralog
+zfs create -o mountpoint=/applications/${application}/oraonlinelog -o zoned=on ${db_zpool}/applications/${application}/oraonlinelog
+zfs create -o mountpoint=/applications/${application}/oraflash -o zoned=on ${db_zpool}/applications/${application}/oraflash
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#############################################################################################################################
+##### zone creation
+##### on global zone
+
+
+pkg publisher | grep 'http://pkg.opoce.cec.eu.int:10001/solaris'
+
+
+cat <<EOF >${tmp_folder}/${zone}.cfg
+create -b
+set brand=solaris
+set zonepath=/zones/${zone}
+set autoboot=false
+set bootargs="-m verbose"
+set ip-type=exclusive
+add anet
+set linkname=net0_${vlan_id}
+set lower-link=aggr1
+set allowed-address=${zone_ip}${netmask},${application_ip}${netmask}
+set defrouter=${zone_defrouter}
+set vlan-id=${vlan_id}
+set mac-address=random
+set configure-allowed-address=true
+end
+add dataset
+set name=${db_zpool}/applications
+set alias="${db_zpool}_applications"
+end
+add dataset
+set name=${data_zpool}/applications
+set alias="${data_zpool}_applications"
+end
+add attr
+set name=comment
+set type=string
+set value="Solaris 11 zone for cordis ica"
+end
+EOF
+
+cat ${tmp_folder}/${zone}.cfg
+
+
+mkdir -p /zones/${zone}
+chmod 700 /zones/${zone}
+zonecfg -z ${zone} -f ${tmp_folder}/${zone}.cfg
+sysconfig create-profile -o ${tmp_folder}/${zone}_sysconfig.xml
+
+zoneadm -z ${zone} install -c ${tmp_folder}/${zone}_sysconfig.xml
+
+
+
+
+
+zoneadm -z $zone boot && zlogin -C $zone
+
+
+
+#############################################################################################################################
+##### zone configuration
+##### on the zone
+
+
+
+
+export zone_ip=158.167.224.46
+export application_ip=158.167.224.47
+
+
+
+##### password
+
+passwd root
+
+cp -p /etc/default/passwd /etc/default/passwd.orig
+vi /etc/default/passwd
+
+diff /etc/default/passwd /etc/default/passwd.orig
+14c14
+< NAMECHECK=NO
+---
+> #NAMECHECK=NO
+41c41
+< MINDIGIT=0
+---
+> #MINDIGIT=0
+
+
+##### name resolution
+
+{
+cat <<EOF >/etc/defaultdomain
+opoce.cec.eu.int
+EOF
+}
+
+
+{
+cat <<EOF >/etc/resolv.conf
+domain opoce.cec.eu.int
+nameserver 158.167.99.8
+nameserver 158.167.99.7
+search opoce.cec.eu.int
+EOF
+}
+
+
+
+{
+cat <<EOF >/etc/nsswitch.conf
+passwd:         files ldap
+group:          files ldap
+hosts:          files dns
+ipnodes:        files dns
+networks:       files ldap
+protocols:      files ldap
+rpc:            files ldap
+ethers:         files ldap
+netmasks:       files ldap
+bootparams:     files ldap
+publickey:      files ldap
+netgroup:       files ldap
+automount:      files ldap
+aliases:        files ldap
+services:       files ldap
+printers:       user files ldap
+project:        files ldap
+auth_attr:      files ldap
+prof_attr:      files ldap
+tnrhtp:         files ldap
+tnrhdb:         files ldap
+sudoers:        files ldap
+EOF
+}
+
+nscfg import -fv dns/client
+nscfg import -fv name-service/switch
+svcadm refresh dns/client
+svcadm restart dns/client
+svcadm refresh name-service/switch
+
+
+
+{
+cat <<EOF >/etc/inet/hosts
+::1 localhost
+127.0.0.1 localhost
+`getent hosts $zone_ip | sed -e s/.opoce.cec.eu.int//`
+`getent hosts $application_ip | sed -e s/.opoce.cec.eu.int//`
+EOF
+echo
+cat /etc/inet/hosts
+}
+
+
+
+##### ldap
+
+{
+cat <<EOF >/var/ldap/ldap_client_cred
+NS_LDAP_BINDDN= cn=proxyagent,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int
+NS_LDAP_BINDPASSWD= {NS1}135a8787c1cf6353f4
+EOF
+}
+
+
+{
+cat <<EOF >/var/ldap/ldap_client_file
+NS_LDAP_FILE_VERSION= 2.0
+NS_LDAP_SERVERS= 158.167.99.8, 158.167.99.7
+NS_LDAP_SEARCH_BASEDN= dc=opoce,dc=cec,dc=eu,dc=int
+NS_LDAP_AUTH= simple
+NS_LDAP_SEARCH_REF= FALSE
+NS_LDAP_SEARCH_SCOPE= one
+NS_LDAP_SEARCH_TIME= 30
+NS_LDAP_CACHETTL= 43200
+NS_LDAP_PROFILE= drp
+NS_LDAP_CREDENTIAL_LEVEL= proxy
+NS_LDAP_BIND_TIME= 10
+EOF
+}
+
+chmod 400 /var/ldap/ldap_client_cred /var/ldap/ldap_client_file
+
+svcadm enable svc:/network/nis/domain:default
+
+nscfg import -fv ldap/client
+svcadm enable ldap/client
+ldaplist
+
+
+
+##### packages
+
+{
+pkg install pkg:/shell/zsh@4.3.17-0.175.1.0.0.24.0
+pkg install pkg:/archiver/gnu-tar@1.26-0.175.1.0.0.24.0
+pkg install pkg:/terminal/xterm@271-0.175.1.0.0.24.1317
+pkg install net-snmp
+pkg install system/management/snmp/net-snmp/addons
+pkg install pkg:/service/network/ftp
+pkg install pkg:/network/ftp
+}
+
+
+
+
+
+
+
+##### snmp
+
+# from the global zone
+cp  /etc/net-snmp/snmp/snmpd.conf /zones/${zone}/root/etc/net-snmp/snmp/
+
+# from the non-global zone
+svcadm enable net-snmp
+
+# from monitoring server
+zone=cellar3-tz
+snmpwalk -c specOPOCE -v2c $zone
+
+
+##### mail
+
+cp -p /etc/mail/sendmail.cf /etc/mail/sendmail.cf.orig
+vi /etc/mail/sendmail.cf
+
+diff /etc/mail/sendmail.cf /etc/mail/sendmail.cf.orig
+89c89
+< DSsmtp:smtp
+---
+> DS
+
+svcadm restart sendmail
+echo `uname -n` | mailx betorma
+echo `uname -n` | mailx mathieu.betori@ext.publications.europa.eu
+
+
+
+##### ftp
+
+
+echo 'ftp account required pam_unix_account.so.1' >/etc/pam.d/ftp
+
+# if necessary
+svcadm enable svc:/network/ftp:default
+
+# customize /etc/proftpd.conf
+
+
+##### role
+
+echo 'Primary Administrator:suser:cmd:::*:uid=0;gid=0' >>/etc/security/exec_attr.d/core-os
+
+{
+echo ''  >> /etc/security/prof_attr.d/core-os
+echo 'Primary Administrator:::\' >> /etc/security/prof_attr.d/core-os
+echo 'Can perform all administrative tasks:\' >> /etc/security/prof_attr.d/core-os
+echo 'auths=solaris.*,solaris.grant;\' >> /etc/security/prof_attr.d/core-os
+echo 'help=RtPriAdmin.html' >> /etc/security/prof_attr.d/core-os
+}
+
+
+
+##### ntp
+
+
+##### core
+coreadm -i /var/cores/%f_%p_%u_%g.core
+
+##### syslog
+
+{
+perl -e 'print "
+#
+# OPOCE syslog configuration for non-loghost machines
+#
+*.err;kern.warning;auth.notice;daemon.notice;mail.crit\t\t/dev/sysmsg
+*.notice;kern.debug;lpr.info;mail.crit;news.err\t\t/var/adm/messages
+auth.info;\t\t/var/log/authlog
+mail.info;lpr.info\t\t/var/log/syslog
+cron.info\t\t/var/log/cron
+*.crit\t\troot
+*.emerg\t\t*
+user.notice;daemon.notice;lpr.notice;news.notice;uucp.notice;audit.notice;kern.debug;mail.crit;auth.notice\t\t@\syslog-srv
+"' >/etc/syslog.conf
+}
+
+touch /var/log/cron
+svcadm restart svc:/system/system-log:default
+
+
+
+
+##### backup client
+
+# from global zone
+cp /net/opsrv082/xchange/NW_8/802/nw80sp2_solaris_64.tar.gz /zones/$zone/root/var/tmp 
+
+# from the non-global zone
+cd /var/tmp/
+gunzip nw80sp2_solaris_64.tar.gz 
+tar xf nw80sp2_solaris_64.tar
+cd solaris_64/ 
+pkgadd -d . LGTOman LGTOclnt
+
+Do you want to continue with the installation of <LGTOman> [y,n,?] y
+Enter a NetWorker data directory (default=/var/nsr) [?] /nsr
+Enter a NetWorker server hostname [no more]: opvmwsbkp01
+Enter a NetWorker server hostname [no more]:        
+Restart NetWorker daemons at end of install? (default=no) [y,n,?] y
+Do you want to continue with the installation of <LGTOclnt> [y,n,?] y
+
+
+
+
+
+##### last check
+
+reboot
+svcs -xv
+dmesg
+
+
+
+
+
+
+
+
+#############################################################################################################################
+##### application users
+
+
+
+##### variables
+export appli_project=cellar
+export appli_project_id=1820
+export appli_user=cellar
+export appli_uid=81900
+export comment_appli_user="${appli_user} user for ${appli_project} project"
+export w_appli_user="w_${appli_user}"
+export w_appli_uid=81910
+export comment_w_appli_user="${w_appli_user} wood user for ${appli_project} project"
+export appli_group=cellar
+export appli_gid=81900
+export oracle_used=yes
+export documentum_used=no
+export test_used=yes
+
+##### sauvegarde des fichiers a modifier
+{
+for FILE in /etc/auto_home /etc/group /etc/passwd /etc/shadow /etc/user_attr /etc/security/exec_attr /etc/security/prof_attr /etc/project
+do
+	cp $FILE $FILE.`date +%Y%m%d%H%M`
+done
+}
+
+##### ajout des roles dba et oracle
+{
+mkdir -p /u01/home/oracle
+mkdir -p /u01/home/rootdba
+mkdir -p /u02
+echo "rootdba::::type=role;profiles=Primary Administrator" >>/etc/user_attr
+echo "oracle::::type=role;profiles=OraAgent Management,All" >>/etc/user_attr
+echo "oracle     \$HOST:/u01/home/&" >>/etc/auto_home
+echo "rootdba      \$HOST:/u01/home/&" >>/etc/auto_home
+echo 'dba::55:oracle' >>/etc/group
+echo 'oracle:x:55:55:Oracle Role:/home/oracle:/bin/pfksh' >>/etc/passwd
+echo 'rootdba:x:20000:1:DBA Role:/home/rootdba:/bin/pfksh' >>/etc/passwd
+echo 'oracle:N1adVIyiQ/ufM:12577::::::' >>/etc/shadow
+echo 'rootdba:c1B14rQDdgzPY:12500::::::' >>/etc/shadow
+pwconv
+chown 55:55 /u01/home/oracle
+}
+
+{
+if [[ ${oracle_used} == yes ]]
+then
+	for rep in orabin oradata oralog oraflash
+	do
+		if [ -d /applications/${appli_project}/$rep ]
+		then
+			chown 55:55 /applications/${appli_project}/$rep
+               ls -ld /applications/${appli_project}/$rep
+		fi
+	done
+	mkdir /var/opt/oracle
+	chown 55:55 /var/opt/oracle
+fi
+}
+
+##### creation de $appli_group
+{
+grep ^${appli_group} /etc/group
+groupadd -g ${appli_gid} ${appli_group}
+egrep "^${appli_group}|${appli_gid}" /etc/group
+}
+
+##### creation de $appli_user
+{
+grep ^${appli_user} /etc/passwd
+grep ^${appli_user} /etc/user_attr
+mkdir -p /applications/${appli_project}/users/${appli_user}
+roleadd -d /home/${appli_user} -c "${comment_appli_user}" -u ${appli_uid} -g ${appli_group} -s /bin/pfksh  ${appli_user} 
+egrep "^${appli_user}|${appli_uid}" /etc/passwd
+}
+
+##### creation de wood_group 
+{
+grep ^wood /etc/group
+groupadd -g 65535 wood
+egrep "^wood|65535" /etc/group
+}
+
+##### creation de w_appli_user
+{
+grep ^${w_appli_user} /etc/passwd
+grep ^${w_appli_user} /etc/user_attr
+mkdir -p /applications/${appli_project}/users/${w_appli_user}
+roleadd -d /home/${w_appli_user} -c "${comment_w_appli_user}" -u ${w_appli_uid} -g ${appli_group} -G wood -s /bin/pfksh ${w_appli_user}
+egrep "^${w_appli_user}|${w_appli_uid}" /etc/passwd
+}
+
+##### auto_home de $appli_user
+{
+echo "${appli_user}     \$HOST:/applications/${appli_project}/users/&" >> /etc/auto_home
+echo "${w_appli_user}     \$HOST:/applications/${appli_project}/users/&" >> /etc/auto_home
+cat /etc/auto_home
+}
+
+##### modification des droit sur le home de $appli_user
+{
+chown ${appli_user}:${appli_group} /applications/${appli_project}/users/${appli_user}
+ls -ld /applications/${appli_project}/users/${appli_user}
+chown ${w_appli_user}:${appli_group} /applications/${appli_project}/users/${w_appli_user}
+ls -ld /applications/${appli_project}/users/${w_appli_user}
+}
+
+##### changement du mot de passe de $appli_user
+passwd ${appli_user}
+passwd ${w_appli_user}
+
+
+##### creation des utilisateurs pour documentum
+{
+if [[ ${documentum_used} == yes ]]
+then
+	mkdir -p /applications/${appli_project}/users/dmadmin
+	mkdir -p /applications/${appli_project}/users/pdocu
+	mkdir -p /applications/${appli_project}/users/docuser
+	roleadd -d /home/dmadmin -u 81800 -g ${appli_group} -s /bin/pfksh dmadmin
+	roleadd -d /home/pdocu -u 81801 -g ${appli_group} -s /bin/pfksh pdocu
+	roleadd -d /home/docuser -u 81802 -g ${appli_group} -s /bin/pfksh docuser
+	echo "dmadmin     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	echo "pdocu     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	echo "docuser     \$HOST:/applications/${appli_project}/users/&" >>/etc/auto_home
+	chown dmadmin:${appli_group} /applications/${appli_project}/users/dmadmin
+	chown pdocu:${appli_group} /applications/${appli_project}/users/pdocu
+	chown docuser:${appli_group} /applications/${appli_project}/users/docuser
+fi
+}
+
+
+
+##### ajout des acces pour l' equipes integration de test au role $appli_user
+{
+if [[ ${test_used} == yes ]]
+then
+	for user in maffima klaerpa lafarpa niedema holotma pierrph dotzech naratol
+	do
+		echo "${user}::::type=normal;roles=${appli_user},${w_appli_user}" >>/etc/user_attr
+	done
+fi
+cat /etc/user_attr
+}
+
+########### exec_attr
+{
+echo "${appli_project} Management:suser:cmd:::/applications/${appli_project}/users/system/init.d/*:uid=0" >>/etc/security/exec_attr
+cat /etc/security/exec_attr
+}
+
+#### /etc/security/prof_attr
+{
+echo "${appli_project} Management:::${appli_project} start/stop:auths=solaris.smf.manage.applications/${appli_project}" >>/etc/security/prof_attr
+echo "OraAgent Management:::OraAgent profile:auths=solaris.smf.manage.monitoring/oraagent" >>/etc/security/prof_attr
+cat /etc/security/prof_attr
+}
+
+####  /etc/project
+{
+cat <<EOF >/etc/project
+system:0::::
+user.root:1::::
+noproject:2::::
+default:3::::
+group.staff:10::::
+user.${appli_project}:${appli_project_id}:${appli_project}:${appli_user}:${appli_group},staff:
+${appli_project}.app:${appli_project_id%0}1:${appli_project}:${appli_user}:${appli_group},staff:
+${appli_project}.dba:${appli_project_id%0}2:${appli_project}:${appli_user},oracle:dba:process.max-file-descriptor=(basic,1024,deny);project.max-shm-memory=(priv,4294967296,deny)
+${appli_project}.wood:${appli_project_id%0}3:${appli_project}:${appli_user},${w_appli_user}:${appli_group}:
+${appli_project}.woodweb:${appli_project_id%0}4:${appli_project}:${appli_user},${w_appli_user}:${appli_group}:
+EOF
+cat /etc/project
+}
+
+##### droit sur le repertoire xchange
+
+{
+if [ -d /applications/${appli_project}/xchange ]
+then
+	chown ${appli_user}:${appli_group} /applications/${appli_project}/xchange
+	ls -ld /applications/${appli_project}/xchange
+fi
+}
+
+
+##### connexion aux roles
+{
+for users in ${appli_user} ${w_appli_user} rootdba oracle
+do
+	echo "##### $users"
+	su - $users -c 'id;pwd'
+	echo	
+done
+}
+
+
+#############################################################################################################################
+##### wood
+
+
+
+#############################################################################################################################
+##### capping
+
+
+
+
+
+
+ 
+#############################################################################################################################
+##### cluster
+
+
+##### beadm
+
+
+
+
+
+
+
+#############################################################################################################################
+##### asm
+
+
+
+ 	Size	Lun	 	Master Device	 	 	Replica Device
+Device	GB	Type	Dec	Hexa	Host	LUN ID	Array	Replication	Host	LUN ID	Array
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	34	22	Kusha	342	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	35	23	Kusha	343	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	36	24	Kusha	344	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	37	25	Kusha	345	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	38	26	Kusha	346	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	39	27	Kusha	347	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	40	28	Kusha	348	VNX_0476	 	 
+cellarfodb2-tz-ASM-oradata	200	SAS/RAID5	41	29	Kusha	349	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraredo	40	SAS/RAID5	42	2A	Kusha	350	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraredo	40	SAS/RAID5	43	2B	Kusha	351	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraFRA	50	SAS/RAID5	44	2C	Kusha	352	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraFRA	50	SAS/RAID5	45	2D	Kusha	353	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraFRA	50	SAS/RAID5	46	2E	Kusha	354	VNX_0476	 	 
+cellarfodb2-tz-ASM-oraFRA	50	SAS/RAID5	47	2F	Kusha	355	VNX_0476	 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### preparatifs
+
+export tmp_folder=/home/betorma/tmp
+export zone=cellarfodb2-tz
+
+export tag=oradata
+/home/betorma/bin/luxadm_carlo| egrep ' 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 ' >${tmp_folder}/asm_${zone}_${tag}.txt
+cat ${tmp_folder}/asm_${zone}_${tag}.txt
+
+
+0[131216/115342]root@kusha# cat ${tmp_folder}/asm_${zone}_${tag}.txt
+path: /dev/rdsk/c0t6006016048103200A05ADD18A461E311d0s2 ==> stor: 500601683ea42f5e lun 34 stor: 5006016a3ea42f5e lun 34 stor: 500601623ea42f5e lun 34 stor: 500601603ea42f5e lun 34 
+path: /dev/rdsk/c0t6006016048103200A25ADD18A461E311d0s2 ==> stor: 500601683ea42f5e lun 35 stor: 5006016a3ea42f5e lun 35 stor: 500601623ea42f5e lun 35 stor: 500601603ea42f5e lun 35 
+path: /dev/rdsk/c0t6006016048103200A45ADD18A461E311d0s2 ==> stor: 500601683ea42f5e lun 36 stor: 5006016a3ea42f5e lun 36 stor: 500601623ea42f5e lun 36 stor: 500601603ea42f5e lun 36 
+path: /dev/rdsk/c0t6006016048103200A65ADD18A461E311d0s2 ==> stor: 500601683ea42f5e lun 37 stor: 5006016a3ea42f5e lun 37 stor: 500601623ea42f5e lun 37 stor: 500601603ea42f5e lun 37 
+path: /dev/rdsk/c0t6006016048103200A85ADD18A461E311d0s2 ==> stor: 500601683ea42f5e lun 38 stor: 5006016a3ea42f5e lun 38 stor: 500601623ea42f5e lun 38 stor: 500601603ea42f5e lun 38 
+path: /dev/rdsk/c0t6006016048103200AA5ADD18A461E311d0s2 ==> stor: 500601683ea42f5e lun 39 stor: 5006016a3ea42f5e lun 39 stor: 500601623ea42f5e lun 39 stor: 500601603ea42f5e lun 39 
+path: /dev/rdsk/c0t6006016048103200AC5ADD18A461E311d0s2 ==> stor: 500601683ea42f5e lun 40 stor: 5006016a3ea42f5e lun 40 stor: 500601623ea42f5e lun 40 stor: 500601603ea42f5e lun 40 
+path: /dev/rdsk/c0t6006016048103200AE5ADD18A461E311d0s2 ==> stor: 500601683ea42f5e lun 41 stor: 5006016a3ea42f5e lun 41 stor: 500601623ea42f5e lun 41 stor: 500601603ea42f5e lun 41 
+
+
+
+
+
+
+
+
+
+export tag=oraredo
+/home/betorma/bin/luxadm_carlo| egrep ' 42 | 43 ' >${tmp_folder}/asm_${zone}_${tag}.txt
+cat ${tmp_folder}/asm_${zone}_${tag}.txt
+
+0[131216/115410]root@kusha# cat ${tmp_folder}/asm_${zone}_${tag}.txt
+path: /dev/rdsk/c0t6006016048103200C0AB0544A461E311d0s2 ==> stor: 500601683ea42f5e lun 42 stor: 5006016a3ea42f5e lun 42 stor: 500601623ea42f5e lun 42 stor: 500601603ea42f5e lun 42 
+path: /dev/rdsk/c0t6006016048103200C2AB0544A461E311d0s2 ==> stor: 5006016a3ea42f5e lun 43 stor: 500601683ea42f5e lun 43 stor: 500601623ea42f5e lun 43 stor: 500601603ea42f5e lun 43 
+
+
+
+
+
+
+export tag=orafra
+/home/betorma/bin/luxadm_carlo| egrep ' 44 | 45 | 46 | 47 ' >${tmp_folder}/asm_${zone}_${tag}.txt
+cat ${tmp_folder}/asm_${zone}_${tag}.txt
+
+0[131216/115427]root@kusha# cat ${tmp_folder}/asm_${zone}_${tag}.txt
+path: /dev/rdsk/c0t60060160481032008A1A545FA461E311d0s2 ==> stor: 5006016a3ea42f5e lun 45 stor: 500601683ea42f5e lun 45 stor: 500601623ea42f5e lun 45 stor: 500601603ea42f5e lun 45 
+path: /dev/rdsk/c0t6006016048103200881A545FA461E311d0s2 ==> stor: 5006016a3ea42f5e lun 44 stor: 500601683ea42f5e lun 44 stor: 500601623ea42f5e lun 44 stor: 500601603ea42f5e lun 44 
+path: /dev/rdsk/c0t60060160481032008C1A545FA461E311d0s2 ==> stor: 5006016a3ea42f5e lun 46 stor: 500601683ea42f5e lun 46 stor: 500601623ea42f5e lun 46 stor: 500601603ea42f5e lun 46 
+path: /dev/rdsk/c0t60060160481032008E1A545FA461E311d0s2 ==> stor: 5006016a3ea42f5e lun 47 stor: 500601683ea42f5e lun 47 stor: 500601623ea42f5e lun 47 stor: 500601603ea42f5e lun 47 
+
+
+
+
+
+
+
+
+
+##### recupere la liste des disks
+
+cat ${tmp_folder}/asm_${zone}_ora* | awk '{print $2}' | awk -F'/' '{print $4}' | sed -e 's/s2$//' >${tmp_folder}/asm_disk_list.txt  
+cat ${tmp_folder}/asm_disk_list.txt
+
+0[131216/115516]root@kusha# cat ${tmp_folder}/asm_disk_list.txt
+c0t6006016048103200A05ADD18A461E311d0
+c0t6006016048103200A25ADD18A461E311d0
+c0t6006016048103200A45ADD18A461E311d0
+c0t6006016048103200A65ADD18A461E311d0
+c0t6006016048103200A85ADD18A461E311d0
+c0t6006016048103200AA5ADD18A461E311d0
+c0t6006016048103200AC5ADD18A461E311d0
+c0t6006016048103200AE5ADD18A461E311d0
+c0t60060160481032008A1A545FA461E311d0
+c0t6006016048103200881A545FA461E311d0
+c0t60060160481032008C1A545FA461E311d0
+c0t60060160481032008E1A545FA461E311d0
+c0t6006016048103200C0AB0544A461E311d0
+c0t6006016048103200C2AB0544A461E311d0
+
+
+
+##### importe les disk dans solaris cluster
+
+
+cldev populate
+cldev status -s fail
+
+
+
+#####  ajout des did au fichier de configuration de la zone
+
+
+export current_date=`date +%Y%m%d%H%M`
+echo ${current_date}
+201312161155
+
+
+
+cp -p /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${current_date} 
+
+
+
+
+
+
+
+
+
+{
+echo "zonecfg -z ${zone} <<EOT" 
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	echo "add device"
+	echo "set match=/dev/did/*dsk/${did}s*"
+	echo "end"
+done
+echo verify
+echo commit
+echo exit
+echo EOT
+}
+
+
+{
+zonecfg -z ${zone} <<EOT
+`cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	echo "add device"
+	echo "set match=/dev/did/*dsk/${did}s*"
+	echo "end"
+done`
+verify
+commit
+exit
+EOT
+}
+
+
+
+diff /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${current_date} 
+
+0[131216/115551]root@kusha# diff /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${current_date} 
+11,24d10
+<   <device match="/dev/did/*dsk/d75s*"/>
+<   <device match="/dev/did/*dsk/d76s*"/>
+<   <device match="/dev/did/*dsk/d77s*"/>
+<   <device match="/dev/did/*dsk/d78s*"/>
+<   <device match="/dev/did/*dsk/d81s*"/>
+<   <device match="/dev/did/*dsk/d82s*"/>
+<   <device match="/dev/did/*dsk/d83s*"/>
+<   <device match="/dev/did/*dsk/d84s*"/>
+<   <device match="/dev/did/*dsk/d85s*"/>
+<   <device match="/dev/did/*dsk/d86s*"/>
+<   <device match="/dev/did/*dsk/d87s*"/>
+<   <device match="/dev/did/*dsk/d88s*"/>
+<   <device match="/dev/did/*dsk/d91s*"/>
+<   <device match="/dev/did/*dsk/d92s*"/>
+
+--------------------
+
+##### ajout des disk dynamiquement a la zone via mknode
+
+mkdir -p /zones/${zone}/dev/did/dsk
+mkdir -p /zones/${zone}/dev/did/rdsk
+
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "mknod /zones/$ENV{zone}/dev/did/$4/$5 $1 $2 $3\n"}'
+done
+}
+
+
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {`mknod /zones/$ENV{zone}/dev/did/$4/$5 $1 $2 $3`}'
+done
+}
+
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -l /zones/${zone}/dev/did/*dsk/${did}*
+done
+}
+
+
+
+
+
+
+
+
+##### ajout des ACL sur les fichiers devices
+
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "chmod u=rw,g=,o= /zones/$ENV{zone}/dev/did/$4/$5\n"}'
+done
+}
+
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {`chmod u=rw,g=,o= /zones/$ENV{zone}/dev/did/$4/$5`}'
+done
+}
+
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {print "chown oracle:dba /zones/$ENV{zone}/dev/did/$4/$5\n"}'
+done
+}
+
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -lL /dev/did/(dsk|rdsk)/${did}s* | perl -ne 'if(m{(.)rw-------\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+/dev/did/(dsk|rdsk)/(d\d+s\d+)}) {`chown oracle:dba /zones/$ENV{zone}/dev/did/$4/$5`}'
+done
+}
+
+
+{
+cldev list -v | egrep -f ${tmp_folder}/asm_disk_list.txt | awk '{print $1}' | uniq | while read did
+do
+	ls -l /zones/${zone}/dev/did/*dsk/${did}*
+done
+}
+
+
+
+
+##### partition de s0 avec les 3 premier blocks pour le header asm
+
+
+{
+cat ${tmp_folder}/asm_disk_list.txt | while read disk
+do
+	echo "############################################# ${disk}"
+done
+}
+
+
+
+
+{
+cat ${tmp_folder}/asm_disk_list.txt | while read disk
+do
+	echo "############################################# ${disk}"
+	echo dd if=/dev/zero of=/dev/rdsk/${disk} count=1
+done
+}
+
+
+{
+cat ${tmp_folder}/asm_disk_list.txt | while read disk
+do
+	echo "############################################# ${disk}"
+	format -d ${disk} <<EOT
+partition
+0
+usr
+wm
+3
+$
+label
+y
+quit
+quit
+EOT
+done
+}
+
+
+
+{
+cat ${tmp_folder}/asm_disk_list.txt | while read disk
+do
+	echo "############################################# ${disk}"
+	prtvtoc /dev/rdsk/${disk}s0
+done
+}
+
+
+#### communiquer la liste des did aux dba
+
+rm ${tmp_folder}/asm_disk_list_for_dba.txt
+
+for tag in oradata orafra oraredo
+do
+	{
+	cat ${tmp_folder}/asm_${zone}_${tag}.txt | while read line 
+	do
+		echo ${line} | awk '{print $2}' | sed -e 's/s2$//' | while read disk
+		do
+			did=`cldev list -v | grep ${disk} | awk '{print $1}' | uniq`
+			echo "disk:${line} did: ${did} zone:$zone [${tag}]"
+		done
+	done
+	} | tee -a ${tmp_folder}/asm_disk_list_for_dba.txt
+done
+
+
+
+
+cat ${tmp_folder}/asm_disk_list_for_dba.txt | mailx betorma
+
+
+
+
+
+
+
+
+0[130523/085035]root@pegase# cat /home/betorma/docs/storage.txt 
+NAME            TYPE    WWN                     SITE
+stamper         6130    200400A0B818AC1E        Mercier
+stamper         6130    200400A0B818AC1F        Mercier
+absynthe        6130    200400A0B819E592        Mercier
+absynthe        6130    200400A0B819E593        Mercier
+peket           6140    200400A0B829991B        Mercier
+peket           6140    200400A0B829991C        Mercier
+stamper         6130    200500A0B818AC1E        Mercier
+stamper         6130    200500A0B818AC1F        Mercier
+absynthe        6130    200500A0B819E592        Mercier
+absynthe        6130    200500A0B819E593        Mercier
+peket           6140    200500A0B829991B        Mercier
+peket           6140    200500A0B829991C        Mercier
+brizard         6140    200600A0B826DD65        Mercier
+brizard         6140    200600A0B826DD66        Mercier
+brizard         6140    200700A0B826DD65        Mercier
+brizard         6140    200700A0B826DD66        Mercier
+gnole           6140    201600A0B8266772        Mercier
+gnole           6140    201700A0B8266772        Mercier
+torboyaux       6140    201800A0B848F43A        EUFO
+torboyaux       6140    201900A0B848F43A        EUFO
+gnole           6140    202600A0B8266772        Mercier
+gnole           6140    202700A0B8266772        Mercier
+torboyaux       6140    202800A0B848F43A        EUFO
+torboyaux       6140    202900A0B848F43A        EUFO
+gnole           6140    203600A0B8266772        Mercier
+gnole           6140    203700A0B8266772        Mercier
+torboyaux       6140    203800A0B848F43A        EUFO
+torboyaux       6140    203900A0B848F43A        EUFO
+gnole           6140    204600A0B8266772        Mercier
+gnole           6140    204700A0B8266772        Mercier
+torboyaux       6140    204800A0B848F43A        EUFO
+torboyaux       6140    204900A0B848F43A        EUFO
+VMAX_2560       vmax    5000097408280118        EUFO
+VMAX_2560       vmax    500009740828011c        EUFO
+VMAX_2560       vmax    5000097408280120        EUFO
+VMAX_2560       vmax    5000097408280124        EUFO
+VMAX_2560       vmax    50000974082801dc        EUFO
+VMAX_2560       vmax    50000974082801e0        EUFO
+VMAX_2560       vmax    5000097408280198        EUFO
+VMAX_3453       vmax    500009740835f518        Mercier
+VMAX_3453       vmax    500009740835f51c        Mercier
+VMAX_3453       vmax    500009740835f520        Mercier
+VMAX_3453       vmax    500009740835f524        Mercier
+VMAX_3453       vmax    500009740835f5dc        Mercier
+VMAX_3453       vmax    500009740835f5e0        Mercier
+VMAX_3453       vmax    500009740835f598        Mercier
+VNX_0475        vnx     500601643EA02F4A        Mercier
+VNX_0476        vnx     500601643ea02f5e        EUFO
+VNX_0475        vnx     500601653ea02f4a        Mercier
+VNX_0476        vnx     500601653ea02f5e        EUFO
+VNX_0475        vnx     500601663EA02F4A        Mercier
+VNX_0476        vnx     500601663ea02f5e        EUFO
+VNX_0475        vnx     500601673ea02f4a        Mercier
+VNX_0476        vnx     500601673ea02f5e        EUFO
+VNX_0475        vnx     5006016c3EA02F4A        Mercier
+VNX_0476        vnx     5006016c3ea02f5e        EUFO
+VNX_0475        vnx     5006016d3ea02f4a        Mercier
+VNX_0476        vnx     5006016d3ea02f5e        EUFO
+VNX_0475        vnx     5006016e3EA02F4A        Mercier
+VNX_0476        vnx     5006016e3ea02f5e        EUFO
+VNX_0475        vnx     5006016f3ea02f4a        Mercier
+VNX_0476        vnx     5006016f3ea02f5e        EUFO
+Dmx2000         dmx2000 5006048C49AEF607        Mercier
+Dmx2000         dmx2000 5006048C49AEF608        Mercier
+Dmx4            dmx4    5006048C52A80407        EUFO
+Dmx4            dmx4    5006048C52A80408        EUFO
+
+0[130523/085049]root@pegase# 
+
+
+
+
+
+
+
+
+
+
+

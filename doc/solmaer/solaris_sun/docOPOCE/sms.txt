@@ -1,0 +1,50 @@
+# voir info du reseau de domain
+ndd -get /dev/dman man_get_hostinfo
+
+# changement niveau post
+
+cd $SMSETC
+cd config
+# domain F par exemple
+cd F
+vi .postrc
+level 7
+
+# Changement parametre obp
+setobpparams -d F auto-boot\?=false
+
+# Lieu des fichiers des domains
+ls -l /etc/opt/SUNWSMS/SMS1.5/config/
+
+# Ajoute des SB
+showplatforms
+showboards
+poweron SB16
+poweron IO16
+addboard -d F -c assign SB16 IO16
+addboard -d F -c connect SB16 IO16
+rcfgadm -d F
+rcfgadm -d F -c configure SB16
+rcfgadm -d F -c configure IO16
+
+# SunFire 6800
+# reprendre la main sur console
+desert-sc0:SC> console B
+
+Connection refused, console busy
+Connection closed.
+desert-sc0:SC> con
+con: Command is ambiguous, type "help" for a list of commands.
+desert-sc0:SC> conn
+
+ID  Hostname                      Idle Time Connected On   Connected To
+--- ----------------------------- --------- -------------- --------------
+  1 Localhost                     15+07:41  Mar 22 08:02   Console Menu
+  4 Localhost                     00:59     Apr 03 15:18   Domain B
+  6 vespa.opoce.cec.eu.int        -         Apr 06 16:24   Platform
+
+desert-sc0:SC> disco 4
+desert-sc0:SC> console B
+
+Connected to Domain B
+

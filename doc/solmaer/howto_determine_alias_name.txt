@@ -1,0 +1,123 @@
+###############################################################################################
+# recherche des alias des noms de machines
+###############################################################################################
+
+##### se connecter au server qui possede les explorer
+ssh infra-srv
+bash
+
+##### choix du repertoire ou sera stocke le resultat
+alias_folder=~betorma/tmp/alias
+
+##### choix de la date (yyyymmdd) pour la version des explorer
+export version=20090127
+
+##### decoupage de la date
+export year=`echo ${version:0:4}`
+export month_n=`echo ${version:4:2}`
+export day=`echo ${version:6:2}`
+case ${month_n} in
+'01')
+export month=Jan
+;;
+'02')
+export month=Feb
+;;
+'03')
+export month=Mar
+;;
+'04')
+export month=Apr
+;;
+'05')
+export month=May
+;;
+'06')
+export month=Jun
+;;
+'07')
+export month=Jul
+;;
+'08')
+export month=Aug
+;;
+'09')
+export month=Sep
+;;
+'10')
+export month=Oct
+;;
+'11')
+export month=Nov
+;;
+'12')
+export month=Dec
+;;
+esac
+
+##### definit le repertoire depuis lequel on veut extraire les infos des explorer
+explo_folder=/applications/i-status/users/i-status/exploarch/${year}${month}/${year}${month_n}${day}/
+
+##### verification de l'existance de $explo_folder
+if [ ! -d ${explo_folder} ]; then echo -e "\n${explo_folder} not exist... \nChoise an other version date for your explorer,\nor check it manually."; fi
+
+##### creation du repertoire ou se trouvera le resultat
+mkdir -p ${alias_folder}
+cd ${alias_folder}
+
+##### recupere des explorer les ifconfig de chaque serveur
+for i in ${explo_folder}/explorer*.tar.gz;
+do 
+echo ${i} | awk -F. '{print $3}' | awk -F- '{print $1}';
+file_name=`echo ${i} | sed 's/\.tar\.gz//'`;
+gunzip -c ${file_name}.tar.gz | tar xf - `basename ${file_name}`/sysconfig/ifconfig-a.out
+done
+
+##### renomme chaque fichier ifconfig-a.out par le nom du serveur, copie ce fichier vers ../.. et supprime les repertoires explorer.*
+for i in *;
+do 
+if [ -d ${i} ]; then
+host_name=`echo ${i} | awk -F. '{print $3}' | awk -F- '{print $1}'`;
+cp ${i}/sysconfig/ifconfig-a.out ${alias_folder}/${host_name}.txt
+rm -rf ${i}
+fi
+done
+
+##### dans chaque fichier, met toutes les infos concernant une meme interface reseau sur une meme ligne
+perl -i -pe 'chomp; s/(\w.*\d: )/\n$1/;' *.txt
+
+##### cree un fichier qui donne la version des alias
+rm ${alias_folder}/version_*
+touch ${alias_folder}/version_${year}${month_n}${day}
+
+
+###############################################################################################
+# recherche d'un opsrv
+###############################################################################################
+
+alias=opsrv097
+export ip=`nslookup ${alias} | grep '^Address' | grep -v '#53' | awk -F' ' '{print $2}'` && cd ${alias_folder} && grep ${ip} * | perl -ne 'if (/^(\w+).txt:.*zone (\w*).*inet ($ENV{ip}) /) {print "\nzone $2 ($3) on $1\n\n"} elsif (/^(\w+).txt:.*inet ($ENV{ip}) /) {print "\n$1 ($2)\n\n"}'
+
+
+###############################################################################################
+# recherche d'un opsrv en utilisant une fonction qu'on peut mettre dans ~/.bashrc
+###############################################################################################
+
+function which_alias {
+        alias_folder=~betorma/tmp/alias
+        alias=$1
+        export ip=`nslookup ${alias} | grep '^Address' | grep -v '#53' | awk -F' ' '{print $2}'` && cd ${alias_folder} && grep ${ip} * | perl -ne 'if (/^(\w+).txt:.*zone (\w*).*inet ($ENV{ip}) /) {print "\nzone $2 ($3) on $1\n\n"} elsif (/^(\w+).txt:.*inet ($ENV{ip}) /) {print "\n$1 ($2)\n\n"}'
+} 
+
+
+which_alias opsrv097
+
+
+
+
+
+
+
+
+
+

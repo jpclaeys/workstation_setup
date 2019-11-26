@@ -1,0 +1,2 @@
+# checking vitesse interface
+kstat -p nxge:0 | grep dc_packets

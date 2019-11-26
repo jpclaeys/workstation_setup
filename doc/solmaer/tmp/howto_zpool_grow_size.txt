@@ -1,0 +1,194 @@
+
+From: SACRE Catherine (OP-EXT) 
+Sent: February 25 2014 9:57
+To: OPOCE INFRA UNIX WEB
+Cc: OPDL A4 STORAGE BACKUP
+Subject: RE: Production Monitoring Status 20140224 14:00
+
+Bonjour,
+Cest fait.
+
+Zone 		Size Requested	Lun Type	Real	Dec	Hexa	Host		Device	Array		Replication	Host		Device	Array
+ceres_pz	300		H16.86G		303.48	123	7B	Cesar/Cleopatre	0E90	SYM_3453	HostBased	Cesar/Cleopatre	0E90	SYM_2560
+
+#######################################################################################################################################
+
+# check if the lun is visible on all cluster nodes
+
+0[140225/101459]root@cesar# /home/betorma/bin/luxadm_carlo -z | grep ' 123 '
+/dev/rdsk/c3t60000970000292603453533030453930d0s2 ==> 500009740835f518 123 500009740835f524 123  []
+/dev/rdsk/c3t60000970000292602560533030453930d0s2 ==> 5000097408280118 123 5000097408280124 123  []
+
+0[140225/101427]root@cleopatre#  /home/betorma/bin/luxadm_carlo -z | grep ' 123 '
+/dev/rdsk/c3t60000970000292603453533030453930d0s2 ==> 500009740835f518 123 500009740835f524 123  []
+/dev/rdsk/c3t60000970000292602560533030453930d0s2 ==> 5000097408280118 123 5000097408280124 123  []
+
+
+# if not present, refresh san connectivity
+
+0[140225/101719]root@cesar# luxadm -e port 
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+/devices/pci@2,600000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+0[140225/101722]root@cesar# luxadm -e forcelip /devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl
+0[140225/101732]root@cesar# luxadm -e port                                                               
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+/devices/pci@2,600000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+0[140225/101733]root@cesar# luxadm -e forcelip /devices/pci@2,600000/SUNW,qlc@0/fp@0,0:devctl            
+0[140225/101739]root@cesar# luxadm -e port                                                   
+/devices/pci@0,600000/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl         CONNECTED
+/devices/pci@2,600000/SUNW,qlc@0/fp@0,0:devctl                     CONNECTED
+
+
+
+# add lun to cluster device configuration
+
+0[140225/101514]root@cesar# cldev populate
+Configuring DID devices
+did instance 10 created.
+did subpath cesar:/dev/rdsk/c3t60000970000292603453533030453930d0 created for instance 10.
+did instance 15 created.
+did subpath cesar:/dev/rdsk/c3t60000970000292602560533030453930d0 created for instance 15.
+Configuring the /dev/global directory (global devices)
+obtaining access to all attached disks
+
+
+# check the actual zpool size
+
+127[140225/101802]root@cesar# zpool list ceres_pz
+NAME       SIZE   USED  AVAIL    CAP  HEALTH  ALTROOT
+ceres_pz  1.17T  1.12T  52.2G    95%  ONLINE  /
+
+
+
+
+# check the zpool status, and check the order of luns in mirrors
+
+0[140225/101813]root@cesar# zpool status ceres_pz 
+  pool: ceres_pz
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                       STATE     READ WRITE CKSUM
+        ceres_pz                                   ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033353234d0  ONLINE       0     0     0
+            c3t60000970000292603453533033353234d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533030344438d0  ONLINE       0     0     0
+            c3t60000970000292603453533030344438d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033343232d0  ONLINE       0     0     0
+            c3t60000970000292603453533033343232d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033334533d0  ONLINE       0     0     0
+            c3t60000970000292603453533033334533d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033304332d0  ONLINE       0     0     0
+            c3t60000970000292603453533033304332d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292603453533033303532d0  ONLINE       0     0     0
+            c3t60000970000292602560533033303532d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033343334d0  ONLINE       0     0     0
+            c3t60000970000292603453533033343334d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033343341d0  ONLINE       0     0     0
+            c3t60000970000292603453533033343341d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533030344537d0  ONLINE       0     0     0
+            c3t60000970000292603453533030344537d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033304238d0  ONLINE       0     0     0
+            c3t60000970000292603453533033304238d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292603453533033343238d0  ONLINE       0     0     0
+            c3t60000970000292602560533033343238d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533030353033d0  ONLINE       0     0     0
+            c3t60000970000292603453533030353033d0  ONLINE       0     0     0
+
+errors: No known data errors
+0[140225/101835]root@cesar# 
+
+
+
+# add new luns in new mirror with respect of order of luns (don't use slice)
+
+0[140225/101835]root@cesar# zpool add ceres_pz mirror c3t60000970000292603453533030453930d0 c3t60000970000292602560533030453930d0  
+
+
+
+
+# check the new status of zpool
+
+
+0[140225/102022]root@cesar# zpool status ceres_pz                                                                                
+  pool: ceres_pz
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                       STATE     READ WRITE CKSUM
+        ceres_pz                                   ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033353234d0  ONLINE       0     0     0
+            c3t60000970000292603453533033353234d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533030344438d0  ONLINE       0     0     0
+            c3t60000970000292603453533030344438d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033343232d0  ONLINE       0     0     0
+            c3t60000970000292603453533033343232d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033334533d0  ONLINE       0     0     0
+            c3t60000970000292603453533033334533d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033304332d0  ONLINE       0     0     0
+            c3t60000970000292603453533033304332d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292603453533033303532d0  ONLINE       0     0     0
+            c3t60000970000292602560533033303532d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033343334d0  ONLINE       0     0     0
+            c3t60000970000292603453533033343334d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033343341d0  ONLINE       0     0     0
+            c3t60000970000292603453533033343341d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533030344537d0  ONLINE       0     0     0
+            c3t60000970000292603453533030344537d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533033304238d0  ONLINE       0     0     0
+            c3t60000970000292603453533033304238d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292603453533033343238d0  ONLINE       0     0     0
+            c3t60000970000292602560533033343238d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292602560533030353033d0  ONLINE       0     0     0
+            c3t60000970000292603453533030353033d0  ONLINE       0     0     0
+          mirror                                   ONLINE       0     0     0
+            c3t60000970000292603453533030453930d0  ONLINE       0     0     0
+            c3t60000970000292602560533030453930d0  ONLINE       0     0     0
+
+errors: No known data errors
+0[140225/102051]root@cesar# 
+
+
+
+
+# check the new size of zpool
+
+0[140225/102051]root@cesar# zpool list ceres_pz                                                                                
+NAME       SIZE   USED  AVAIL    CAP  HEALTH  ALTROOT
+ceres_pz  1.46T  1.12T   354G    76%  ONLINE  /
+
+
+
+
+
+
+
+
+
+

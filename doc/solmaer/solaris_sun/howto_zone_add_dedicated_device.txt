@@ -1,0 +1,44 @@
+
+##############################################################################################
+# ajouter des disks a une zone pour qu'il puisse etre gere par la zone
+##############################################################################################
+
+##### variables
+export zone=rac-dz
+export disk_list='c4t60060160DA612E00CA0FB000551AE111d0 c4t60060160DA612E002E691DF4541AE111d0 c4t60060160DA612E0030691DF4541AE111d0 c4t60060160DA612E00682044E6541AE111d0 c4t600601602C502E00A8870B26561AE111d0 c4t600601602C502E0008F4E344561AE111d0 c4t600601602C502E0056962432561AE111d0 c4t600601602C502E0058962432561AE111d0'
+
+
+##### label du disk
+{
+for disk in `echo $disk_list`
+do
+	format -d $disk <<EOF
+label
+y
+quit
+EOF
+done
+}
+
+
+##### ajout par mknod
+{
+for disk in `echo $disk_list`
+do
+	ls -lL /dev/*dsk/${disk}* | perl -ne 'print "mknod /zones/$ENV{zone}$4 $1 $2 $3\n" if(m{(.)rw-r-----\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+(/dev/(dsk|rdsk)/c\d+t.{32}d\d+.*)})'
+done
+}
+
+##### ajout a la config de la zone
+{
+echo "zonecfg -z $zone <<EOF"
+for disk in `echo $disk_list`
+do
+	ls -lL /dev/*dsk/${disk}* | perl -ne 'print "add device\nset match=\"$4\"\nend\n" if(m{(.)rw-r-----\s+1\s+root\s+sys\s+(\d+),\s+(\d+)\s+.{12}\s+(/dev/(dsk|rdsk)/c\d+t.{32}d\d+.*)})'
+done
+echo verify
+echo commit
+echo EOF
+}
+
+

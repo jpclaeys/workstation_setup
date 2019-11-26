@@ -1,0 +1,278 @@
+###############################################################################
+# howto grow a zpool managed by srdf replicat and solaris cluster
+###############################################################################
+
+From: SACRE Catherine (OP-EXT) 
+Sent: May 12 2016 14:20
+To: BETORI Mathieu (OP-EXT); OPDL A4 STORAGE BACKUP
+Subject: RE: demande de volumetries pour esendtool et seicr
+
+Bonjour,
+C’est fait.
+ 	 	Size	Lun	Master Device	 	Replica Device
+Zone 	Policy	Requested	Type	Real	Dec	Hexa	Host	Device	Array	Replication	Host	Device	Array
+esendtool-pz-db	gold	80	H33.97G	101.91	22	16	penelope	310	SYM_2560	SRDF	ulysse	310	SYM_3453
+
+
+DG et ACL ok pour le device en SRDF.
+
+Bon après-midi,
+Catherine
+
+
+
+###############################################################################
+
+
+
+
+##### variable on both nodes
+
+export zone_name=
+export primary_node=
+export secondary_node=
+export zpool_to_grow=
+export rdf_device_groupe_name=${zone_name}
+export hex_lun_id_list=''
+export rdf_dev_list=''
+export mercier_storage=														# SymmID possible: 000292603453 000296700060 
+export eufo_storage=														# SymmID possible: 000292602560 000296700069
+export local_site=$(/home/admin/bin/getcmdb.sh host | grep `uname -n`  | awk -F';' '{print $5}' | awk '{print $1}')
+export tmp_dir=/home/betorma/tmp
+
+
+
+##### refresh and check storage configuration on all nodes
+
+cfgadm -al
+powermt check
+powermt display dev=all class=all
+symcfg discover
+
+cldev populate
+
+
+
+
+##### on both nodes
+
+storage_info.pl -A >${tmp_dir}/storage_info_`uname -n`.txt
+for dev in $hex_lun_id_list; do grep "0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+
+
+
+##### check if we are in client/server mode for EMC Solution Enabler
+
+{
+env | grep ^SYMCLI >/dev/null
+if [[ ! $? = 0 ]]; then
+	echo; echo "ERROR: This server don't use EMC Solution Enabler with client/server/mode"
+fi
+}
+
+
+
+##### define/check rdf type, on each node
+
+{
+if [ $primary_node = `uname -n` ]; then
+	rdf_type=RDF1
+else 
+	rdf_type=RDF2
+fi
+if [ -z $rdf_type ]; then
+	echo "Can't determine primary node and RDF type for this node."
+	echo 'Please check or define RDF type manually.'
+else
+	echo $rdf_type
+fi
+}
+
+
+
+
+##### check if devices are with the good rdf type
+
+{
+for dev in $rdf_dev_list
+do
+	if [ $local_site = 'EUFO' ]; then
+		symdev show -sid $eufo_storage $dev | grep 'Device Configuration' | grep $rdf_type >/dev/null
+		if [ $? != 0 ]; then
+			echo "$dev is not with the good rdf type."
+		fi
+	fi
+	if [ $local_site = 'MER' ]; then
+		symdev show -sid $mercier_storage $dev | grep 'Device Configuration' | grep $rdf_type >/dev/null
+		if [ $? != 0 ]; then
+			echo "$dev is not with the good rdf type."
+		fi
+	fi
+done
+}
+
+
+
+##### add devices within rdf device groups
+
+{
+if [ $local_site = 'EUFO' ]; then
+	for dev in $rdf_dev_list; do symdg -g $rdf_device_groupe_name -sid $eufo_storage add dev $dev; done
+fi
+if [ $local_site = 'MER' ]; then
+	for dev in $rdf_dev_list; do symdg -g $rdf_device_groupe_name -sid $mercier_storage add dev $dev; done
+fi
+}
+
+
+
+##### check rdf sync, on primary node
+
+symrdf -g $rdf_device_groupe_name query
+
+
+
+##### get concerned cluster devices, on each node
+
+{
+for dev in $rdf_dev_list
+do
+	grep " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "$1\n" if(m{#\s(d\d+)\s#})'
+done
+} | sort -u >${tmp_dir}/did.${rdf_type}
+cat ${tmp_dir}/did.${rdf_type}
+
+
+
+##### labelize disk on primary node
+
+if [[ $rdf_type == 'RDF1' ]]; then 
+	for dev in $hex_lun_id_list; do grep "0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done | awk '{print $3}' | while read disk
+	do
+		echo /home/admin/bin/op_format_s0.sh --emc $disk
+	done
+fi
+
+
+
+##### combine cluster devices, on secondary/rdf2 node
+
+{
+export device_number=`wc -l ${tmp_dir}/did.${rdf_type} | awk '{print $1}'`
+if [[ $rdf_type == 'RDF2' ]]; then 
+	for i in $(seq 1 `echo $device_number`)
+	do
+		echo cldev combine -t srdf -g ${rdf_device_groupe_name} -d `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1` `cat ${tmp_dir}/did.RDF2 | head -${i} | tail -1`
+		echo didadm -F scsi3 `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1`
+		echo cldev show `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1`
+		echo	
+	done
+else
+	echo; echo 'ERROR: you are not on RDF2 node to combine cluster devices.'
+fi
+}
+
+
+{
+cat ${tmp_dir}/did.RDF[12] | while read did
+do
+	echo cldg offline dsk/${did}
+	echo cldg disable dsk/${did}
+	echo cldg delete dsk/${did}
+done
+}
+
+
+
+##### add device in cluster device group
+
+if [[ $rdf_type == 'RDF1' ]]; then 
+	echo cldg add-device -d `cat ${tmp_dir}/did.${rdf_type}` ${rdf_device_groupe_name}
+fi
+
+cldg show ${rdf_device_groupe_name}
+
+
+
+##### add the good target to the zpool
+
+
+zpool list $zpool_to_grow
+zpool status $zpool_to_grow
+for dev in $hex_lun_id_list; do grep "0x${dev} " /home/betorma/tmp/storage_info_`uname -n`.txt; done
+
+
+0[160513/094923]root@penelope# zpool list $zpool_to_grow
+NAME              SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+esendtool-pz-db  33.8G  24.5G  9.25G  72%  1.00x  ONLINE  /
+0[160513/094937]root@penelope# zpool status $zpool_to_grow
+  pool: esendtool-pz-db
+ state: ONLINE
+  scan: scrub repaired 0 in 0h46m with 0 errors on Fri Mar  4 08:02:45 2016
+config:
+
+        NAME           STATE     READ WRITE CKSUM
+        esendtool-pz-db  ONLINE       0     0     0
+          emcpower44a  ONLINE       0     0     0
+
+errors: No known data errors
+0[160513/094943]root@penelope# for dev in $hex_lun_id_list; do grep "0x${dev} " /home/betorma/tmp/storage_info_`uname -n`.txt; done
+penelope # c2t500009740828011Cd22 # 2 # 500009740828011c VMAX_2560_FA-8E_port_0 0x16 22 | 5000097408280120 VMAX_2560_FA-9E_port_0 0x16 22 # emcpower18a 0310 # ??? # d10 # ??? #
+penelope # c3t5000097408280120d22 # 2 # 5000097408280120 VMAX_2560_FA-9E_port_0 0x16 22 | 500009740828011c VMAX_2560_FA-8E_port_0 0x16 22 # emcpower18a 0310 # ??? # d10 # ??? #
+0[160513/094948]root@penelope# 
+
+
+
+
+device=
+
+0[160513/094948]root@penelope# device=emcpower18a
+
+
+
+
+
+echo zpool add $zpool_to_grow $device
+
+0[160513/095053]root@penelope# zpool add esendtool-pz-db emcpower18a
+
+
+
+
+
+zpool status -xv $zpool_to_grow 
+zpool list $zpool_to_grow 
+
+
+0[160513/095110]root@penelope# zpool status -xv $zpool_to_grow 
+pool 'esendtool-pz-db' is healthy
+0[160513/095124]root@penelope# zpool list $zpool_to_grow $device
+NAME             SIZE  ALLOC  FREE  CAP  DEDUP  HEALTH  ALTROOT
+esendtool-pz-db  135G  24.5G  110G  18%  1.00x  ONLINE  /
+1[160513/095129]root@penelope# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

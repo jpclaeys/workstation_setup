@@ -1,0 +1,25 @@
+corkscrew_path=/home/betorma/bin/corkscrew
+corkscrew_auth_file=/home/betorma/.ssh/authfile
+
+proxy_server=158.169.9.13
+proxy_port=8012
+proxy_user=xopl254
+proxy_password=
+
+destination_user=
+destination_port=
+destination_server=
+
+
+#echo "ProxyCommand ${corkscrew_path} ${proxy_server} ${proxy_port} %h %p ${corkscrew_auth_file}" > ~/.ssh/config
+#echo "${proxy_user}:${proxy_password}" >${corkscrew_auth_file}
+#ssh -v ${destination}
+
+/home/betorma/bin/xterm_launcher.sh "${destination_user}@${destination_server}"
+echo "${proxy_user}:${proxy_password}" >${corkscrew_auth_file}
+ssh -v -C -o "ProxyCommand=${corkscrew_path} ${proxy_server} ${proxy_port} %h %p ${corkscrew_auth_file}" -p ${destination_port} -l ${destination_user} ${destination_server}
+
+
+rm /home/betorma/.ssh/config /home/betorma/.ssh/authfile
+
+

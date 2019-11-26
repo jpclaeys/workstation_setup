@@ -1,0 +1,196 @@
+
+group { 'esenview':
+  ensure => 'present',
+  gid    => '83703',
+} ->
+ 
+user { 'esenview':
+  ensure           => 'present',
+  gid              => '83703',
+  home             => '/applications/esenview/users/esenview',
+  shell            => '/sbin/nologin',
+  uid              => '83002',
+} 
+
+group { 'tedtoespd':
+  ensure => 'present',
+  gid    => '83701',
+} ->
+
+user { 'tedtoespd':
+  ensure           => 'present',
+  gid              => '83701',
+  home             => '/applications/tedtoespd/users/tedtoespd',
+  shell            => '/sbin/nologin',
+  uid              => '83011',
+} 
+
+
+
+
+user { 'i_esentool':
+  groups           => ['esenview', 'tedtoespd'],
+}
+
+
+
+
+file { '/applications/esenview':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '775',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/system':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/system/services':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/w_esenview':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/i_esenview':
+  ensure => 'directory',
+  group  => '83702',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/users/esenview':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '1775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/logs':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/data':
+  ensure => 'directory',
+  group  => '83703',
+  mode   => '775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/esenview/xchange':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+
+file { '/applications/tedtoespd':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '775',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users/system':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users/system/services':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+file { '/applications/tedtoespd/users/tedtoespd':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '1775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users/i_tedtoespd':
+  ensure => 'directory',
+  group  => '83702',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/users/w_tedtoespd':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '755',
+  owner  => '0',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/logs':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '775',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/data':
+  ensure => 'directory',
+  group  => '83701',
+  mode   => '755',
+  owner  => '83013',
+  type   => 'directory',
+}
+
+file { '/applications/tedtoespd/xchange':
+  ensure => 'directory',
+  group  => '0',
+  mode   => '775',
+  owner  => '0',
+  type   => 'directory',
+}

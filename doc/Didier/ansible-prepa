@@ -1,0 +1,50 @@
+
+
+template :
+**********
+
+---
+
+- hosts: localhost
+  become: yes
+  vars:
+    - test: toto
+  vars_files:
+    - fichier1
+    - fichier2
+
+  roles:
+    - role: nom du role
+  handlers:
+  tasks:
+
+
+
+
+recuperer les variables :
+*************************
+ansible localhost -m setup 
+ansible all -i local -m setup -a "filter=ansible_local"
+
+
+fichiers de config:
+********************
+ansible-config --version
+
+
+
+fichier inventaire:
+*******************
+[groupe1]
+test1 test=test1
+test2
+
+[groupe1:vars]
+test=test2
+
+
+
+
+block
+rescue
+always

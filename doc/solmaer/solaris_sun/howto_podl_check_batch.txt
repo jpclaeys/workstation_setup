@@ -1,0 +1,37 @@
+
+##### Les operateurs du centre de calcul copient le contenu d'un disque dur externe, depuis windows, vers alambic:/applications/dlib/data/Batch<nn>
+##### Ils generent aussi un fichier alambic:/applications/dlib/data/dir<nn>.txt en faisant un `dir` (ls -l facon windows...) des fichiers a copier.
+##### Il faut donc comparer le nom et la taille des fichiers copier present dans la liste generee avec les noms et tailles des fichiers present sur alambic apres copie
+
+##### se connecter a alambic
+ssh alambic
+
+export tmp_dir=/home/betorma/tmp
+export num_batch=27
+export win_file_list=dir${num_batch}.txt
+export unix_file_list=ll${num_batch}.txt
+cd ${tmp_dir}
+
+##### mise en forme de la liste des fichiers sur le disque dur externe
+cp /applications/dlib/data/${win_file_list} .
+dos2unix ${win_file_list} ${win_file_list} 
+egrep '.zip$|.xml$' ${win_file_list} | awk '{print $3" "$4}' | perl -pe 's/\.(\d)/$1/g' | sort -k 2 >wl.txt
+
+##### mise en forme de la liste des fichiers sur alambic
+\ls -l /applications/dlib/data/Batch${num_batch} >${unix_file_list}
+egrep '.zip$|.xml$' ${unix_file_list} | awk '{print $5" "$9}' | sort -k 2 >ul.txt
+
+##### verif que les 2 fichiers sont bien identiques; si aucune difference, c'est bon
+diff ul.txt wl.txt
+
+######
+###### Les noms de fichiers ainsi que leurs tailles correspondent bien.
+######
+ 
+
+
+
+
+
+
+

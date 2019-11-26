@@ -1,0 +1,448 @@
+##############################################################################################################
+#
+# INSTALLATION DE JET (http://www.oracle.com/technetwork/systems/jet-toolkit/index.html)
+#
+##############################################################################################################
+
+##################################################
+##### sommaire
+
+obtenir jumpstart enterprise toolkit
+installation de jet
+configuration de jet
+packages necessaire pour configurer un serveur dhcp
+configuration dhcp
+integration d'une release solaris en utilisant copy_solaris_media
+integration d'une release solaris en utilisant le package JetISO (a titre d'exmple, non mis en place)
+integration des patchs recommandes
+
+
+
+
+##################################################
+##### obtenir jumpstart enterprise toolkit
+
+# telechargement du produit sur le site oracle.com
+
+
+
+##################################################
+##### installation de jet
+
+0[120907/133819]root@procyon# cd /home/betorma/download 
+0[120907/133823]root@procyon# ls -l jet.pkg.bz2 
+-rwxr--r--   1 betorma  staff     317454 Sep  7 10:22 jet.pkg.bz2
+0[120907/133827]root@procyon# bunzip2 jet.pkg.bz2 
+
+
+
+
+#JetSDS: Allows you to mirror your disks using SVM.
+#JetEXPLO: Installs and configures explorer.
+#JetFLASH: Allows Jet to install Flash Archives.
+#JetVTS: Install Sun's Validation Test suite.
+#JetSAN: Installs (on Sol 8 and 9) the SAN packages, and configures.
+#JetJASS: Installs and configures Solaris Security Toolkit.
+#JetZONES: Install and configures containers on Solaris 10 systems.
+#JetLDOM: Install and configure Logical Domains on CMT based servers.
+#JetWanBoot: Allows JET to act as a Wanboot server.
+#JetISO: Use ISO images directly.
+#JetRBAC: Allow non-root users to run JET.
+#JetSBD: Configures Secure By Default
+#JetZFS: Create ZFS pools, datasets and volumes.
+#JetSC3: Install and configure Oracle Solaris Cluster.
+
+
+
+
+
+
+3[120907/143335]root@procyon# pkgadd -d jet.pkg
+
+The following packages are available:
+  1  JetEXPLO       jet explo product
+                    (sparc,i386) 3.1.22
+  2  JetFLASH       JET flash product
+                    (sparc,i386) 3.1.11
+  3  JetISO         JET ISO product
+                    (sparc) 1.0.2
+  4  JetJASS        JASS product
+                    (sparc,i386) 3.0.17
+  5  JetLDOM        JET LDOM product
+                    (sparc,i386) 2.8
+  6  JetRBAC        JET RBAC product
+                    (sparc) 1.1.5
+  7  JetSAN         JET san product
+                    (sparc,i386) 3.1.14
+  8  JetSBD         Secure By Default product
+                    (sparc,i386) 1.0.4
+  9  JetSDS         JET sds product
+                    (sparc,i386) 3.5
+ 10  JetVTS         JET VTS product
+                    (sparc,i386) 3.0.15
+
+... 5 more menu choices to follow;
+<RETURN> for more choices, <CTRL-D> to stop display: 
+
+ 11  JetWanBoot     JET WanBoot support
+                    (sparc) 1.3.2
+ 12  JetZFS         JET zfs product
+                    (sparc,i386) 1.2
+ 13  JetZONES       JET Zones module
+                    (sparc,i386) 1.3.17
+ 14  SUNWjet        Sun JumpStart Enterprise Toolkit
+                    (sparc,i386) 4.9.4
+ 15  SUNWjetd       JET Documentation
+                    (sparc) 4.5
+
+Select package(s) you wish to process (or 'all' to process
+all packages). (default: all) [?,??,q]: 1,2,3,4,8,12,13,14,15
+
+
+
+
+
+##################################################
+##### configuration de jet
+
+
+##### variables jet
+
+0[120907/144740]root@procyon# egrep 'JS_SOLARIS_DIR|JS_PKG_DIR|JS_PATCH_DIR' /opt/SUNWjet/etc/jumpstart.conf 
+JS_PKG_DIR=/export/install/pkgs
+JS_PATCH_DIR=/export/install/patches
+JS_SOLARIS_DIR=/export/install/media
+
+
+##### share nfs
+
+0[120907/150615]root@procyon# zfs set mountpoint=none rpool/export
+0[120907/150617]root@procyon# zfs create -o mountpoint=none rpool/export/install
+0[120907/150639]root@procyon# zfs create -o mountpoint=/export/install/pkgs rpool/export/install/pkgs 
+0[120907/150656]root@procyon# zfs create -o mountpoint=/export/install/patches rpool/export/install/patches 
+0[120907/150710]root@procyon# zfs create -o mountpoint=/export/install/media rpool/export/install/media  
+
+
+2[120907/150221]root@procyon# cp -p /etc/dfs/dfstab /etc/dfs/dfstab.20120907
+0[120907/150229]root@procyon# vi /etc/dfs/dfstab
+0[120907/150416]root@procyon# diff /etc/dfs/dfstab /etc/dfs/dfstab.20120907 
+14,16d13
+< share -F nfs -o ro,anon=0 -d "JET packages" /export/install/pkgs
+< share -F nfs -o ro,anon=0 -d "JET patches" /export/install/patches
+< share -F nfs -o ro,anon=0 -d "JET installations" /export/install/media
+
+
+0[120907/150419]root@procyon# share
+-               /opt/SUNWjet   ro,anon=0   "JET Framework" 
+0[120907/150426]root@procyon# shareall 
+0[120907/150430]root@procyon# share
+-               /opt/SUNWjet   ro,anon=0   "JET Framework" 
+-               /export/install/media   ro,anon=0   "JET installations" 
+-               /export/install/pkgs   ro,anon=0   "JET packages" 
+-               /export/install/patches   ro,anon=0   "JET patches" 
+
+
+##### interface reseau dediee a l'utilistion de JET
+
+0[121126/173455]root@procyon# cp -p /opt/SUNWjet/etc/server_interfaces /opt/SUNWjet/etc/server_interfaces.orig
+0[121126/173830]root@procyon# diff /opt/SUNWjet/etc/server_interfaces /opt/SUNWjet/etc/server_interfaces.orig 
+19d18
+< 158.167.0.0   255.255.0.0     158.167.226.72
+
+
+##################################################
+##### packages necessaire pour configurer un serveur dhcp
+
+
+SUNWdhcsr BOOTP/DHCP Server Services, (Root)
+SUNWdhcsu BOOTP/DHCP Server Services, (Usr)
+SUNWdhcm DHCP Manager
+SUNWj5rt JDK 1.5 runtime environment (prerequisite for SUNWdhcsu and SUNWdhcm; needed to run dhcpconfig) 
+
+
+##################################################
+##### configuration dhcp
+
+
+##### configure le service dhcp pour utiliser des fichiers binaire pour stocker ses informations, dans /var/dhcp
+
+0[120910/151339]root@procyon# dhcpconfig -D -r SUNWbinfiles -p /var/dhcp
+Created DHCP configuration file.
+Created dhcptab.
+Added "Locale" macro to dhcptab.
+Added server macro to dhcptab - procyon.
+DHCP server started.
+
+
+##### designe l'interface reseau a utiliser par le service dhcp
+
+0[120927/162448]root@procyon# dhcpconfig -P INTERFACES=e1000g0
+
+
+##### ajoute une adresse de reseau au serveur dhcp
+
+0[120927/164147]root@procyon# dhcpconfig -N 158.167.225.0
+Added network macro to dhcptab - 158.167.0.0.
+Created network table.
+
+
+##### symbols pour les clients PXE i86pc
+
+1[130109/141007]root@procyon# dhtadm -A -s SrootOpt -d 'Vendor=SUNW.i86pc,1,ASCII,1,0'
+0[130109/141826]root@procyon# dhtadm -A -s SrootIP4 -d 'Vendor=SUNW.i86pc,2,IP,1,1'
+0[130109/141837]root@procyon# dhtadm -A -s SrootNM -d 'Vendor=SUNW.i86pc,3,ASCII,1,0'
+0[130109/141837]root@procyon# dhtadm -A -s SrootPTH -d 'Vendor=SUNW.i86pc,4,ASCII,1,0'
+0[130109/141837]root@procyon# dhtadm -A -s SswapIP4 -d 'Vendor=SUNW.i86pc,5,IP,1,0'
+0[130109/141837]root@procyon# dhtadm -A -s SswapPTH -d 'Vendor=SUNW.i86pc,6,ASCII,1,0'
+0[130109/141837]root@procyon# dhtadm -A -s SbootFIL -d 'Vendor=SUNW.i86pc,7,ASCII,1,0'
+0[130109/141837]root@procyon# dhtadm -A -s Stz -d 'Vendor=SUNW.i86pc,8,ASCII,1,0'
+0[130109/141838]root@procyon# dhtadm -A -s SbootRS -d 'Vendor=SUNW.i86pc,9,NUMBER,2,1'
+0[130109/141838]root@procyon# dhtadm -A -s SinstIP4 -d 'Vendor=SUNW.i86pc,10,IP,1,1'
+0[130109/141838]root@procyon# dhtadm -A -s SinstNM -d 'Vendor=SUNW.i86pc,11,ASCII,1,0'
+0[130109/141838]root@procyon# dhtadm -A -s SinstPTH -d 'Vendor=SUNW.i86pc,12,ASCII,1,0'
+0[130109/141838]root@procyon# dhtadm -A -s SsysidCF -d 'Vendor=SUNW.i86pc,13,ASCII,1,0'
+0[130109/141839]root@procyon# dhtadm -A -s SjumpsCF -d 'Vendor=SUNW.i86pc,14,ASCII,1,0'
+0[130109/141839]root@procyon# dhtadm -A -s Sterm -d 'Vendor=SUNW.i86pc,15,ASCII,1,0'
+0[130109/141839]root@procyon# dhtadm -A -s SbootURI -d 'Vendor=SUNW.i86pc,16,ASCII,1,0'
+
+
+##### ajout de la macro pour activation du boot pxe
+
+0[130109/143800]root@procyon# dhtadm -A -m PXEClient:Arch:00000:UNDI:002001 -d ':BootFile="SUNW.i86pc":BootSrvA=158.167.226.72:' 
+
+
+##### creation d'une table par sous-reseau
+
+0[130109/145208]root@procyon# pntadm -C 158.167.225.0
+0[130109/145250]root@procyon# pntadm -L              
+
+
+##################################################
+##### integration d'une release solaris en utilisant copy_solaris_media
+
+##### monter l'image
+
+0[120928/165811]root@procyon# lofiadm -a /export/install/media/iso/sol-10-u10-ga2-x86-dvd.iso 
+/dev/lofi/1
+0[120928/165840]root@procyon# mount -F hsfs /dev/lofi/1 /mnt
+
+
+##### ajouter la version de solaris
+
+0[120928/165914]root@procyon# /opt/SUNWjet/bin/copy_solaris_media           
+usage :   copy_solaris_media [-d target-dir] [-n osname] mediadir
+          copy_solaris_media [-d target-dir] [-n osname] -i <iso_directory> <iso_file_in_directory> <iso_file_in_directory>
+
+1[120928/165945]root@procyon# /opt/SUNWjet/bin/copy_solaris_media -d solaris10_u10_x86 -n solaris10_u10_x86 /mnt 
+mkdir: "14009": Permission denied
+Copying Solaris image....
+Verifying target directory...
+Calculating the required disk space for the Solaris_10 product
+Calculating space required for the installation boot image
+Copying the CD image to disk...
+Copying Install Boot Image hierarchy...
+Copying /boot netboot hierarchy...
+Install Server setup complete
+ 
+Added Solaris image solaris10_u10_x86 at the following location:
+        Media:          /export/install/media/solaris10_u10_x86
+
+
+##### demonter l'image
+
+0[120928/170236]root@procyon# umount /mnt
+0[120928/170244]root@procyon# lofiadm -d /dev/lofi/1
+
+
+
+##################################################
+##### integration d'une release solaris en utilisant le package JetISO (a titre d'exmple, non mis en place)
+
+
+##### fournir l'emplacement de l'image iso, ainsi que l'emplacement ou vont etre placees les soruce de l'os
+
+0[120928/171159]root@procyon# iso_file=/export/install/media/iso/sol-10-u10-ga2-sparc-dvd.iso
+0[120928/171203]root@procyon# solaris_location=/export/install/media/solaris10_u10_sparc 
+0[120928/171203]root@procyon# echo ${iso_file} ${solaris_location} >>/opt/SUNWjet/etc/solaris_iso_locations 
+0[120928/171346]root@procyon# mkdir -p ${solaris_location}
+
+
+##### monter l'image et mettre en place un share nfs pour $solaris_location
+
+0[120928/171403]root@procyon# /opt/SUNWjet/bin/share_isos 
+Added /export/install/media/iso/sol-10-u10-ga2-sparc-dvd.iso as lofi filesystem: /dev/lofi/1
+Mounted /dev/lofi/1 at /export/install/media/solaris10_u10_sparc
+Shared /export/install/media/solaris10_u10_sparc
+
+
+##### integrer l'image solaris dans JET
+
+0[120928/172019]root@procyon# /opt/SUNWjet/bin/add_solaris_location solaris10_u10_sparc ${solaris_location}
+ 
+Added Solaris image solaris10_u10_sparc at the following location:
+        Media:          /export/install/media/solaris10_u10_sparc
+
+
+
+
+##################################################
+##### integration des patchs recommandes
+
+
+0[120928/182559]root@procyon# grep PATCH /opt/SUNWjet/etc/jumpstart.conf 
+# Currently only PKG_DIR and PATCH_DIR can be on a remote NFS server.
+JS_PATCH_DIR=/export/install/patches
+
+
+##### telecharger les 'recommended patches' pour les version de Solaris desires dans /export/install/patches
+
+0[121126/170058]root@procyon# ls -l /export/install/patches
+total 7962454
+-rw-r--r--   1 betorma  staff    2224798014 Oct  1 17:27 10_Recommended.zip
+-rw-r--r--   1 betorma  staff    1849125150 Oct  1 17:22 10_x86_Recommended.zip
+
+
+##################################################
+##### creation d'un client
+
+
+
+
+0[130107/165506]root@procyon# /opt/SUNWjet/bin/make_template -f -A i86pc -E 00:50:56:ad:00:07 -O solaris10_u10_x86 opvmunix01 zfs
+Adding product configuration information for 
+        + base_config
+        + zfs
+Updating base_config template specifics
+Client template created in /opt/SUNWjet/Templates
+
+
+0[130107/165531]root@procyon# cp -p /opt/SUNWjet/Templates/opvmunix01 /opt/SUNWjet/Templates/opvmunix01.orig
+
+
+
+dhtadm -A -m opvmunix01 -d ':BootSrvA=158.167.226.72:'
+pntadm -A 158.167.225.249 -h opvmunix01 -i 01005056AD0007 -a -f PERMANENT -e 0 -s procyon -m opvmunix01 -y 158.167.0.0
+
+pntadm -A 158.167.225.249 -h opvmunix01 -i 01005056AD0007 -f PERMANENT -e 0 -s procyon -m opvmunix01 -y 158.167.0.0
+
+
+
+
+1[130109/135111]root@procyon# /opt/SUNWjet/bin/make_client -f opvmunix01
+Gathering network information..
+        Client: 158.167.225.249 (158.167.0.0/255.255.0.0)
+        Server: 158.167.226.72 (158.167.226.64/255.255.255.224, SunOS)
+Solaris: client_prevalidate
+         Clean up /etc/ethers
+Solaris: client_build
+Creating sysidcfg
+WARNING: no base_config_sysidcfg_timeserver specified using JumpStart server
+Creating profile
+Adding base_config specifics to client configuration
+Solaris: Configuring JumpStart boot for opvmunix01
+Solaris: Configure bootparams build
+         Starting SMF services for JumpStart
+WARNING:        no interface configured for address 158.167.225.249
+cleaning up preexisting install client "opvmunix01"
+removing opvmunix01 from bootparams
+removing /etc/bootparams, since it is empty
+rm: /tftpboot/ is a directory
+updating /etc/bootparams
+ln: cannot create /tftpboot//pxegrub.I86PC.Solaris_10-1: File exists
+
+Create a grub floppy and edit GRUB menu to contain
+the following entry:
+min_mem64 1024
+title Solaris netinstall
+  rarp
+  kernel$ /I86PC.Solaris_10-1/multiboot kernel/$ISADIR/unix -B install_media=158.167.226.72:/export/install/media/solaris10_u10_x86,install_boot=:/export/install/media/solaris10_u10_x86/boot  module$ /I86PC.Solaris_10-1/$ISADIR/x86.miniroot
+Force bootparams terminal type
+-Restart bootparamd
+Running '/opt/SUNWjet/bin/check_client  opvmunix01'
+        Client: 158.167.225.249 (158.167.0.0/255.255.0.0)
+        Server: 158.167.226.72 (158.167.226.64/255.255.255.224, SunOS)
+Checking product base_config/solaris
+Boot image already patched with critical patches
+Checking product zfs
+WARNING: ZFS: ZFS module selected, but not configured to to anything.
+--------------------------------------------------------------
+Check of client opvmunix01 
+-> Passed....
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+##### installation par boot pxe (x86)
+
+
+##################################################
+##### installtion par boot network depuis le sc (sparc)
+
+
+##################################################
+##### installation d'une zone
+
+
+##################################################
+##### installation via live upgrade
+
+
+
+##################################################
+##### troubleshooting
+
+##### activer le mode debug du server dhcp
+
+# svcadm disable dhcp-server 
+# /usr/lib/inet/in.dhcpd -dv 
+
+
+##### verifier le traffic dhcp 
+
+# snoop -v | grep -i dhcp 
+
+
+
+
+
+
+
+
+
+

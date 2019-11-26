@@ -1,0 +1,107 @@
+################################################################################################################################
+# howto boot solaris in single user mode on network with / on zfs file system
+################################################################################################################################
+
+
+{0} ok boot net -s
+
+# ksh -o emacs
+# export TERM=VT100
+
+
+#zpool import rpool import
+  pool: rpool
+    id: 245163876452404778
+ state: ONLINE
+action: The pool can be imported using its name or numeric identifier.
+config:
+
+        rpool         ONLINE
+          mirror      ONLINE
+            c0t0d0s0  ONLINE
+            c0t1d0s0  ONLINE
+
+
+
+# zpool import rpool
+cannot mount '/export': failed to create mountpoint
+cannot mount '/rpool': failed to create mountpoint
+cannot mount '/u01': failed to create mountpoint
+cannot mount '/u01/oraagent': failed to create mountpoint
+cannot mount '/u02': failed to create mountpoint
+# 
+
+
+# zpool status rpool
+  pool: rpool
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME          STATE     READ WRITE CKSUM
+        rpool         ONLINE       0     0     0
+          mirror      ONLINE       0     0     0
+            c0t0d0s0  ONLINE       0     0     0
+            c0t1d0s0  ONLINE       0     0     0
+
+errors: No known data errors
+
+
+# zfs list -r rpool
+NAME                           USED  AVAIL  REFER  MOUNTPOINT
+rpool                         73.0G  60.9G    97K  /rpool
+rpool/ROOT                    11.7G  60.9G    21K  legacy
+rpool/ROOT/10_1009_SPARC      11.7G  60.9G  9.67G  /
+rpool/ROOT/10_1009_SPARC/var  2.02G  60.9G  2.02G  /var
+rpool/dump                    20.0G  60.9G  20.0G  -
+rpool/export                    21K  60.9G    21K  /export
+rpool/swap                      20G  80.9G    16K  -
+rpool/swap2                     20G  80.9G    16K  -
+rpool/u01                     1.31G  60.9G  14.6M  /u01
+rpool/u01/oraagent            1.29G   722M  1.29G  /u01/oraagent
+rpool/u02                       21K  60.9G    21K  /u02
+
+
+# zfs set mountpoint=legacy rpool/ROOT/10_1009_SPARC
+# mount -F zfs rpool/ROOT/10_1009_SPARC /a
+
+# ls /a
+applications    export          net             rpool           usr
+bin             g-dba           noautoshutdown  sbin            var
+boot            home            nsr             system          vol
+dev             kernel          opt             tmp             zones
+devices         lib             platform        u01             zpool
+etc             mnt             proc            u02
+
+
+
+##### debut des modifications necessaires dans /a ...
+
+# cd /a/etc
+# cp -p shadow shadow.20111003
+# diff shadow shadow.20111003
+1c1
+< root:pmhQH2jVFUrTk:15161::::::
+---
+> root:xOpyqHlFBs9Bk:15161::::::
+
+
+##### fin des modifications necessaires dans /a ...
+
+
+#  cd /
+# umount /a
+# zfs set mountpoint=/ rpool/ROOT/10_1009_SPARC
+
+# init 6
+
+
+
+
+
+
+
+
+
+
+

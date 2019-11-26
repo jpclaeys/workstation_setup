@@ -1,0 +1,3 @@
+mkisofs -R -J -split-out -V -l -o juris.iso /applications/lex04/xchange/procat/juris/
+# creation iso 
+mkisofs -d -D -J -l -L -R -V "texteindex\dvd3" -log-file /var/tmp/texteindex3.log -o dvd.iso dvd3/

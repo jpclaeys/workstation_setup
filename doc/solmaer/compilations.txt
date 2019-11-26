@@ -1,0 +1,131 @@
+
+####################################################################################################
+##### lynx2-8-7
+
+export appli='lynx2-8-7'
+export arch='sun4v'
+export os='5.10'
+
+export prefix=${HOME}/applications/${arch}/${os}/${appli}
+mkdir -p ${HOME}/applications/sources/${appli}
+mkdir -p ${prefix}
+
+cd ${HOME}/applications/sources/${appli}
+
+PATH=/usr/ccs/bin:$PATH
+./configure --prefix=${prefix}
+make
+make install
+
+
+####################################################################################################
+##### xterm-271
+
+export appli='xterm-271'
+export arch='x86'
+export os='5.10'
+
+export prefix=${HOME}/applications/${arch}/${os}/${appli}
+mkdir -p ${HOME}/applications/sources/${appli}
+mkdir -p ${prefix}
+
+cd ${HOME}/applications/sources/${appli}
+
+PATH=/usr/ccs/bin:$PATH
+./configure --prefix=${prefix} --enable-logging
+make
+make install
+
+
+####################################################################################################
+##### vim-7.3
+
+export appli='vim-7.3'
+export arch='x86'
+export os='5.10'
+
+export prefix=${HOME}/applications/${arch}/${os}/${appli}
+mkdir -p ${HOME}/applications/sources/${appli}
+mkdir -p ${prefix}
+
+cd ${HOME}/applications/sources/${appli}
+
+PATH=/usr/ccs/bin:$PATH
+./configure --prefix=${prefix} \
+		  --disable-selinux \
+		  --enable-perlinterp \
+		  --with-x
+make
+make install
+
+
+
+####################################################################################################
+##### pcre-8.20
+
+
+export appli='pcre-8.20'
+export arch='x86'
+export os='5.10'
+
+export prefix=${HOME}/applications/${arch}/${os}/${appli}
+mkdir -p ${HOME}/applications/sources/${appli}
+mkdir -p ${prefix}
+
+cd ${HOME}/download/${appli}
+
+PATH=/usr/ccs/bin:$PATH
+
+./configure --pr
+make
+make instefix=${prefix} 
+
+####################################################################################################
+##### apache httpd-2.4.2
+
+export appli='httpd-2.4.2'
+export arch='x86'
+export os='5.10'
+
+export prefix=${HOME}/applications/${arch}/${os}/${appli}
+mkdir -p ${HOME}/applications/sources/${appli}
+mkdir -p ${prefix}
+
+cd ${HOME}/download/${appli}
+
+PATH=/usr/ccs/bin:$PATH
+
+./configure --prefix=${prefix} --with-pcre=/home/betorma/applications/x86/5.10/pcre --enable-so
+
+make
+make install
+
+
+####################################################################################################
+##### mysql-5.5.25a
+
+export appli='mysql-5.5.25a'
+export arch='x86'
+export os='5.10'
+
+export prefix=${HOME}/applications/${arch}/${os}/${appli}
+mkdir -p ${HOME}/applications/sources/${appli}
+mkdir -p ${prefix}
+
+cd ${HOME}/download/${appli}
+
+PATH=/usr/ccs/bin:$PATH
+
+####################################################################################################
+##### DBD-SQLite-1.37
+
+
+0[121029/100820]betorma@vespa% pwd
+/home/betorma/download/DBD-SQLite-1.37
+0[121029/100823]betorma@vespa% export PATH=/usr/sfw/bin:$PATH
+
+CC=gcc perl Makefile.PL PREFIX=/home/betorma/devel/module
+
+
+
+

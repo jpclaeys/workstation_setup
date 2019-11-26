@@ -1,0 +1,108 @@
+############################################################################################################################################
+# installation
+############################################################################################################################################
+
+##### via live-cd
+
+
+######################################################################
+# network profil 
+######################################################################
+
+# netadm enable -p ncp DefaultFixed
+
+# netadm list
+
+# ipadm create-addr -T static -a local=158.167.226.72./27 net0/v4
+
+# route -p add default 158.167.226.94
+
+
+######################################################################
+# configuration de resolution de nom DNS
+######################################################################
+
+# cat <<EOF >/etc/resolv.conf
+nameserver 158.167.97.164
+nameserver 158.167.97.162
+nameserver 158.167.97.163
+domain opoce.cec.eu.int
+search opoce.cec.eu.int publications.win
+options timeout:1
+EOF
+
+# cat <<EOF >/etc/defaultdomain
+opoce.cec.eu.int
+EOF
+
+# cp /etc/nsswitch.ldap /etc/nsswitch.conf 
+# grep ^hosts: /etc/nsswitch.conf
+hosts:      files dns
+
+# nscfg import -fv dns/client
+# nscfg import -fv name-service/switch
+
+# svcprop dns/client | grep nameserver
+# svcprop dns/client | grep domain    
+# svcprop name-service/switch | grep host
+# nslookup remus
+
+######################################################################
+# configuration ldap client
+######################################################################
+
+# cat <<EOF >/var/ldap/ldap_client_cred
+NS_LDAP_BINDDN= cn=proxyagent,ou=profile,dc=opoce,dc=cec,dc=eu,dc=int
+NS_LDAP_BINDPASSWD= {NS1}135a8787c1cf6353f4
+EOF
+
+# cat <<EOF >/var/ldap/ldap_client_file
+NS_LDAP_FILE_VERSION= 2.0
+NS_LDAP_SERVERS= 158.167.99.8, 158.167.99.7
+NS_LDAP_SEARCH_BASEDN= dc=opoce,dc=cec,dc=eu,dc=int
+NS_LDAP_AUTH= simple
+NS_LDAP_SEARCH_REF= FALSE
+NS_LDAP_SEARCH_SCOPE= one
+NS_LDAP_SEARCH_TIME= 30
+NS_LDAP_CACHETTL= 43200
+NS_LDAP_PROFILE= drp
+NS_LDAP_CREDENTIAL_LEVEL= proxy
+NS_LDAP_BIND_TIME= 10
+EOF
+
+# chmod 400 /var/ldap/ldap_client_cred /var/ldap/ldap_client_file
+
+# svcadm enable svc:/network/nis/domain:default
+
+# nscfg import -v ldap/client
+# svcadm enable ldap/client
+# ldaplist
+
+######################################################################
+# configuration sendmail client
+######################################################################
+
+...
+
+######################################################################
+# packages
+######################################################################
+
+# export http_proxy=xopl???:???????@158.169.9.13:8012
+# pkg search rdesktop
+
+# pkg install pkg:/desktop/remote-desktop/rdesktop
+
+0[130410/092858]root@procyon# pkg install pkg:/service/network/samba
+0[130416/103805]root@procyon# pkg install pkg:/developer/versioning/git@1.7.9.2-0.175.1.0.0.24.0
+0[130416/141748]root@procyon# pkg install pkg:/developer/gcc-45@4.5.2-0.175.1.0.0.24.0
+0[130416/152753]root@procyon# pkg install pkg:/image/graphviz@2.28.0-0.175.1.0.0.24.0
+0[130506/142752]root@procyon# pkg install --accept pkg:/developer/java/jdk-7@1.7.0.7-0.175.1.0.0.24.0         
+
+
+
+
+
+
+
+

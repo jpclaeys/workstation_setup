@@ -1,0 +1,133 @@
+
+
+
+ use lib '/app/vcheck/vmware_scripts/lib';
+
+
+
+ /usr/share/perl5/vendor_perl
+
+ /usr/share/perl5/vendor_perl/WSMan/Stubs/VMware_VMSettingsDefineState.pm
+
+ /application/vsphere/vcli/bin/vmware-dcli/dcli
+
+
+dwxr-xr-x.  2 root root     20 Feb 10  2017 Compress
+drwxr-xr-x. 2 root root     21 Feb 10  2017 Exporter
+drwxr-xr-x. 2 root root     21 Feb 10  2017 Carp
+    
+
+    my $vm_views = Vim::find_entity_views(view_type => $o_entity,
+
+[root@rhelsand2-bk ~]# ./vmware_collect.pl --metrics host,cluster,tag --tag Status --output csv
+vm;cluster;host;Status;
+
+
+
+[root@infra1-pk Crypt-SSLeay-0.72]# make install
+Files found in blib/arch: installing files in blib/lib into architecture dependent library tree
+Installing /usr/local/lib64/perl5/auto/Crypt/SSLeay/SSLeay.so
+Installing /usr/local/lib64/perl5/auto/Crypt/SSLeay/SSLeay.bs
+Installing /usr/local/lib64/perl5/Crypt/SSLeay.pm
+Installing /usr/local/lib64/perl5/Crypt/SSLeay/Conn.pm
+Installing /usr/local/lib64/perl5/Crypt/SSLeay/MainContext.pm
+Installing /usr/local/lib64/perl5/Crypt/SSLeay/Version.pm
+Installing /usr/local/lib64/perl5/Crypt/SSLeay/X509.pm
+Installing /usr/local/lib64/perl5/Crypt/SSLeay/CTX.pm
+Installing /usr/local/lib64/perl5/Crypt/SSLeay/Err.pm
+Installing /usr/local/lib64/perl5/Net/SSL.pm
+Installing /usr/local/share/man/man3/Crypt::SSLeay::Version.3pm
+Installing /usr/local/share/man/man3/Net::SSL.3pm
+Installing /usr/local/share/man/man3/Crypt::SSLeay.3pm
+Appending installation info to /usr/lib64/perl5/perllocal.pod
+[root@infra1-pk Crypt-SSLeay-0.72]# cd ..
+[root@infra1-pk vsphere-install]# cd ..
+[root@infra1-pk ~]# ./vmware_collect.pl --metrics host,cluster,tag --tag Status --output csv
+Hiding the command line arguments: symbol lookup error: /usr/lib64/perl5/auto/Crypt/SSLeay/SSLeay.so: undefined symbol: Perl_Gthr_key_ptr
+[root@infra1-pk ~]# ls -l /usr/lib64/perl5/auto/Crypt/SSLeay/SSLeay.so
+-rwxr-xr-x 1 root root 45829 Sep 26 11:11 /usr/lib64/perl5/auto/Crypt/SSLeay/SSLeay.so
+[root@infra1-pk ~]# ls -l /usr/lib64/perl5/auto/Crypt/
+total 0
+
+
+
+
+
+
+[root@infra1-pk ~]# ./vmware_collect.pl --metrics host,cluster,tag --tag Status --output csv
+*******************************************************************
+ Using the default of SSL_verify_mode of SSL_VERIFY_NONE for client
+ is deprecated! Please set SSL_verify_mode to SSL_VERIFY_PEER
+ together with SSL_ca_file|SSL_ca_path for verification.
+ If you really don't want to verify the certificate and keep the
+ connection open to Man-In-The-Middle attacks please set
+ SSL_verify_mode explicitly to SSL_VERIFY_NONE in your application.
+*******************************************************************
+  at /usr/lib64/perl5/libwww-perl-5.837/lib/LWP/Protocol/http.pm line 31.
+*******************************************************************
+ Using the default of SSL_verify_mode of SSL_VERIFY_NONE for client
+ is deprecated! Please set SSL_verify_mode to SSL_VERIFY_PEER
+ together with SSL_ca_file|SSL_ca_path for verification.
+ If you really don't want to verify the certificate and keep the
+ connection open to Man-In-The-Middle attacks please set
+ SSL_verify_mode explicitly to SSL_VERIFY_NONE in your application.
+*******************************************************************
+  at /usr/lib64/perl5/libwww-perl-5.837/lib/LWP/Protocol/http.pm line 31.
+*******************************************************************
+ Using the default of SSL_verify_mode of SSL_VERIFY_NONE for client
+ is deprecated! Please set SSL_verify_mode to SSL_VERIFY_PEER
+ together with SSL_ca_file|SSL_ca_path for verification.
+ If you really don't want to verify the certificate and keep the
+ connection open to Man-In-The-Middle attacks please set
+ SSL_verify_mode explicitly to SSL_VERIFY_NONE in your application.
+*******************************************************************
+  at /usr/lib64/perl5/libwww-perl-5.837/lib/LWP/Protocol/http.pm line 31.
+
+
+
+
+
+
+
+
+
+
+
+
+yum install openssl-devel
+
+
+This vSphere CLI installer includes precompiled Perl modules for RHEL.
+Answering yes will install the precompiled modules, and answering no will 
+install from CPAN.
+Do you want to install precompiled Perl modules for RHEL?
+[yes] 
+
+In which directory do you want to install the executable files? 
+[/usr/bin] 
+
+Please wait while copying vSphere CLI files...
+
+The installation of vSphere CLI 6.5.0 build-4566394 for Linux completed 
+successfully. You can decide to remove this software from your system at any 
+time by invoking the following command: 
+"/usr/bin/vmware-uninstall-vSphere-CLI.pl".
+
+This installer has successfully installed both vSphere CLI and the vSphere SDK 
+for Perl.
+
+The following Perl modules were found on the system but may be too old to work 
+with vSphere CLI:
+
+MIME::Base64 3.14 or newer 
+LWP 6.15 or newer 
+Net::HTTP 6.09 or newer 
+
+
+
+
+[root@infra1-pk ~]# ./vmware_collect.pl --metrics host,cluster,tag --tag Status --output csv 
+
+Can't locate Switch.pm in @INC (@INC contains: /usr/lib64/perl5/libwww-perl-5.837/lib /usr/lib64/perl5 /usr/local/lib64/perl5 /usr/local/share/perl5 /usr/lib64/perl5/vendor_perl /usr/share/perl5/vendor_perl /usr/share/perl5 .) at ./vmware_collect.pl line 5.
+BEGIN failed--compilation aborted at ./vmware_collect.pl line 5.
+[root@infra1-pk ~]# cd /usr/share/perl5/VMware/

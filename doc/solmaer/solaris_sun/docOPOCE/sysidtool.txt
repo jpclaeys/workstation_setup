@@ -1,0 +1,9 @@
+# pour des problemes avec sysidtool lors d'un demarrage d'une zone, regarder les fichiers cache sous /etc:
+
+/etc/.UNCONFIGURED
+/etc/.sys*stat*
+/etc/.NFS*
+/etc/.PM*
+
+# Il est probable qu'on doit eliminer celui qui barre le demarrage
+

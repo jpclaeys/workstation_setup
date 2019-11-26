@@ -1,0 +1,223 @@
+
+
+control la VM :
+---------------
+
+pcs resource disable rhelsand2-bk   	(shutdown)
+pcs resource enable rhelsand2-bk	(start)
+
+virsh list --all		(list les vms)
+virsh edit rhelsand2-bk		(edit)
+virsh reset rhelsand2-bk	(reset)
+virsh destroy rhelsand2-bk	(shutdown)
+
+
+
+attach un disk sur le controlleur disk ( a chaud)
+-------------------------------------------------
+
+virsh attach-disk rhelsand2-bk /tmp/rhel-server-6.9-x86_64-boot.iso vdc --cache none
+
+
+detach un disk a chaud 
+-----------------------
+
+virsh deattach-disk rhelsand2-bk vdc
+
+
+
+edit l'ordre de demarage
+------------------------
+
+virsh edit rhelsand2-bk
+
+  <os>
+    <type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
+    <boot dev='hd'/>
+    <bootmenu enable='yes'/>
+  </os>
+
+
+Exemple de XML pour CDROM
+--------------------------
+
+[root@khephren2 ~]# cat r-cd.xml
+
+<disk type='file' device='cdrom'>
+  <driver name='qemu' type='raw'/>
+    <source file='/tmp/rhel-server-6.9-x86_64-boot.iso'/>
+      <target dev='hdc' bus='ide'/>
+        <readonly/>
+          <address type='drive' controller='0' bus='1' unit='0'/>
+          </disk>
+
+changer device='disk' en device='cdrom' et ajouter     <boot dev='cdrom'/> dans l'ordre de demarrage
+
+
+activer le display sur un node :
+---------------------------------
+virsh vncdisplay rhelsand2-bk
+:0
+
+tunnel pour le vnc
+-------------------
+ssh -L 5913:localhost:5900 khephren2
+
+
+Console VM 
+-----------
+virsh console
+ctrl shift 5 pour sortir
+
+
+Pacemaker constraint remove :
+------------------------------
+
+pcs constraint show location lodref-dk --full
+
+/usr/sbin/pcs constraint remove location-fedorafs4-pk-tuvok-cl-100
+/usr/sbin/pcs constraint remove location-fedorafs4-pk-chakotay-cl-50
+
+
+Pacemaker constraint add :
+------------------------------
+
+/usr/sbin/pcs constraint location fedorafs4-pk prefers torres-cl=100
+/usr/sbin/pcs constraint location fedorafs4-pk prefers janeway-cl=50
+
+Switch site to other site :
+----------------------------
+
+symdg -g cordiscip-pk list ld
+
+resourcectl -fa switch -v -r cordiscip-pk
+resourcectl -fa releaselock -v -r cordiscip-pk
+
+
+
+Commande EMC :
+--------------
+Mercier :
+symaccess -sid 060 list -type storage
+
+EUF :
+symaccess -sid 069 list -type storage
+
+
+
+multipathd resize map /dev/mapper/planjotmp-tk_t2_system1
+
+
+[root@tuvok ~]# symdev -sid 069 list | grep 13E
+0013E Not Visible            ***:*** TDEV          N/Grp'd      RW  870401
+
+[root@tuvok ~]# symdev -sid 069 list | grep 0D2
+000D2 Not Visible            ***:*** TDEV          N/Grp'd      RW   61440
+
+
+[root@tuvok ~]# symdev -sid 060 show 013E
+[root@tuvok ~]# symaccess -sid 060 list -type storage -dev 013E
+
+symdg -g cordiscip-pk list ld
+
+symdg show ldap1-pk
+
+
+ipmitool -I lanplus -H $SC -U root -P $PASSWORD chassis power status || echo "**** ipmitool $SC KO *****"
+
+for i in `cat ./liste.txt`; do echo $i `./chassis_status.sh $i-sc`; done
+
+
+pour status :
+symdg -g cportaldiff1-pk list ld
+
+pour demander le WR
+symrdf -g cportaldiff1-pk failover -establish
+
+
+
+echo 1 > /sys/block/sdan/device/rescan;
+echo 1 > /sys/block/sdfb/device/rescan;
+echo 1 > /sys/block/sdjp/device/rescan; 
+echo 1 > /sys/block/sdod/device/rescan; 
+echo 1 > /sys/block/sdam/device/rescan; 
+echo 1 > /sys/block/sdfa/device/rescan; 
+echo 1 > /sys/block/sdjo/device/rescan; 
+echo 1 > /sys/block/sdoc/device/rescan; 
+
+----------------
+
+reset lockbox :
+
+symcfg -lockbox reset -ssv
+
+picard@SELockbox1
+                                                                                
+Mot passe:
+host_name@SELockbox1
+torres@SELockbox1
+idoltmpmer1-pk@SELockbox1
+idoltmpmer1@SELockbox1
+
+idoltmpeuf1-pk@SELockbox1
+idoltmpeuf2-pk@SELockbox1
+titanium@SELockbox1
+
+ chromium@SELockbox1
+
+fluorine@SELockbox1
+bromine@SELockbox1
+iodine@SELockbox1
+chlorine@SELockbox1
+-----------
+ [ chakotay-cl janeway-cl torres-cl tuvok-cl ]
+
+
+symrdf -g vocbenchacc-pk query
+symrdf -g vocbenchacc-pk suspend -nop
+symrdf -g vocbenchacc-pk establish -nop
+
+
+
+[ laforge-cl picard-cl riker-cl worf-cl ]
+
+symrdf -g cellar2eli-euf-tk query
+symrdf -g cellar2eli-euf-tk suspend -nop
+symrdf -g cellar2eli-euf-tk establish -nop
+
+
+      
+symrdf -g cellar2eli-mer-tk query       
+symrdf -g cellar2eli-mer-tk suspend -nop
+symrdf -g cellar2eli-mer-tk establish -nop
+
+
+symrdf -g vocbenchacc-tk query
+symrdf -g vocbenchacc-tk suspend -nop
+symrdf -g vocbenchacc-tk establish -nop
+
+
+
+[ castor-cl mykerinos-cl mykerinos2-cl polideuce-cl ]
+
+symrdf -g formexweb-euf-tk query        
+symrdf -g formexweb-euf-tk suspend -nop
+symrdf -g formexweb-euf-tk establish -nop
+
+
+
+symrdf -g formexweb-mer-tk query        
+symrdf -g formexweb-mer-tk suspend -nop
+symrdf -g formexweb-mer-tk establish -nop
+
+
+cportaldiff1-tk
+cportaldiff2-tk
+cportaldiff3-tk
+cportaldiff4-tk
+
+
+pcs constraint location ${VM_NAME} prefers palladium-cl=100 && pcs constraint location ${VM_NAME} prefers vanadium-cl=50 && pcs resource enable ${VM_NAME}
+
+
+

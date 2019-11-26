@@ -1,0 +1,372 @@
+# Verification HBA
+luxadm -e port
+{
+clear
+luxadm -e port| awk '{print $1}' | egrep -v "Found|^$" | while read PATHSAN
+do
+echo "##### $PATHSAN #### "
+luxadm -e dump_map $PATHSAN
+echo " "
+done
+}
+
+# Verification Luns
+/usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))'
+
+
+##### Forcelip | Atribution d'espace du SAN a la machine
+{
+clear
+luxadm -e port| awk '{print $1}' | egrep -v "Found|^$" | while read PATHSAN
+do
+echo "##### $PATHSAN #### "
+luxadm -e forcelip $PATHSAN
+echo " "
+done
+}
+
+#Verification de nouveau
+=====>
+
+
+#Voir si le disk est sliced ou cdsdisk
+vxdisk -s -g ceres list
+
+#Faire relire la conf a VXVM
+vxdctl enable
+
+#Verif
+vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME
+DMX2000_0    auto      DMX_16        ceres        online       c12t6006048000028775112853594D304138d0s2
+DMX2000_1    auto      DMX_07        arceldd      online       c12t6006048000028775112853594D303138d0s2
+DMX2000_2    auto      DMX_35        ceres        online       c12t6006048000028775112853594D313338d0s2
+DMX2000_3    auto      DMX_48        ceres        online       c12t6006048000028775112853594D313541d0s2
+DMX2000_4    auto      DMX_08        arceldd      online       c12t6006048000028775112853594D303238d0s2
+DMX2000_5    auto      DMX_04        toutatis     online       c12t6006048000028775112853594D303030d0s2
+DMX2000_6    auto      DMX_14        ceres        online       c12t6006048000028775112853594D303838d0s2
+DMX2000_7    auto      DMX_09        arcel        online       c12t6006048000028775112853594D303338d0s2
+DMX2000_8    auto      DMX_15        ceres        online       c12t6006048000028775112853594D303938d0s2
+DMX2000_9    auto      DMX_10        arcel        online       c12t6006048000028775112853594D303438d0s2
+DMX2000_10   auto      DMX_13        ceres        online       c12t6006048000028775112853594D303738d0s2
+DMX2000_11   auto      DMX_06        eudorsqc     online       c12t6006048000028775112853594D303130d0s2
+DMX2000_12   auto      DMX_12        arcel        online       c12t6006048000028775112853594D303638d0s2
+DMX2000_13   auto      DMX_11        arcel        online       c12t6006048000028775112853594D303538d0s2
+DMX2000_14   auto      DMX_37        ceres        online       c12t6006048000028775112853594D314334d0s2
+DMX2000_15   auto      DMX_54        eudorsqc     online       c12t6006048000028775112853594D314434d0s2
+DMX2000_16   auto      DMX_50        ceres        online       c12t6006048000028775112853594D333841d0s2
+DMX2000_17   auto      DMX_38        ceres        online       c12t6006048000028775112853594D333836d0s2
+DMX2000_18   auto      DMX_57        ceres        online       c12t6006048000028775112853594D353632d0s2
+DMX2000_19   auto      DMX_28        ceres        online       c12t6006048000028775112853594D353735d0s2
+DMX2000_20   auto      DMX_67        ceres        online       c12t6006048000028775112853594D324335d0s2
+DMX2000_21   auto      -             -            error        c12t6006048000028775112853594D324133d0s2
+c4t0d0s2     auto      rootdisk      rootdg       online       c4t0d0s2
+c4t1d0s2     auto      -             -            online       c4t1d0s2
+c4t2d0s2     auto      -             -            online       c4t2d0s2
+c5t0d0s2     auto      rootmirror    rootdg       online       c5t0d0s2
+c5t1d0s2     auto      -             -            online       c5t1d0s2
+c5t2d0s2     auto      -             -            online       c5t2d0s2
+gnole_0      auto      gnole_00      ceres_archive online       c12t600A0B80002667720000057C4652706Ed0s2
+gnole_1      auto      gnole_01      arceldd      online       c12t600A0B800026676A000005714653C711d0s2
+gnole_2      auto      gnole_03      dlib         online       c12t600A0B800026676A0000079747A7AA53d0s2
+gnole_3      auto      gnole_02      dlib         online       c12t600A0B8000266772000007EF47A7ACF0d0s2
+
+#Label disk
+format /dev/rdsk/c12t6006048000028775112853594D324133d0s2
+label
+verif
+
+#Initialisation disk VXVM
+/usr/lib/vxvm/bin/vxdisksetup -i DMX2000_21 format=sliced
+
+#Verif ( changement a online )
+vxdisk -e list DEVICE       TYPE      DISK         GROUP        STATUS       OS_NATIVE_NAME
+DMX2000_0    auto      DMX_16        ceres        online       c12t6006048000028775112853594D304138d0s2
+DMX2000_1    auto      DMX_07        arceldd      online       c12t6006048000028775112853594D303138d0s2
+DMX2000_2    auto      DMX_35        ceres        online       c12t6006048000028775112853594D313338d0s2
+DMX2000_3    auto      DMX_48        ceres        online       c12t6006048000028775112853594D313541d0s2
+DMX2000_4    auto      DMX_08        arceldd      online       c12t6006048000028775112853594D303238d0s2
+DMX2000_5    auto      DMX_04        toutatis     online       c12t6006048000028775112853594D303030d0s2
+DMX2000_6    auto      DMX_14        ceres        online       c12t6006048000028775112853594D303838d0s2
+DMX2000_7    auto      DMX_09        arcel        online       c12t6006048000028775112853594D303338d0s2
+DMX2000_8    auto      DMX_15        ceres        online       c12t6006048000028775112853594D303938d0s2
+
+
+DMX2000_9    auto      DMX_10        arcel        online       c12t6006048000028775112853594D303438d0s2
+DMX2000_10   auto      DMX_13        ceres        online       c12t6006048000028775112853594D303738d0s2
+DMX2000_11   auto      DMX_06        eudorsqc     online       c12t6006048000028775112853594D303130d0s2
+DMX2000_12   auto      DMX_12        arcel        online       c12t6006048000028775112853594D303638d0s2
+DMX2000_13   auto      DMX_11        arcel        online       c12t6006048000028775112853594D303538d0s2
+DMX2000_14   auto      DMX_37        ceres        online       c12t6006048000028775112853594D314334d0s2
+DMX2000_15   auto      DMX_54        eudorsqc     online       c12t6006048000028775112853594D314434d0s2
+DMX2000_16   auto      DMX_50        ceres        online       c12t6006048000028775112853594D333841d0s2
+DMX2000_17   auto      DMX_38        ceres        online       c12t6006048000028775112853594D333836d0s2
+DMX2000_18   auto      DMX_57        ceres        online       c12t6006048000028775112853594D353632d0s2
+DMX2000_19   auto      DMX_28        ceres        online       c12t6006048000028775112853594D353735d0s2
+DMX2000_20   auto      DMX_67        ceres        online       c12t6006048000028775112853594D324335d0s2
+DMX2000_21   auto      -             -            online       c12t6006048000028775112853594D324133d0s2
+c4t0d0s2     auto      rootdisk      rootdg       online       c4t0d0s2
+c4t1d0s2     auto      -             -            online       c4t1d0s2
+c4t2d0s2     auto      -             -            online       c4t2d0s2
+c5t0d0s2     auto      rootmirror    rootdg       online       c5t0d0s2
+c5t1d0s2     auto      -             -            online       c5t1d0s2
+c5t2d0s2     auto      -             -            online       c5t2d0s2
+gnole_0      auto      gnole_00      ceres_archive online       c12t600A0B80002667720000057C4652706Ed0s2
+gnole_1      auto      gnole_01      arceldd      online       c12t600A0B800026676A000005714653C711d0s2
+gnole_2      auto      gnole_03      dlib         online       c12t600A0B800026676A0000079747A7AA53d0s2
+gnole_3      auto      gnole_02      dlib         online       c12t600A0B8000266772000007EF47A7ACF0d0s2
+
+#Ajoute disk au diskgroup
+vxdg -g ceres adddisk DMX_69=DMX2000_21
+
+##################################################
+#################################################
+# Ajoute d'espace aux volumes
+#################################################
+##################################################
+
+# Des verif
+vxprint -ht -g ceres | grep vusers
+vxdg -g ceres free
+DISK         DEVICE       TAG          OFFSET    LENGTH    FLAGS
+DMX_48       DMX2000_3    DMX2000_3    70696320  3840      -
+DMX_69       DMX2000_21   DMX2000_21   0         88377600  -
+
+#Attribution d'espace au volume vusers
+vxassist -g ceres -b growby  vusers 1638m alloc=DMX_69
+
+#Verif
+vxprint -ht -g ceres | grep vusers
+v  vusers       -            ENABLED  ACTIVE   34811904 SELECT    -        fsgen
+pl vusers-02    vusers       ENABLED  ACTIVE   34813440 CONCAT    -        RW
+sd DMX_13-04    vusers-02    DMX_13   104862720 10490880 0        DMX2000_10 ENA
+sd DMX_37-03    vusers-02    DMX_37   37745280 20966400 10490880  DMX2000_14 ENA
+sd DMX_69-01    vusers-02    DMX_69   0        3356160  31457280  DMX2000_21 ENA
+v  vusers-legiswrite -       ENABLED  ACTIVE   2097152  SELECT    -        fsgen
+pl vusers-legiswrite-02 vusers-legiswrite ENABLED ACTIVE 2104320 CONCAT -  RW
+sd DMX_13-05    vusers-legiswrite-02 DMX_13 115353600 2104320 0   DMX2000_10 ENA
+v  vusers_lgw   -            ENABLED  ACTIVE   20971520 SELECT    -        fsgen
+pl vusers_lgw-01 vusers_lgw  ENABLED  ACTIVE   20972160 CONCAT    -        RW
+sd DMX_35-01    vusers_lgw-01 DMX_35  0        20972160 0         DMX2000_2 ENA
+
+#Ajoute vraiment
+/usr/lib/vxvm/bin/vxresize -x -g ceres vusers 34811904
+
+# Verif
+
+vxprint -ht -g ceres | grep vusers
+v  vusers       -            ENABLED  ACTIVE   34811904 SELECT    -        fsgen
+pl vusers-02    vusers       ENABLED  ACTIVE   34813440 CONCAT    -        RW
+sd DMX_13-04    vusers-02    DMX_13   104862720 10490880 0        DMX2000_10 ENA
+sd DMX_37-03    vusers-02    DMX_37   37745280 20966400 10490880  DMX2000_14 ENA
+sd DMX_69-01    vusers-02    DMX_69   0        3356160  31457280  DMX2000_21 ENA
+v  vusers-legiswrite -       ENABLED  ACTIVE   2097152  SELECT    -        fsgen
+pl vusers-legiswrite-02 vusers-legiswrite ENABLED ACTIVE 2104320 CONCAT -  RW
+sd DMX_13-05    vusers-legiswrite-02 DMX_13 115353600 2104320 0   DMX2000_10 ENA
+v  vusers_lgw   -            ENABLED  ACTIVE   20971520 SELECT    -        fsgen
+pl vusers_lgw-01 vusers_lgw  ENABLED  ACTIVE   20972160 CONCAT    -        RW
+sd DMX_35-01    vusers_lgw-01 DMX_35  0        20972160 0         DMX2000_2 ENA
+root@toutatis 10:49 [~] df -h | grep vusers
+/dev/vx/dsk/eudorsqc/vusers    71G    27G    44G    39%    /applications/eudorsqc/users
+/dev/vx/dsk/ceres/vusers    16G    14G   2.5G    85%    /applications/ceres/users
+/dev/vx/dsk/arceldd/vusers    30G    17G    12G    60%    /applications/arceldd/users
+/dev/vx/dsk/arcel/vusers    42G    23G    17G    58%    /applications/arcel/users
+/dev/vx/dsk/ceres/vusers_lgw   9.8G   892M   8.9G     9%    /applications/lgw/users
+/dev/vx/dsk/ceres/vusers-legiswrite   961M   503M   401M    56%    /applications/legiswrite/users
+/dev/vx/dsk/dlib/vusers   1.9G   543M   1.3G    29%    /applications/dlib/users
+
+
+#La meme proc pour voradata
+vxprint -ht -g ceres | grep oradata
+v  voradata     -            ENABLED  ACTIVE   62914560 SELECT    -        fsgen
+pl voradata-02  voradata     ENABLED  ACTIVE   62914560 CONCAT    -        RW
+sd DMX_13-01    voradata-02  DMX_13   0        62914560 0         DMX2000_10 ENA
+
+vxassist -g ceres -b growby  voradata 3277m alloc=DMX_69
+
+vxprint -ht -g ceres | grep oradata
+v  voradata     -            ENABLED  ACTIVE   69625856 SELECT    -        fsgen
+pl voradata-02  voradata     ENABLED  ACTIVE   69626880 CONCAT    -        RW
+sd DMX_13-01    voradata-02  DMX_13   0        62914560 0         DMX2000_10 ENA
+sd DMX_69-02    voradata-02  DMX_69   3356160  6712320  62914560  DMX2000_21 ENA
+
+/usr/lib/vxvm/bin/vxresize -x -g ceres voradata 69625856
+
+df -h | grep oradata
+/dev/vx/dsk/ceres/voradata    33G    28G   5.4G    84%    /applications/ceres/oradata
+/dev/vx/dsk/eudorsqc/voradata    19G    16G   3.2G    84%    /applications/eudorsqc/oradata
+/dev/vx/dsk/arcel/voradata  10.0G   6.7G   3.2G    69%    /applications/arcel/oradata
+/dev/vx/dsk/dlib/voradata    20G   2.7G    17G    14%    /applications/dlib/oradata
+/dev/vx/dsk/arceldd/voradata    15G   7.8G   7.0G    53%    /applications/arceldd/oradata
+
+
+# La meme proc pour vdata_ojpdf
+
+vxprint -g ceres -ht | grep vdata_ojpdf
+v  vdata_ojpdf  -            ENABLED  ACTIVE   272629760 SELECT   -        fsgen
+pl vdata_ojpdf-01 vdata_ojpdf ENABLED ACTIVE   272630400 CONCAT   -        RW
+sd DMX_15-02    vdata_ojpdf-01 DMX_15 136627200 146181120 0       DMX2000_8 ENA
+sd DMX_13-08    vdata_ojpdf-01 DMX_13 140536320 42562560 146181120 DMX2000_10 ENA
+sd DMX_15-01    vdata_ojpdf-01 DMX_15 0        62914560 188743680 DMX2000_8 ENA
+sd DMX_28-02    vdata_ojpdf-01 DMX_28 8390400  20972160 251658240 DMX2000_19 ENA
+
+vxassist -g ceres -b growby  vdata_ojpdf 13722m alloc=DMX_69
+
+vxprint -g ceres -ht | grep vdata_ojpdf
+v  vdata_ojpdf  -            ENABLED  ACTIVE   300732416 SELECT   -        fsgen
+pl vdata_ojpdf-01 vdata_ojpdf ENABLED ACTIVE   300733440 CONCAT   -        RW
+sd DMX_15-02    vdata_ojpdf-01 DMX_15 136627200 146181120 0       DMX2000_8 ENA
+sd DMX_13-08    vdata_ojpdf-01 DMX_13 140536320 42562560 146181120 DMX2000_10 ENA
+sd DMX_15-01    vdata_ojpdf-01 DMX_15 0        62914560 188743680 DMX2000_8 ENA
+sd DMX_28-02    vdata_ojpdf-01 DMX_28 8390400  20972160 251658240 DMX2000_19 ENA
+sd DMX_69-03    vdata_ojpdf-01 DMX_69 10068480 28103040 272630400 DMX2000_21 ENA
+
+/usr/lib/vxvm/bin/vxresize -x -g ceres vdata_ojpdf 300732416
+
+df -h | grep OJ_PDF
+/dev/vx/dsk/ceres_archive/vojpdf_archive_01   128G    97G    30G    77%    /applications/ceres/OJ_PDF_archive_01
+/dev/vx/dsk/ceres/vdata_ojpdf   141G   115G    25G    83%    /applications/ceres/data/OJ_PDF
+
+# La meme proc pour vddpdf
+vxprint -ht -g ceres | grep vddpdf
+v  vddpdf       -            ENABLED  ACTIVE   41035328 SELECT    -        fsgen
+pl vddpdf-01    vddpdf       ENABLED  ACTIVE   41036160 CONCAT    -        RW
+sd DMX_38-01    vddpdf-01    DMX_38   0        35351040 0         DMX2000_17 ENA
+sd DMX_28-04    vddpdf-01    DMX_28   65015040 5685120  35351040  DMX2000_19 ENA
+
+vxassist -g ceres -b growby vddpdf 2048m alloc=DMX_69
+vxprint -ht -g ceres | grep vddpdf
+v  vddpdf       -            ENABLED  ACTIVE   45229632 SELECT    -        fsgen
+pl vddpdf-01    vddpdf       ENABLED  ACTIVE   45231360 CONCAT    -        RW
+sd DMX_38-01    vddpdf-01    DMX_38   0        35351040 0         DMX2000_17 ENA
+sd DMX_28-04    vddpdf-01    DMX_28   65015040 5685120  35351040  DMX2000_19 ENA
+sd DMX_69-04    vddpdf-01    DMX_69   38171520 4195200  41036160  DMX2000_21 ENA
+
+/usr/lib/vxvm/bin/vxresize -x -g ceres vddpdf 45229632
+df -h | grep DDPDF2007
+/dev/vx/dsk/ceres/vddpdf    21G    18G   2.8G    87%    /applications/ceres/data/DDPDF2007
+
+#La meme proc pour vdata_ceresnew
+
+vxprint -ht -g ceres | grep ceresnew
+v  vdata_ceresnew -          ENABLED  ACTIVE   399354368 SELECT   -        fsgen
+pl vdata_ceresnew-02 vdata_ceresnew ENABLED ACTIVE 399356160 CONCAT -      RW
+sd DMX_16-01    vdata_ceresnew-02 DMX_16 0     176762880 0        DMX2000_0 ENA
+sd DMX_48-01    vdata_ceresnew-02 DMX_48 0     70696320 176762880 DMX2000_3 ENA
+sd DMX_37-01    vdata_ceresnew-02 DMX_37 0     33555840 247459200 DMX2000_14 ENA
+sd DMX_37-04    vdata_ceresnew-02 DMX_37 58711680 11988480 281015040 DMX2000_14 ENA
+sd DMX_57-01    vdata_ceresnew-02 DMX_57 0     70700160 293003520 DMX2000_18 ENA
+sd DMX_28-03    vdata_ceresnew-02 DMX_28 29362560 35652480 363703680 DMX2000_19 ENA
+
+vxassist -g ceres -b growby vdata_ceresnew 20173m alloc=DMX_69
+
+vxprint -ht -g ceres | grep ceresnew
+v  vdata_ceresnew -          ENABLED  ACTIVE   440668672 SELECT   -        fsgen
+pl vdata_ceresnew-02 vdata_ceresnew ENABLED ACTIVE 440668800 CONCAT -      RW
+sd DMX_16-01    vdata_ceresnew-02 DMX_16 0     176762880 0        DMX2000_0 ENA
+sd DMX_48-01    vdata_ceresnew-02 DMX_48 0     70696320 176762880 DMX2000_3 ENA
+sd DMX_37-01    vdata_ceresnew-02 DMX_37 0     33555840 247459200 DMX2000_14 ENA
+sd DMX_37-04    vdata_ceresnew-02 DMX_37 58711680 11988480 281015040 DMX2000_14 ENA
+sd DMX_57-01    vdata_ceresnew-02 DMX_57 0     70700160 293003520 DMX2000_18 ENA
+sd DMX_28-03    vdata_ceresnew-02 DMX_28 29362560 35652480 363703680 DMX2000_19 ENA
+sd DMX_69-05    vdata_ceresnew-02 DMX_69 42366720 41312640 399356160 DMX2000_21 ENA
+
+/usr/lib/vxvm/bin/vxresize -x -g ceres vdata_ceresnew 440668672
+vxprint -ht -g ceres | grep ceresnew
+v  vdata_ceresnew -          ENABLED  ACTIVE   440668672 SELECT   -        fsgen
+pl vdata_ceresnew-02 vdata_ceresnew ENABLED ACTIVE 440668800 CONCAT -      RW
+sd DMX_16-01    vdata_ceresnew-02 DMX_16 0     176762880 0        DMX2000_0 ENA
+sd DMX_48-01    vdata_ceresnew-02 DMX_48 0     70696320 176762880 DMX2000_3 ENA
+sd DMX_37-01    vdata_ceresnew-02 DMX_37 0     33555840 247459200 DMX2000_14 ENA
+sd DMX_37-04    vdata_ceresnew-02 DMX_37 58711680 11988480 281015040 DMX2000_14 ENA
+sd DMX_57-01    vdata_ceresnew-02 DMX_57 0     70700160 293003520 DMX2000_18 ENA
+sd DMX_28-03    vdata_ceresnew-02 DMX_28 29362560 35652480 363703680 DMX2000_19 ENA
+sd DMX_69-05    vdata_ceresnew-02 DMX_69 42366720 41312640 399356160 DMX2000_21 ENA
+
+df -h | grep vdata_ceresnew
+/dev/vx/dsk/ceres/vdata_ceresnew   207G   176G    29G    86%    /applications/ceres/data/ceres
+
+
+#############################################################################################
+#######   oban
+############################################################################################
+# La meme proc de toutatis
+
+
+/usr/sbin/luxadm probe |perl -n0777e 'foreach $d ($_=~m{Device Type:Disk device\s+Logical Path:(.*?)\n}g) {print `/usr/sbin/luxadm display $d`}'|perl -n00e '($p)=m{\s+(/dev/rdsk/c.*?)\s} and @a = m{\s.*?Device Address\s+([^,]+,\w+)\s*}gs and  printf("path: $p ==> ". join(" ", map({m{([^,]+),(\w+)}; "stor: $1 lun ". hex($2)} @a),"\n"))'
+path: /dev/rdsk/c4t6006048000028775112853594D313342d0s2 ==> stor: 5006048449aef618 lun 20 stor: 5006048449aef617 lun 20
+path: /dev/rdsk/c4t6006048000028775112853594D313346d0s2 ==> stor: 5006048449aef618 lun 21 stor: 5006048449aef617 lun 21
+path: /dev/rdsk/c4t6006048000028775112853594D323332d0s2 ==> stor: 5006048449aef618 lun 19 stor: 5006048449aef617 lun 19
+path: /dev/rdsk/c4t6006048000028775112853594D353746d0s2 ==> stor: 5006048449aef618 lun 8 stor: 5006048449aef617 lun 8
+
+
+vxdisk -e list | grep D353746d0s2
+vxdctl enable
+
+vxdisk -e list | grep D353746d0s2
+EMC1_3       sliced    -            -            error        c4t6006048000028775112853594D353746d0s2
+
+format /dev/rdsk/c4t6006048000028775112853594D353746d0s2
+
+/dev/rdsk/c4t6006048000028775112853594D353746d0s2: configured with capacity of 8.43GB
+selecting /dev/rdsk/c4t6006048000028775112853594D353746d0s2
+[disk formatted]
+
+
+FORMAT MENU:
+        disk       - select a disk
+        type       - select (define) a disk type
+        partition  - select (define) a partition table
+        current    - describe the current disk
+        format     - format and analyze the disk
+        repair     - repair a defective sector
+        label      - write label to the disk
+        analyze    - surface analysis
+        defect     - defect list management
+        backup     - search for backup labels
+        verify     - read and display labels
+        save       - save new disk/partition definitions
+        inquiry    - show vendor, product and revision
+        volname    - set 8-character volume name
+        !<cmd>     - execute <cmd>, then return
+        quit
+format> label
+Ready to label disk, continue? y
+
+format> verif
+
+Primary label contents:
+
+Volume name = <        >
+ascii name  = <EMC-SYMMETRIX-5670 cyl 18412 alt 2 hd 15 sec 64>
+pcyl        = 18414
+ncyl        = 18412
+acyl        =    2
+nhead       =   15
+nsect       =   64
+Part      Tag    Flag     Cylinders         Size            Blocks
+  0       root    wm       0 -   273      128.44MB    (274/0/0)     263040
+  1       swap    wu     274 -   547      128.44MB    (274/0/0)     263040
+  2     backup    wu       0 - 18411        8.43GB    (18412/0/0) 17675520
+  3 unassigned    wm       0                0         (0/0/0)            0
+  4 unassigned    wm       0                0         (0/0/0)            0
+  5 unassigned    wm       0                0         (0/0/0)            0
+  6        usr    wm     548 - 18411        8.18GB    (17864/0/0) 17149440
+  7 unassigned    wm       0                0         (0/0/0)            0
+
+format>
+
+
+# Sans format attribute parce qu'il s'agit de VXVM 3
+/usr/lib/vxvm/bin/vxdisksetup -i EMC1_3
+
+vxdisk -e list
+DEVICE       TYPE      DISK         GROUP        STATUS       c#t#d#_NAME
+EMC1_0       sliced    DMX_21       oban         online       c4t6006048000028775112853594D313346d0s2
+EMC1_1       sliced    DMX_20       eub          online       c4t6006048000028775112853594D313342d0s2
+EMC1_2       sliced    DMX_19       eub          online       c4t6006048000028775112853594D323332d0s2
+EMC1_3       sliced    -            -            online       c4t6006048000028775112853594D353746d0s2
+c0t0d0s2     sliced    rootdisk     rootdg       online       c0t0d0s2
+c1t0d0s2     sliced    rootmirror   rootdg       online       c1t0d0s2
+
+

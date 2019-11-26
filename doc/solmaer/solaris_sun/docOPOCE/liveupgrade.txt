@@ -1,0 +1,2 @@
+# s'il y a un probleme de boot avec liveupgrade, essayer avec
+eeprom 'diag-switch?=false'

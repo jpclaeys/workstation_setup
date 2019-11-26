@@ -1,0 +1,1430 @@
+#############################################################################################################################
+##### 
+##### disk information
+#####
+
+From: SACRE Catherine (OP-EXT) 
+Sent: June 08 2015 15:57
+To: BETORI Mathieu (OP-EXT); OPDL A4 STORAGE BACKUP
+Subject: RE: Request for a TZ and PZ environment for the StudiesDB project 
+
+Bonjour,
+C’est fait.
+ 	Size	Lun	Master Device	 	Replica Device
+Zone 	Requested	Type	Real	Dec	Hexa	Host	Device	Array	Replication	Host	Device	Array
+studiesdb-pz-data	40	H33.97G	67.94	3	3	Penelope	24CC	SYM_2560	SRDF	Ulysse	24CC	SYM_3453
+studiesdb-pz-db	20	H33.97G	33.97	4	4	Penelope	24CE	SYM_2560	SRDF	Ulysse	24CE	SYM_3453
+
+Bon après-midi,
+Catherine
+
+
+
+
+#############################################################################################################################
+##### 
+##### variables
+#####
+
+
+
+
+##### define variables, on all nodes
+
+# server
+export zone_name=														# the name of the new zone
+export zone_alias=container													# alias of the zone for root password algorythm
+export commentary=''														# a comment to specify a zone description (generally "<environment> zone for <application>")
+export primary_node=														# name of the primary node of the zone
+export secondary_node=														# name of the secondary node of the zone
+export brand=solaris														# solaris zone type
+export cluster_used=														# if the zone will be a clustered zone (value is "true" or "false")
+export physical_mem_capping=													# the capping value for physical memory (units are M or G)
+export swap_mem_capping=													# the capping value for swap (units are M or G)
+export cpu_capping=														# the capping calue for cpu
+
+# network	
+export zone_ip=`nslookup ${zone_name} | grep ^Address: | grep -v '#53' | awk '{print $2}'`					# zone IP address
+export backup_client_ip=`nslookup bkp-${zone_name} | grep ^Address: | grep -v '#53' | awk '{print $2}'`				# IP address for backup client
+export zone_netmask=														# in CIDR notation (/xx without "/")
+export vlan_id=															# identifier of network vlan
+export appli_host_name=														# the host name use by the application (generally opsvc??? or opsrv???)
+export appli_host_ip=$zone_ip													# the IP address of $appli_host_name (by default this is the same of zone, because host name is a DNS canonical name of zone)
+export network_interface=													# network interface use by zone (lower-link option for zonecfg command)
+export default_router=														# the network default route for the zon
+
+# application	
+export appli_name=														# the name of the application (will define /applications/${appli_name}
+export appli_project=$appli_name												# system project name (by default, match with the application name)
+export appli_project_id=													# system project id
+export appli_user=$appli_name													# application user name (by default, match with the application name)
+export appli_uid=														# application user id
+export comment_appli_user="${appli_user} user for ${appli_project} project"							# a comment to specify a application description
+export w_appli_user="w_${appli_user}"												# specific user for wood
+export w_appli_uid=														# wood user id
+export comment_w_appli_user="${w_appli_user} wood user for ${appli_project} project"						# a comment to specify the application wood description
+export appli_group=$appli_name													# application group name (by default, match with the application name)
+export appli_gid=														# application group id
+export test_used=														# if the zone will be accessed by test integration team (value is "true" or "false")
+export oracle_used=														# if the zone will use oracle database (value is "true" or "false")
+export wood_used=														# if the zone will use wood (value is "true" or "false")
+export asm_used=														# if the zone will use oracle ASM (value is "true" or "false")
+export documentum_used=														# if the zone will use documentum (value is "true" or "false")
+
+# storage
+export powerpath_used=true
+export srdf_used=
+export zpool_replicat_type=													# "zfs_mirror", "srdf", "none" to define the type of replicat within zpools
+export hex_lun_id_data_list='' 													# provided by storage team, if many devices please separate it with space character - Example : "35 36 37")
+export dec_lun_id_data_list='' 													# provided by storage team, if many devices please separate it with space character - Example : "7 8 9")
+export hex_lun_id_db_list='' 													# provided by storage team, if many devices please separate it with space character - Example : "35 36 37")
+export dec_lun_id_db_list='' 													# provided by storage team, if many devices please separate it with space character - Example : "7 8 9")
+export hex_lun_id_asm_list='' 													# provided by storage team, if many devices please separate it with space character - Example : "35 36 37")
+export dec_lun_id_asm_list='' 													# provided by storage team, if many devices please separate it with space character - Example : "7 8 9")
+export rdf_device_groupe_name=${zone_name}											# the rdf device group name for all LUNs (data, db, asm, etc...)
+#export rdf_device_groupe_name_data=${zone_name}-data										# the rdf device group name for LUNs for data zpool
+#export rdf_device_groupe_name_db=${zone_name}-db										# the rdf device group name for LUNs for db zpool
+#export rdf_device_groupe_name_asm=${zone_name}-asm										# the rdf device group name for LUNs for ASM
+export rdf_dev_list_data=''													# provided by storage team, on 4 characters, if many devices please separate it with space character - Example : "220B 2245")
+export rdf_dev_list_db=''													# provided by storage team, on 4 characters, if many devices please separate it with space character - Example : "220B 2245")
+export rdf_dev_list_asm=''													# provided by storage team, if many devices please separate it with space character - Example : "220B 2245")
+export local_site=$(/home/admin/bin/getcmdb.sh host | grep `uname -n` | awk -F';' '{print $5}' | awk '{print $1}')				# provide the primary site, based on the CMDB
+export remote_site=$(/home/admin/bin/getcmdb.sh host | grep $(clnode list| grep -v `uname -n`)  | awk -F';' '{print $5}' | awk '{print $1}')	# provide the primary site, based on the CMDB
+export mercier_storage=														# SymmID possible: 000292603453 000296700060 
+export eufo_storage=														# SymmID possible: 000292602560 000296700069
+export storage_info_file=/home/betorma/docs/storage.txt
+
+
+# other
+export tmp_dir=/net/vdm-unix/systemstore/temp/${zone_name}     											# folder used to store temporay files or configuration files
+export puppet_git_repo=/home/betorma/git/puppet-pk/development									# folder used as local git repository for puppet
+mkdir -p $tmp_dir
+export date=`date +%Y%m%d%H%M`	
+export int_test='dotzech hohnwin holotma klaerpa lafarpa motagon naratol neyseda niedema pierrph zachacy zelineg markoig'	# test integrator members
+
+
+
+
+#############################################################################################################################
+##### 
+##### lun check
+#####
+
+##### on all nodes
+
+cfgadm -al
+powermt check
+powermt display dev=all class=all
+symcfg discover
+
+cldev populate
+
+/home/betorma/bin/storage_info.pl -A >${tmp_dir}/storage_info_`uname -n`.txt
+
+#{
+#for dev in $hex_lun_id_data_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+#if [[ x${oracle_used} == xtrue ]]; then
+#	for dev in $hex_lun_id_db_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+#fi
+#if [[ x${asm_used} == xtrue ]]; then
+#	for dev in $hex_lun_id_asm_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+#fi
+#}
+
+
+
+
+##### if hexa lun id are know, search luns with hexa lun id, else use decimal lun id
+
+{
+if [[ -n $hex_lun_id_data_list ]]; then
+	for dev in $hex_lun_id_data_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+else
+	for dev in $dec_lun_id_data_list; do grep -i " ${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+fi
+if [[ x${oracle_used} == xtrue ]]; then
+	if [[ -n $hex_lun_id_db_list ]]; then
+		for dev in $hex_lun_id_db_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+	else
+		for dev in $dec_lun_id_db_list; do grep -i " ${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+	fi
+fi
+if [[ x${asm_used} == xtrue ]]; then
+	if [[ -n $hex_lun_id_asm_list ]]; then
+		for dev in $hex_lun_id_asm_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+	else
+		for dev in $dec_lun_id_asm_list; do grep -i " ${dev} " ${tmp_dir}/storage_info_`uname -n`.txt; done
+	fi
+fi
+}
+
+
+
+#############################################################################################################################
+##### 
+##### rdf device groups creation
+#####
+##### if SRDF replication is not used, this paragraph is not necessary
+#####
+
+
+
+##### check if we are in client/server mode for EMC Solution Enabler
+
+{
+env | grep ^SYMCLI >/dev/null
+if [[ ! $? = 0 ]]; then
+	echo; echo "ERROR: This server don't use EMC Solution Enabler with client/server/mode"
+fi
+}
+
+
+
+##### define/check rdf type, on each node
+
+{
+if [ $primary_node = `uname -n` ]; then
+	rdf_type=RDF1
+else 
+	rdf_type=RDF2
+fi
+if [ -z $rdf_type ]; then
+	echo "Can't determine primary node and RDF type for this node."
+	echo 'Please check or define RDF type manually.'
+else
+	echo $rdf_type
+fi
+}
+
+
+
+##### check if devices are with the good rdf type
+
+{
+for dev in $rdf_dev_list_db $rdf_dev_list_data $rdf_dev_list_asm
+do
+	echo $dev
+	if [ $local_site = 'EUFO' ]; then
+		symdev show -sid $eufo_storage $dev | grep 'Device Configuration' | grep $rdf_type >/dev/null
+		if [ $? != 0 ]; then
+			echo "$dev is not with the good rdf type."
+		fi
+	fi
+	if [ $local_site = 'MER' ]; then
+		symdev show -sid $mercier_storage $dev | grep 'Device Configuration' | grep $rdf_type >/dev/null
+		if [ $? != 0 ]; then
+			echo "$dev is not with the good rdf type."
+		fi
+	fi
+done
+}
+
+
+
+##### create rdf device group if it don't exists, on all nodes
+
+{
+symdg show ${rdf_device_groupe_name} >/dev/null
+if [[ $? != 0 ]]; then 
+	symdg -type $rdf_type create $rdf_device_groupe_name
+	if [[ $? == 0 ]];then echo $rdf_device_groupe_name created.; fi
+else
+	echo $rdf_device_groupe_name already exists
+fi
+}
+
+
+#{
+#symdg show ${rdf_device_groupe_name_data} >/dev/null
+#if [[ $? != 0 ]]; then 
+#	symdg -type $rdf_type create $rdf_device_groupe_name_data
+#	if [[ $? == 0 ]];then echo $rdf_device_groupe_name_data created.; fi
+#else
+#	echo $rdf_device_groupe_name_data already exists
+#fi
+#}
+
+
+
+#{
+#if [[ x${oracle_used} == xtrue ]]; then
+#	symdg show ${rdf_device_groupe_name_db} >/dev/null
+#	if [[ $? != 0 ]]; then 
+#		symdg -type $rdf_type create $rdf_device_groupe_name_db
+#		if [[ $? == 0 ]];then echo $rdf_device_groupe_name_db created.; fi
+#	else
+#		echo $rdf_device_groupe_name_db already exists
+#	fi
+#fi
+#}
+
+
+
+#{
+#if [[ x${asm_used} == xtrue ]]; then
+#	symdg show ${rdf_device_groupe_name_asm} >/dev/null
+#	if [[ $? != 0 ]]; then 
+#		symdg -type $rdf_type create $rdf_device_groupe_name_asm
+#		if [[ $? == 0 ]];then echo $rdf_device_groupe_name_asm created.; fi
+#	else
+#		echo $rdf_device_groupe_name_asm already exists
+#	fi
+#fi
+#}
+
+
+
+
+##### add devices within rdf device groups
+
+{
+if [ $local_site = 'EUFO' ]; then
+	for dev in $rdf_dev_list_data; do symdg -g $rdf_device_groupe_name -sid $eufo_storage add dev $dev; done
+	if [[ x${oracle_used} == xtrue ]]; then for dev in $rdf_dev_list_db; do symdg -g $rdf_device_groupe_name -sid $eufo_storage add dev $dev; done; fi
+	if [[ x${asm_used} == xtrue ]]; then for dev in $rdf_dev_list_asm; do symdg -g $rdf_device_groupe_name -sid $eufo_storage add dev $dev; done; fi
+fi
+if [ $local_site = 'MER' ]; then
+	for dev in $rdf_dev_list_data; do symdg -g $rdf_device_groupe_name -sid $mercier_storage add dev $dev; done
+	if [[ x${oracle_used} == xtrue ]]; then for dev in $rdf_dev_list_db; do symdg -g $rdf_device_groupe_name -sid $mercier_storage add dev $dev; done; fi
+	if [[ x${asm_used} == xtrue ]]; then for dev in $rdf_dev_list_asm; do symdg -g $rdf_device_groupe_name -sid $mercier_storage add dev $dev; done; fi
+fi
+}
+
+
+#{
+#if [ $local_site = 'EUFO' ]; then
+#	for dev in $rdf_dev_list_data; do symdg -g $rdf_device_groupe_name_data -sid $eufo_storage add dev $dev; done
+#	if [[ x${oracle_used} == xtrue ]]; then for dev in $rdf_dev_list_db; do symdg -g $rdf_device_groupe_name_db -sid $eufo_storage add dev $dev; done; fi
+#	if [[ x${asm_used} == xtrue ]]; then for dev in $rdf_dev_list_asm; do symdg -g $rdf_device_groupe_name_asm -sid $eufo_storage add dev $dev; done; fi
+#fi
+#if [ $local_site = 'MER' ]; then
+#	for dev in $rdf_dev_list_data; do symdg -g $rdf_device_groupe_name_data -sid $mercier_storage add dev $dev; done
+#	if [[ x${oracle_used} == xtrue ]]; then for dev in $rdf_dev_list_db; do symdg -g $rdf_device_groupe_name_db -sid $mercier_storage add dev $dev; done; fi
+#	if [[ x${asm_used} == xtrue ]]; then for dev in $rdf_dev_list_asm; do symdg -g $rdf_device_groupe_name_asm -sid $mercier_storage add dev $dev; done; fi
+#fi
+#}
+
+
+
+##### check rdf sync, on primary node
+
+{
+symrdf -g $rdf_device_groupe_name establish
+symrdf -g $rdf_device_groupe_name verify -synchronized
+if [[ x${oracle_used} == xtrue ]]; then 
+	symrdf -g $rdf_device_groupe_name establish
+	symrdf -g $rdf_device_groupe_name verify -synchronized
+fi
+if [[ x${asm_used} == xtrue ]]; then 
+	symrdf -g $rdf_device_groupe_name establish
+	symrdf -g $rdf_device_groupe_name verify -synchronized
+fi
+}
+
+
+#{
+#symrdf -g $rdf_device_groupe_name_data establish
+#symrdf -g $rdf_device_groupe_name_data verify -synchronized
+#if [[ x${oracle_used} == xtrue ]]; then 
+#	symrdf -g $rdf_device_groupe_name_db establish
+#	symrdf -g $rdf_device_groupe_name_db verify -synchronized
+#fi
+#if [[ x${asm_used} == xtrue ]]; then 
+#	symrdf -g $rdf_device_groupe_name_asm establish
+#	symrdf -g $rdf_device_groupe_name_asm verify -synchronized
+#fi
+#}
+
+#############################################################################################################################
+##### 
+##### cluster device groups creation
+#####
+##### if SRDF replication is not used, this paragraph is not necessary
+#####
+
+
+
+##### get concerned cluster devices, on each node
+
+{
+for dev in $rdf_dev_list_data $rdf_dev_list_db $rdf_dev_list_asm
+do
+	grep -i " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "$1\n" if(m{#\s(d\d+)\s#})'
+done
+} | sort -u >${tmp_dir}/did.${rdf_type}
+
+
+
+##### label disk
+
+{
+for dev in $rdf_dev_list_data $rdf_dev_list_db $rdf_dev_list_asm
+do
+	grep -i " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | tail -1 | perl -ne '@list=split; print "\n{echo label; echo yes} | format -d $list[2]\n"'
+done
+}
+
+
+
+##### combine cluster devices, on secondary/rdf2 node
+
+{
+export device_number=`wc -l ${tmp_dir}/did.${rdf_type} | awk '{print $1}'`
+if [[ $rdf_type == 'RDF2' ]]; then 
+
+	for i in $(seq 1 `echo $device_number`)
+	do
+		echo cldev combine -t srdf -g ${rdf_device_groupe_name} -d `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1` `cat ${tmp_dir}/did.RDF2 | head -${i} | tail -1`
+		echo didadm -F scsi3 `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1`
+		echo cldev show `cat ${tmp_dir}/did.RDF1 | head -${i} | tail -1`
+		echo
+	done
+else
+	echo; echo 'ERROR: you are not on RDF2 node to combine cluster devices.'
+fi
+}
+
+
+
+{
+cat ${tmp_dir}/did.RDF[12] | while read did
+do
+	echo cldg offline dsk/${did}
+	echo cldg disable dsk/${did}
+	echo cldg delete dsk/${did}
+done
+}
+
+
+
+##### create cluster device groupe, on primary node
+
+if [[ $rdf_type == 'RDF1' ]]; then 
+	cldg create -n `clnode list | xargs | sed -e 's/ /,/'` -t rawdisk -d `cat ${tmp_dir}/did.RDF1 | xargs | sed -e 's/ /,/g'` ${rdf_device_groupe_name}
+	cldg show -v ${rdf_device_groupe_name}
+	cldg online ${rdf_device_groupe_name}
+	cldg switch -n ${primary_node} ${rdf_device_groupe_name}
+	cldg status ${rdf_device_groupe_name}
+else
+	echo; echo 'ERROR: you are not on RDF1 node to create cluster device goup.'
+fi
+
+
+
+
+#############################################################################################################################
+##### 
+##### cluster device groups creation for data pool
+#####
+##### if SRDF replication is not used, this paragraph is not necessary
+#####
+##### this paragraph is maybe obsolete
+
+
+##### get concerned cluster devices, on each node
+
+{
+for dev in $rdf_dev_list_data
+do
+	grep -i " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "$1\n" if(m{#\s(d\d+)\s#})'
+done
+} | sort -u >${tmp_dir}/did_data.${rdf_type}
+
+
+
+##### label disk
+
+{
+for dev in $rdf_dev_list_data
+do
+	grep -i " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | tail -1 | perl -ne '@list=split; print "\n{echo label; echo yes} | format -d $list[2]\n"'
+done
+}
+
+
+
+##### combine cluster devices, on secondary/rdf2 node
+
+{
+export device_number=`wc -l ${tmp_dir}/did_data.${rdf_type} | awk '{print $1}'`
+if [[ $rdf_type == 'RDF2' ]]; then 
+
+	for i in $(seq 1 `echo $device_number`)
+	do
+		echo cldev combine -t srdf -g ${rdf_device_groupe_name_data} -d `cat ${tmp_dir}/did_data.RDF1 | head -${i} | tail -1` `cat ${tmp_dir}/did_data.RDF2 | head -${i} | tail -1`
+		echo didadm -F scsi3 `cat ${tmp_dir}/did_data.RDF1 | head -${i} | tail -1`
+		echo cldev show `cat ${tmp_dir}/did_data.RDF1 | head -${i} | tail -1`
+		echo
+	done
+else
+	echo; echo 'ERROR: you are not on RDF2 node to combine cluster devices.'
+fi
+}
+
+
+
+{
+cat ${tmp_dir}/did_data.RDF[12] | while read did
+do
+	echo cldg offline dsk/${did}
+	echo cldg disable dsk/${did}
+	echo cldg delete dsk/${did}
+done
+}
+
+
+
+##### create cluster device groupe, on primary node
+
+if [[ $rdf_type == 'RDF1' ]]; then 
+	cldg create -n `clnode list | xargs | sed -e 's/ /,/'` -t rawdisk -d `cat ${tmp_dir}/did_data.RDF1 | xargs | sed -e 's/ /,/g'` ${rdf_device_groupe_name_data}
+	cldg show -v ${rdf_device_groupe_name_data}
+	cldg online ${rdf_device_groupe_name_data}
+	cldg switch -n ${primary_node} ${rdf_device_groupe_name_data}
+	cldg status ${rdf_device_groupe_name_data}
+else
+	echo; echo 'ERROR: you are not on RDF1 node to create cluster device goup.'
+fi
+
+
+
+
+
+#############################################################################################################################
+##### 
+##### cluster device groups creation for db pool
+#####
+##### if SRDF replication is not used, this paragraph is not necessary
+#####
+##### this paragraph is maybe obsolete
+
+
+##### get concerned cluster devices, on each node
+
+{
+for dev in $rdf_dev_list_db
+do
+	grep " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "$1\n" if(m{#\s(d\d+)\s#})'
+done
+} | sort -u >${tmp_dir}/did_db.${rdf_type}
+
+
+
+##### label disk
+
+{
+for dev in $rdf_dev_list_data
+do
+	grep -i " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | tail -1 | perl -ne '@list=split; print "\n{echo label; echo yes} | format -d $list[2]\n"'
+done
+}
+
+
+
+##### combine cluster devices, on secondary/rdf2 node
+
+{
+export device_number=`wc -l ${tmp_dir}/did_db.${rdf_type} | awk '{print $1}'`
+if [[ $rdf_type == 'RDF2' ]]; then 
+
+	for i in $(seq 1 `echo $device_number`)
+	do
+		echo cldev combine -t srdf -g ${rdf_device_groupe_name_db} -d `cat ${tmp_dir}/did_db.RDF1 | head -${i} | tail -1` `cat ${tmp_dir}/did_db.RDF2 | head -${i} | tail -1`
+		echo didadm -F scsi3 `cat ${tmp_dir}/did_db.RDF1 | head -${i} | tail -1`
+		echo cldev show `cat ${tmp_dir}/did_db.RDF1 | head -${i} | tail -1`
+		echo
+	done
+else
+	echo; echo 'ERROR: you are not on RDF2 node to combine cluster devices.'
+fi
+}
+
+
+
+{
+cat ${tmp_dir}/did_db.RDF[12] | while read did
+do
+	echo cldg offline dsk/${did}
+	echo cldg disable dsk/${did}
+	echo cldg delete dsk/${did}
+done
+}
+
+
+
+##### create cluster device groupe, on primary node
+
+if [[ $rdf_type == 'RDF1' ]]; then 
+	cldg create -n `clnode list | xargs | sed -e 's/ /,/'` -t rawdisk -d `cat ${tmp_dir}/did_db.RDF1 | xargs | sed -e 's/ /,/g'` ${rdf_device_groupe_name_db}
+	cldg show -v ${rdf_device_groupe_name_db}
+	cldg online ${rdf_device_groupe_name_db}
+	cldg switch -n ${primary_node} ${rdf_device_groupe_name_db}
+	cldg status ${rdf_device_groupe_name_db}
+else
+	echo; echo 'ERROR: you are not on RDF1 node to create cluster device goup.'
+fi
+
+
+
+
+
+#############################################################################################################################
+##### 
+##### cluster device groups creation for asm 
+#####
+##### if SRDF replication is not used, this paragraph is not necessary
+#####
+##### this paragraph is maybe obsolete
+
+
+##### get concerned cluster devices, on each node
+
+{
+for dev in $rdf_dev_list_asm
+do
+	grep " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "$1\n" if(m{#\s(d\d+)\s#})'
+done
+} | sort -u >${tmp_dir}/did_asm.${rdf_type}
+
+
+
+##### label disk
+
+{
+for dev in $rdf_dev_list_data
+do
+	grep -i " $dev #" ${tmp_dir}/storage_info_`uname -n`.txt | tail -1 | perl -ne '@list=split; print "\n{echo label; echo yes} | format -d $list[2]\n"'
+done
+}
+
+
+
+##### combine cluster devices, on secondary/rdf2 node
+
+{
+export device_number=`wc -l ${tmp_dir}/did_asm.${rdf_type} | awk '{print $1}'`
+if [[ $rdf_type == 'RDF2' ]]; then 
+
+	for i in $(seq 1 `echo $device_number`)
+	do
+		echo cldev combine -t srdf -g ${rdf_device_groupe_name_asm} -d `cat ${tmp_dir}/did_asm.RDF1 | head -${i} | tail -1` `cat ${tmp_dir}/did_asm.RDF2 | head -${i} | tail -1`
+		echo didadm -F scsi3 `cat ${tmp_dir}/did_asm.RDF1 | head -${i} | tail -1`
+		echo cldev show `cat ${tmp_dir}/did_asm.RDF1 | head -${i} | tail -1`
+		echo
+	done
+else
+	echo; echo 'ERROR: you are not on RDF2 node to combine cluster devices.'
+fi
+}
+
+
+
+{
+cat ${tmp_dir}/did_asm.RDF[12] | while read did
+do
+	echo cldg offline dsk/${did}
+	echo cldg disable dsk/${did}
+	echo cldg delete dsk/${did}
+done
+}
+
+
+
+##### create cluster device groupe, on primary node
+
+if [[ $rdf_type == 'RDF1' ]]; then 
+	cldg create -n `clnode list | xargs | sed -e 's/ /,/'` -t rawdisk -d `cat ${tmp_dir}/did_asm.RDF1 | xargs | sed -e 's/ /,/g'` ${rdf_device_groupe_name_asm}
+	cldg show -v ${rdf_device_groupe_name_asm}
+	cldg online ${rdf_device_groupe_name_asm}
+	cldg switch -n ${primary_node} ${rdf_device_groupe_name_asm}
+	cldg status ${rdf_device_groupe_name_asm}
+else
+	echo; echo 'ERROR: you are not on RDF1 node to create cluster device goup.'
+fi
+
+
+
+
+
+#############################################################################################################################
+##### 
+##### asm format
+#####
+##### if ASM is not used, this paragraph is not necessary
+#####
+
+
+
+{
+if [[ $asm_use == 'true' ]]; then
+	if [[ $rdf_type == 'RDF1' ]]; then 
+		cat ${tmp_dir}/did_asm.RDF1 | while read did
+		do
+			cldev list -v $did | grep `uname -n` |tail -1
+		done | awk -F'/' '{print "/home/betorma/bin/op_format_s0.sh --asm "$4}' 
+	else
+		echo; echo 'ERROR: you are not on RDF1 node to format disks.'
+	fi
+fi
+}
+
+
+
+#############################################################################################################################
+##### 
+##### zpool creation
+#####
+
+
+
+##### format disk to align blocks with EMC blocks, on primary node
+
+{
+if [[ -n $hex_lun_id_data_list ]]; then
+	for dev in $hex_lun_id_data_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "/home/betorma/bin/op_format_s0.sh --emc $1\n" if(m{\s+(emcpower\d+.)\s+})' | sort -u ; done 
+else
+	for dev in $dec_lun_id_data_list; do grep -i " ${dev} " ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "/home/betorma/bin/op_format_s0.sh --emc $1\n" if(m{\s+(emcpower\d+.)\s+})' | sort -u ; done 
+fi
+if [[ x${oracle_used} == xtrue ]]; then
+	if [[ -n $hex_lun_id_db_list ]]; then
+		for dev in $hex_lun_id_db_list; do grep -i " 0x${dev} " ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "/home/betorma/bin/op_format_s0.sh --emc $1\n" if(m{\s+(emcpower\d+.)\s+})' | sort -u ; done 
+	else
+		for dev in $dec_lun_id_db_list; do grep -i " ${dev} " ${tmp_dir}/storage_info_`uname -n`.txt | perl -ne 'print "/home/betorma/bin/op_format_s0.sh --emc $1\n" if(m{\s+(emcpower\d+.)\s+})' | sort -u ; done 
+	fi
+fi
+}
+
+
+
+##### zpool creation, on primary node
+
+{
+if [[ $zpool_replicat_type == 'zfs_mirror' ]];then
+	if [[ -n $hex_lun_id_data_list ]]; then
+		primary_data_mirror_dev=$(for dev in $hex_lun_id_data_list; do grep -i ^$local_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " 0x${dev} "; done | perl -ne 'print "$1\n" if(m	{ (emcpower\d+a) })' | sort -u; done)
+	else
+		primary_data_mirror_dev=$(for dev in $dec_lun_id_data_list; do grep -i ^$local_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " $dev "; done | perl -ne 'print "$1\n" if(m{ (emcpower\d+a) })' | sort -u; done)
+	fi
+	if [[ -n $hex_lun_id_data_list ]]; then
+		secondary_data_mirror_dev=$(for dev in $hex_lun_id_data_list; do grep -i ^$remote_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " 0x${dev} "; done | perl -ne 'print "$1\n" if(m	{ (emcpower\d+a) })' | sort -u; done)
+	else
+		secondary_data_mirror_dev=$(for dev in $dec_lun_id_data_list; do grep -i ^$remote_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " $dev "; done | perl -ne 'print "$1\n" if(m{ (emcpower\d+a) })' | sort -u ; done)
+	fi
+	echo zpool create ${zone_name}-data mirror $primary_data_mirror_dev $secondary_data_mirror_dev
+fi
+}
+
+
+{
+if [[ $zpool_replicat_type == 'srdf' ]];then
+	if [[ -n $hex_lun_id_data_list ]]; then
+		primary_data_mirror_dev=$(for dev in $hex_lun_id_data_list; do grep -i ^$local_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " 0x${dev} "; done | perl -ne 'print "$1\n" if(m	{ (emcpower\d+a) })' | sort -u ; done)
+	else
+		primary_data_mirror_dev=$(for dev in $dec_lun_id_data_list; do grep -i ^$local_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " $dev "; done | perl -ne 'print "$1\n" if(m{ (emcpower\d+a) })' | sort -u ; done)
+	fi
+fi
+echo zpool create ${zone_name}-data $primary_data_mirror_dev
+}
+
+
+
+
+{
+if [[ x${oracle_used} == 'xtrue' ]]; then
+	if [[ $zpool_replicat_type == 'zfs_mirror' ]];then
+		if [[ -n $hex_lun_id_db_list ]]; then
+			primary_db_mirror_dev=$(for dev in $hex_lun_id_db_list; do grep -i ^$local_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " 0x${dev} "; done | perl -ne 'print "$1\n" if(m{ (emcpower\d+a) })' | sort -u; done)
+		else
+			primary_db_mirror_dev=$(for dev in $dec_lun_id_db_list; do grep -i ^$local_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " $dev "; done | perl -ne 'print "$1\n" if(m{ (emcpower\d+a) })' | sort -u; done)
+		fi
+		if [[ -n $hex_lun_id_db_list ]]; then
+			secondary_db_mirror_dev=$(for dev in $hex_lun_id_db_list; do grep -i ^$remote_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " 0x${dev} "; done | perl -ne 'print "$1\n" if(m{ (emcpower\d+a) })' | sort -u; done)
+		else
+			secondary_db_mirror_dev=$(for dev in $dec_lun_id_db_list; do grep -i ^$remote_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " $dev "; done | perl -ne 'print "$1\n" if(m{ (emcpower\d+a) })' | sort -u'; done)
+		fi
+		echo zpool create ${zone_name}-db mirror $primary_db_mirror_dev $secondary_db_mirror_dev
+	fi
+
+fi
+}
+
+
+
+{
+if [[ x${oracle_used} == 'xtrue' ]]; then
+	if [[ $zpool_replicat_type == 'srdf' ]];then
+		if [[ -n $hex_lun_id_db_list ]]; then
+			primary_db_mirror_dev=$(for dev in $hex_lun_id_db_list; do grep -i ^$local_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " 0x${dev} "; done | perl -ne 'print "$1\n" if(m	{ (emcpower\d+a) })' | sort -u; done)
+		else
+			primary_db_mirror_dev=$(for dev in $dec_lun_id_db_list; do grep -i ^$local_site $storage_info_file | awk '{print $3}' | while read wwn; do grep $wwn ${tmp_dir}/storage_info_`uname -n`.txt | grep " $dev "; done | perl -ne 'print "$1\n" if(m{ (emcpower\d+a) })' | sort -u; done)
+		fi
+	fi
+	echo zpool create ${zone_name}-db $primary_db_mirror_dev
+fi
+}
+
+
+
+
+##### default zfs filesystems creation for zone and application data
+
+{
+zfs set mountpoint=/zpool/${zone_name}-data ${zone_name}-data
+zfs create -o mountpoint=/zones/${zone_name} ${zone_name}-data/zone
+zfs create -o mountpoint=none -o zoned=on ${zone_name}-data/applications
+zfs create -o mountpoint=none ${zone_name}-data/applications/${appli_name}
+
+for FS in xchange users ; do
+	zfs create -o mountpoint=/applications/${appli_name}/${FS} ${zone_name}-data/applications/${appli_name}/${FS}
+	zfs set recordsize=128K ${zone_name}-data/applications/${appli_name}/${FS}
+	zfs set logbias=latency ${zone_name}-data/applications/${appli_name}/${FS}
+done
+
+zfs list -r ${zone_name}-data
+zfs get -r recordsize ${zone_name}-data
+zfs get -r logbias ${zone_name}-data
+}
+
+
+###### if documentum is used
+
+{
+if [[ x${documentum_used} == xtrue ]]; then
+	for FS in docdata; do
+		zfs create -o mountpoint=/applications/${appli_name}/${FS} ${zone_name}-data/applications/${appli_name}/${FS}
+		zfs set recordsize=128K ${zone_name}-data/applications/${appli_name}/${FS}
+		zfs set logbias=latency ${zone_name}-data/applications/${appli_name}/${FS}
+		zfs get recordsize,logbias ${zone_name}-data/applications/${appli_name}/${FS}
+	done
+	zfs list -rt all ${zone_name}-data
+fi
+}
+
+
+
+##### default zfs filesystems creation for application database
+
+{
+if [[ x${oracle_used} == xtrue ]]; then
+zfs set mountpoint=/zpool/${zone_name}-db ${zone_name}-db
+zfs create -o mountpoint=none -o zoned=on ${zone_name}-db/applications
+zfs create -o mountpoint=none ${zone_name}-db/applications/${appli_name}
+
+for FS in orabin oralog oradata oraflash oraonlinelog; do
+	zfs create -p -o mountpoint=/applications/${appli_name}/${FS} ${zone_name}-db/applications/${appli_name}/${FS}
+done
+
+zfs set recordsize=8K ${zone_name}-db/applications/${appli_name}/oradata
+zfs set logbias=latency ${zone_name}-db/applications/${appli_name}/oradata
+for FS in orabin oralog oraflash oraonlinelog ; do
+	zfs set recordsize=128K ${zone_name}-db/applications/${appli_name}/${FS}
+	zfs set logbias=latency ${zone_name}-db/applications/${appli_name}/${FS}
+done
+
+zfs list -r ${zone_name}-db
+zfs get -r recordsize ${zone_name}-db
+zfs get -r logbias ${zone_name}-db
+fi
+}
+
+
+
+#############################################################################################################################
+##### 
+##### zone creation and configuration
+##### 
+
+
+
+##### creation, on primary node
+
+{
+zonecfg -z ${zone_name} <<EOF
+create -F -b
+set zonepath=/zones/${zone_name}
+set autoboot=false
+set bootargs="-m verbose"
+
+set ip-type=exclusive
+
+add anet
+set linkname=net0_${vlan_id}
+set allowed-address="${zone_ip}/${zone_netmask}"
+set lower-link=${network_interface}
+set defrouter=${default_router}
+set vlan-id=${vlan_id}
+set mac-address=random
+set configure-allowed-address=true
+end
+
+add anet
+set linkname=net0_167
+set allowed-address="${backup_client_ip}/16"
+set lower-link=${network_interface}
+set vlan-id=167
+set mac-address=random
+set configure-allowed-address=true
+end
+
+add attr
+set name=comment
+set type=string
+set value="zone"
+end
+
+add attr
+set name=osc-ha-zone
+set type=boolean
+set value=true
+end
+
+add dataset
+set name=${zone_name}-data/applications
+set alias=${zone_name}-data_applications
+end
+
+commit
+exit
+EOF
+}
+
+
+{
+if [[ x${oracle_used} == xtrue ]]; then
+zonecfg -z ${zone_name} <<EOF
+add dataset
+set name=${zone_name}-db/applications
+set alias=${zone_name}-db_applications
+end
+EOF
+fi
+}
+
+
+
+##### capping
+
+{
+zonecfg -z $zone_name <<EOT
+add capped-memory
+set physical=${physical_mem_capping}
+set swap=${swap_mem_capping}
+end
+commit
+exit
+EOT
+}
+
+{
+zonecfg -z $zone_name <<EOT
+add capped-cpu
+set ncpus=${cpu_capping}
+end
+commit
+exit
+EOT
+}
+
+{
+zonecfg -z $zone_name info capped-cpu
+zonecfg -z $zone_name info capped-memory
+}
+
+
+
+##### installation
+
+zoneadm -z ${zone_name} install -c /home/admin/unix/opoce-zone-sysconfig.xml -m /home/admin/unix/opoce-zone-manifest.xml
+
+
+
+
+##### /etc/inet/hosts
+
+{
+if [[ $zone_ip == $appli_host_ip ]]; then
+	export inet_host="$zone_ip $zone_name # $appli_host_name"
+else
+	export inet_host="$zone_ip $zone_name\n$appli_host_ip $appli_host_name"
+fi
+}
+
+cat <<EOF >/zones/${zone_name}/root/etc/inet/hosts
+::1 localhost
+127.0.0.1 localhost
+$inet_host
+EOF
+
+
+
+##### root as user
+
+cp /etc/security/exec_attr.d/OProot /zones/${zone_name}/root/etc/security/exec_attr.d
+cp /etc/security/prof_attr.d/OProot /zones/${zone_name}/root/etc/security/prof_attr.d
+
+
+
+##### boot and connection
+
+zoneadm -z ${zone_name} boot && zlogin -C ${zone_name}
+~~.
+
+
+
+##### hostname
+
+zlogin ${zone_name} /usr/bin/hostname ${zone_name}
+
+
+
+##### puppet agent
+
+{
+ls /home/systemstore/puppet/puppet.xml >/dev/null
+cp /home/systemstore/puppet/puppet.xml /zones/${zone_name}/root/tmp
+zlogin ${zone_name} /usr/sbin/svccfg import /tmp/puppet.xml
+}
+
+
+#############################################################
+# 
+# on puppet server
+#
+
+puppet cert --list
+puppet cert --list | awk -F'"' '{print "puppet cert sign "$2}' 
+
+
+
+#############################################################
+# 
+# on the primary node
+#
+
+##### puppet agent
+
+zlogin ${zone_name} puppet agent -t --noop
+
+
+
+#############################################################
+# 
+# on puppet server
+# first within your own local git repository
+# then push the modifications to puppet server
+#
+
+##### create/import a new class for the application
+
+{
+if [[ -f ${puppet_git_repo}/modules/applications/manifests/${appli_name}.pp ]];then
+	echo "${puppet_git_repo}/modules/applications/manifests/${appli_name}.pp already exist, please check or populate it manually."
+else
+	cat >${puppet_git_repo}/modules/applications/manifests/${appli_name}.pp <<EOF
+class applications::${appli_name} {
+
+  case \$operatingsystem {
+
+    Solaris: {
+
+      \$application_name = "${appli_name}"
+      \$oracle_database_is_used = ${oracle_used}
+      \$documentum_is_used = ${documentum_used}
+      \$wood_is_used = ${wood_used}
+      \$user_id = "${appli_uid}"
+      \$w_user_id = "${w_appli_uid}"
+      \$group_id = "${appli_gid}"
+      \$project_id = "${appli_project_id}"
+      \$user_name = \$application_name
+      \$zfs_data_pool_name = "\${hostname}-data"
+      \$zfs_db_pool_name = "\${hostname}-db"
+      \$user_comment = "\${user_name} user for \${application_name} project"
+      \$w_user_name = "w_\${user_name}"
+      \$w_user_comment = "\${w_user_name} wood user for \${application_name} project"
+      \$group_name = \$application_name
+
+      class { generic:
+        application_name => \$application_name,
+        oracle_database_is_used => \$oracle_database_is_used,
+        documentum_is_used => \$documentum_is_used,
+        wood_is_used => \$wood_is_used,
+        user_id => \$user_id,
+        w_user_id => \$w_user_id,
+        group_id => \$group_id,
+        project_id => \$project_id,
+        user_name => \$user_name,
+        zfs_data_pool_name => \$zfs_data_pool_name,
+        zfs_db_pool_name => \$zfs_db_pool_name,
+        user_comment => \$user_comment,
+        w_user_name => \$w_user_name,
+        w_user_comment => \$w_user_comment,
+        group_name => \$group_name,
+      }
+
+    } # end case Solaris
+
+  } # end case $operatingsystem
+
+} # end class
+EOF
+fi
+}
+
+
+{
+if [[ $test_used == 'true' ]]; then
+	if [[ -f ${puppet_git_repo}/modules/applications/files/Solaris/etc/user_attr.d/OPinttest.${appli_name} ]];then
+		echo "${puppet_git_repo}/modules/applications/files/Solaris/etc/user_attr.d/OPinttest.${appli_name} already exist, please check or populate it manually."
+	else
+		cat >${puppet_git_repo}/modules/applications/files/Solaris/etc/user_attr.d/OPinttest.${appli_name} <<EOF
+#
+# deployed by puppet
+#
+
+`for user in $int_test
+do
+	if [[ $wood_used == 'true' ]]; then echo "${user}::::type=normal;roles=${appli_name},w_${appli_name}"; fi
+	if [[ $wood_used == 'false' ]]; then echo "${user}::::type=normal;roles=${appli_name}"; fi
+done`
+EOF
+	fi
+fi
+}
+
+
+
+{
+echo
+echo To execute within your GIT environment:
+echo
+echo git pull
+echo cd $puppet_git_repo
+echo git add ${puppet_git_repo}/modules/applications/manifests/${appli_name}.pp 
+if [[ $test_used == 'true' ]]; then echo git add ${puppet_git_repo}/modules/applications/files/Solaris/etc/user_attr.d/OPinttest.${appli_name}; fi
+echo git commit -m \"add new ${appli_name} application\"
+echo git push
+echo cd $puppet_git_repo/../production
+echo git pull origin production \&\& git pull --no-ff
+echo
+echo git push \&\& cd \-
+}
+
+
+
+#############################################################
+# 
+# on foreman web interface
+#
+
+# import new puppet class
+# configure host
+
+
+
+#############################################################
+# 
+# on primary node
+#
+
+##### puppet agent
+
+zlogin ${zone_name} puppet agent -t
+
+
+
+#############################################################
+# 
+# on zone
+#
+
+
+##### change root password to match with algorythm
+
+passwd root
+
+
+##### change application users password 
+
+passwd ${appli_user}
+passwd ${w_appli_user}
+
+
+
+
+##### restart and check
+
+init 6 
+svcs -xv
+dmesg
+
+
+
+#############################################################################################################################
+##### 
+##### asm device assignment to the zone
+#####
+
+
+{
+if [[ $rdf_type == 'RDF1' ]]; then 
+	echo "zonecfg -z ${zone_name} <<EOT" 
+	cat ${tmp_dir}/did_asm.RDF1 | while read did
+	do
+		echo "add device"
+		echo "set match=/dev/did/*dsk/${did}s*"
+		echo "end"	
+	done
+
+echo verify
+echo commit
+echo exit
+echo EOT
+else
+	echo; echo 'ERROR: you are not on RDF1 node to format disks.'
+fi
+}
+
+zoneadm -z $zone_name apply
+zlogin $zone_name "chown oracle:dba /dev/did/{dsk,rdsk}/*"
+
+
+
+#############################################################################################################################
+##### 
+##### cluster integration
+##### 
+
+
+
+##### check resource type registration
+
+/usr/cluster/bin/clresourcetype  list SUNW.HAStoragePlus || clresourcetype register SUNW.HAStoragePlus
+/usr/cluster/bin/clresourcetype  list SUNW.gds || clresourcetype register SUNW.gds
+
+
+
+##### stop and detach zone
+
+zlogin $zone_name init 0 && zlogin -C $zone_name 
+~~.
+zoneadm -z $zone_name detach
+grep $zone_name /etc/zones/index > ${tmp_dir}/index
+
+
+##### export zpools
+
+zpool export ${zone_name}-db
+zpool export ${zone_name}-data
+
+
+
+##### check/swicth on primary node the cluster devices groups
+cldg switch -n ${primary_node} ${zone_name}
+#cldg switch -n ${primary_node} ${zone_name}-db
+#cldg switch -n ${primary_node} ${zone_name}-data
+
+
+
+##### create resources for rdf disk group and zpool
+
+clrg create ${zone_name}-rg
+clrg manage ${zone_name}-rg
+clrg set -p Nodelist=${primary_node},${secondary_node} ${zone_name}-rg
+
+{
+if [[ $oracle_used == 'true' ]]; then 
+	pool_list="${zone_name}-db,${zone_name}-data"
+else 
+	pool_list="${zone_name}-data"
+fi
+}
+
+{
+if [[ $srdf_used == 'true' ]]; then
+	#echo clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p GlobalDevicePaths="${pool_list}" ${zone_name}-srdf
+	echo clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p GlobalDevicePaths="${zone_name}" ${zone_name}-srdf
+	echo clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p zpools="${pool_list}" -p Resource_dependencies="${zone_name}-srdf" ${zone_name}-zfs
+else
+	echo clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p zpools="${pool_list}" ${zone_name}-zfs
+fi
+}
+
+
+##### create resource for zone, on both nodes
+
+cat <<- EOT >/opt/SUNWsczone/sczbt/util/sczbt_${zone_name}-rs
+RS=${zone_name}-rs
+RG=${zone_name}-rg
+PARAMETERDIR=/etc/zones
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=${zone_name}-zfs
+Zonename="${zone_name}"
+Zonebrand="solaris"
+Zonebootopt=""
+Milestone="multi-user-server"
+Migrationtype="cold"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOT
+
+
+
+##### on primary node
+
+clrg online ${zone_name}-rg
+clrg status ${zone_name}-rg
+
+cp /etc/zones/${zone_name}.xml ${tmp_dir}
+
+
+
+##### on secondary node
+
+cp ${tmp_dir}/${zone_name}.xml /etc/zones
+cat ${tmp_dir}/index >>/etc/zones/index
+
+
+
+##### on primary node, create and enable resource for zone
+
+/opt/SUNWsczone/sczbt/util/sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_${zone_name}-rs
+clrs enable ${zone_name}-rs
+clrs status ${zone_name}-rs
+clrs unmonitor ${zone_name}-rs
+clrs status ${zone_name}-rs
+
+
+
+##### switch test
+
+timex clrg switch -n ${secondary_node} ${zone_name}-rg
+clrs status -g ${zone_name}-rg
+timex clrg switch -n ${primary_node} ${zone_name}-rg
+clrs status -g ${zone_name}-rg
+
+
+
+
+
+
+#############################################################################################################################
+##### 
+##### cmdb
+##### 
+
+##### on the primary node
+
+{
+echo "nom de la zone:\t\t\t\t${zone_name} (${zone_ip})"
+echo "OS version:\t\t\t\t"`head -1 /zones/${zone_name}/root/etc/release`
+echo "hote de l'application:\t\t\t${appli_host_name} (${appli_host_ip})"
+echo "vlan configured:\t\t\t"`zonecfg -z ${zone_name} info | grep vlan-id | awk '{print $2}'`
+echo "alias de la zone:\t\t\t${zone_alias}"
+echo
+echo "capping cpu:\t\t\t`zonecfg -z ${zone_name} info capped-cpu | grep ncpus: | awk '{print $2}' | sed -e 's/\]//g'`"
+echo "capping memoire physique:\t`zonecfg -z ${zone_name} info capped-memory | grep physical: | awk '{print $2}'`"
+echo "capping swap:\t\t\t`zonecfg -z ${zone_name} info capped-memory | grep swap: | awk '{print $2}' | sed -e 's/\]//g'`"
+echo
+echo "file systems:"
+zonecfg -z ${zone_name} info | perl -n0777e 'while(m{dataset:\s+name:\s+(.*?)/.*?\s+}g) {print "$1 "}' | xargs zfs list -r -o name,mountpoint
+echo
+if [[ ${cluster_used} == true ]]
+then
+	clrg show -p nodelist  ${zone_name}-rg | grep 'Nodelist:' | perl -ne 'if(m{Nodelist:\s+(.*?)\s+(.*?)\s+}) {print "primary cluster node:\t\t$1\nsecondary cluster node:\t\t$2\n"}'
+else
+        echo "hote physique:\t\t\t`uname -n`"
+fi
+} | mailx -s "mise a jour de la cmdb: ${zone_name}" -r mathieu.betori@ext.publications.europa.eu -c mathieu.betori@ext.publications.europa.eu OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
+
+
+
+#############################################################################################################################
+##### 
+##### monitoring
+##### 
+
+
+
+{
+cat <<EOT
+Pouvez-vous s'il vous plait créer le monitoring pour les hotes suivants;
+ - $zone_name
+ - $appli_host_name
+Merci d'avance
+EOT
+} | mailx -s "ouverture de ticket: monitoring creation for $zone_name" -r mathieu.betori@ext.publications.europa.eu -c 'mathieu.betori@ext.publications.europa.eu op-helpdesk@publications.europa.eu' OP-IT-PRODUCTION@publications.europa.eu
+
+
+#############################################################################################################################
+##### 
+##### backup
+##### 
+
+
+##### create the res file (if the client is already configured)
+
+networker_group=`{
+nsradmin -s opvmwsbkp06 -i - <<EOT
+show group
+print name: bkp-${zone_name}
+EOT
+}` 
+
+
+{
+echo $networker_group | grep 'No resources found for query:' >/dev/null
+if [[ $? != 0 ]]; then 
+	group_name=`echo $networker_group | awk '{print $2}' | sed -e 's/;$//'`
+	cat <<EOF >/nsr/res/${group_name}.res
+type: savepnpc;
+precmd: "/nsr/scripts/snapshot.ksh precmd";
+pstcmd: "/nsr/scripts/snapshot.ksh pstcmd";
+abort precmd with group: No;
+EOF
+else
+	request="and communicate to us his networker group name "
+fi
+}
+
+
+##### preciser le site du primary node
+
+{
+cat <<EOT
+Hi,
+
+Can you please create bkp-${zone_name} backup client for ${zone_name} zone $request?
+His primary node is ${primary_node} (at `echo $local_site | sed -e 's/MER/mercier/' -e 's/EUFO/eufo/'`).
+
+Thanks in advance.
+
+EOT
+} | mailx -s "backup client creation for $zone_name" -r mathieu.betori@ext.publications.europa.eu -c mathieu.betori@ext.publications.europa.eu OPDL-A4-STORAGE-BACKUP@publications.europa.eu
+
+
+
+#############################################################################################################################
+##### 
+##### inform integration an db teams that the environment is ready
+##### 
+
+
+{
+cat <<EOT
+Hi,
+
+$zone_name is ready and available.
+
+EOT
+} | mailx -s "$zone_name" betorma OPDL-A4-STORAGE-BACKUP@publications.europa.eu
+
+
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+# Association iso image avec une device lofi
+lofiadm -a /net/coppola.opoce.cec.eu.int/xchange/solaris10u6/sol-10-u6-ga1-sparc-dvd.iso /dev/lofi/1
+# monter le device lofi
+mount -F hsfs -o ro /dev/lofi/1 /mnt
+# effacer un device lofi apres avoir demonte le FS
+lofiadm -d /dev/lofi/1

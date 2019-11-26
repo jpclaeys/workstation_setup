@@ -1,0 +1,6 @@
+
+
+export PATH="/usr/local/bin:/usr/bin:/usr/openwin/bin:/usr/sbin:/usr/sfw/bin:/usr/cluster/bin:$HOME/bin:/opt/emc/SYMCLI/bin:$PATH"; export TERM=xterm
+
+
+cryptoadm disable provider=/usr/lib/security/\$ISA/pkcs11_softtoken.so mechanism=all

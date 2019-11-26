@@ -1,0 +1,72 @@
+##################################################################################################################
+# capping ressource zone
+##################################################################################################################
+
+
+export zone=<zone_name>
+export cpu_capping=<cpu_capping>
+export physical_mem_capping=<physical_mem_capping>
+export swap_mem_capping=<swap_mem_capping>
+
+
+##### memoire
+
+{
+zonecfg -z $zone <<EOT
+add capped-memory
+set physical=${physical_mem_capping}
+set swap=${swap_mem_capping}
+end
+commit
+exit
+EOT
+}
+
+
+##### cpu
+
+{
+zonecfg -z $zone <<EOT
+add capped-cpu
+set ncpus=${cpu_capping}
+end
+commit
+exit
+EOT
+}
+
+
+##### verif 
+
+{
+zonecfg -z $zone info capped-cpu
+zonecfg -z $zone info capped-memory
+}
+
+
+##### copie de la config de la zone en cluster sur le primary node
+
+export tmp_dir=/home/betorma/xchange/zones/
+cd /etc/zones
+tar cpf ${tmp_dir}/${zone}.tar ${zone}.xml
+
+
+##### copie de la config de la zone en cluster sur le secondary node
+
+export zone=<zone_name>
+export tmp_dir=/home/betorma/xchange/zones/
+export date=`date +%Y%m%d`
+cd /etc/zones
+cp -p ${zone}.xml ${zone}.xml.${date}
+tar xpf ${tmp_dir}/${zone}.tar ${zone}.xml
+diff ${zone}.xml ${zone}.xml.${date}
+
+
+##### mettre a jour la cmdb
+
+{
+echo capping de la zone ${zone}:
+echo
+zonecfg -z $zone info capped-cpu
+zonecfg -z $zone info capped-memory
+} | mailx -s "capping de la zone $zone" betorma

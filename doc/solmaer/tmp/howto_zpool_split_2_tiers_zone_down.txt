@@ -1,0 +1,533 @@
+####################################################################################################################################################################################
+# split de zpool pour en avoir un pour la db et un autre pour le reste, avec des tiers SAN differents
+####################################################################################################################################################################################
+
+
+###########################################################################
+##### determine the sizes
+
+##### check the non-standard datasets
+zfs list | egrep -v 'orabin|oradata|oraflash|oralog|users|xchange|oraagent|oraonlinelog'
+
+
+
+
+##### check the list of oracle datasets
+zfs list -H | egrep -v '/zpool/|none$' | awk '{print $1}' | egrep 'orabin|oradata|oraflash|oralog|oraonlinelog'
+
+##### calculate the necessary volumetry for oracle datasets
+export used_db=`zfs list -H | egrep -v '/zpool/|none$' | awk '{print $1}' | egrep 'orabin|oradata|oraflash|oralog|oraonlinelog' | while read dataset; do zfs get -Hp used $dataset; done | awk '{print $3}' | xargs echo | sed -e 's/ /+/g' | bc`
+echo $used_db
+
+##### calculate the size of volumetry to ask
+export db_size=`echo "${used_db}*100/65" | bc`
+echo $db_size
+
+
+
+##### check the list of non-oracle datasets
+zfs list -H | egrep -v '/zpool/|none$' | awk '{print $1}' | egrep -v 'orabin|oradata|oraflash|oralog|oraonlinelog'
+
+
+##### calculate the necessary volumetry for non-oracle datasets
+export used_data=`zfs list -H | egrep -v '/zpool/|none$' | awk '{print $1}' | egrep 'users|xchange|oraagent' | while read dataset; do zfs get -Hp used $dataset; done | awk '{print $3}' | xargs echo | sed -e 's/ /+/g' | bc`
+echo $used_data
+
+##### calculate the size of volumetry to ask
+export data_size=`echo "${used_data}*100/65" | bc`
+echo $data_size
+
+
+
+
+
+##### send the result
+
+{
+echo "`zonename`-db:$db_size"
+echo "`zonename`-data:$data_size"
+} | mailx -s "zpool size to split `zonename`" betorma
+
+
+###########################################################################
+##### align blocks
+
+/home/betorma/bin/luxadm_carlo
+
+
+
+export disk_list=''
+
+{
+for disk in $disk_list
+do
+	echo $disk
+done
+}
+
+{
+for disk in $disk_list
+do
+	echo "############################################# ${disk}"
+	format -e -d ${disk} <<EOT
+partition
+1
+unassigned
+wm
+0
+0
+
+3
+unassigned
+wm
+0
+0
+
+4
+unassigned
+wm
+0
+0
+
+5
+unassigned
+wm
+0
+0
+
+6
+unassigned
+wm
+0
+0
+
+7
+unassigned
+wm
+0
+0
+
+0
+unassigned
+wm
+64
+$
+
+label
+0
+y
+quit
+quit
+EOT
+done
+}
+
+
+
+
+
+
+{
+for disk in $disk_list
+do
+	prtvtoc /dev/rdsk/${disk}s2 | grep -v '^*'
+done
+}
+
+
+
+############################################################################
+##### before to continu
+
+# check if ZFS snapshots are present
+# if yes, remove them
+
+
+
+
+############################################################################
+##### on both cluster nodes
+
+##### variables
+
+
+export zone=
+export zpool_source=
+export zpool_target_db=${zpool_source}-db
+export zpool_target_data=${zpool_source}-data
+
+export tmp_folder=/home/betorma/tmp
+export current_date=`date '+%Y%m%d'`
+echo $current_date
+
+
+
+############################################################################
+##### on the physical server of the zone
+
+##### creation of new pools -db and -data with block align and use s0 slice
+
+
+
+
+##### schedule downtime in the monitoring
+
+##### check if maintenance page is in place
+
+
+##### desactiver l'application
+
+{
+zlogin ${zone} /usr/bin/svcs -a | awk '{print $3}'| perl -ne 'print "zlogin $ENV{zone} /usr/bin/svcs $1\n" if(m{^svc:/applications/(.*?):.*$})' | sort -u 
+zlogin ${zone} /usr/bin/svcs -a | awk '{print $3}'| perl -ne 'print "zlogin $ENV{zone} /usr/sbin/svcadm disable $1\n" if(m{^svc:/applications/(.*?):.*$})' | sort -u 
+zlogin ${zone} /usr/bin/svcs -a | awk '{print $3}'| perl -ne 'print "zlogin $ENV{zone} /usr/bin/svcs $1\n" if(m{^svc:/applications/(.*?):.*$})' | sort -u 
+}
+
+
+
+
+##### arreter de la zone
+
+
+
+echo clrs disable ${zone}-rs
+clrs status -g ${zone}-rg
+
+zoneadm list -cv | grep ${zone}
+
+
+
+
+
+
+
+
+##### zpool list
+
+zpool list | egrep "^NAME|${zpool_source}"
+
+
+##### snapshot of original zpool
+
+zfs snapshot -r ${zpool_source}@zpool_split_${current_date}
+zfs list -r ${zpool_source}
+
+
+
+##### zfs block size for oracle 
+
+{
+for ora_fs in oralog oradata
+do
+	for dataset in `zfs list -H -o name -t filesystem -r ${zpool_source} | grep ${ora_fs}`
+	do
+		new_dataset=`echo $dataset | perl -pe 's:^$ENV{zpool_source}:$ENV{zpool_target_db}:'`
+		echo zfs create -p ${new_dataset}
+		echo zfs set recordsize=8k ${new_dataset} 2>/dev/null
+	done
+done
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### start synchro to db zpool
+
+LAUNCH="19:19"
+export LAUNCH
+{
+TAG="ZFS"
+export TAG
+echo "logger -p daemon.notice -t $TAG \"SEND RECEIVE START for ${zpool_target_db}\""
+zfs list -H -o name -t snapshot -r ${zpool_source} | egrep 'orabin|oradata|oraflash|oralog|oraonlinelog' | while read dataset
+do
+	echo "logger -p daemon.notice -t $TAG \"FS: ${dataset}\""
+	echo "zfs send ${dataset} | zfs receive -dF ${zpool_target_db}"
+done
+echo "logger -p daemon.notice -t $TAG \"SEND RECEIVE END for ${zpool_target_db}\""
+} | at -q n $LAUNCH
+
+
+tail -f /var/adm/messages | grep $zone
+
+
+
+
+##### start synchro to data zpool
+
+LAUNCH="19:55"
+export LAUNCH
+{
+TAG="ZFS"
+export TAG
+echo "logger -p daemon.notice -t $TAG \"SEND RECEIVE START for ${zpool_target_data} \""
+zfs list -H -o name -t snapshot -r ${zpool_source} | egrep -v "orabin|oradata|oraflash|oralog|oraonlinelog|${zpool_source}@zpool_split|${zpool_source}/applications@zpool_split" | while read dataset
+do
+	echo "logger -p daemon.notice -t $TAG \"FS: ${dataset}\""
+	echo "zfs send ${dataset} | zfs receive -dF ${zpool_target_data}"
+done
+echo "logger -p daemon.notice -t $TAG \"SEND RECEIVE END for ${zpool_target_data} \""
+} | at -q n $LAUNCH
+
+
+tail -f /var/adm/messages | grep $zone
+
+
+
+
+
+##### check 
+
+zfs list -t filesystem -r ${zpool_source} ${zpool_target_db} ${zpool_target_data} 
+
+
+
+
+
+
+
+
+##### destroy snapshots
+
+zfs list -o name -t snapshot -r ${zpool_source} ${zpool_target_db} ${zpool_target_data} | grep zpool_split_${current_date} | while read dataset
+do
+	echo zfs destroy ${dataset}
+done
+
+
+
+
+##### compare sizes
+
+zfs list -r ${zpool_source} ${zpool_target_db} ${zpool_target_data}
+
+
+
+
+
+
+
+##### recupere les parametres zfs de POOLTOBACKUP pour donner plus tard a NEWPOOL
+
+
+
+{
+for parameter in mountpoint quota reservation recordsize compression  aclmode aclinherit zoned 
+do
+	for dataset in `zfs list -o name -t filesystem -Hr ${zpool_source}`
+	do
+		zfs get -H $parameter $dataset 2>/dev/null | perl -pe 's:^$ENV{zpool_source}:$ENV{zpool_target_db}:' | awk '{print "zfs set "$2"="$3" "$1}'
+	done
+done > /home/betorma/tmp/${zpool_target_db}_get_zfs_parameters.sh 
+}
+
+
+{
+for parameter in mountpoint quota reservation recordsize compression  aclmode aclinherit zoned 
+do
+	for dataset in `zfs list -o name -t filesystem -Hr ${zpool_source}`
+	do
+		zfs get -H $parameter $dataset 2>/dev/null | perl -pe 's:^$ENV{zpool_source}:$ENV{zpool_target_data}:' | awk '{print "zfs set "$2"="$3" "$1}'
+	done
+done	> /home/betorma/tmp/${zpool_target_data}_get_zfs_parameters.sh 
+}
+
+
+
+
+##### changement de $zpool_source
+
+clrs disable  ${zone}-zfs
+#zpool export $zpool_source
+
+
+
+##### changer les parametres ZFS
+
+
+sh ${tmp_folder}/${zpool_target_db}_get_zfs_parameters.sh 
+sh ${tmp_folder}/${zpool_target_data}_get_zfs_parameters.sh 
+
+zfs set mountpoint=/zpool/${zpool_target_db} ${zpool_target_db}
+zfs set mountpoint=/zpool/${zpool_target_data} ${zpool_target_data}
+
+
+
+
+##### check mountpoint for zpool fs and zone
+
+zfs list -r ${zpool_target_db} ${zpool_target_data} 
+
+
+
+
+
+
+##### config zone to use $zpool_target_db and $zpool_target_data zpools
+
+export date=`date +%Y%m%d%H%M`
+echo $date
+cp -p /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date}
+
+
+{
+cat <<EOT
+remove dataset name=${zone}/applications
+add dataset
+set name=${zone}-db/applications
+end
+add dataset
+set name=${zone}-data/applications
+end
+verify
+commit
+exit
+EOT
+} | zonecfg -z $zone
+
+
+diff /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date}
+
+
+##### boot zone hors cluster
+
+
+chmod 700 /zones/${zone}
+zoneadm -z ${zone} boot && zlogin -C ${zone}
+
+
+##### on zone, check 
+
+svcs -xv
+dmesg
+
+
+##### stop the zone
+
+
+zlogin ${zone} init 0 && zlogin -C ${zone}
+zoneadm list -cv | grep $zone 
+
+
+
+
+##### changement de la liste des zpools dans la ressource cluster
+
+clrs show -p zpools ${zone}-zfs
+clrs set -p zpools=${zpool_target_db},${zpool_target_data} ${zone}-zfs
+clrs show -p zpools ${zone}-zfs
+clrs enable ${zone}-zfs                                                            
+
+zpool status -xv ${zpool_target_data} ${zpool_target_db}
+zpool list ${zpool_target_data} ${zpool_target_db}
+
+
+
+
+##### demarrage de la zone via sa ressoure cluster
+
+clrs status -g ${zone}-rg
+clrs enable ${zone}-rs
+clrs status -g ${zone}-rg
+zoneadm list -cv | grep ${zone}
+
+
+
+
+##### check
+
+zlogin ${zone}
+svcs -xv
+dmesg
+
+
+
+
+##### demarrage de l'application
+
+
+
+
+##### check monitoring
+
+##### roll back page de maintenance
+
+
+##### check application
+
+
+
+##### get config zone file from primary node
+
+cd /etc/zones
+tar cpvf ${tmp_folder}/${zone}.tar ${zone}.xml
+
+##### put config zone file to secondary node
+
+cd /etc/zones
+tar xpvf ${tmp_folder}/${zone}.tar
+
+
+
+
+##### liste des luns de l'ancien zpool
+
+zpool import ${zpool_source}
+
+/home/betorma/bin/luxadm_carlo -z | grep "\[${zpool_source}\]"
+
+
+
+##### prepare the luxadm offline commands
+
+
+/home/betorma/bin/luxadm_carlo -z | grep "\[${zpool_source}\]" | awk '{print "luxadm -e offline "$1}' >${tmp_folder}/luxadm_${zpool_source}.out
+
+cat ${tmp_folder}/luxadm_${zpool_source}.out
+
+
+
+
+
+##### suppression de l'ancien zpool
+
+echo zpool destroy ${zpool_source}
+
+
+
+##### offline des luns sur les 2 noeuds sur les 2 noeuds
+
+sh ${tmp_folder}/luxadm_${zpool_source}.out
+
+
+
+
+
+devfsadm -Cv
+cldev populate
+cldev clear
+
+cldev status -s fail
+
+
+##### retour des luns de l'ancien zpool a l'equipe storage
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,591 @@
+
+    multipath {
+       wwid 360000970000292602560533032334536
+       alias nagios-pk_system1
+    }
+
+    multipath {
+       wwid 360000970000292602560533032334438
+       alias nagios-pk_data1
+    }
+
+
+
+
+
+          60000970000296700069533030303745
+mpathcv (360000970000296700069533030303745) dm-190 EMC     ,SYMMETRIX       
+size=35G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 2:0:0:17 sdmo 70:256  active ready running
+  |- 3:0:0:17 sdna 70:448  active ready running
+  |- 6:0:0:17 sdnm 71:384  active ready running
+  `- 7:0:0:17 sdny 128:320 active ready running
+
+
+          60000970000296700069533030303746
+mpathcw (360000970000296700069533030303746) dm-191 EMC     ,SYMMETRIX       
+size=69G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 2:0:0:18 sdmp 70:272  active ready running
+  |- 3:0:0:18 sdnb 70:464  active ready running
+  |- 6:0:0:18 sdnn 71:400  active ready running
+  `- 7:0:0:18 sdnz 128:336 active ready running
+
+EUF:
+*****
+
+    multipath {
+       wwid 360000970000296700069533030303745
+       alias nagios-pk_vmax3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030303746
+       alias nagios-pk_vmax3_data1
+    }
+
+
+MER:
+*****
+
+    multipath {
+       wwid 360000970000296700060533030303745
+       alias nagios-pk_vmax3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030303746
+       alias nagios-pk_vmax3_data1
+    }
+
+		pcs resource disable ..
+
+		sync
+
+		  dd if=/dev/mapper/nagios-pk_system1 of=/dev/mapper/nagios-pk_vmax3_system1 bs=64K conv=noerror,sync status=progress
+		  
+		  dd if=/dev/mapper/nagios-pk_data1 of=/dev/mapper/nagios-pk_vmax3_data1 bs=64K conv=noerror,sync status=progress
+
+
+		VM_NAME=nagios-pk
+		virsh define /etc/libvirt/qemu/$VM_NAME.xml
+		virsh edit $VM_NAME
+
+		for node in `crm_node -p | sed "s/$(hostname -s)-cl//g"`; do echo -n "$node: " && virsh -c qemu+ssh://$node/system define /etc/libvirt/qemu/$VM_NAME.xml; done
+
+		partprobe /dev/mapper/nagios-pk_vmax3_system1
+		partprobe /dev/mapper/nagios-pk_vmax3_data1
+
+		/home/admin/bin/removelun_rhel /dev/mapper/nagios-pk_system1 | bash
+
+
+
+
+
+    multipath {
+       wwid 360000970000296700060533030303734
+       alias ccentral1-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030303735
+       alias ccentral1-pk_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030303736
+       alias cpoller1-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030303737
+       alias cpoller1-pk_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030303738
+       alias cpoller2-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030303739
+       alias cpoller2-pk_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030303741
+       alias cpoller3-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030303742
+       alias cpoller3-pk_t1_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700060533030303743
+       alias cpoller4-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030303744
+       alias cpoller4-pk_t1_data1
+    }
+
+
+------------------------------------------------------------------------------------------------
+
+
+[root@picard ~]# multipath -ll | grep 60000970000296700060533030313539 -A6
+mpathbt (360000970000296700060533030313539) dm-120 EMC,SYMMETRIX
+size=34G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 3:0:1:47  sdbb  67:80   active ready running
+  |- 4:0:0:47  sdyf  128:752 active ready running
+  |- 5:0:1:47  sdzj  130:720 active ready running
+  `- 6:0:0:47  sdaan 132:688 active ready running
+
+[root@picard ~]# multipath -ll | grep 60000970000296700060533030313545 -A6
+mpathbu (360000970000296700060533030313545) dm-245 EMC,SYMMETRIX
+size=170G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=1 status=active
+  |- 3:0:1:71  sdbc  67:96   active ready running
+  |- 4:0:0:71  sdyg  129:512 active ready running
+  |- 5:0:1:71  sdzk  130:736 active ready running
+  `- 6:0:0:71  sdaao 132:704 active ready running
+
+
+MER:
+
+    multipath {
+       wwid 360000970000296700060533030313539
+       alias cportaldiff1-rk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030313545
+       alias cportaldiff1-rk_vmax3_t2_data1
+    }
+
+
+
+
+		VM_NAME="cportaldiff1-rk"
+
+		sync
+ 		echo 3 > /proc/sys/vm/drop_caches
+
+		ddrescue -v -f -n -b 65536 /dev/mapper/${VM_NAME}_t2_system1 /dev/mapper/${VM_NAME}_vmax3_t2_system1 
+		ddrescue -v -f -n -b 65536 /dev/mapper/${VM_NAME}_t2_data1 /dev/mapper/${VM_NAME}_vmax3_t2_data1 
+
+ 	sur les 4
+		VM_NAME="cportaldiff1-rk"
+		partprobe /dev/mapper/${VM_NAME}_vmax3_t2_system1 && ls -l /dev/mapper/${VM_NAME}_vmax3_t2_system*
+		partprobe /dev/mapper/${VM_NAME}_vmax3_t2_data1 && ls -l /dev/mapper/${VM_NAME}_vmax3_t2_data*
+
+		virsh edit $VM_NAME
+		virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+
+ 		for node in `crm_node -p | sed "s/$(hostname -s)-cl//g"`; do echo -n "$node: " && virsh -c qemu+ssh://$node/system define /etc/libvirt/qemu/$VM_NAME.xml; done
+
+
+		/home/admin/bin/removelun_rhel /dev/mapper/${VM_NAME}_t2_system1  | bash
+		/home/admin/bin/removelun_rhel /dev/mapper/${VM_NAME}_t2_data1  | bash
+
+
+
+
+
+
+
+    multipath {
+       wwid 360000970000296700060533030313546
+       alias cportaldiff2-rk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030313630
+       alias cportaldiff2-rk_vmax3_t2_data1
+    }
+
+
+
+
+
+
+EUF: 
+
+
+    multipath {
+       wwid 360000970000296700069533030313539
+       alias cportaldiff1-rk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030313545
+       alias cportaldiff1-rk_vmax3_t2_data1
+    }
+
+
+    multipath {
+       wwid 360000970000296700069533030313546
+       alias cportaldiff2-rk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030313630
+       alias cportaldiff2-rk_vmax3_t2_data1
+    }
+
+
+
+
+		VM_NAME="cportaldiff2-rk"
+		ddrescue -v -f -n -b 65536 /dev/mapper/${VM_NAME}_t2_system1 /dev/mapper/${VM_NAME}_vmax3_t2_system1 
+		ddrescue -v -f -n -b 65536 /dev/mapper/${VM_NAME}_t2_data1 /dev/mapper/${VM_NAME}_vmax3_t2_data1 
+
+ 	sur les 4
+		VM_NAME="cportaldiff2-rk"
+		partprobe /dev/mapper/${VM_NAME}_vmax3_t2_system1 && ls -l /dev/mapper/${VM_NAME}_vmax3_t2_system*
+		partprobe /dev/mapper/${VM_NAME}_vmax3_t2_data1 && ls -l /dev/mapper/${VM_NAME}_vmax3_t2_data*
+
+		virsh edit $VM_NAME
+		virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+
+ 		for node in `crm_node -p | sed "s/$(hostname -s)-cl//g"`; do echo -n "$node: " && virsh -c qemu+ssh://$node/system define /etc/libvirt/qemu/$VM_NAME.xml; done
+
+
+		/home/admin/bin/removelun_rhel /dev/mapper/${VM_NAME}_t2_system1  | bash
+		/home/admin/bin/removelun_rhel /dev/mapper/${VM_NAME}_t2_data1  | bash
+
+------------------------------------------------------------------------------------------------
+
+
+OMS
+MER :
+*****
+
+
+
+			    multipath {
+			       wwid 360000970000292603453533030304637
+			       alias oms-mer-pk_t1_system1
+			    }
+
+			    multipath {
+			       wwid 360000970000292603453533033424331
+			       alias oms-mer-pk_t1_data1
+			    }
+
+
+    multipath {
+       wwid 360000970000296700060533030303836
+       alias oms-mer-pk_t1_vmax3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030303837
+       alias oms-mer-pk_t1_vmax3_data1
+    }
+
+
+ dd if=/dev/mapper/oms-mer-pk_t1_system1 of=/dev/mapper/oms-mer-pk_t1_vmax3_system1 bs=64K conv=noerror,sync status=progress
+		  
+ dd if=/dev/mapper/oms-mer-pk_t1_data1 of=/dev/mapper/oms-mer-pk_t1_vmax3_data1 bs=64K conv=noerror,sync status=progress
+
+
+
+
+		VM_NAME=oms-mer-pk
+		virsh define /etc/libvirt/qemu/$VM_NAME.xml
+		virsh edit $VM_NAME
+
+virsh dumpxml $VM_NAME | grep "source dev" | awk -F "'" '{print $2}' | xargs ls -l
+
+
+for node in `crm_node -p | sed "s/$(hostname -s)-cl//g"`; do echo -n "$node: " && virsh -c qemu+ssh://$node/system define /etc/libvirt/qemu/$VM_NAME.xml; done
+
+		partprobe /dev/mapper/oms-mer-pk_t1_vmax3_system1
+		partprobe /dev/mapper/oms-mer-pk_t1_vmax3_data1 
+
+
+		/home/admin/bin/removelun_rhel /dev/mapper/oms-mer-pk_t1_system1 | bash
+		/home/admin/bin/removelun_rhel /dev/mapper/oms-mer-pk_t1_data1 | bash
+
+
+
+		EUF :
+                ******
+ 
+
+    multipath {
+       wwid 360000970000296700069533030303836
+       alias oms-euf-pk_t1_vmax3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030303837
+       alias oms-euf-pk_t1_vmax3_data1
+    }
+
+
+ dd if=/dev/mapper/oms-euf-pk_t1_system1 of=/dev/mapper/oms-euf-pk_t1_vmax3_system1 bs=64K conv=noerror,sync status=progress
+		  
+ dd if=/dev/mapper/oms-euf-pk_t1_data1 of=/dev/mapper/oms-euf-pk_t1_vmax3_data1 bs=64K conv=noerror,sync status=progress
+
+VM_NAME=oms-euf-pk
+
+
+
+/home/admin/bin/removelun_rhel /dev/mapper/oms-euf-pk_t1_system1
+/home/admin/bin/removelun_rhel /dev/mapper/oms-euf-pk_t1_data1
+
+----------------------------------------------
+
+OUD
+MER:
+*****
+
+
+			    multipath {
+			       wwid 360000970000292603453533030314131
+			       alias oud-mer-pk_t1_system1
+			    }
+
+			    multipath {
+			       wwid 360000970000292603453533030314136
+			       alias oud-mer-pk_t1_data1
+			    }
+
+
+
+    multipath {
+       wwid 360000970000296700060533030303838
+       alias oud-mer-pk_t1_vmax3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700060533030303839
+       alias oud-mer-pk_t1_vmax3_data1
+    }
+
+
+
+ dd if=/dev/mapper/oud-mer-pk_t1_system1 of=/dev/mapper/oud-mer-pk_t1_vmax3_system1 bs=64K conv=noerror,sync status=progress
+		  
+ dd if=/dev/mapper/oud-mer-pk_t1_data1 of=/dev/mapper/oud-mer-pk_t1_vmax3_data1 bs=64K conv=noerror,sync status=progress
+
+
+
+partprobe /dev/mapper/oud-mer-pk_t1_vmax3_system1
+partprobe /dev/mapper/oud-mer-pk_t1_vmax3_data1
+
+/home/admin/bin/removelun_rhel /dev/mapper/
+
+
+EUF :
+*****
+
+oud-euf-pk 
+
+
+
+    multipath {
+       wwid 360000970000296700069533030303838
+       alias oud-euf-pk_t1_vmax3_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030303839
+       alias oud-euf-pk_t1_vmax3_data1
+    }
+
+
+
+
+ dd if=/dev/mapper/oud-euf-pk_t1_system1 of=/dev/mapper/oud-euf-pk_t1_vmax3_system1 bs=64K conv=noerror,sync status=progress
+
+ dd if=/dev/mapper/oud-euf-pk_t1_data1 of=/dev/mapper/oud-euf-pk_t1_vmax3_data1 bs=64K conv=noerror,sync status=progress
+
+
+VM_NAME=oud-euf-pk 
+
+partprobe /dev/mapper/oud-euf-pk_t1_vmax3_system1
+partprobe /dev/mapper/oud-euf-pk_t1_vmax3_data1
+
+
+
+
+/home/admin/bin/removelun_rhel /dev/mapper/oud-euf-pk_t1_system1 | bash
+/home/admin/bin/removelun_rhel /dev/mapper/oud-euf-pk_t1_data1 | bash
+
+
+
+
+------ vmax a rendre :
+
+
+    multipath {
+       wwid 360000970000292603453533030304637
+       alias oms-mer-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000292603453533033424331
+       alias oms-mer-pk_t1_data1
+    }
+
+	    multipath {
+	       wwid 360000970000292602560533030304637
+	       alias oms-mer-pk_t1_system1
+	    }
+
+	    multipath {
+	       wwid 360000970000292602560533033424331
+	       alias oms-mer-pk_t1_data1
+	    }
+
+
+
+    multipath {
+       wwid 360000970000292603453533030304638
+       alias oms-euf-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000292603453533033424336
+       alias oms-euf-pk_t1_data1
+    }
+
+
+	    multipath {
+	       wwid 360000970000292602560533030304638
+	       alias oms-euf-pk_t1_system1
+	    }
+
+	    multipath {
+	       wwid 360000970000292602560533033424336
+	       alias oms-euf-pk_t1_data1
+	    }
+
+
+
+
+
+
+    multipath {
+       wwid 360000970000292603453533030314131
+       alias oud-mer-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000292603453533030314136
+       alias oud-mer-pk_t1_data1
+    }
+
+	    multipath {
+	       wwid 360000970000292602560533030314131
+	       alias oud-mer-pk_t1_system1
+	    }
+
+	    multipath {
+	       wwid 360000970000292602560533030314136
+	       alias oud-mer-pk_t1_data1
+	    }
+
+
+
+    multipath {
+       wwid 360000970000292603453533030314142
+       alias oud-euf-pk_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000292603453533030314230
+       alias oud-euf-pk_t1_data1
+    }
+
+
+	    multipath {
+	       wwid 360000970000292602560533030314142
+	       alias oud-euf-pk_t1_system1
+	    }
+
+	    multipath {
+	       wwid 360000970000292602560533030314230
+	       alias oud-euf-pk_t1_data1
+	    }
+
+
+
+
+
+
+
+
+EUF :
+
+    multipath {
+       wwid 360000970000296700069533030374142
+       alias rdfngbo-pk_vmax3_t1_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374145
+       alias rdfngbo-pk_vmax3_t1_data1
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030374138
+       alias etenderint-pk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374139
+       alias etenderint-pk_vmax3_t2_data1
+    }
+
+
+
+    multipath {
+       wwid 360000970000296700069533030374136
+       alias etenderext-pk_vmax3_t2_system1
+    }
+
+    multipath {
+       wwid 360000970000296700069533030374137
+       alias etenderext-pk_vmax3_t2_data1
+    }
+
+
+
+
+
+
+
+       wwid 360000970000296700060533030333337
+       alias storage-pk_t1_system1
+
+
+
+mpathd (360000970000292602560533033304342) dm-155 EMC,SYMMETRIX
+mpathc (360000970000292602560533033304341) dm-154 EMC,SYMMETRIX
+
+mpathb (360000970000292602560533030344631) dm-156 EMC,SYMMETRIX
+mpathh (360000970000292602560533030344634) dm-165 EMC,SYMMETRIX
+
+
+
+
+
+
+
+
+

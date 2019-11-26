@@ -1,0 +1,17 @@
+# installer le grub sur le miroir ( installboot )
+/sbin/installgrub -m /boot/grub/stage1 /boot/grub/stage2 /dev/rdsk/c1t0d0s0
+# menu.lst sur /tftpboot
+root@romulus 11:08 [tftpboot] vi menu.lst.0100144FF2C2F1
+
+
+default=0
+timeout=20
+title Solaris_10 Install Jumpstart
+        kernel /I86PC.Solaris_10-2/multiboot kernel/unix  - install nowin -B install_config=158.167.99.57:/opt/SUNWjet,sysid_config=158.167.99.57:/opt/SUNWjet/Clients/alambic,install_media=158.167.99.57:/export/install/Solaris_10_x86_update6,install_boot=158.167.99.57:/export/install/Solaris_10_x86_update6/boot
+        module /I86PC.Solaris_10-2/x86.miniroot
+
+
+title Solaris_10 Boot net single user
+        kernel /I86PC.Solaris_10-2/multiboot kernel/unix -s -B console=ttya,sysid_config=158.167.99.57:/opt/SUNWjet/Clients/alambic
+        module /I86PC.Solaris_10-2/x86.miniroot
+

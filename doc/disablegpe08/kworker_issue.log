@@ -1,0 +1,75 @@
+[root@brutus ~]# perf record -g -a sleep 10
+[ perf record: Woken up 26 times to write data ]
+[ perf record: Captured and wrote 7.149 MB perf.data (38223 samples) ]
+[root@brutus ~]# perf report
+
+Why does kworker cpu usage get so high? 
+https://askubuntu.com/questions/176565/why-does-kworker-cpu-usage-get-so-high
+
+Answer:
+
+58
+
+Instead I think this CPU usage is not normal and is related to the well-known kworker bug: https://bugs.launchpad.net/ubuntu/+source/linux/+bug/887793
+
+The solution for me and for many others was, first of all, find out the "gpe" that is causing the bad stuff with something like:
+
+grep . -r /sys/firmware/acpi/interrupts/
+and check for an high value (mine was gpe13 - with a value like 200K - so, you have to change it accordingly, if differs). After that:
+
+~ cp /sys/firmware/acpi/interrupts/gpe13 /pathtobackup
+~ crontab -e
+Add this line, so it will be executed every startup/reboot:
+
+@reboot echo "disable" > /sys/firmware/acpi/interrupts/gpe13
+Save/exit. Then, to make it work also after wakeup from suspend:
+
+~ touch /etc/pm/sleep.d/30_disable_gpe13
+~ chmod +x /etc/pm/sleep.d/30_disable_gpe13
+~ vim /etc/pm/sleep.d/30_disable_gpe13
+Add this stuff:
+
+#!/bin/bash
+case "$1" in
+    thaw|resume)
+        echo disable > /sys/firmware/acpi/interrupts/gpe13 2>/dev/null
+        ;;
+    *)
+        ;;
+esac
+exit $?
+Save/exit, done.
+
+Tested and working on :
+
+Ubuntu 12.10 on Samsung Chronos 7 series - Model no. NP700Z7C --
+Ubuntu 16.04.2 on Clevo - Model no. P650RS --
+
+
+
+[root@brutus ~]# grep . -r /sys/firmware/acpi/interrupts/ | awk '$2 > 10'
+/sys/firmware/acpi/interrupts/gpe08:687452030   enabled
+
+[root@brutus ~]#  cp /sys/firmware/acpi/interrupts/gpe08 /pathtobackup
+[root@brutus ~]# crontab -e
+no crontab for root - using an empty one
+crontab: installing new crontab
+[root@brutus ~]# crontab -l
+@reboot echo "disable" > /sys/firmware/acpi/interrupts/gpe08
+[root@brutus ~]# ll /etc/pm/sleep.d
+total 0
+[root@brutus ~]# touch /etc/pm/sleep.d/30_disable_gpe08
+[root@brutus ~]# chmod +x /etc/pm/sleep.d/30_disable_gpe08
+[root@brutus ~]# vim /etc/pm/sleep.d/30_disable_gpe08
+[root@brutus ~]# cat /etc/pm/sleep.d/30_disable_gpe08
+#!/bin/bash
+case "$1" in
+    thaw|resume)
+        echo disable > /sys/firmware/acpi/interrupts/gpe08 2>/dev/null
+        ;;
+    *)
+        ;;
+esac
+exit $?
+
+

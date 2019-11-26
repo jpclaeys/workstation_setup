@@ -1,0 +1,169 @@
+
+##########################################################################################################################################
+aphrodite
+T5240
+
+ssh root@aphrodite-sc
+
+-> version
+SP firmware 3.0.3.20.e
+SP firmware build number: 46064
+SP firmware date: Fri Jun 19 09:25:15 PDT 2009
+SP filesystem version: 0.1.22
+
+-> set /HOST/bootmode script="setenv auto-boot? false"
+-> stop /SYS
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+######load -source tftp://192.168.1.87/Sun_System_Firmware-7_2_2_e-SPARC_Enterprise_T5140+T5240.pkg
+
+NOTE: An upgrade takes about 6 minutes to complete. ILOM
+      will enter a special mode to load new firmware. No
+      other tasks can be performed in ILOM until the
+      firmware upgrade is complete and ILOM is reset.
+
+Are you sure you want to load the specified file (y/n)? y
+Do you want to preserve the configuration (y/n)? y
+........................................................................................
+
+-> version
+SP firmware 3.0.3.20.e
+SP firmware build number: 46064
+SP firmware date: Fri Jun 19 09:25:15 PDT 2009
+SP filesystem version: 0.1.22
+
+##########################################################################################################################################
+mireille
+T5120
+
+ssh root@mireille-sc
+
+-> version
+SP firmware 2.0.4.28.a
+SP firmware build number: 43139
+SP firmware date: Sun Mar 15 14:25:46 PDT 2009
+SP filesystem version: 0.1.14
+
+-> set /HOST/bootmode script="setenv auto-boot? false"
+-> stop /SYS
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#####load -source tftp://192.168.1.87/Sun_System_Firmware-7_2_9_a-SPARC_Enterprise_T5120+T5220.pkg
+
+
+NOTE: An upgrade takes about 6 minutes to complete. ILOM
+      will enter a special mode to load new firmware. No
+      other tasks can be performed in ILOM until the
+      firmware upgrade is complete and ILOM is reset.
+
+Are you sure you want to load the specified file (y/n)? y
+Do you want to preserve the configuration (y/n)? y
+........................................................................................
+
+-> version
+SP firmware 3.0.3.20.e
+SP firmware build number: 46064
+SP firmware date: Fri Jun 19 09:25:15 PDT 2009
+SP filesystem version: 0.1.22
+
+##########################################################################################################################################
+emile
+T5240
+
+ssh root@emile-sc
+
+-> version
+SP firmware 3.0.3.20.b
+SP firmware build number: 44661
+SP firmware date: Tue May  5 19:47:42 PDT 2009
+SP filesystem version: 0.1.22
+
+-> set /HOST/bootmode script="setenv auto-boot? false"
+-> stop /SYS
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+######load -source tftp://192.168.1.87/Sun_System_Firmware-7_2_2_e-SPARC_Enterprise_T5140+T5240.pkg
+
+NOTE: An upgrade takes about 6 minutes to complete. ILOM
+      will enter a special mode to load new firmware. No
+      other tasks can be performed in ILOM until the
+      firmware upgrade is complete and ILOM is reset.
+
+Are you sure you want to load the specified file (y/n)? y
+Do you want to preserve the configuration (y/n)? y
+........................................................................................
+
+-> version
+SP firmware 3.0.3.20.e
+SP firmware build number: 46064
+SP firmware date: Fri Jun 19 09:25:15 PDT 2009
+SP filesystem version: 0.1.22
+
+##########################################################################################################################################
+odile
+T5240
+
+ssh root@odile-sc
+
+
+-> version
+SP firmware 3.0.3.20.b
+SP firmware build number: 44661
+SP firmware date: Tue May  5 19:47:42 PDT 2009
+SP filesystem version: 0.1.22
+
+-> set /HOST/bootmode script="setenv auto-boot? false"
+-> stop /SYS
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+######load -source tftp://192.168.1.87/Sun_System_Firmware-7_2_2_e-SPARC_Enterprise_T5140+T5240.pkg
+
+NOTE: An upgrade takes about 6 minutes to complete. ILOM
+      will enter a special mode to load new firmware. No
+      other tasks can be performed in ILOM until the
+      firmware upgrade is complete and ILOM is reset.
+
+Are you sure you want to load the specified file (y/n)? y
+Do you want to preserve the configuration (y/n)? y
+........................................................................................
+
+-> version
+SP firmware 3.0.3.20.e
+SP firmware build number: 46064
+SP firmware date: Fri Jun 19 09:25:15 PDT 2009
+SP filesystem version: 0.1.22
+
+
+##########################################################################################################################################
+martoni
+T5120
+
+
+ssh root@martoni-sc
+
+
+-> version
+SP firmware 2.0.4.28.a
+SP firmware build number: 43139
+SP firmware date: Sun Mar 15 14:25:46 PDT 2009
+SP filesystem version: 0.1.14
+
+
+-> set /HOST/bootmode script="setenv auto-boot? false"
+-> stop /SYS
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+######load -source tftp://192.168.1.87/Sun_System_Firmware-7_2_2_e-SPARC_Enterprise_T5120+T5220.pkg
+
+NOTE: An upgrade takes about 6 minutes to complete. ILOM
+      will enter a special mode to load new firmware. No
+      other tasks can be performed in ILOM until the
+      firmware upgrade is complete and ILOM is reset.
+
+Are you sure you want to load the specified file (y/n)? y
+Do you want to preserve the configuration (y/n)? y
+........................................................................................
+
+-> version
+

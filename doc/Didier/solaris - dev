@@ -1,0 +1,287 @@
+
+
+
+
+bortodi@mcqueen:[~] $ su opsys_ux
+
+
+root@mcqueen:[~] $ PATH=/usr/cluster/bin:$PATH export PATH
+root@mcqueen:[~] $ cldev status
+
+=== Cluster DID Devices ===
+
+Device Instance              Node               Status
+---------------              ----               ------
+/dev/did/rdsk/d1             mcqueen            Ok
+
+/dev/did/rdsk/d17            flash              Ok
+                             mcqueen            Ok
+
+/dev/did/rdsk/d2             mcqueen            Ok
+
+/dev/did/rdsk/d24            flash              Ok
+                             mcqueen            Ok
+
+/dev/did/rdsk/d25            flash              Ok
+                             mcqueen            Ok
+
+/dev/did/rdsk/d26            flash              Ok
+                             mcqueen            Fail
+
+/dev/did/rdsk/d28            flash              Ok
+                             mcqueen            Ok
+
+/dev/did/rdsk/d3             mcqueen            Ok
+
+/dev/did/rdsk/d31            flash              Ok
+                             mcqueen            Ok
+
+/dev/did/rdsk/d4             mcqueen            Ok
+
+/dev/did/rdsk/d6             flash              Ok
+
+/dev/did/rdsk/d7             flash              Ok
+
+/dev/did/rdsk/d8             flash              Ok
+
+/dev/did/rdsk/d9             flash              Ok
+
+root@mcqueen:[~] $ cldev show -v d26  
+
+=== DID Device Instances ===                   
+
+DID Device Name:                                /dev/did/rdsk/d26
+  Full Device Path:                                flash:/dev/rdsk/c3t5000097408280120d1
+  Full Device Path:                                flash:/dev/rdsk/c4t500009740828011Cd1
+  Full Device Path:                                mcqueen:/dev/rdsk/c3t500009740835F51Cd1
+  Full Device Path:                                mcqueen:/dev/rdsk/c2t500009740835F520d1
+  Replication:                                     srdf
+  default_fencing:                                 global
+  Disk ID:                                         60000970000292602560533030453239
+  Ascii Disk ID:                                   `
+
+root@mcqueen:[~] $ less -f /dev/rdsk/c3t500009740835F51Cd1s0 
+/dev/rdsk/c3t500009740835F51Cd1s0: I/O error
+root@mcqueen:[~] $ less -f /dev/rdsk/c3t500009740835F51Cd1s2 
+/dev/rdsk/c3t500009740835F51Cd1s2: I/O error
+root@mcqueen:[~] $ less -f /dev/rdsk/c2t500009740835F520d1s2 
+/dev/rdsk/c2t500009740835F520d1s2: I/O error
+
+root@mcqueen:[~] $ powermt display
+
+Symmetrix logical device count=19
+VNX logical device count=6
+==============================================================================
+----- Host Bus Adapters ---------  ------ I/O Paths -----  ------ Stats ------
+###  HW Path                       Summary   Total   Dead  IO/Sec Q-IOs Errors
+==============================================================================
+3074 pci@0/pci@0/pci@8/pci@0/pci@9/SUNW,qlc@0/fp@0,0  degraded     31     24       -     0      0
+3076 pci@0/pci@0/pci@8/pci@0/pci@1/SUNW,qlc@0/fp@0,0  degraded     31     24       -     0      0
+
+root@mcqueen:[~] $ #powermt display dev=all
+root@mcqueen:[~] $ powermt display dev=all|less
+root@mcqueen:[~] $ powermt check     
+          
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: vnx device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path c3t500009740835F51Cd1s0 is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path c2t500009740835F520d1s0 is currently dead.
+Do you want to remove it (y/n/a/q)? y
+Warning: symm device path unknown is currently dead.
+Do you want to remove it (y/n/a/q)? a
+Warning: symm device path unknown is currently dead.
+Warning: symm device path unknown is currently dead.
+Warning: symm device path unknown is currently dead.
+Warning: symm device path unknown is currently dead.
+Warning: symm device path unknown is currently dead.
+
+root@mcqueen:[~] $ powermt display dev=all|less
+root@mcqueen:[~] $ powermt display  
+           
+Symmetrix logical device count=4
+VNX logical device count=2
+==============================================================================
+----- Host Bus Adapters ---------  ------ I/O Paths -----  ------ Stats ------
+###  HW Path                       Summary   Total   Dead  IO/Sec Q-IOs Errors
+==============================================================================
+3074 pci@0/pci@0/pci@8/pci@0/pci@9/SUNW,qlc@0/fp@0,0  optimal       8      0       -     0      0
+3076 pci@0/pci@0/pci@8/pci@0/pci@1/SUNW,qlc@0/fp@0,0  optimal       8      0       -     0      0
+
+
+root@mcqueen:[~] $ powermt check
+root@mcqueen:[~] $ #zpool status
+root@mcqueen:[~] $ zpool status|grep emcpower22a
+bash: zpool: command not found
+
+root@mcqueen:[~] $ PATH=/usr/sbin:$PATH export PATH
+root@mcqueen:[~] $ zpool status|grep emcpower22a
+root@mcqueen:[~] $ zpool status                 
+  pool: rpool
+ state: ONLINE
+  scan: none requested
+config:
+
+        NAME          STATE     READ WRITE CKSUM
+        rpool         ONLINE       0     0     0
+          mirror-0    ONLINE       0     0     0
+            c1t0d0s0  ONLINE       0     0     0
+            c1t1d0s0  ONLINE       0     0     0
+
+errors: No known data errors
+root@mcqueen:[~] $ zpool list
+NAME   SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+rpool  136G  79.1G  56.9G  58%  1.00x  ONLINE  -
+root@mcqueen:[~] $ cldev
+cldev:  (C961689) Not enough arguments.
+cldev:  (C101856) Usage error.
+
+Usage:    cldev <subcommand> [<options>] [+ | <device> ...]
+          cldev [<subcommand>]  -? | --help
+          cldev  -V | --version
+
+Administer Oracle Solaris Cluster device instances
+
+SUBCOMMANDS:
+
+check          Check to ensure device consistency
+clear          Clear all DID references to stale devices
+combine        Combine two device instances
+export         Export cluster device configuration
+list           List cluster devices
+monitor        Enable monitoring of disk paths
+populate       Populate the global-devices namespace
+refresh        Refresh the device configuration
+rename         Rename a device instance
+repair         Repair device instances
+replicate      Replicate and combine device instances
+set            Set device properties
+show           Show device properties
+status         Display the status of monitored devices
+unmonitor      Disable monitoring of disk paths
+
+root@mcqueen:[~] $ cldev clear
+Updating shared devices on node 1
+Updating shared devices on node 2
+
+root@mcqueen:[~] $ cldev populate
+Configuring DID devices
+Configuring the /dev/global directory (global devices)
+obtaining access to all attached disks
+
+root@mcqueen:[~] $ cldev repair
+
+  
+root@mcqueen:[~] $ tail /var/adm/messages
+
+Oct 11 15:20:07 mcqueen genunix: [ID 936769 kern.info] emcp24 is /pseudo/emcp@24
+Oct 11 15:20:07 mcqueen pseudo: [ID 129642 kern.info] pseudo-device: emcp25
+Oct 11 15:20:07 mcqueen genunix: [ID 936769 kern.info] emcp25 is /pseudo/emcp@25
+Oct 11 15:20:10 mcqueen Cluster.devices.did: [ID 466922 daemon.notice] obtaining access to all attached disks
+Oct 11 15:20:10 mcqueen Cluster.CCR: [ID 485680 daemon.warning] reservation warning(node_join) - Unable to lookup local_only flag for device dsk/d31.
+Oct 11 15:20:10 mcqueen Cluster.CCR: [ID 485680 daemon.warning] reservation warning(node_join) - Unable to lookup local_only flag for device dsk/d26.
+Oct 11 15:20:45 mcqueen zvmm: [ID 756418 kern.info] NOTICE: kernel-zone virtual environment not supported: CPU unsupported
+Oct 11 15:20:49 mcqueen Cluster.devices.did: [ID 466922 daemon.notice] obtaining access to all attached disks
+Oct 11 15:20:49 mcqueen Cluster.CCR: [ID 485680 daemon.warning] reservation warning(node_join) - Unable to lookup local_only flag for device dsk/d31.
+Oct 11 15:20:49 mcqueen Cluster.CCR: [ID 485680 daemon.warning] reservation warning(node_join) - Unable to lookup local_only flag for device dsk/d26.
+root@mcqueen:[~] $ cldev status d26
+
+=== Cluster DID Devices ===
+
+Device Instance              Node               Status
+---------------              ----               ------
+/dev/did/rdsk/d26            flash              Ok
+                             mcqueen            Ok
+
+root@mcqueen:[~] $ cldev list -v d26
+DID Device          Full Device Path
+----------          ----------------
+d26                 mcqueen:/dev/rdsk/c2t500009740835F520d1
+d26                 mcqueen:/dev/rdsk/c3t500009740835F51Cd1
+d26                 flash:/dev/rdsk/c4t500009740828011Cd1
+d26                 flash:/dev/rdsk/c3t5000097408280120d1
+root@mcqueen:[~] $ powermt display dev=emcpower22a
+
+ERROR: Bad dev value emcpower22a, or not under Powerpath control.
+
+root@mcqueen:[~] $ powermt display dev=all|less   
+root@mcqueen:[~] $ exit
+

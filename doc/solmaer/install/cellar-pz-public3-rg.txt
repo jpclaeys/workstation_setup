@@ -1,0 +1,1657 @@
+
+##################################################
+################################################## vlan
+##################################################
+
+1[141203/162013]root@chico# dladm create-vlan -l aggr1 -v 1 net0_1
+0[141203/162045]root@chico# dladm show-link | grep vlan
+net0_1              vlan      1500   up       aggr1
+0[141203/162102]root@chico# dladm show-vlan 
+LINK                VID      OVER                FLAGS
+net0_1              1        aggr1               -----
+
+
+
+
+0[141203/162131]root@groucho# dladm create-vlan -l aggr1 -v 1 net0_1
+0[141203/162138]root@groucho# dladm show-link | grep vlan
+net0_1              vlan      1500   up       aggr1
+0[141203/162140]root@groucho# dladm show-vlan 
+LINK                VID      OVER                FLAGS
+net0_1              1        aggr1               -----
+
+
+
+
+##################################################
+################################################## ipmp group
+##################################################
+
+
+0[141203/162159]root@chico# ipadm create-ipmp ipmp1
+0[141203/162200]root@chico# ipmpstat -g
+GROUP       GROUPNAME   STATE     FDT       INTERFACES
+ipmp1       ipmp1       failed    --        --
+ipmp0       ipmp0       ok        --        aggr1 (aggr2)
+1[141203/162508]root@chico# ipadm create-ip net0_1
+0[141203/162913]root@chico# ipadm add-ipmp -i net0_1 ipmp1
+0[141203/162917]root@chico# ipmpstat -g
+GROUP       GROUPNAME   STATE     FDT       INTERFACES
+ipmp1       ipmp1       ok        --        net0_1
+ipmp0       ipmp0       ok        --        aggr1 (aggr2)
+
+
+
+0[141203/162240]root@groucho# ipadm create-ipmp ipmp1
+0[141203/162948]root@groucho# ipmpstat -g
+GROUP       GROUPNAME   STATE     FDT       INTERFACES
+ipmp1       ipmp1       failed    --        --
+ipmp0       ipmp0       ok        --        aggr1 (aggr2)
+0[141203/162950]root@groucho# ipadm create-ip net0_1
+0[141203/162954]root@groucho# ipadm add-ipmp -i net0_1 ipmp1
+0[141203/162956]root@groucho# ipmpstat -g
+GROUP       GROUPNAME   STATE     FDT       INTERFACES
+ipmp1       ipmp1       ok        --        net0_1
+ipmp0       ipmp0       ok        --        aggr1 (aggr2)
+
+
+
+##################################################
+################################################## ip de test
+##################################################
+
+
+
+0[141203/164020]root@chico# ipadm create-addr -T static -a 10.220.220.2/24 ipmp1/test1
+
+0[141203/162959]root@groucho# ipadm create-addr -T static -a 10.220.220.3/24 ipmp1/test1
+
+
+
+################################################## 
+################################################## clrslh
+################################################## 
+
+##### 10.220.220.1    opnfs753        # cellar-pz-public3
+
+
+3[141203/164107]root@chico# clrg create -n chico,groucho cellar-pz-public3-rg
+127[141203/164218]root@chico# clreslogicalhostname create -g cellar-pz-public3-rg -h opnfs753 opnfs753-lh
+chico - Could not find a mapping for opnfs753 in /etc/inet/hosts. It is recommended that a mapping for opnfs753 be added
+groucho - Could not find a mapping for opnfs753 in /etc/inet/hosts. It is recommended that a mapping for opnfs753 be added
+
+
+0[141203/164318]root@chico# echo '10.220.220.1    opnfs753        # cellar-pz-public3' >>/etc/inet/hosts
+0[141203/164028]root@groucho# echo '10.220.220.1    opnfs753        # cellar-pz-public3' >>/etc/inet/hosts
+
+
+
+0[141203/164434]root@chico# clrg manage cellar-pz-public3-rg
+3[141203/164504]root@chico# clrg switch -n chico cellar-pz-public3-rg
+0[141203/164511]root@chico# clrs status -g cellar-pz-public3-rg
+
+=== Cluster Resources ===
+
+Resource Name       Node Name      State        Status Message
+-------------       ---------      -----        --------------
+opnfs753-lh         chico          Online       Online - LogicalHostname online.
+                    groucho        Offline      Offline
+
+
+
+0[141203/164331]root@groucho# ping opnfs753
+opnfs753 is alive
+
+
+
+
+
+
+
+0[141203/164520]root@chico# clrg switch -n groucho cellar-pz-public3-rg
+0[141203/164557]root@chico# clrs status -g cellar-pz-public3-rg        
+
+=== Cluster Resources ===
+
+Resource Name       Node Name      State        Status Message
+-------------       ---------      -----        --------------
+opnfs753-lh         chico          Offline      Offline - LogicalHostname offline.
+                    groucho        Online       Online - LogicalHostname online.
+
+0[141203/164534]root@groucho# ipadm 
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.130/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.10/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.18/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.163/24
+ipmp1             ipmp       ok           --         --
+   ipmp1/?        static     ok           --         10.220.220.1/24
+   ipmp1/test1    static     ok           --         10.220.220.3/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net8              ip         disabled     --         --
+   net8/v4        static     disabled     --         169.254.182.77/24
+net14             ip         ok           --         --
+   net14/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164601]root@groucho# 
+
+
+
+
+
+0[141203/164634]root@chico# clrg switch -n chico cellar-pz-public3-rg
+
+0[141203/164601]root@groucho# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.130/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.10/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.18/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.163/24
+ipmp1             ipmp       ok           --         --
+   ipmp1/test1    static     ok           --         10.220.220.3/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net8              ip         disabled     --         --
+   net8/v4        static     disabled     --         169.254.182.77/24
+net14             ip         ok           --         --
+   net14/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164701]root@groucho# 
+
+
+0[141203/164657]root@chico# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.129/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.9/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.17/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.164/24
+ipmp1             ipmp       ok           --         --
+   ipmp1/?        static     ok           --         10.220.220.1/24
+   ipmp1/test1    static     ok           --         10.220.220.2/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net12             ip         ok           --         --
+   net12/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164706]root@chico# 
+
+
+
+
+
+
+################################################## 
+################################################## remove test ip
+################################################## 
+
+
+
+
+0[141203/164706]root@chico# ipadm delete-addr ipmp1/test1
+0[141203/164701]root@groucho# ipadm delete-addr ipmp1/test1
+
+
+0[141203/164726]root@chico# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.129/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.9/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.17/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.164/24
+ipmp1             ipmp       ok           --         --
+   ipmp1/?        static     ok           --         10.220.220.1/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net12             ip         ok           --         --
+   net12/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164744]root@chico# 
+
+
+0[141203/164727]root@groucho# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.130/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.10/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.18/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.163/24
+ipmp1             ipmp       down         --         --
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net8              ip         disabled     --         --
+   net8/v4        static     disabled     --         169.254.182.77/24
+net14             ip         ok           --         --
+   net14/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164744]root@groucho# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################## 
+################################################## switch test
+################################################## 
+
+
+
+
+
+
+
+0[141203/164755]root@chico# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.129/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.9/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.17/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.164/24
+ipmp1             ipmp       ok           --         --
+   ipmp1/?        static     ok           --         10.220.220.1/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net12             ip         ok           --         --
+   net12/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164822]root@chico# clrg switch -n groucho cellar-pz-public3-rg
+0[141203/164831]root@chico# clrs status -g cellar-pz-public3-rg
+
+=== Cluster Resources ===
+
+Resource Name       Node Name      State        Status Message
+-------------       ---------      -----        --------------
+opnfs753-lh         chico          Offline      Offline - LogicalHostname offline.
+                    groucho        Online       Online - LogicalHostname online.
+
+0[141203/164833]root@chico# ipadm                                      
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.129/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.9/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.17/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.164/24
+ipmp1             ipmp       down         --         --
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net12             ip         ok           --         --
+   net12/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164838]root@chico# 
+
+
+0[141203/164857]root@groucho# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.130/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.10/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.18/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.163/24
+ipmp1             ipmp       ok           --         --
+   ipmp1/?        static     ok           --         10.220.220.1/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net8              ip         disabled     --         --
+   net8/v4        static     disabled     --         169.254.182.77/24
+net14             ip         ok           --         --
+   net14/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164857]root@groucho# 
+
+
+
+
+
+
+
+
+
+
+
+0[141203/164838]root@chico# clrg switch -n chico cellar-pz-public3-rg
+0[141203/164917]root@chico# clrs status -g cellar-pz-public3-rg
+
+=== Cluster Resources ===
+
+Resource Name       Node Name      State        Status Message
+-------------       ---------      -----        --------------
+opnfs753-lh         chico          Online       Online - LogicalHostname online.
+                    groucho        Offline      Offline - LogicalHostname offline.
+
+0[141203/164920]root@chico# 
+0[141203/164921]root@chico# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.129/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.9/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.17/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.164/24
+ipmp1             ipmp       ok           --         --
+   ipmp1/?        static     ok           --         10.220.220.1/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net12             ip         ok           --         --
+   net12/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164924]root@chico# 
+
+0[141203/164857]root@groucho# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.130/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.10/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.18/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.163/24
+ipmp1             ipmp       down         --         --
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net8              ip         disabled     --         --
+   net8/v4        static     disabled     --         169.254.182.77/24
+net14             ip         ok           --         --
+   net14/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+0[141203/164925]root@groucho# 
+
+
+################################################## 
+################################################## zpool integration
+################################################## 
+
+
+
+
+
+0[141203/164924]root@chico# zpool list
+NAME                SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+cordisica3-pz-data  101G  60.9G  40.1G  60%  1.00x  ONLINE  /
+cordisica3-pz-db    101G  36.0G  65.0G  35%  1.00x  ONLINE  /
+rpool               278G   205G  73.4G  73%  1.00x  ONLINE  -
+0[141203/165022]root@chico# 
+
+
+0[141203/165017]root@groucho# zpool list
+NAME                SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+cellar-pz-public3  18.4T  12.4T  6.04T  67%  1.00x  ONLINE  -
+rpool               278G   205G  73.0G  73%  1.00x  ONLINE  -
+0[141203/165028]root@groucho# 
+
+
+127[141203/165034]root@groucho# zpool status cellar-pz-public3 
+  pool: cellar-pz-public3
+ state: ONLINE
+  scan: none requested
+config:
+
+        NAME                      STATE     READ WRITE CKSUM
+        cellar-pz-public3         ONLINE       0     0     0
+          c6t500009740835F598d0   ONLINE       0     0     0
+          c6t500009740835F598d1   ONLINE       0     0     0
+          c6t500009740835F598d2   ONLINE       0     0     0
+          c6t500009740835F598d3   ONLINE       0     0     0
+          c6t500009740835F598d4   ONLINE       0     0     0
+          c6t500009740835F598d5   ONLINE       0     0     0
+          c6t500009740835F598d6   ONLINE       0     0     0
+          c6t500009740835F598d7   ONLINE       0     0     0
+          c6t500009740835F598d8   ONLINE       0     0     0
+          c6t500009740835F598d9   ONLINE       0     0     0
+          c6t500009740835F598d10  ONLINE       0     0     0
+          c6t500009740835F598d11  ONLINE       0     0     0
+          c6t500009740835F598d12  ONLINE       0     0     0
+          c6t500009740835F598d13  ONLINE       0     0     0
+          c6t500009740835F598d14  ONLINE       0     0     0
+          c6t500009740835F598d15  ONLINE       0     0     0
+          c6t500009740835F598d16  ONLINE       0     0     0
+          c6t500009740835F598d19  ONLINE       0     0     0
+
+errors: No known data errors
+0[141203/165045]root@groucho# 
+
+
+
+
+
+
+
+
+
+0[141203/165110]root@groucho# mount | grep cellar | awk '{print $1}'
+/zpool/cellar-pz-public3
+/applications/cellar/cellar_common
+/applications/cellar/fedoradata
+/applications/cellar/fedoradata_0
+/applications/cellar/fedoradata_1
+/applications/cellar/fedoradata_2
+/applications/cellar/fedoradata_3
+/applications/cellar/fedoradata_4
+/applications/cellar/fedoradata_5
+/applications/cellar/fedoradata_6
+/applications/cellar/fedoradata_7
+/applications/cellar/fedoradata_8
+/applications/cellar/fedoradata_9
+/applications/cellar/fedoradata_a
+/applications/cellar/fedoradata_b
+/applications/cellar/fedoradata_c
+/applications/cellar/fedoradata_d
+/applications/cellar/fedoradata_date_0
+/applications/cellar/fedoradata_date_1
+/applications/cellar/fedoradata_date_2
+/applications/cellar/fedoradata_date_3
+/applications/cellar/fedoradata_e
+/applications/cellar/fedoradata_f
+/applications/cellar/orabin
+
+1[141203/165140]root@groucho# mount | grep cellar | awk '{print $1}' | xargs fuser -cu 
+/zpool/cellar-pz-public3: 
+/applications/cellar/cellar_common: 
+/applications/cellar/fedoradata: 
+/applications/cellar/fedoradata_0: 
+/applications/cellar/fedoradata_1: 
+/applications/cellar/fedoradata_2: 
+/applications/cellar/fedoradata_3: 
+/applications/cellar/fedoradata_4: 
+/applications/cellar/fedoradata_5: 
+/applications/cellar/fedoradata_6: 
+/applications/cellar/fedoradata_7: 
+/applications/cellar/fedoradata_8: 
+/applications/cellar/fedoradata_9: 
+/applications/cellar/fedoradata_a: 
+/applications/cellar/fedoradata_b: 
+/applications/cellar/fedoradata_c: 
+/applications/cellar/fedoradata_d: 
+/applications/cellar/fedoradata_date_0: 
+/applications/cellar/fedoradata_date_1: 
+/applications/cellar/fedoradata_date_2: 
+/applications/cellar/fedoradata_date_3: 
+/applications/cellar/fedoradata_e: 
+/applications/cellar/fedoradata_f: 
+/applications/cellar/orabin: 
+0[141203/165150]root@groucho# 
+
+
+
+
+
+0[141203/165214]root@groucho# zpool export cellar-pz-public3
+
+
+
+
+0[141203/165421]root@groucho# symdev list pd                                           
+
+Symmetrix ID: 000292603453
+
+        Device Name           Directors                  Device                
+--------------------------- ------------- -------------------------------------
+                                                                           Cap 
+Sym  Physical               SA :P DA :IT  Config        Attribute    Sts   (MB)
+--------------------------- ------------- -------------------------------------
+
+00A4 /dev/rdsk/emcpower2c   10G:0 06C:D4  2-Way Mir     N/Asst'd GK  RW       3
+00A5 /dev/rdsk/emcpower3c   10G:0 10A:C3  2-Way Mir     N/Asst'd GK  RW       3
+00A6 /dev/rdsk/emcpower4c   10G:0 09C:C0  2-Way Mir     N/Asst'd GK  RW       3
+00A7 /dev/rdsk/emcpower5c   10G:0 10B:C0  2-Way Mir     N/Asst'd GK  RW       3
+00A8 /dev/rdsk/emcpower6c   10G:0 11B:D2  2-Way Mir     N/Asst'd GK  RW       3
+00A9 /dev/rdsk/emcpower7c   10G:0 12C:D2  2-Way Mir     N/Asst'd GK  RW       3
+13CC /dev/rdsk/emcpower8c   07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+13EB /dev/rdsk/emcpower17c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+140A /dev/rdsk/emcpower18c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+1429 /dev/rdsk/emcpower19c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+1448 /dev/rdsk/emcpower20c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+1467 /dev/rdsk/emcpower21c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+1486 /dev/rdsk/emcpower22c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+14A5 /dev/rdsk/emcpower23c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+14C4 /dev/rdsk/emcpower24c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+14E3 /dev/rdsk/emcpower25c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+1502 /dev/rdsk/emcpower9c   07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+1521 /dev/rdsk/emcpower10c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+1540 /dev/rdsk/emcpower11c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+155F /dev/rdsk/emcpower12c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+157E /dev/rdsk/emcpower13c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+159D /dev/rdsk/emcpower14c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+15BC /dev/rdsk/emcpower15c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+15DB /dev/rdsk/emcpower16c  07G:0  NA:NA  RDF1+TDEV     Grp'd    (M) RW  1078219
+27FF /dev/rdsk/emcpower1c   10G:0  NA:NA  RDF2+TDEV     Grp'd    (M) WD  104344
+305E /dev/rdsk/emcpower0c   10G:0  NA:NA  RDF2+TDEV     Grp'd    (M) WD  103579
+
+0[141203/165453]root@groucho# 
+
+
+
+
+
+
+0[141203/170002]root@chico# clrg switch -n groucho cellar-pz-public3-rg
+
+0[141203/165943]root@groucho# /usr/cluster/bin/clrs create -g cellar-pz-public3-rg -t SUNW.HAStoragePlus -p GlobalDevicePaths="cellar-pz-public3"  cellar-pz-public3-srdf
+0[141203/170237]root@groucho# clrs status -g cellar-pz-public3-rg
+
+=== Cluster Resources ===
+
+Resource Name             Node Name   State     Status Message
+-------------             ---------   -----     --------------
+cellar-pz-public3-srdf    chico       Offline   Offline
+                          groucho     Online    Online
+
+opnfs753-lh               chico       Offline   Offline - LogicalHostname offline.
+                          groucho     Online    Online - LogicalHostname online.
+
+
+
+
+
+0[141203/170242]root@groucho# /usr/cluster/bin/clrs create -g cellar-pz-public3-rg -t SUNW.HAStoragePlus -p zpools="cellar-pz-public3" -p Resource_dependencies="cellar-pz-public3-srdf" cellar-pz-public3-zfs
+0[141203/170446]root@groucho# clrs status -g cellar-pz-public3-rg 
+
+=== Cluster Resources ===
+
+Resource Name             Node Name   State     Status Message
+-------------             ---------   -----     --------------
+cellar-pz-public3-zfs     chico       Offline   Offline
+                          groucho     Online    Online
+
+cellar-pz-public3-srdf    chico       Offline   Offline
+                          groucho     Online    Online
+
+opnfs753-lh               chico       Offline   Offline - LogicalHostname offline.
+                          groucho     Online    Online - LogicalHostname online.
+
+
+
+0[141203/170556]root@groucho# zpool list                    
+NAME                SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+cellar-pz-public3  18.4T  12.4T  6.04T  67%  1.00x  ONLINE  /
+rpool               278G   205G  73.0G  73%  1.00x  ONLINE  -
+0[141203/170600]root@groucho# zpool status cellar-pz-public3
+  pool: cellar-pz-public3
+ state: ONLINE
+  scan: none requested
+config:
+
+        NAME                      STATE     READ WRITE CKSUM
+        cellar-pz-public3         ONLINE       0     0     0
+          c6t500009740835F598d0   ONLINE       0     0     0
+          c6t500009740835F598d1   ONLINE       0     0     0
+          c6t500009740835F598d2   ONLINE       0     0     0
+          c6t500009740835F598d3   ONLINE       0     0     0
+          c6t500009740835F598d4   ONLINE       0     0     0
+          c6t500009740835F598d5   ONLINE       0     0     0
+          c6t500009740835F598d6   ONLINE       0     0     0
+          c6t500009740835F598d7   ONLINE       0     0     0
+          c6t500009740835F598d8   ONLINE       0     0     0
+          c6t500009740835F598d9   ONLINE       0     0     0
+          c6t500009740835F598d10  ONLINE       0     0     0
+          c6t500009740835F598d11  ONLINE       0     0     0
+          c6t500009740835F598d12  ONLINE       0     0     0
+          c6t500009740835F598d13  ONLINE       0     0     0
+          c6t500009740835F598d14  ONLINE       0     0     0
+          c6t500009740835F598d15  ONLINE       0     0     0
+          c6t500009740835F598d16  ONLINE       0     0     0
+          c6t500009740835F598d19  ONLINE       0     0     0
+
+errors: No known data errors
+0[141203/170602]root@groucho# 
+
+
+################################################## 
+################################################## test de switch
+################################################## 
+
+
+
+clrg switch -n chico cordisica3-pz-rg
+
+
+#####
+##### rien ne se passe
+##### opnfs753-lh est enable mais pas pingable
+##### arrrrrgggghhhh pas dans le bon vlan220 !!!!!!
+##### 
+
+
+
+
+
+
+
+################################################## 
+################################################## vlan correction
+################################################## 
+
+
+
+0[141203/171832]root@chico# dladm create-vlan -l aggr1 -v 220 net0_220
+
+0[141203/171905]root@chico# dladm show-link | grep vlan
+net0_1              vlan      1500   up       aggr1
+net0_220            vlan      1500   up       aggr1
+
+
+
+
+
+0[141203/171730]root@groucho# dladm create-vlan -l aggr1 -v 220 net0_220
+
+0[141203/171907]root@groucho# dladm show-link | grep vlan
+net0_1              vlan      1500   up       aggr1
+net0_220            vlan      1500   up       aggr1
+
+
+
+
+################################################## 
+################################################## ipmp group correction
+################################################## 
+
+
+
+0[141203/171917]root@chico# ipadm create-ipmp ipmp220
+0[141203/172033]root@chico# ipmpstat -g
+GROUP       GROUPNAME   STATE     FDT       INTERFACES
+ipmp220     ipmp220     failed    --        --
+ipmp1       ipmp1       ok        --        net0_1
+ipmp0       ipmp0       ok        --        aggr1 (aggr2)
+0[141203/172035]root@chico# ipadm create-ip net0_220
+0[141203/172049]root@chico# ipadm add-ipmp -i net0_220 ipmp220
+0[141203/172058]root@chico# ipmpstat -g
+GROUP       GROUPNAME   STATE     FDT       INTERFACES
+ipmp220     ipmp220     ok        --        net0_220
+ipmp1       ipmp1       ok        --        net0_1
+ipmp0       ipmp0       ok        --        aggr1 (aggr2)
+
+
+
+
+
+
+0[141203/172133]root@groucho# ipadm create-ipmp ipmp220
+0[141203/172136]root@groucho# ipmpstat -g
+GROUP       GROUPNAME   STATE     FDT       INTERFACES
+ipmp220     ipmp220     failed    --        --
+ipmp1       ipmp1       ok        --        net0_1
+ipmp0       ipmp0       ok        --        aggr1 (aggr2)
+0[141203/172139]root@groucho# ipadm create-ip net0_220
+0[141203/172142]root@groucho# ipadm add-ipmp -i net0_220 ipmp220
+0[141203/172145]root@groucho# ipmpstat -g
+GROUP       GROUPNAME   STATE     FDT       INTERFACES
+ipmp220     ipmp220     ok        --        net0_220
+ipmp1       ipmp1       ok        --        net0_1
+ipmp0       ipmp0       ok        --        aggr1 (aggr2)
+0[141203/172147]root@groucho# 
+
+
+##################################################
+################################################## ip de test correction`
+################################################## 
+
+
+
+
+130[141203/172421]root@chico# ipadm create-addr -T static -a 10.220.220.2/24 ipmp220/test1
+
+0[141203/172228]root@groucho# ipadm create-addr -T static -a 10.220.220.3/24 ipmp220/test1
+
+################################################## 
+################################################## clrslh correction
+################################################## 
+
+
+
+
+
+
+0[141203/172520]root@groucho# clrs delete opnfs753-lh
+(C476641) NOTICE: Resource cellar-pz-public3-zfs, which remains online had an implicit dependency on resource opnfs753-lh which is now deleted.
+
+
+
+
+
+
+
+0[141203/172529]root@groucho# clrs status -g cellar-pz-public3-rg  
+
+=== Cluster Resources ===
+
+Resource Name             Node Name   State     Status Message
+-------------             ---------   -----     --------------
+cellar-pz-public3-zfs     chico       Offline   Offline
+                          groucho     Online    Online
+
+cellar-pz-public3-srdf    chico       Offline   Offline
+                          groucho     Online    Online
+
+0[141203/172543]root@groucho# zpool list
+NAME                SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+cellar-pz-public3  18.4T  12.4T  6.04T  67%  1.00x  ONLINE  /
+rpool               278G   205G  73.0G  73%  1.00x  ONLINE  -
+0[141203/172548]root@groucho# 
+
+
+
+
+
+0[141203/172424]root@chico# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.129/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.9/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.17/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.164/24
+ipmp1             ipmp       down         --         --
+ipmp220           ipmp       ok           --         --
+   ipmp220/test1  static     ok           --         10.220.220.2/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net12             ip         ok           --         --
+   net12/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+net0_220          ip         ok           ipmp220    --
+0[141203/172617]root@chico# 
+
+0[141203/172548]root@groucho# ipadm
+NAME              CLASS/TYPE STATE        UNDER      ADDR
+aggr1             ip         ok           ipmp0      --
+aggr2             ip         ok           ipmp0      --
+clprivnet0        ip         ok           --         --
+   clprivnet0/?   static     ok           --         172.16.26.130/26
+int1              ip         ok           --         --
+   int1/?         static     ok           --         172.16.26.10/29
+int2              ip         ok           --         --
+   int2/?         static     ok           --         172.16.26.18/29
+ipmp0             ipmp       ok           --         --
+   ipmp0/v4       static     ok           --         10.199.99.163/24
+ipmp1             ipmp       down         --         --
+ipmp220           ipmp       ok           --         --
+   ipmp220/test1  static     ok           --         10.220.220.3/24
+lo0               loopback   ok           --         --
+   lo0/v4         static     ok           --         127.0.0.1/8
+net8              ip         disabled     --         --
+   net8/v4        static     disabled     --         169.254.182.77/24
+net14             ip         ok           --         --
+   net14/v4       static     ok           --         169.254.182.77/24
+net0_1            ip         ok           ipmp1      --
+net0_220          ip         ok           ipmp220    --
+0[141203/172610]root@groucho# 
+
+
+
+
+
+
+0[141203/172635]root@groucho# clreslogicalhostname create -g cellar-pz-public3-rg -h opnfs753 opnfs753-lh
+
+
+0[141203/172636]root@groucho# clrs status -g cellar-pz-public3-rg                                        
+
+=== Cluster Resources ===
+
+Resource Name             Node Name   State     Status Message
+-------------             ---------   -----     --------------
+opnfs753-lh               chico       Offline   Offline
+                          groucho     Online    Online - LogicalHostname online.
+
+cellar-pz-public3-zfs     chico       Offline   Offline
+                          groucho     Online    Online
+
+cellar-pz-public3-srdf    chico       Offline   Offline
+                          groucho     Online    Online
+
+
+
+
+
+0[141203/172653]root@groucho# ping opnfs753
+opnfs753 is alive
+0[141203/172657]root@groucho# 
+
+0[141203/172617]root@chico# ping opnfs753
+opnfs753 is alive
+0[141203/172702]root@chico# 
+
+0[141203/173104]betorma@procyon% ping opnfs753
+opnfs753 is alive
+0[141203/173108]betorma@procyon% 
+
+################################################## 
+################################################## remove ip test
+################################################## 
+
+
+1[141203/172857]root@chico# ipadm delete-addr ipmp220/test1
+0[141203/172657]root@groucho# ipadm delete-addr ipmp220/test1
+
+
+
+
+################################################## 
+################################################## test de switch 
+################################################## 
+
+
+
+
+
+
+
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_monitor_stop> for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <90> seconds
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_monitor_stop> for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <90> seconds
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hafoip_monitor_stop> for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <300> seconds
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_stop> completed successfully for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 0% of timeout <90 seconds>
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_stop> completed successfully for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 0% of timeout <90 seconds>
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hafoip_monitor_stop> completed successfully for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 0% of timeout <300 seconds>
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hafoip_stop> for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <300> seconds
+Dec  3 17:30:03 groucho ip: [ID 678092 kern.notice] TCP_IOC_ABORT_CONN: local = 010.220.220.001:0, remote = 000.000.000.000:0, start = -2, end = 6
+Dec  3 17:30:03 groucho ip: [ID 302654 kern.notice] TCP_IOC_ABORT_CONN: aborted 0 connection 
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hafoip_stop> completed successfully for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 0% of timeout <300 seconds>
+Dec  3 17:30:03 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_postnet_stop> for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <1800> seconds
+Dec  3 17:30:13 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_postnet_stop> completed successfully for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 0% of timeout <1800 seconds>
+Dec  3 17:30:13 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_postnet_stop> for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <1800> seconds
+Dec  3 17:30:13 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_postnet_stop> completed successfully for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 0% of timeout <1800 seconds>
+Dec  3 17:30:13 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: no longer primary for cellar-pz-public3
+
+
+
+
+
+
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 529407 daemon.notice] resource group cellar-pz-public3-rg state on node groucho change to RG_PENDING_OFFLINE
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-zfs state on node groucho change to R_ONLINE_UNMON
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-srdf state on node groucho change to R_ONLINE_UNMON
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node groucho change to R_ONLINE_UNMON
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource opnfs753-lh status on node groucho change to R_FM_UNKNOWN
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource opnfs753-lh status msg on node groucho change to <Stopping>
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node groucho change to R_STOPPING
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource opnfs753-lh status on node groucho change to R_FM_OFFLINE
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource opnfs753-lh status msg on node groucho change to <LogicalHostname offline.>
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node groucho change to R_OFFLINE
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-zfs status on node groucho change to R_FM_UNKNOWN
+Dec  3 17:30:03 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-zfs status msg on node groucho change to <Stopping>
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-zfs state on node groucho change to R_OFFLINE
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-zfs status on node groucho change to R_FM_OFFLINE
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-zfs status msg on node groucho change to <>
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-srdf status on node groucho change to R_FM_UNKNOWN
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node groucho change to <Stopping>
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-srdf state on node groucho change to R_OFFLINE
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-srdf status on node groucho change to R_FM_OFFLINE
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node groucho change to <>
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 529407 daemon.notice] resource group cellar-pz-public3-rg state on node groucho change to RG_OFFLINE
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 529407 daemon.notice] resource group cellar-pz-public3-rg state on node chico change to RG_PENDING_ONLINE
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hafoip_prenet_start> for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <300> seconds
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource opnfs753-lh status on node chico change to R_FM_UNKNOWN
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource opnfs753-lh status msg on node chico change to <Starting>
+Dec  3 17:30:13 chico SC[,SUNW.LogicalHostname:4,cellar-pz-public3-rg,opnfs753-lh,hafoip_prenet_start]: [ID 491762 daemon.notice] Failed to retrieve netmask for 10.220.220.1 - will use 0xffffff00 from physical interface
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hafoip_prenet_start> completed successfully for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 0% of timeout <300 seconds>
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_prenet_start> for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <1800> seconds
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-srdf status on node chico change to R_FM_UNKNOWN
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node chico change to <Starting>
+Dec  3 17:30:13 chico Cluster.RGM.global.rgmd: [ID 316625 daemon.notice] Timeout monitoring on method tag <cellar-pz-public3-rg.cellar-pz-public3-srdf.10> has been suspended.
+Dec  3 17:30:14 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: becoming primary for cellar-pz-public3
+Dec  3 17:30:42 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Dec  3 17:30:42 chico None of the devices in the group 'cellar-pz-public3' are in 'SyncInProg' state.
+Dec  3 17:30:49 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Dec  3 17:30:49 chico All devices in the group 'cellar-pz-public3' are in 'Synchronized' state.
+Dec  3 17:30:57 chico Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:30:57 chico An RDF 'Failover' operation execution is
+Dec  3 17:30:57 chico in progress for device group 'cellar-pz-public3'. Please wait...
+Dec  3 17:30:58 chico Cluster.Framework: [ID 801593 daemon.notice] stdout:     Write Disable device(s) on SA at source (R1)..............
+Dec  3 17:30:59 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:30:59 chico Cluster.Framework: [ID 801593 daemon.notice] stdout:     Suspend RDF link(s).......................................
+Dec  3 17:31:00 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:31:00 chico Cluster.Framework: [ID 801593 daemon.notice] stdout:     Read/Write Enable device(s) on RA at target (R2)..........
+Dec  3 17:31:00 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:31:00 chico Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:31:00 chico The RDF 'Failover' operation successfully executed for
+Dec  3 17:31:00 chico Cluster.Framework: [ID 801593 daemon.error] stderr: device group 'cellar-pz-public3'.
+Dec  3 17:31:00 chico Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:31:00 chico An RDF 'Swap Personality' operation execution is
+Dec  3 17:31:00 chico in progress for device group 'cellar-pz-public3'. Please wait...
+Dec  3 17:31:00 chico Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:31:01 chico Cluster.Framework: [ID 801593 daemon.notice] stdout:     Swap RDF Personality......................................
+Dec  3 17:31:01 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: Started.
+Dec  3 17:31:04 chico Cluster.Framework: [ID 801593 daemon.notice] stdout:     Swap RDF Personality......................................
+Dec  3 17:31:04 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:31:04 chico Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:31:04 chico The RDF 'Swap Personality' operation successfully executed for
+Dec  3 17:31:04 chico Cluster.Framework: [ID 801593 daemon.error] stderr: device group 'cellar-pz-public3'.
+Dec  3 17:31:05 chico Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:31:05 chico An RDF 'Incremental Establish' operation execution is
+Dec  3 17:31:05 chico in progress for device group 'cellar-pz-public3'. Please wait...
+Dec  3 17:31:05 chico Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:31:06 chico Cluster.Framework: [ID 801593 daemon.notice] stdout:     Suspend RDF link(s).......................................
+Dec  3 17:31:06 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:31:06 chico Cluster.Framework: [ID 801593 daemon.notice] stdout:     Resume RDF link(s)........................................Started.
+Dec  3 17:31:07 chico Cluster.Framework: [ID 801593 daemon.notice] stdout:     Resume RDF link(s)........................................Done.
+Dec  3 17:31:07 chico Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:31:07 chico The RDF 'Incremental Establish' operation successfully initiated for
+Dec  3 17:31:07 chico Cluster.Framework: [ID 801593 daemon.error] stderr: device group 'cellar-pz-public3'.
+Dec  3 17:31:08 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Dec  3 17:31:08 chico All devices in the group 'cellar-pz-public3' are in 'Synchronized' state.
+Dec  3 17:31:08 chico Cluster.RGM.global.rgmd: [ID 316625 daemon.notice] Timeout monitoring on method tag <cellar-pz-public3-rg.cellar-pz-public3-srdf.10> has been resumed.
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_prenet_start> completed successfully for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 3% of timeout <1800 seconds>
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-srdf state on node chico change to R_ONLINE_UNMON
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-srdf status on node chico change to R_FM_ONLINE
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node chico change to <>
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_monitor_start> for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <90> seconds
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_prenet_start> for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <1800> seconds
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-zfs status on node chico change to R_FM_UNKNOWN
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-zfs status msg on node chico change to <Starting>
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_start> completed successfully for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 0% of timeout <90 seconds>
+Dec  3 17:31:10 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-srdf state on node chico change to R_ONLINE
+Dec  3 17:31:11 chico SC[,SUNW.HAStoragePlus:10,cellar-pz-public3-rg,cellar-pz-public3-zfs,hastorageplus_prenet_start]: [ID 148650 daemon.notice] Started searching for devices in '/dev/dsk' to find the importable pools.
+Dec  3 17:31:12 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node chico change to <>
+
+
+
+
+
+0[141203/173130]root@groucho# clrs status -g cellar-pz-public3-rg                 
+
+=== Cluster Resources ===
+
+Resource Name             Node Name   State     Status Message
+-------------             ---------   -----     --------------
+opnfs753-lh               chico       Online    Online - LogicalHostname online.
+                          groucho     Offline   Offline - LogicalHostname offline.
+
+cellar-pz-public3-zfs     chico       Online    Online
+                          groucho     Offline   Offline
+
+cellar-pz-public3-srdf    chico       Online    Online
+                          groucho     Offline   Offline
+
+0[141203/173200]root@groucho# 
+
+
+
+
+
+0[141203/173200]root@groucho# ping opnfs753
+opnfs753 is alive
+0[141203/173212]root@groucho# 
+
+
+
+1[141203/173259]root@chico# zpool status cellar-pz-public3 
+  pool: cellar-pz-public3
+ state: ONLINE
+  scan: none requested
+config:
+
+        NAME                      STATE     READ WRITE CKSUM
+        cellar-pz-public3         ONLINE       0     0     0
+          c5t5000097408280198d0   ONLINE       0     0     0
+          c5t5000097408280198d1   ONLINE       0     0     0
+          c5t5000097408280198d2   ONLINE       0     0     0
+          c5t5000097408280198d3   ONLINE       0     0     0
+          c5t5000097408280198d4   ONLINE       0     0     0
+          c5t5000097408280198d5   ONLINE       0     0     0
+          c5t5000097408280198d6   ONLINE       0     0     0
+          c5t5000097408280198d7   ONLINE       0     0     0
+          c5t5000097408280198d8   ONLINE       0     0     0
+          c5t5000097408280198d9   ONLINE       0     0     0
+          c5t5000097408280198d10  ONLINE       0     0     0
+          c5t5000097408280198d11  ONLINE       0     0     0
+          c5t5000097408280198d12  ONLINE       0     0     0
+          c5t5000097408280198d13  ONLINE       0     0     0
+          c5t5000097408280198d14  ONLINE       0     0     0
+          c5t5000097408280198d15  ONLINE       0     0     0
+          c5t5000097408280198d16  ONLINE       0     0     0
+          c5t5000097408280198d19  ONLINE       0     0     0
+
+errors: No known data errors
+0[141203/173304]root@chico# 
+
+
+
+
+
+0[141203/173320]root@groucho# clrg switch -n groucho  cellar-pz-public3-rg   
+
+
+
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 529407 daemon.notice] resource group cellar-pz-public3-rg state on node chico change to RG_PENDING_OFFLINE
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_monitor_stop> for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <90> seconds
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_monitor_stop> for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <90> seconds
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hafoip_monitor_stop> for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <300> seconds
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_stop> completed successfully for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 0% of timeout <90 seconds>
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_stop> completed successfully for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 0% of timeout <90 seconds>
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-srdf state on node chico change to R_ONLINE_UNMON
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-zfs state on node chico change to R_ONLINE_UNMON
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hafoip_monitor_stop> completed successfully for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 0% of timeout <300 seconds>
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node chico change to R_ONLINE_UNMON
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node chico change to R_STOPPING
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hafoip_stop> for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <300> seconds
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource opnfs753-lh status on node chico change to R_FM_UNKNOWN
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource opnfs753-lh status msg on node chico change to <Stopping>
+Dec  3 17:33:34 chico ip: [ID 678092 kern.notice] TCP_IOC_ABORT_CONN: local = 010.220.220.001:0, remote = 000.000.000.000:0, start = -2, end = 6
+Dec  3 17:33:34 chico ip: [ID 302654 kern.notice] TCP_IOC_ABORT_CONN: aborted 0 connection 
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource opnfs753-lh status on node chico change to R_FM_OFFLINE
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource opnfs753-lh status msg on node chico change to <LogicalHostname offline.>
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hafoip_stop> completed successfully for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 0% of timeout <300 seconds>
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node chico change to R_OFFLINE
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_postnet_stop> for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <1800> seconds
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-zfs status on node chico change to R_FM_UNKNOWN
+Dec  3 17:33:34 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-zfs status msg on node chico change to <Stopping>
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_postnet_stop> completed successfully for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 0% of timeout <1800 seconds>
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-zfs state on node chico change to R_OFFLINE
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-zfs status on node chico change to R_FM_OFFLINE
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-zfs status msg on node chico change to <>
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_postnet_stop> for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <chico>, timeout <1800> seconds
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-srdf status on node chico change to R_FM_UNKNOWN
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node chico change to <Stopping>
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_postnet_stop> completed successfully for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <chico>, time used: 0% of timeout <1800 seconds>
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-srdf state on node chico change to R_OFFLINE
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-srdf status on node chico change to R_FM_OFFLINE
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node chico change to <>
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 529407 daemon.notice] resource group cellar-pz-public3-rg state on node chico change to RG_OFFLINE
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 529407 daemon.notice] resource group cellar-pz-public3-rg state on node groucho change to RG_PENDING_ONLINE
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource opnfs753-lh status on node groucho change to R_FM_UNKNOWN
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource opnfs753-lh status msg on node groucho change to <Starting>
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-srdf status on node groucho change to R_FM_UNKNOWN
+Dec  3 17:33:42 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node groucho change to <Starting>
+Dec  3 17:33:42 chico Cluster.Framework: [ID 801593 daemon.notice] stdout: no longer primary for cellar-pz-public3
+Dec  3 17:34:45 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-srdf state on node groucho change to R_ONLINE_UNMON
+Dec  3 17:34:45 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-srdf status on node groucho change to R_FM_ONLINE
+Dec  3 17:34:45 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node groucho change to <>
+Dec  3 17:34:45 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-zfs status on node groucho change to R_FM_UNKNOWN
+Dec  3 17:34:45 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-zfs status msg on node groucho change to <Starting>
+Dec  3 17:34:45 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-srdf state on node groucho change to R_ONLINE
+Dec  3 17:34:46 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-srdf status msg on node groucho change to <>
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-zfs state on node groucho change to R_ONLINE_UNMON
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource cellar-pz-public3-zfs status on node groucho change to R_FM_ONLINE
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-zfs status msg on node groucho change to <>
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node groucho change to R_STARTING
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource cellar-pz-public3-zfs state on node groucho change to R_ONLINE
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 784560 daemon.notice] resource opnfs753-lh status on node groucho change to R_FM_ONLINE
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource opnfs753-lh status msg on node groucho change to <LogicalHostname online.>
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node groucho change to R_ONLINE_UNMON
+Dec  3 17:35:04 chico Cluster.RGM.global.rgmd: [ID 529407 daemon.notice] resource group cellar-pz-public3-rg state on node groucho change to RG_PENDING_ON_STARTED
+Dec  3 17:35:05 chico Cluster.RGM.global.rgmd: [ID 443746 daemon.notice] resource opnfs753-lh state on node groucho change to R_ONLINE
+Dec  3 17:35:05 chico Cluster.RGM.global.rgmd: [ID 529407 daemon.notice] resource group cellar-pz-public3-rg state on node groucho change to RG_ONLINE
+Dec  3 17:35:05 chico Cluster.RGM.global.rgmd: [ID 922363 daemon.notice] resource cellar-pz-public3-zfs status msg on node groucho change to <>
+
+
+
+
+
+
+0[141203/173505]root@groucho# clrs status -g cellar-pz-public3-rg                 
+
+=== Cluster Resources ===
+
+Resource Name             Node Name   State     Status Message
+-------------             ---------   -----     --------------
+opnfs753-lh               chico       Offline   Offline - LogicalHostname offline.
+                          groucho     Online    Online - LogicalHostname online.
+
+cellar-pz-public3-zfs     chico       Offline   Offline
+                          groucho     Online    Online
+
+cellar-pz-public3-srdf    chico       Offline   Offline
+                          groucho     Online    Online
+
+0[141203/173511]root@groucho# zpool list                                          
+NAME                SIZE  ALLOC   FREE  CAP  DEDUP  HEALTH  ALTROOT
+cellar-pz-public3  18.4T  12.4T  6.04T  67%  1.00x  ONLINE  /
+rpool               278G   205G  73.0G  73%  1.00x  ONLINE  -
+0[141203/173518]root@groucho# 
+
+
+
+
+
+Dec  3 17:33:42 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hafoip_prenet_start> for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <300> seconds
+Dec  3 17:33:42 groucho SC[,SUNW.LogicalHostname:4,cellar-pz-public3-rg,opnfs753-lh,hafoip_prenet_start]: [ID 491762 daemon.notice] Failed to retrieve netmask for 10.220.220.1 - will use 0xffffff00 from physical interface
+Dec  3 17:33:42 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hafoip_prenet_start> completed successfully for resource <opnfs753-lh>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 0% of timeout <300 seconds>
+Dec  3 17:33:42 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_prenet_start> for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <1800> seconds
+Dec  3 17:33:42 groucho Cluster.RGM.global.rgmd: [ID 316625 daemon.notice] Timeout monitoring on method tag <cellar-pz-public3-rg.cellar-pz-public3-srdf.10> has been suspended.
+Dec  3 17:33:43 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: becoming primary for cellar-pz-public3
+Dec  3 17:34:20 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Dec  3 17:34:20 groucho None of the devices in the group 'cellar-pz-public3' are in 'SyncInProg' state.
+Dec  3 17:34:26 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Dec  3 17:34:26 groucho All devices in the group 'cellar-pz-public3' are in 'Synchronized' state.
+Dec  3 17:34:32 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:34:32 groucho An RDF 'Failover' operation execution is
+Dec  3 17:34:32 groucho in progress for device group 'cellar-pz-public3'. Please wait...
+Dec  3 17:34:32 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:34:33 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Write Disable device(s) on SA at source (R1)..............
+Dec  3 17:34:34 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:34:34 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Suspend RDF link(s).......................................
+Dec  3 17:34:34 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:34:34 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Read/Write Enable device(s) on SA at target (R2)..........
+Dec  3 17:34:35 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:34:35 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Read/Write Enable device(s) on RA at target (R2)..........
+Dec  3 17:34:35 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:34:35 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:34:35 groucho The RDF 'Failover' operation successfully executed for
+Dec  3 17:34:35 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: device group 'cellar-pz-public3'.
+Dec  3 17:34:35 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:34:35 groucho An RDF 'Swap Personality' operation execution is
+Dec  3 17:34:35 groucho in progress for device group 'cellar-pz-public3'. Please wait...
+Dec  3 17:34:36 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Swap RDF Personality......................................
+Dec  3 17:34:36 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: Started.
+Dec  3 17:34:39 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Swap RDF Personality......................................
+Dec  3 17:34:39 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:34:39 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:34:39 groucho The RDF 'Swap Personality' operation successfully executed for
+Dec  3 17:34:39 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: device group 'cellar-pz-public3'.
+Dec  3 17:34:40 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:34:40 groucho An RDF 'Incremental Establish' operation execution is
+Dec  3 17:34:40 groucho in progress for device group 'cellar-pz-public3'. Please wait...
+Dec  3 17:34:41 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Suspend RDF link(s).......................................
+Dec  3 17:34:41 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: Done.
+Dec  3 17:34:41 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Resume RDF link(s)........................................Started.
+Dec  3 17:34:41 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout:     Resume RDF link(s)........................................Done.
+Dec  3 17:34:41 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: 
+Dec  3 17:34:41 groucho The RDF 'Incremental Establish' operation successfully initiated for
+Dec  3 17:34:41 groucho Cluster.Framework: [ID 801593 daemon.error] stderr: device group 'cellar-pz-public3'.
+Dec  3 17:34:42 groucho Cluster.Framework: [ID 801593 daemon.notice] stdout: 
+Dec  3 17:34:42 groucho All devices in the group 'cellar-pz-public3' are in 'Synchronized' state.
+Dec  3 17:34:42 groucho Cluster.RGM.global.rgmd: [ID 316625 daemon.notice] Timeout monitoring on method tag <cellar-pz-public3-rg.cellar-pz-public3-srdf.10> has been resumed.
+Dec  3 17:34:45 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_prenet_start> completed successfully for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 3% of timeout <1800 seconds>
+Dec  3 17:34:45 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_monitor_start> for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <90> seconds
+Dec  3 17:34:45 groucho Cluster.RGM.global.rgmd: [ID 224900 daemon.notice] launching method <hastorageplus_prenet_start> for resource <cellar-pz-public3-zfs>, resource group <cellar-pz-public3-rg>, node <groucho>, timeout <1800> seconds
+Dec  3 17:34:45 groucho Cluster.RGM.global.rgmd: [ID 515159 daemon.notice] method <hastorageplus_monitor_start> completed successfully for resource <cellar-pz-public3-srdf>, resource group <cellar-pz-public3-rg>, node <groucho>, time used: 0% of timeout <90 seconds>
+Dec  3 17:34:45 groucho SC[,SUNW.HAStoragePlus:10,cellar-pz-public3-rg,cellar-pz-public3-zfs,hastorageplus_prenet_start]: [ID 148650 daemon.notice] Started searching for devices in '/dev/dsk' to find the importable pools.
+
+
+
+################################################## 
+################################################## nfs acl
+################################################## 
+
+
+
+
+0[141203/174459]betorma@persee% zfs list -H -r -o name -t filesystem cellar-pz-public2  | while read dataset; do zfs get -H sharenfs $dataset; done 
+cellar-pz-public2       sharenfs        off     local
+cellar-pz-public2/applications  sharenfs        sec=sys,rw=opsrv752.opoce.cec.eu.int:cellarmain-pz.opoce.cec.eu.int:nfs_cellar_pz_public_rw,ro=nfs_cellar_pz_public_ro  local
+cellar-pz-public2/applications/cellar   sharenfs        sec=sys,rw=nfs_cellar_pz_public_rw,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/cellar_common     sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata        sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_0      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_1      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_2      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_3      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_4      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_5      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_6      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_7      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_8      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_9      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_a      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_b      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_c      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_d      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_date_0 sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_date_1 sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_date_2 sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_date_3 sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_e      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/fedoradata_f      sharenfs        sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro   local
+cellar-pz-public2/applications/cellar/orabin    sharenfs        sec=sys,ro=nfs_cellar_pz_public_ro      local
+0[141203/174504]betorma@persee% 
+
+
+
+## old syntax
+zfs set sharenfs="sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro" cellar-pz-public3/applications/cellar/fedoradata
+
+## new syntax
+zfs set share=path=/applications/cellar/fedoradata,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro,public cellar-pz-public3/applications/cellar/fedoradata
+
+0[141203/180056]root@groucho# zfs set share=path=/applications/cellar/fedoradata,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro,public cellar-pz-public3/applications/cellar/fedoradata
+name=applications_cellar_fedoradata,path=/applications/cellar/fedoradata,prot=nfs,public=true,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro
+0[141203/180107]root@groucho# 
+
+
+
+## remove share with new syntax
+zfs set -c share=name=applications_cellar_fedoradata cellar-pz-public3/applications/cellar/fedoradata
+
+0[141203/180206]root@groucho# zfs set -c share=name=applications_cellar_fedoradata cellar-pz-public3/applications/cellar/fedoradata
+share 'applications_cellar_fedoradata' was removed.
+0[141203/180214]root@groucho# 
+
+
+
+
+
+
+zfs list -H -r -o mountpoint,name -t filesystem cellar-pz-public2   | grep -v ^none | perl -ne 'chomp; @list=split; $share=`zfs get -H sharenfs $list[1]`; print "$_ $share"' | awk '{print "zfs set share=path="$1",prot=nfs,"$5" "$2}' | sed -e 's/cellar-pz-public2/cellar-pz-public3/'
+
+
+
+0[141204/070046]betorma@persee% zfs list -H -r -o mountpoint,name -t filesystem cellar-pz-public2   | grep -v ^none | perl -ne 'chomp; @list=split; $share=`zfs get -H sharenfs $list[1]`; print "$_ $share"' | awk '{print "zfs set share=path="$1",prot=nfs,"$5" "$2}' | sed -e 's/cellar-pz-public2/cellar-pz-public3/'
+zfs set share=path=/zpool/cellar-pz-public,prot=nfs,off cellar-pz-public3
+zfs set share=path=/applications/cellar/cellar_common,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/cellar_common
+zfs set share=path=/applications/cellar/fedoradata,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata
+zfs set share=path=/applications/cellar/fedoradata_0,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_0
+zfs set share=path=/applications/cellar/fedoradata_1,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_1
+zfs set share=path=/applications/cellar/fedoradata_2,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_2
+zfs set share=path=/applications/cellar/fedoradata_3,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_3
+zfs set share=path=/applications/cellar/fedoradata_4,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_4
+zfs set share=path=/applications/cellar/fedoradata_5,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_5
+zfs set share=path=/applications/cellar/fedoradata_6,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_6
+zfs set share=path=/applications/cellar/fedoradata_7,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_7
+zfs set share=path=/applications/cellar/fedoradata_8,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_8
+zfs set share=path=/applications/cellar/fedoradata_9,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_9
+zfs set share=path=/applications/cellar/fedoradata_a,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_a
+zfs set share=path=/applications/cellar/fedoradata_b,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_b
+zfs set share=path=/applications/cellar/fedoradata_c,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_c
+zfs set share=path=/applications/cellar/fedoradata_d,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_d
+zfs set share=path=/applications/cellar/fedoradata_date_0,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_0
+zfs set share=path=/applications/cellar/fedoradata_date_1,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_1
+zfs set share=path=/applications/cellar/fedoradata_date_2,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_2
+zfs set share=path=/applications/cellar/fedoradata_date_3,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_3
+zfs set share=path=/applications/cellar/fedoradata_e,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_e
+zfs set share=path=/applications/cellar/fedoradata_f,prot=nfs,sec=sys,rw=cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_f
+zfs set share=path=/applications/cellar/orabin,prot=nfs,sec=sys,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/orabin
+0[141204/070047]betorma@persee% 
+
+
+0[141204/070335]root@groucho# zfs list -H -r cellar-pz-public3 | egrep -v 'none|zpool' | awk '{print "zfs set share.nfs=on "$1}'
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/cellar_common
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_0
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_1
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_2
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_3
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_4
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_5
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_6
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_7
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_8
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_9
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_a
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_b
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_c
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_d
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_date_0
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_date_1
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_date_2
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_date_3
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_e
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/fedoradata_f
+zfs set share.nfs=on cellar-pz-public3/applications/cellar/orabin
+0[141204/070357]root@groucho# 
+
+
+
+
+
+
+
+
+zfs set share=path=/zpool/cellar-pz-public,prot=nfs,off cellar-pz-public3
+zfs set share=path=/applications/cellar/cellar_common,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/cellar_common
+zfs set share=path=/applications/cellar/fedoradata,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata
+zfs set share=path=/applications/cellar/fedoradata_0,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_0
+zfs set share=path=/applications/cellar/fedoradata_1,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_1
+zfs set share=path=/applications/cellar/fedoradata_2,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_2
+zfs set share=path=/applications/cellar/fedoradata_3,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_3
+zfs set share=path=/applications/cellar/fedoradata_4,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_4
+zfs set share=path=/applications/cellar/fedoradata_5,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_5
+zfs set share=path=/applications/cellar/fedoradata_6,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_6
+zfs set share=path=/applications/cellar/fedoradata_7,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_7
+zfs set share=path=/applications/cellar/fedoradata_8,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_8
+zfs set share=path=/applications/cellar/fedoradata_9,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_9
+zfs set share=path=/applications/cellar/fedoradata_a,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_a
+zfs set share=path=/applications/cellar/fedoradata_b,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_b
+zfs set share=path=/applications/cellar/fedoradata_c,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_c
+zfs set share=path=/applications/cellar/fedoradata_d,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_d
+zfs set share=path=/applications/cellar/fedoradata_date_0,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_0
+zfs set share=path=/applications/cellar/fedoradata_date_1,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_1
+zfs set share=path=/applications/cellar/fedoradata_date_2,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_2
+zfs set share=path=/applications/cellar/fedoradata_date_3,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_3
+zfs set share=path=/applications/cellar/fedoradata_e,prot=nfs,sec=sys,rw=cnfs_cellar_pz_public_rw,ellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_e
+zfs set share=path=/applications/cellar/fedoradata_f,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw,cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_f
+zfs set share=path=/applications/cellar/orabin,prot=nfs,sec=sys,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/orabin
+
+
+
+
+
+##### correction le 08/12/2014
+
+zfs set share=path=/zpool/cellar-pz-public,prot=nfs,off cellar-pz-public3
+zfs set share=path=/applications/cellar/cellar_common,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/cellar_common
+zfs set share=path=/applications/cellar/fedoradata,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata
+zfs set share=path=/applications/cellar/fedoradata_0,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_0
+zfs set share=path=/applications/cellar/fedoradata_1,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_1
+zfs set share=path=/applications/cellar/fedoradata_2,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_2
+zfs set share=path=/applications/cellar/fedoradata_3,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_3
+zfs set share=path=/applications/cellar/fedoradata_4,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_4
+zfs set share=path=/applications/cellar/fedoradata_5,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_5
+zfs set share=path=/applications/cellar/fedoradata_6,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_6
+zfs set share=path=/applications/cellar/fedoradata_7,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_7
+zfs set share=path=/applications/cellar/fedoradata_8,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_8
+zfs set share=path=/applications/cellar/fedoradata_9,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_9
+zfs set share=path=/applications/cellar/fedoradata_a,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_a
+zfs set share=path=/applications/cellar/fedoradata_b,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_b
+zfs set share=path=/applications/cellar/fedoradata_c,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_c
+zfs set share=path=/applications/cellar/fedoradata_d,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_d
+zfs set share=path=/applications/cellar/fedoradata_date_0,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_0
+zfs set share=path=/applications/cellar/fedoradata_date_1,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_1
+zfs set share=path=/applications/cellar/fedoradata_date_2,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_2
+zfs set share=path=/applications/cellar/fedoradata_date_3,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_date_3
+zfs set share=path=/applications/cellar/fedoradata_e,prot=nfs,sec=sys,rw=cnfs_cellar_pz_public_rw,ellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_e
+zfs set share=path=/applications/cellar/fedoradata_f,prot=nfs,sec=sys,rw=nfs_cellar_pz_public_rw:cellarmain2-pz.opoce.cec.eu.int,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/fedoradata_f
+zfs set share=path=/applications/cellar/orabin,prot=nfs,sec=sys,ro=nfs_cellar_pz_public_ro cellar-pz-public3/applications/cellar/orabin
+
+
+
+
+
+################################################## 
+################################################## test nfs
+################################################## 
+
+
+
+0[141204/084857]betorma@cellarmain2-pz% ls /net/opnfs753/applications/cellar/fedoradata_2
+datastreamStore  objectStore
+0[141204/091635]betorma@cellarmain2-pz% ls /net/opnfs753/applications/cellar/fedoradata_7
+datastreamStore  objectStore
+0[141204/091637]betorma@cellarmain2-pz% ls /net/opnfs753/applications/cellar/fedoradata_0
+datastreamStore  objectStore
+0[141204/091639]betorma@cellarmain2-pz% ls /net/opnfs753/applications/cellar/fedoradata_c
+datastreamStore  objectStore
+0[141204/091642]betorma@cellarmain2-pz% 
+
+
+0[141204/084941]betorma@cellarfo6-pk% ls /net/opnfs753/applications/cellar/fedoradata_2
+datastreamStore  objectStore
+0[141204/091623]betorma@cellarfo6-pk% ls /net/opnfs753/applications/cellar/fedoradata_6
+datastreamStore  objectStore
+0[141204/091626]betorma@cellarfo6-pk% ls /net/opnfs753/applications/cellar/fedoradata_f
+datastreamStore  objectStore
+
+
+################################################## 
+################################################## rsync
+################################################## 
+
+
+0[141205/124946]root@persee# mkdir /applications/cellar/users/cellar/rsync
+0[141205/125003]root@persee# chown -R cellar:cellar /applications/cellar/users/cellar        
+
+0[141205/124912]root@groucho# mkdir /applications/cellar/users/cellar/rsync
+0[141205/125022]root@groucho# chown -R cellar:cellar /applications/cellar/users/cellar        
+
+
+
+
+
+##### ssh keys
+
+
+
+0[141205/130709]root@persee# su - cellar 
+
+
+
+
+persee% ssh-keygen -t rsa                                        
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/cellar/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/cellar/.ssh/id_rsa.
+Your public key has been saved in /home/cellar/.ssh/id_rsa.pub.
+The key fingerprint is:
+4e:96:ff:f6:e4:f6:d2:e1:ec:6f:a5:99:9d:01:07:fd cellar@persee
+persee% 
+
+
+
+0[141205/132654]root@groucho# cat /applications/cellar/users/cellar/.ssh/authorized_keys 
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEA0kDqvWSrp5dM6zWb+taEzofrNUOEbYmjfvwNh5fY5aQGxeWRE6bjiPc3ftq3JCr6hkKqbdg+fK51vjBoqHGNIew9jbwrMhWdv9jjN0tXicVyS2WDGo1BovH/4WSMiI1OiC0GqultvuFmmXJGz3JQWlJMin8qnka95t2/Eq7nx58= cellar@persee
+0[141205/133604]root@groucho# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### tcp wrapper
+
+0[141205/105508]root@groucho# echo sshd:persee.opoce.cec.eu.int >>/etc/hosts.allow
+
+
+
+
+
+
+
+
+
+##### ssh config to authorize only rsync as root
+
+
+
+
+
+
+
+
+##### crontab
+
+
+
+
+
+##### test avec fedoradata_2, de persee vers chico
+
+
+
+0[141205/095120]root@persee# df -h /applications/cellar/fedoradata_2
+Filesystem             size   used  avail capacity  Mounted on
+cellar-pz-public2/applications/cellar/fedoradata_2
+                        19T   681G   6.0T    10%    /applications/cellar/fedoradata_2
+0[141205/095125]root@persee# 
+
+
+
+
+0[141205/094722]root@chico# df -h /applications/cellar/fedoradata_2
+Filesystem             Size   Used  Available Capacity  Mounted on
+rpool/ROOT/solaris-2   274G   4.6G        63G     7%    /
+0[141205/095128]root@chico# ls /applications/cellar/fedoradata_2   
+
+0[141205/095132]root@chico# ls /applications/cellar/fedoradata_2 | wc -l
+       0
+0[141205/095139]root@chico# 
+
+
+
+
+
+##### -a:	 	-rlptgoD
+##### 			-r: recurse into directories
+##### 			-l: copy symlinks as symlinks
+##### 			-p: preserve permissions
+##### 			-t: preserve modification times
+##### 			-g: preserve group
+##### 			-o: preserve owner (super-user only)
+##### 			-D: same as --devices --specials
+##### 				 --devices:  preserve device files (super-user only)
+##### 				 --specials: preserve special files
+##### -H: 		preserve hard links
+##### -S: 		handle sparse files efficiently
+##### -e:		specify the remote shell to use
+##### --update: 	skip files that are newer on the receiver
+
+##### -n:		perform a trial run with no changes made
+
+
+
+
+
+
+
+
+
+
+/opt/OPrsync/bin/rsync -aHSn --update --progress -e 'ssh'  /applications/cellar/fedoradata_2/ cellar@groucho:/applications/cellar/fedoradata_2
+
+
+
+
+
+
+###################### version 1
+for f in `ls /applications/cellar/ | egrep 'cellar*|fedoradata*'`
+do
+	last_snap=`ls -t /applications/cellar/fedoradata_2/.zfs/snapshot | tail -1`
+	echo /opt/OPrsync/bin/rsync -aHSn --update --progress -e 'ssh'  /applications/cellar/${f}/.zfs/snapshot/${last_snap}/ cellar@groucho:/applications/cellar/${f}
+done
+
+
+###################### version 2
+
+
+/home/cellar/bin/sync_to_public3.sh
+
+
+
+
+
+
+
+################################################## 
+################################################## crontab
+################################################## 
+
+
+0[141205/140401]root@persee# ls /applications/cellar/ | egrep 'cellar|fedoradata' | awk '{print "/home/cellar/bin/sync_to_public3.sh "$1}'
+/home/cellar/bin/sync_to_public3.sh cellar_common
+/home/cellar/bin/sync_to_public3.sh fedoradata
+/home/cellar/bin/sync_to_public3.sh fedoradata_0
+/home/cellar/bin/sync_to_public3.sh fedoradata_1
+/home/cellar/bin/sync_to_public3.sh fedoradata_2
+/home/cellar/bin/sync_to_public3.sh fedoradata_3
+/home/cellar/bin/sync_to_public3.sh fedoradata_4
+/home/cellar/bin/sync_to_public3.sh fedoradata_5
+/home/cellar/bin/sync_to_public3.sh fedoradata_6
+/home/cellar/bin/sync_to_public3.sh fedoradata_7
+/home/cellar/bin/sync_to_public3.sh fedoradata_8
+/home/cellar/bin/sync_to_public3.sh fedoradata_9
+/home/cellar/bin/sync_to_public3.sh fedoradata_a
+/home/cellar/bin/sync_to_public3.sh fedoradata_b
+/home/cellar/bin/sync_to_public3.sh fedoradata_c
+/home/cellar/bin/sync_to_public3.sh fedoradata_d
+/home/cellar/bin/sync_to_public3.sh fedoradata_date_0
+/home/cellar/bin/sync_to_public3.sh fedoradata_date_1
+/home/cellar/bin/sync_to_public3.sh fedoradata_date_2
+/home/cellar/bin/sync_to_public3.sh fedoradata_date_3
+/home/cellar/bin/sync_to_public3.sh fedoradata_e
+/home/cellar/bin/sync_to_public3.sh fedoradata_f
+0[141205/140434]root@persee# 
+
+
+
+
+00 20 * * * /home/cellar/bin/sync_to_public3.sh cellar_common
+00 20 * * * /home/cellar/bin/sync_to_public3.sh fedoradata
+00 20 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_0
+00 20 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_1
+00 20 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_2
+00 21 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_3
+00 21 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_4
+00 21 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_5
+00 21 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_6
+00 21 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_7
+00 21 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_8
+00 22 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_9
+00 22 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_a
+00 22 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_b
+00 22 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_c
+00 22 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_d
+00 22 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_date_0
+00 23 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_date_1
+00 23 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_date_2
+00 23 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_date_3
+00 23 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_e
+00 23 * * * /home/cellar/bin/sync_to_public3.sh fedoradata_f
+
+

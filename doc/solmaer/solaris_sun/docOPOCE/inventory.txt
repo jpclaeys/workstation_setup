@@ -1,0 +1,1 @@
+nsrjb -v |perl -ne 'm{^\s*(\d+):\s+\-\*\s+\-\s*$} && print "-S $1\n"' | xargs nsrjb -I

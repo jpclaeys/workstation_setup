@@ -1,0 +1,4 @@
+fsdevice=/dev/fssnap/3
+SNAP_PATH="/export/eub"
+fs=users
+mount -F ufs -o ro $fsdevice $SNAP_PATH/snapshot/$fs

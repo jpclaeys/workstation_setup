@@ -1,0 +1,107 @@
+#########################################################
+##### on both cluster nodes
+
+
+
+##### variables
+
+export tmp_dir=/home/betorma/tmp
+export zone=cellarfodb1-tz
+export dec_dev_list=' 55 '			# separation: '<space><lunid><space>|<space><lunid><space>|...'
+export date=`date +%Y%m%d%H%M`
+
+
+
+##### check storage
+
+devfsadm -al
+cldev populate
+/home/betorma/bin/storage_info.pl -A | tee ${tmp_dir}/storage_info_`uname -n`.out
+
+{
+for dev in ${dec_lun_list}
+do
+	grep " $dev " ${tmp_dir}/storage_info_`uname -n`.out
+done
+}
+
+
+
+
+#########################################################
+##### on primary cluster nodes
+
+
+#####  backup
+
+cp -p /etc/zones/${zone}.xml /etc/zones/${zone}.xml.${date} 
+
+
+
+##### add disk to the zone
+
+mkdir -p /zones/${zone}/dev/did/dsk
+mkdir -p /zones/${zone}/dev/did/rdsk
+
+
+
+#####  add did to configuration zone
+
+{
+echo "zonecfg -z ${zone} <<EOT" 
+for dev in ${dec_lun_list}; do grep " $dev " ${tmp_dir}/storage_info_`uname -n`.out; done | perl -ne 'if(m{ # (d\d+) # }) {print "$1\n"}' | uniq | while read did
+do
+	echo "add device"
+	echo "set match=/dev/did/*dsk/${did}s*"
+	echo "end"
+done
+echo verify
+echo commit
+echo exit
+echo EOT
+}
+
+
+
+##### reboot
+
+zlogin $zone_name init 6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

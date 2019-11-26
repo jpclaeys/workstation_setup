@@ -1,0 +1,169 @@
+################################################################################################################################################
+#
+# howto attach an EMC ProtectPoint snapshot to devices
+#
+################################################################################################################################################
+
+
+
+
+
+##### on both nodes, set variables
+
+export zone_name=planpubli2-pz						# the name of the zone where the protectpoint snapshot will be applied
+export zone_snap_source=planpublitmp-pz					# the name of the zone used as source of protectpoint snapshot to applied
+export primary_node=sita						# the name of the node where the zone is running
+export tmp_folder=/home/systemstore/temp/${zone_name}
+mkdir $tmp_folder
+
+
+
+
+
+##### on both nodes, get storage info
+
+/home/admin/bin/storage_info.pl -A >${tmp_folder}/storage_info_`uname -n`.txt
+
+
+
+
+
+##### on primary node, get zfs and disk configurations
+
+{
+zonecfg -z $zone_name info dataset | grep name: | awk '{print $2}' | awk -F'/' '{print $1}' >${tmp_folder}/zpool_list.txt
+cat ${tmp_folder}/zpool_list.txt
+}
+
+for zpool in `cat ${tmp_folder}/zpool_list.txt`; do zpool status $zpool; done
+
+
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	zpool status $zpool | grep ONLINE | egrep -v "${zone_name}|NAME|state:" | awk '{print $1}' | sed -e 's/s0$//' -e 's/s2$//' -e 's/c$/a/' | while read disk
+	do
+		grep $disk ${tmp_folder}/storage_info_`uname -n`.txt | awk '{print $28}'
+	done
+done 
+} >${tmp_folder}/symdev_list.txt
+cat ${tmp_folder}/symdev_list.txt
+
+
+
+
+
+##### on one node, disable cluster resource to stop zone and export zpools
+
+clrs list -g ${zone_name}-rg | xargs echo clrs disable
+cldg offline $zone_name
+cldg disable $zone_name
+
+
+
+
+
+##### on both node, put offline disks
+
+{
+for dev in `cat ${tmp_folder}/symdev_list.txt`
+do
+	grep "$dev " /home/betorma/export/tmp/storage_info_`uname -n`.txt | grep Vmax3 | awk '{print "/home/admin/bin/op_dev_offline_powermt_luxadm.sh " $3}' | sh
+done
+} | sort -u | sh -x
+
+
+devfsadm -Cv
+cldev populate
+cldev clear
+
+
+
+
+
+##### inform storage team that zpool are exported and disk are offline.
+
+##### wait the feedback from storage team (which apply the protectpoint snapshot from device of $zone_snap_source to device of $zone_name)
+
+
+
+
+
+##### on both nodes, refresh storage configuration
+
+{
+cfgadm -al | grep disk | grep connected | grep :: | awk -F':' '{print $1}' | sort -u | while read controller
+do
+	cfgadm -c configure $controller
+
+	sleep 3
+done
+}
+
+
+
+
+
+##### on one nodes, refresh cluster device configuration
+
+cldev populate
+
+
+
+
+
+##### on primary node, import zpools
+
+{
+echo zpool import ${zone_name}-sys
+for pool in `cat ${tmp_folder}/zpool_list.txt | grep -v sys`
+do
+	source_pool=`echo $pool | echo $pool | sed -e "s/$zone_name/$zone_snap_source/"`
+	echo zpool import -f $source_pool $pool
+done
+}
+
+
+
+
+
+##### on primary node, check zpools
+
+zpool status -xv
+for pool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	zpool status $pool
+done
+
+
+
+
+
+##### on primary node, export zpools
+
+for pool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	echo zpool export $pool
+done
+
+
+
+
+
+##### on one node, enable cluster resources
+
+cldg enable $zone_name
+cldg switch -n $primary_node
+cldg online $zone_name
+clrs enable ${zone_name}-srdf
+clrs status ${zone_name}-srdf
+clrs enable ${zone_name}-zfs
+clrs status ${zone_name}-zfs
+clrs enable ${zone_name}-rs
+clrs status ${zone_name}-rs
+
+
+
+
+

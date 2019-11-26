@@ -1,0 +1,136 @@
+boot net - install nowin
+
+###############################
+# Verifs
+cat /etc/release
+cd /var/opt/sun/jet
+grep -i eis jumpstart_install.log
+grep -i error jumpstart_install.log
+grep -i fail jumpstart_install.log
+
+##### Post-inst
+echo "opoce.cec.eu.int" >/etc/defaultdomain
+perl -pi -e 's:2008:2009:' /etc/acct/holidays
+coreadm -i /var/cores/%f_%p_%u_%g.core
+
+cd /etc
+cat >resolv.conf <<EOT
+domain opoce.cec.eu.int
+nameserver 158.167.96.18
+nameserver 158.167.227.6
+nameserver 158.167.96.12
+search opoce.cec.eu.int
+EOT
+
+cat <<EOT >  inet/ntp.conf
+# @(#)ntp.client        1.2     96/11/06 SMI
+#
+# /etc/inet/ntp.client
+#
+# OPOCE configuration:  The router broadcasts the time-signal, so all clients
+# simply have to listen to broadcasts.
+
+broadcastclient
+EOT
+
+# cfengine
+
+# Il faut copier la cle dans infra-srv:/var/cfengine/ppkeys
+# Ensuite:
+/var/cfengine/bin/cfagent --no-splay
+
+#LDAP
+# copier les fichiers config ldap d'une autre machine
+cp /var/ldap/ldap_client_* /net/opsrv190/xchange/
+# sur odile
+cp /net/coppola/xchange/ldap_client_* /var/ldap/
+chown root:sys /var/ldap/*
+svcadm disable svc:/network/ldap/client:default
+svcadm enable svc:/network/ldap/client:default
+
+# LEGATO
+cd /net/osiris/export/software/Networker/Networker_7.4_sp2/
+cp nw742_solaris_64.tar.gz /var/tmp/
+cd /var/tmp/
+gunzip -c nw742_solaris_64.tar.gz | tar xvf -
+pkgadd -d . LGTOclnt
+# LEGATO ORACLE:
+# Prendre la librairie:libnwora.so d'une machine ou ca marche
+# ( dont la version doit etre 4.2 )
+ls -l /lib/libnwora.so
+-rw-r--r--   1 root     bin      1465056 Apr 15  2005 /lib/libnwora.so
+what /lib/libnwora.so
+/lib/libnwora.so:
+         Module Name:  NetWorker Module for Oracle
+         Module Vers:  4.2
+         Product:      NetWorker
+         Release:      LNMs_2004.Build.273
+         Build number: 273
+         Build date:   Thu Apr 14 19:10:43 2005
+         Build arch.:  solaris7w
+         Build info:   DBG=0,OPT=-O3 -fno-strict-aliasing
+# Faire un lien de ce fichier sur /usr/lib:
+ln -s /lib/libnwora.so /usr/lib/libnwora.so
+ls -l /usr/lib/libnwora.so
+# Prendre le script backup des DBAs d'ou ca marche: /usr/sbin/saverman
+ls -l /usr/sbin/saverman.pl
+-rwxr-xr-x   1 root     root        7741 Dec  2 13:04 /usr/sbin/saverman.pl*
+
+# ECC agent
+# Renseigner Mathias de cette nouvelle installation car il doit installer aussi un autre agent apres d'avoir installe le master agent
+cd /net/osiris/export/software/EMC2/master-agent/ecc600.cd1/
+./install_master.sh  /net/osiris/export/software/EMC2/master-agent/ecc600.cd1
+/etc/init.d/eccmad start
+# constater que les parametres EMC sont dans /etc/system
+
+# mpxio: ( rebooter apres )
+stmsboot -e -D fp
+
+
+# Checkings
+/home/admin/bin/check_host.sh
+
+#snmp
+patchadd -p  egrep "^Patch: " | cut -c8-17 >/tmp/patches
+for i in 119254 122539 119042 120272
+do
+echo -n "Patches $i: "
+grep $i /tmp/patches >/dev/null
+  if [ $? -eq 0 ]
+   then
+        echo "OK"
+  else
+        echo "Not installed"
+  fi
+done
+
+# rsync
+cp /home/leidial/pkgs/OPrsync_3.0.2_sparc_10u4.tar.bz2 /opt
+cd /opt
+bunzip2 -c OPrsync_3.0.2_sparc_10u4.tar.bz2 | tar xvf -
+\rm /opt/OPrsync_3.0.2_sparc_10u4.tar.bz2
+# Ajout dans /.profile-EIS
+
+#       Synchronization binaries:
+#
+if [ -d /opt/OPrsync/bin ]
+then
+    PATH=${PATH}:/opt/OPrsync/bin
+    MANPATH=${MANPATH}:/opt/OPrsync/share/man
+fi
+#
+
+
+#test mail
+ls | mailx -s `uname -n` christian.trassens@ext.publications.europa.eu
+
+# tests snmp depuis orwell
+/usr/sfw/bin/snmpdf -c specOPOCE -v 1 odile
+snmpwalk -c specOPOCE -v2c odile
+
+# Finalement passer le script setup-standard.sh
+# Et installer l'outil ACT 
+cd  /net/remus/export/patches/Quark/eiscd/27JAN09/install
+./setup-standard.sh
+#  si on a choisi de reinstaller l'explorer, il faudra changer le schedule d'explorer dans le crontab apres!!!
+

@@ -1,0 +1,100 @@
+######################################################################
+#
+#	CLEANUP OF SEIJOS 
+#	19/06/2009
+#
+####################################################################### 
+
+% df -k /applications/ojs/archive/* /applications/ojs/archive/*/arch* /applications/ojs/users/
+Filesystem           1024-blocks        Used   Available Capacity  Mounted on
+/dev/vx/dsk/ojs/vexternal
+                        52405993    42014774     9867160    81%    /applications/ojs/archive/EXTERNAL_CONTRACTOR
+/dev/vx/dsk/ojs/voriginal
+                        11529300    10502171      911836    93%    /applications/ojs/archive/ORIGINAL_TEXT
+/dev/vx/dsk/ojs/vpaper
+                        51609487    50426275      667118    99%    /applications/ojs/archive/PAPER
+/dev/vx/dsk/ojs/vresume
+                        18866138    18377535      299942    99%    /applications/ojs/archive/RESUME_TEXT
+/dev/lofi/1             10316795    10100744      112884    99%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch01
+/dev/lofi/2             10316795     1495766     8717862    15%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+/dev/lofi/3             10316795       10260    10203368     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch03
+/dev/lofi/4             10316795       10258    10203370     1%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch04
+/dev/lofi/10            10316795     2442910     7770718    24%    /applications/ojs/archive/ORIGINAL_TEXT/arch01
+/dev/lofi/5              3439482     3370406       34682    99%    /applications/ojs/archive/RESUME_TEXT/arch01
+/dev/lofi/6              3439482     1986763     1418325    59%    /applications/ojs/archive/RESUME_TEXT/arch02
+/dev/lofi/7              3439482        3602     3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch03
+/dev/lofi/8              3439482        3602     3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch04
+/dev/lofi/9              3439482        3602     3401486     1%    /applications/ojs/archive/RESUME_TEXT/arch05
+/dev/vx/dsk/ojs/vbase
+                       109771978    98498279    10175980    91%    /applications/ojs/users
+
+
+####################################################################################
+# cleanup of /home/ojs/SEI-JOS/data/ORIGINAL/EXTERNAL_CONTRACTOR (09-050 -> 09-069)
+####################################################################################
+
+% df -k /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+Filesystem           1024-blocks        Used   Available Capacity  Mounted on
+/dev/lofi/2             10316795     1495766     8717862    15%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+
+% cd /home/ojs/SEI-JOS/data/ORIGINAL/EXTERNAL_CONTRACTOR
+
+% find 09-0[56]?  -local -mount -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls | perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"' | tee -a /tmp/rmext1.lst
+485918   89 -rwxrwxr-x   1 oracle   dba         90624 Mar  6 14:09 09-050/09-050010/09-050010SEI1.tar 90624
+8159543   34 -rwxrwxr-x   1 oracle   dba         34816 Mar  6 14:15 09-050/09-050021/09-050021SEI1.tar 125440
+4818138   21 -rwxrwxr-x   1 oracle   dba         20992 Mar  6 14:18 09-050/09-050026/09-050026SEI1.tar 146432
+5118363  264 -rwxrwxr-x   1 oracle   dba        261632 Mar  6 14:18 09-050/09-050027/09-050027SEI1.tar 408064
+775510    8 -rwxrwxr-x   1 oracle   dba          8192 Mar  6 14:30 09-050/09-050050/09-050050SEI1.tar 416256
+9468941  352 -rwxrwxr-x   1 oracle   dba        350208 Mar  6 14:30 09-050/09-050051/09-050051SEI1.tar 766464
+10605164   73 -rwxrwxr-x   1 oracle   dba         74752 Mar  6 14:33 09-050/09-050056/09-050056SEI1.tar 841216
+8805628   10 -rwxrwxr-x   1 oracle   dba         10240 Mar  6 14:36 09-050/09-050066/09-050066SEI1.tar 851456
+6562216  360 -rwxrwxr-x   1 oracle   dba        358912 Mar  6 14:36 09-050/09-050067/09-050067SEI1.tar 1210368
+11196189   23 -rwxrwxr-x   1 oracle   dba         23552 Mar  6 14:39 09-050/09-050074/09-050074SEI1.tar 1233920
+...
+...
+12448756    8 -rwxrwxr-x   1 oracle   dba          7680 Apr  1 14:54 09-069/09-069936/09-069936SEI1.tar 1905299968
+9292385   91 -rwxrwxr-x   1 oracle   dba         92672 Apr  1 14:57 09-069/09-069944/09-069944SEI1.tar 1905392640
+2944974   24 -rwxrwxr-x   1 oracle   dba         24064 Apr  1 15:00 09-069/09-069947/09-069947SEI1.tar 1905416704
+12399453   78 -rwxrwxr-x   1 oracle   dba         79360 Apr  1 15:03 09-069/09-069956/09-069956SEI1.tar 1905496064
+9179649   76 -rwxrwxr-x   1 oracle   dba         77824 Apr  1 15:03 09-069/09-069958/09-069958SEI1.tar 1905573888
+12117906   77 -rwxrwxr-x   1 oracle   dba         78848 Apr  1 15:03 09-069/09-069959/09-069959SEI1.tar 1905652736
+10440091 1160 -rwxrwxr-x   1 oracle   dba       1174528 Apr  1 15:03 09-069/09-069961/09-069961SEI1.tar 1906827264
+11680579   86 -rwxrwxr-x   1 oracle   dba         88064 Apr  1 15:06 09-069/09-069965/09-069965SEI1.tar 1906915328
+9635571   87 -rwxrwxr-x   1 oracle   dba         88576 Apr  1 15:18 09-069/09-069985/09-069985SEI1.tar 1907003904
+5531818   20 -rwxrwxr-x   1 oracle   dba         19968 Apr  1 15:21 09-069/09-069994/09-069994SEI1.tar 1907023872
+
+% find 09-0[56]? -local -mount  -name "*-[0-9][0-9][0-9][0-9][0-9][0-9]SEI1.tar" -ls |perl -nae 'chomp(); $t += $F[6] ; print "$_ $t\n"'|tee -a /tmp/rmext1.lst|perl -nae 'print "$F[10]\n"' | xargs -n 100 /bin/rm
+
+% for dir in 09-0[56]?
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n ${dir} " --> "
+tar cf - $dir | gzip -c > /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+ls -l /applications/ojs/archive/${type}/${arch}/${dir}.tgz
+done
+
+% df -k /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+Filesystem           1024-blocks        Used   Available Capacity  Mounted on
+/dev/lofi/2             10316795     1727718     8485910    17%    /applications/ojs/archive/EXTERNAL_CONTRACTOR/arch02
+
+% for dir in 09-0[56]?
+do
+arch="arch02"
+type="EXTERNAL_CONTRACTOR"
+echo -n $dir " --> "
+/bin/rm -rf ${dir}
+ln -s /applications/ojs/archive/${type}/${arch}/${dir}.tgz ${dir}.tgz
+mkdir $dir
+chown -h oracle:ojs ${dir}.tgz
+chown oracle:ojs ${dir}
+echo "done"
+done
+
+% df -k /applications/ojs/users
+Filesystem           1024-blocks        Used   Available Capacity  Mounted on
+/dev/vx/dsk/ojs/vbase
+                       109771978    92476019    16198240    86%    /applications/ojs/users
+
+
+

@@ -1,0 +1,37 @@
+####################################################################################################
+##### desactivation de mpxio
+####################################################################################################
+
+grep auto-failback /kernel/drv/scsi_vhci.conf | grep disable
+
+root@horus # echo | format
+Searching for disks...done
+
+
+AVAILABLE DISK SELECTIONS:
+       0. c5t2000000C5077218Fd0 <SUN72G cyl 14087 alt 2 hd 24 sec 424>
+          /scsi_vhci/ssd@g2000000c5077218f
+       1. c5t2000000C50772267d0 <SUN72G cyl 14087 alt 2 hd 24 sec 424>
+          /scsi_vhci/ssd@g2000000c50772267
+Specify disk (enter its number): Specify disk (enter its number): 
+
+root@horus # stmsboot -d
+
+WARNING: stmsboot operates on each supported multipath-capable controller
+         detected in a host. In your system, these controllers are
+
+/pci@8,600000/SUNW,qlc@4/fp@0,0
+/pci@8,600000/SUNW,qlc@1,1/fp@0,0
+/pci@8,600000/SUNW,qlc@1/fp@0,0
+
+If you do NOT wish to operate on these controllers, please quit stmsboot
+and re-invoke with -D { fp | mpt | mpt_sas} to specify which controllers you wish
+to modify your multipathing configuration for.
+
+Do you wish to continue? [y/n] (default: y) n
+
+
+root@horus # stmsboot -D fp -d
+WARNING: This operation will require a reboot.
+Do you want to continue ? [y/n] (default: y) y
+Reboot the system now ? [y/n] (default: y) y

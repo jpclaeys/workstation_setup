@@ -1,0 +1,568 @@
+#######################################################################################################
+# how to move a zone from one cluster to another
+# if the zone is not in SRDF, it will be after the migration
+#######################################################################################################
+
+
+
+
+
+##### inform teams, users, pm about the downtime
+
+
+
+
+
+##### coordinate the intervention with storage team
+
+# some prerequisites must to be coordinate with storage team before the migration
+# we need to plan an hour and date to begin the migration
+
+
+
+
+
+##### variables to configure on source nodes and target nodes
+
+export zone_name=
+primary_source_node=
+secondary_source_node=
+primary_target_node=
+secondary_target_node=
+
+export tmp_folder=/net/vdm-unix/systemstore/temp/${zone_name}
+if [ ! -d $tmp_folder ]; then mkdir $tmp_folder; fi
+who=`who am i | awk '{print $1}'`
+site=$(grep `uname -n` /home/betorma/tmp/getcmdb_host.txt | awk -F';' '{print $5}' | awk '{print $1}')
+
+start_date=			# format example: DD/MM/YYYY
+start_hour=			# format example: HH:MM
+
+
+
+
+
+##### put schedule dowtime in centreon for the concerned zone
+
+
+
+
+
+##### on both source nodes, get storage informations
+
+/home/admin/bin/storage_info.pl -A >${tmp_folder}/storage_info_`uname -n`.txt
+
+
+
+
+
+##### on primary source node, get storage informations
+
+zpool status -xv
+zonecfg -z $zone_name info dataset | grep name: | awk '{print $2}' | awk -F'/' '{print $1}' | xargs >${tmp_folder}/zpool_list.txt
+cat ${tmp_folder}/zpool_list.txt
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	zpool status $zpool | grep ONLINE | egrep -v "state|mirror|${zpool}" | awk '{print $1}' | while read dev
+	do
+		/etc/powermt display dev=$dev | grep 'Logical device ID' | awk -F'=' '{print $2}'
+	done
+done
+} | sort -u >${tmp_folder}/device_ids.txt
+cat ${tmp_folder}/device_ids.txt
+
+{
+for id in `cat /${tmp_folder}/device_ids.txt`
+do
+	grep " $id " ${tmp_folder}/storage_info_`uname -n`.txt | awk '{print $8}' | awk -F'_' '{print $1}'
+
+done
+} | sort -u >${tmp_folder}/storage_array.txt
+cat ${tmp_folder}/storage_array.txt
+
+{
+case `cat ${tmp_folder}/storage_array.txt` in
+	VMAX)
+		if [[ $site == 'EUFO' ]]; then export storage_id=000292602560; fi
+		if [[ $site == 'MER' ]]; then  export storage_id=000292603453; fi
+	;;
+	Vmax3)
+		if [[ $site == 'EUFO' ]]; then  export storage_id=000296700069; fi
+		if [[ $site == 'MER' ]]; then  export storage_id=000296700060; fi
+	;;
+esac
+echo $storage_id
+} >${tmp_folder}/primary_source_storage_id.txt
+cat ${tmp_folder}/primary_source_storage_id.txt
+
+{
+for id in `cat ${tmp_folder}/device_ids.txt`
+do
+	export id
+	if [ -x /opt/emc/SYMCLI/bin/symdev ]; then
+		symdev show -sid $storage_id $id | grep 'Device WWN' | awk '{print $4}'
+	else
+		/etc/powermt display dev=all | perl -pe 'chomp' | perl -ne 'if(/Logical device ID=($ENV{id})Device WWN=(.{32}?)state=/) {print "$2\n"}'
+	fi
+
+done
+} | sort -u >${tmp_folder}/wwns.txt
+cat ${tmp_folder}/wwns.txt
+
+
+
+
+
+##### on primary source node, check the cluster device group number
+
+cldg list | grep $zone_name | wc -l | awk '{print $1}' >${tmp_folder}/cldg_number.txt
+cat ${tmp_folder}/cldg_number.txt
+
+
+
+
+
+##### on both target nodes, get storage informations
+
+symacl -unique | awk '{print $NF}' >${tmp_folder}/sym_hostid_`uname -n`.txt
+cat ${tmp_folder}/sym_hostid_`uname -n`.txt
+
+
+
+
+
+##### on primary target nodes, inform to STORAGE team about the planned change
+
+{
+echo "#SMT Title: change masking for ${zone_name}"
+echo "#SMT Template: STORAGE REQUEST - Change masking"
+dg_number=`cat ${tmp_folder}/cldg_number.txt`
+echo "Masking name (zone/vm): $zone_name"
+echo "Impacted hosts: ${primary_source_node}, ${secondary_source_node}, ${primary_target_node}, ${secondary_target_node}"
+echo 'Impcated devices (LUN WNN + ID):'
+for id in `cat ${tmp_folder}/device_ids.txt`; do echo "$(symdev show -sid `cat ${tmp_folder}/primary_source_storage_id.txt` $id | grep 'Device WWN' | awk '{print $4}');$id" | grep ';'; done | sort -u
+echo
+echo 'Hello,'
+echo
+echo "If it's ok for you, can we plan to move ${zone_name} zone from ${primary_source_node}/${secondary_source_node} to ${primary_target_node}/${secondary_target_node} from ${start_hour} during the ${start_date} ?"
+echo 'After the zone is down, we will contact you to:'
+echo "- remove his masking for ${primary_source_node}/${secondary_source_node}"
+if [ $dg_number == 0 ]; then 
+	echo '- change the configuration for his devices to be in SRDF, with R1 on Mercier site'
+fi
+if [ $dg_number -gt 1 -o $dg_number == 0 ]; then 
+	echo "- create an uniq Symetrix device group named $zone_name for ${primary_target_node}/${secondary_target_node}"
+fi
+echo "- create his masking for ${primary_target_node}/${secondary_target_node}"
+echo
+echo 'Thanks in advance.'
+} | mailx -s "create a ticket with this content" $who
+
+
+
+
+
+#############################################################################
+#
+# if storage team confirm the intervention, we can continue the procedure
+#
+#############################################################################
+
+
+
+
+
+##### on primary source node, disable the application, stop the zone and other cluster items
+
+zlogin ${zone_name}
+for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} status; done
+for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} disable; done
+for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} status; done
+exit
+
+clrs disable ${zone_name}-rs
+clrs disable ${zone_name}-zfs
+clrg offline ${zone_name}-rg
+clrg status ${zone_name}-rg
+cldg list | grep $zone_name >/dev/null
+if [ $? == 0 ]; then
+	cldg list | grep ${zone_name} | while read dg
+	do
+		clrs disable ${zone_name}-srdf
+		cldg offline ${dg}
+		cldg disable ${dg}
+		cldg status ${dg}
+	done
+fi
+clrg unmanage ${zone_name}-rg
+
+
+
+
+
+##### on primary source node, if zpool is in hostbased miroring, cut ZFS mirror, remove eufo devices, keep mercier devices for RW accesses, for the futur RDF group
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	echo zpool import $zpool
+done
+}
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	zpool status $zpool
+done
+}
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	zpool status $zpool | grep ONLINE | egrep -v "$zpool|state:|mirror" | awk '{print $1}' | while read dev
+	do
+		disk=`echo $dev | sed -e 's/s2//' -e s'/s0//'`
+		grep "$disk " ${tmp_folder}/storage_info_`uname -n`.txt | egrep 'VMAX_2560|Vmax3_0069' >/dev/null
+		if [[ $? == 0 ]]; then echo $dev; fi
+	done | xargs echo zpool split $zpool ${zpool}_eufo 
+	echo zpool import -N ${zpool}_eufo 
+	echo zpool destroy ${zpool}_eufo 
+done
+}
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	echo zpool export $zpool
+done
+}
+zpool list | grep $zone_name
+
+
+
+
+
+##### on both source nodes, put offline disks
+
+{
+for id in `cat ${tmp_folder}/device_ids.txt`
+do
+	grep $id ${tmp_folder}/storage_info_`uname -n`.txt | awk '{print $3}' | while read disk
+	do
+		/home/admin/bin/op_dev_offline_powermt_luxadm.sh $disk | sh
+	done
+done
+}
+
+devfsadm -Cv
+cldev populate
+cldev clear
+cldev status -s fail
+
+
+
+
+
+##### on primary source node, get zone configuration
+
+zonecfg -z ${zone_name} export -f ${tmp_folder}/${zone_name}.cfg
+
+
+
+
+
+##### on primary cluster node, inform STORAGE team that the zone is stopped, I/O are stopped on storage, and they can change the masking
+
+{
+cat <<EOT
+Hi,
+
+${zone_name} is down, their devices are offline.
+Can you please do the changes previoulsy requested between ${primary_source_node}/${secondary_source_node} and ${primary_target_node}/${secondary_target_node} ?
+
+Thanks in advance.
+EOT
+} |mailx -s "$change masking for ${zone_name}" $who
+
+
+
+
+
+#############################################################################
+#
+# when masking is changed, we can to continue
+#
+#############################################################################
+
+
+
+
+
+##### on both target nodes, we refresh the storage configuration
+
+powermt check
+
+luxadm -e port ...
+luxadm -e forcelip ...
+
+cldev populate
+
+
+
+
+
+##### on both target nodes we get storage configuration
+
+/home/admin/bin/storage_info.pl -A >${tmp_folder}/storage_info_`uname -n`.txt
+
+
+
+
+
+##### test to import zpools
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	echo zpool import $zpool
+done
+}
+zpool status -xv
+
+
+
+
+
+##### if zpools are well imported, export them again.
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	echo zpool export $zpool
+done
+}
+
+
+
+
+
+##### on bot target nodes, import zone configuration
+
+zonecfg -z ${zone_name} -f ${tmp_folder}/${zone_name}.cfg
+
+
+
+
+
+##### on secondary target node, combine cluster devices
+
+{
+storage_array=`cat ${tmp_folder}/storage_array.txt`
+for id in `cat ${tmp_folder}/device_ids.txt`
+do
+	did_on_primary=$(grep " $id " ${tmp_folder}/storage_array.txt ${tmp_folder}/storage_info_${primary_target_node}.txt | tail -1 | grep $storage_array | perl -ne 'print "$1\n" if(/ # (d\d+) # /)')
+	did_on_secondary=$(grep " $id " ${tmp_folder}/storage_array.txt ${tmp_folder}/storage_info_${secondary_target_node}.txt | tail -1 | grep $storage_array | perl -ne 'print "$1\n" if(/ # (d\d+) # /)')
+	echo cldev combine -t srdf -g ${zone_name} -d $did_on_primary $did_on_secondary
+	echo didadm -F scsi3 $did_on_primary
+	echo cldev show $did_on_primary
+done
+}
+
+{
+storage_array=`cat ${tmp_folder}/storage_array.txt`
+for id in `cat ${tmp_folder}/device_ids.txt`
+do
+	did_on_primary=$(grep " $id " ${tmp_folder}/storage_array.txt ${tmp_folder}/storage_info_${primary_target_node}.txt | grep $storage_array | tail -1 | perl -ne 'print "$1\n" if(/ # (d\d+) # /)')
+	did_on_secondary=$(grep " $id " ${tmp_folder}/storage_array.txt ${tmp_folder}/storage_info_${secondary_target_node}.txt | grep $storage_array | tail -1 | perl -ne 'print "$1\n" if(/ # (d\d+) # /)')
+	echo cldg offline dsk/${did_on_primary}
+	echo cldg offline dsk/${did_on_secondary}
+	echo cldg disable dsk/${did_on_primary}
+	echo cldg disable dsk/${did_on_secondary}
+	echo cldg delete dsk/${did_on_primary}
+	echo cldg delete dsk/${did_on_primary}
+done
+} 
+
+
+
+
+
+##### on primary target node, create cluster device group
+
+{
+storage_array=`cat ${tmp_folder}/storage_array.txt`
+for id in `cat ${tmp_folder}/device_ids.txt`
+do
+	grep " $id " ${tmp_folder}/storage_array.txt ${tmp_folder}/storage_info_${primary_target_node}.txt | grep $storage_array  | perl -ne 'print "$1\n" if(/ # (d\d+) # /)'
+done
+} | sort -u >${tmp_folder}/did_list.txt
+cat ${tmp_folder}/did_list.txt
+
+mercier_target_node=`egrep "${primary_target_node}|${secondary_target_node}" /home/betorma/tmp/getcmdb_host.txt | grep MER | awk -F';' '{print $1}'`
+eufo_target_node=`egrep "${primary_target_node}|${secondary_target_node}" /home/betorma/tmp/getcmdb_host.txt | grep EUFO | awk -F';' '{print $1}'`
+echo cldg create -n ${mercier_target_node},${eufo_target_node} -t rawdisk -d `cat ${tmp_folder}/did_list.txt | xargs | sed -e 's/ /,/g'` $zone_name
+cldg show -v  $zone_name
+
+cldg online ${zone_name}
+cldg switch -n ${mercier_target_node} ${zone_name}
+cldg status ${zone_name}
+
+
+
+
+
+##### on primary target node, create cluster resource group and resources
+
+clrg create ${zone_name}-rg
+clrg manage ${zone_name}-rg
+clrg set -p Nodelist=${primary_target_node},${secondary_target_node} ${zone_name}-rg
+clrg online ${zone_name}-rg
+clrg switch -n ${mercier_target_node} ${zone_name}-rg
+clrg status ${zone_name}-rg
+
+echo clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p GlobalDevicePaths="${zone_name}" ${zone_name}-srdf
+echo clrs create -g ${zone_name}-rg -t SUNW.HAStoragePlus -p zpools=`cat ${tmp_folder}/zpool_list.txt | sed -e 's/ /,/g'` -p Resource_dependencies="${zone_name}-srdf" ${zone_name}-zfs
+
+cat <<- EOT >/opt/SUNWsczone/sczbt/util/sczbt_${zone_name}-rs
+RS=${zone_name}-rs
+RG=${zone_name}-rg
+PARAMETERDIR=/etc/zones
+SC_NETWORK=false
+SC_LH=
+FAILOVER=true
+HAS_RS=${zone_name}-zfs
+Zonename="${zone_name}"
+Zonebrand=`zonecfg -z $zone_name info brand | awk '{print $2}'`
+Zonebootopt=""
+Milestone="multi-user-server"
+Migrationtype="cold"
+LXrunlevel="3"
+SLrunlevel="3"
+Mounts=""
+EOT
+
+/opt/SUNWsczone/sczbt/util/sczbt_register -f /opt/SUNWsczone/sczbt/util/sczbt_${zone_name}-rs
+
+
+
+
+
+#####  on mercier target node, update zpools
+
+{
+for zpool in `cat ${tmp_folder}/zpool_list.txt`
+do
+	echo zpool upgrade $zpool
+	echo zfs upgrade -r $zpool
+done
+}
+zpool status -xv
+
+
+
+
+
+##### on one target node, attach the zone, then shutdown it
+
+{
+zone_brand=`zonecfg -z $zone_name info brand | awk '{print $2}'`
+if [ "x${zone_brand}" == 'xsolaris' ]; then
+	zoneadm -z ${zone_name} attach -u
+else
+	zoneadm -z ${zone_name} attach
+fi
+}
+
+zoneadm -z ${zone_name} boot && zlogin -C ${zone_name}
+~~.
+
+{
+if [ "x${zone_brand}" == 'xsolaris' ]; then
+	zlogin ${zone_name} /usr/bin/hostname ${zone_name}
+fi
+}
+
+zlogin ${zone_name} init 0 && zlogin -C ${zone_name}
+~~.
+
+
+
+##### on one target node, enable resource for the zone
+
+clrs enable ${zone_name}-rs
+clrs unmonitor ${zone_name}-rs
+clrs status ${zone_name}-rs
+
+
+
+
+
+##### on one tagret node, test a cluster switch
+
+timex clrg switch -n ${secondary_target_node} ${zone_name}-rg
+clrs status -g ${zone_name}-rg
+timex clrg switch -n ${primary_target_node} ${zone_name}-rg
+clrs status -g ${zone_name}-rg
+
+
+
+
+
+##### on one tagret node, switch the resource group to the good site
+
+clrg switch -n ${primary_target_node} ${zone_name}-rg
+
+
+
+
+
+##### on primary tagret node, enable application
+
+zlogin ${zone_name}
+for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} status; done
+for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} enable; done
+for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} status; done
+
+
+
+
+
+##### on primary source node, unconfigure cluster configuration 
+
+clrs list -g ${zone_name}-rg | xargs echo clrs delete 
+clrg delete ${zone_name}-rg 
+
+
+
+
+
+##### on both source nodes, unconfigure zone
+
+zonecfg -z $zone_name delete -F
+
+
+
+
+
+##### on primary source node, inform CMDB manager about the change
+
+{
+echo "La zone $zone_name est maintenant sur le cluster ${primary_target_node}/${secondary_target_node} avec comme primary node ${primary_target_node}."
+} | mailx -s "mise a jour de la cmdb: ${zone_name}" -c $who OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
+
+
+From: BETORI Mathieu (OP-EXT) 
+Sent: May 03 2018 10:18
+To: OP INFRA OPENSYSTEMS CHGMG
+Cc: VALLET Jean-Claude (OP-EXT)
+Subject: mise à jour de la CMDB: procatx_tz
+
+La zone procatx_tz est maintenant sur lava/kusha (primary node: lava).
+
+Mathieu BETORI 
+
+
+
+

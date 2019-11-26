@@ -1,0 +1,42 @@
+########################################################################################################################
+#
+# force to refresh sssd cache
+#
+########################################################################################################################
+
+
+
+
+0[160615/163641]betorma@banta% user=reumose
+0[160615/163712]betorma@banta% ldapmodify -D "CN=directory manager, DC=opoce,DC=cec,DC=eu,DC=int" -w '0pocE123!' -h ldap1-pk -p 389 <<EOT
+heredoc> dn: uid=${user},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+heredoc> changetype: modify
+heredoc> replace: gidNumber
+heredoc> gidNumber: 47110
+heredoc> EOT
+modifying entry "uid=reumose,ou=People,dc=opoce,dc=cec,dc=eu,dc=int"
+
+0[160615/163712]betorma@banta% 
+
+
+
+
+1[160615/164852]root@banta# id reumose
+uid=3218(reumose) gid=10(wheel) groups=10(wheel),21004(opsys_ux),47110(opunix),87201(user)
+0[160615/164854]root@banta# 
+0[160615/164854]root@banta# 
+0[160615/164854]root@banta# getent passwd reumose
+reumose:*:3218:10:Sebastien Reumont:/home/reumose:/bin/bash
+0[160615/164904]root@banta# 
+
+
+0[160615/164904]root@banta# mv /var/lib/sss/db/cache_default.ldb /var/lib/sss/db/cache_default.ldb.bak
+0[160615/165119]root@banta# systemctl restart sssd 
+0[160615/165131]root@banta# 
+
+                                                
+0[160615/165131]root@banta# id reumose                                                     
+uid=3218(reumose) gid=47110(opunix) groups=47110(opunix),21004(opsys_ux),10(wheel),87201(user)
+0[160615/165135]root@banta# getent passwd reumose
+reumose:*:3218:47110:Sebastien Reumont:/home/reumose:/bin/bash
+0[160615/165146]root@banta# 

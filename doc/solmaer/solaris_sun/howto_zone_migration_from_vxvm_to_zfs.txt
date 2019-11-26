@@ -1,0 +1,1008 @@
+###########################################################################################################################################################################
+#
+# migration d'une zones avec fs en vxvm vers du zfs
+#
+###########################################################################################################################################################################
+
+#################################################################################################################
+# creation d'un zpool
+#################################################################################################################
+
+
+export zpool=planjobo_pz
+export lun=183
+
+/home/betorma/bin/luxadm_carlo| grep "lun ${lun}"
+path: /dev/rdsk/c8t60060480000290103312533030333645d0s2 ==> stor: 5006048c52a80408 lun 183 stor: 5006048c52a80407 lun 183 
+
+export disk=c8t60060480000290103312533030333645d0
+
+zpool create ${zpool} ${disk}
+
+zpool status ${zpool}
+  pool: planjobo_pz
+ state: ONLINE
+ scrub: none requested
+config:
+
+        NAME                                     STATE     READ WRITE CKSUM
+        planjobo_pz                              ONLINE       0     0     0
+          c8t60060480000290103312533030333645d0  ONLINE       0     0     0
+
+errors: No known data errors
+
+
+zpool list ${zpool}
+NAME                    SIZE    USED   AVAIL    CAP  HEALTH     ALTROOT
+planjobo_pz              42G     90K   42.0G     0%  ONLINE     -
+
+
+
+############################################################################################
+#
+# Installation de zone sur ZFS
+#
+############################################################################################
+#
+# prerequis:
+# - nom de la zone
+# - alias pour la zone
+# - nom de l'hote physique pour la zone
+# - l'interface reseau de l'hote physique pour la zone
+# - adresse ip pour la zone
+# - adresse ip pour l'application
+# - opsrv pour la zone
+# - nom du zpool
+#
+############################################################################################
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+##### variables
+export ZONE=planjobo_pz_NEW
+export COMMENT_ZONE="zone de production pour planjobo en zfs"
+export ZONE_OPSRV=temp5
+export ZONE_IP=158.167.99.133
+export APPLI_IP=
+export APPLI_OPSRV=
+export INTERFACE=ce4
+export ZPOOL=planjobo_pz
+export APPLICATION=planjobo
+export ORACLE_IS_USED=yes
+export ZONE_IS_CLUSTER_RESSOURCE=no
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+mkdir -p ${TMP_FOLDER}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+201006021053
+201006031313
+
+##### creation et montage du repertoire de la zone
+zfs create -o mountpoint=/zones/${ZONE} ${ZPOOL}/zone
+zfs set mountpoint=/zpool/${ZPOOL} ${ZPOOL}
+
+##### creation des file system pour l'application
+zfs create -o mountpoint=none ${ZPOOL}/applications
+zfs create -o mountpoint=none ${ZPOOL}/applications/${APPLICATION}
+zfs create -o mountpoint=/applications/${APPLICATION}/xchange ${ZPOOL}/applications/${APPLICATION}/xchange
+zfs create -o mountpoint=/applications/${APPLICATION}/users ${ZPOOL}/applications/${APPLICATION}/users
+
+##### creation des files system pour les base de donnees oracle
+{
+if [[ ${ORACLE_IS_USED} == 'yes' ]]
+then 
+	for FS in orabin oralog oradata; do
+		zfs create -o mountpoint=/applications/${APPLICATION}/${FS} ${ZPOOL}/applications/${APPLICATION}/${FS}
+	done
+fi
+zfs create -o mountpoint=/u01/oraagent ${ZPOOL}/applications/oraagent
+}
+
+
+##### verification des file system
+zfs list -r ${ZPOOL}
+NAME                                        USED  AVAIL  REFER  MOUNTPOINT
+planjobo_pz                                 416K  41.3G  24.5K  /zpool/planjobo_pz
+planjobo_pz/applications                    196K  41.3G  24.5K  none
+planjobo_pz/applications/oraagent          24.5K  41.3G  24.5K  /u01/oraagent
+planjobo_pz/applications/planjobo           147K  41.3G  24.5K  none
+planjobo_pz/applications/planjobo/orabin   24.5K  41.3G  24.5K  /applications/planjobo/orabin
+planjobo_pz/applications/planjobo/oradata  24.5K  41.3G  24.5K  /applications/planjobo/oradata
+planjobo_pz/applications/planjobo/oralog   24.5K  41.3G  24.5K  /applications/planjobo/oralog
+planjobo_pz/applications/planjobo/users    24.5K  41.3G  24.5K  /applications/planjobo/users
+planjobo_pz/applications/planjobo/xchange  24.5K  41.3G  24.5K  /applications/planjobo/xchange
+planjobo_pz/zone                           24.5K  41.3G  24.5K  /zones/planjobo_pz_NEW
+
+##### creation du fichier de configuration de la zone
+cat >${TMP_FOLDER}/${ZONE}.cfg <<EOF
+create -b
+set zonepath=/zones/${ZONE}
+set autoboot=false
+set bootargs="-m verbose"
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=${ZONE_IP}
+set physical=${INTERFACE}
+end
+add net
+set address=${APPLI_IP}
+set physical=${INTERFACE}
+end
+add dataset
+set name=${ZPOOL}/applications
+end
+add attr
+set name=comment
+set type=string
+set value="${COMMENT_ZONE}"
+end
+EOF
+
+##### verification
+cat ${TMP_FOLDER}/${ZONE}.cfg
+create -b
+set zonepath=/zones/planjobo_pz_NEW
+set autoboot=false
+set bootargs="-m verbose"
+set ip-type=shared
+add inherit-pkg-dir
+set dir=/lib
+end
+add inherit-pkg-dir
+set dir=/platform
+end
+add inherit-pkg-dir
+set dir=/sbin
+end
+add inherit-pkg-dir
+set dir=/usr
+end
+add net
+set address=158.167.99.133
+set physical=ce4
+end
+add dataset
+set name=planjobo_pz/applications
+end
+add attr
+set name=comment
+set type=string
+set value="zone de production pour planjobo en zfs"
+end
+
+##### configuration et installation de la zone
+chmod 700 /zones/${ZONE}
+zonecfg -z ${ZONE} -f ${TMP_FOLDER}/${ZONE}.cfg
+zoneadm -z ${ZONE} install
+
+
+##### verification des erreurs possibles
+grep -i err /zones/${ZONE}/root/var/sadm/system/logs/install_log
+
+##### /etc/sysidcfg
+cat >/zones/${ZONE}/root/etc/sysidcfg <<EOF
+name_service=none
+root_password=boajrOmU7GFmY
+timeserver=158.167.99.7
+timezone=Europe/Luxembourg
+terminal=vt100
+security_policy=NONE
+nfs4_domain=dynamic
+network_interface=PRIMARY {hostname=${ZONE} ip_address=${ZONE_IP} netmask=255.255.0.0 protocol_ipv6=no default_route=158.167.96.1}
+EOF
+
+##### /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+touch /zones/${ZONE}/root/etc/.NFS4inst_state_domain
+
+##### /inet/ntp.conf
+cp -p /etc/inet/ntp.conf /zones/${ZONE}/root/etc/inet/
+
+##### /etc/resolv.conf
+cp -p /etc/resolv.conf /zones/${ZONE}/root/etc/
+
+##### /etc/ftpd/ftpservers
+echo 'deny * *.*.*.*' >>/zones/${ZONE}/root/etc/ftpd/ftpservers
+echo 'deny * *.*.*.*' >>/zones/${ZONE}/root/etc/ftpd/ftphosts
+
+##### /etc/nsswitch.conf
+tar cpfv /zones/${ZONE}/root/etc/nsswitch.conf.tar /etc/nsswitch.conf
+
+##### fichier de configuration du client ldap
+cp /var/ldap/ldap_client_cred /zones/${ZONE}/root/var/ldap/
+cp /var/ldap/ldap_client_file /zones/${ZONE}/root/var/ldap/
+
+##### configuration du nom de domaine
+cp -p /etc/defaultdomain /zones/${ZONE}/root/etc/
+
+##### configuration des holidays
+cp -p /etc/acct/holidays /zones/${ZONE}/root/etc/acct/holidays
+
+##### loghost et opsrv dans /etc/hosts
+cp -p /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+echo -e "${APPLI_IP}\t${APPLI_OPSRV}" >>/zones/${ZONE}/root/etc/inet/hosts
+echo -e "${ZONE_IP}\t${ZONE_OPSRV}" >>/zones/${ZONE}/root/etc/inet/hosts
+echo -e "${ZONE_IP}\t${ZONE}" >>/zones/${ZONE}/root/etc/inet/hosts
+
+##### verification
+diff /zones/${ZONE}/root/etc/inet/hosts /zones/${ZONE}/root/etc/inet/hosts.${DATE}
+12,14d11
+< 
+< 158.167.99.133        temp5
+< 158.167.99.133        planjobo_pz_NE
+
+##### demarrage de la zonec et onnexion a la console de la zone
+zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### changer le mot de passe root
+passwd root
+
+##### variables
+export ZONE=planjobo_pz_NEW
+export ZONE_IP=158.167.99.133
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+201006031314
+
+##### enleve loghost du fichier /etc/inet/hosts
+perl -i.${DATE} -pe 's/loghost//' /etc/inet/hosts
+
+##### /etc/nsswitch.conf
+tar xvf /etc/nsswitch.conf.tar
+
+##### rafraichissement du cache dns
+svcadm restart svc:/system/name-service-cache:default
+
+##### configuration du repertoire d'accueil des core system
+coreadm -i /var/cores/%f_%p_%u_%g.core
+
+##### activation du service ldap/client
+svcadm disable svc:/network/ldap/client:default
+svcadm enable svc:/network/ldap/client:default
+
+##### tester le ldap
+ldaplist
+
+##### desactivation du webconsole
+svcadm disable svc:/system/webconsole:console
+
+##### copie de la cle cfengine
+cp -p /var/cfengine/ppkeys/localhost.pub ${TMP_FOLDER}/root-${ZONE_IP}.pub
+
+
+######################################################
+# sur le serveur cfengine
+######################################################
+
+
+##### varibales
+export ZONE=planjobo_pz_NEW
+export ZONE_IP=158.167.99.133
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+export DATE=`date +%Y%m%d%H%M`
+echo ${DATE}
+
+##### ajout de la zone dans la configuration de cfengine (cf.groups)
+cp /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+vi /var/cfengine/master/inputs/cf.groups
+diff /var/cfengine/master/inputs/cf.groups /var/cfengine/master/inputs/cf.groups.${DATE}
+
+##### import de la cle publique de la zone dans cfengine
+cp -p ${TMP_FOLDER}/root-${ZONE_IP}.pub /var/cfengine/ppkeys
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### execution du client cfengine
+/var/cfengine/bin/cfagent -v -q
+
+##### installation de LGTO 4.2
+cd /var/tmp
+cp -p /net/remus/export/software/Networker/Oracle/nmo42_solaris_64.tar.gz /var/tmp
+gunzip /var/tmp/nmo42_solaris_64.tar.gz
+tar xvfp /var/tmp/nmo42_solaris_64.tar
+pkgadd -d /var/tmp LGTOnmo
+rm -r /var/tmp/LGTOnmo*
+rm -r /var/tmp/nmo42_solaris_64*
+rm -r /var/tmp/lib64
+/usr/ccs/bin/what /lib/libnwora.so
+ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+ln -s /etc/init.d/networker /etc/rc0.d/K05networker
+ln -s /lib/libnwora.so /usr/lib/libnwora.so
+ls -l /usr/lib/libnwora.so
+cp -p /net/remus/export/software/Networker/Oracle/saverman.pl /usr/sbin/saverman.pl
+chown root:root /usr/sbin/saverman.pl*
+chmod 755 /usr/sbin/saverman.pl*
+ls -l /usr/sbin/saverman.pl
+
+##### redemarrage du service auto-fs
+svcadm restart svc:/system/filesystem/autofs:default
+
+##### test d'envoie d'email depuis la zone
+mailx -s "email de test depuis `/usr/bin/uname -n`" opensystem-logs@publications.europa.eu </dev/null
+
+##### arret de la zone
+init 0
+~~.
+
+
+######################################################
+# sur l'hote physique qui accueille la nouvelle zone
+######################################################
+
+
+##### si la zone n'est pas une ressource cluster, mettre autoboot a true
+{
+if [[ ${ZONE_IS_CLUSTER_RESSOURCE} == 'no' ]]
+then
+	zonecfg -z ${ZONE} set autoboot=true
+fi
+zonecfg -z $ZONE info autoboot
+}
+
+##### demarrage de la zonec et onnexion a la console de la zone
+zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+######################################################
+# sur la zone
+######################################################
+
+
+##### verfication des services SMF
+svcs -xv
+
+##### verification system
+dmesg
+
+##### verification de la zone
+ls /home/admin/
+/home/admin/bin/check_host.sh
+
+
+
+
+##################################################################################################################################################
+# 
+# creation des file system pour l'application
+#
+###################################################################################################################################################
+
+root@nemesis # export ZONE=planjobo_pz
+
+{
+zonecfg -z $ZONE 'info fs' | grep 'dir:' | awk '{print $2}' | while read dir
+do
+	export application=`echo $dir | awk -F'/' '{print $3}'`
+	export fs=`echo $dir | awk -F'/' '{print $4}'`
+	echo zfs create -o mountpoint=none ${ZPOOL}/applications/${application}
+	echo zfs create -o mountpoint=${dir} ${ZPOOL}/applications/${application}/${fs}
+
+done
+} | sort -ur
+zfs create -o mountpoint=none /applications/planjobo
+zfs create -o mountpoint=/applications/planjobo/users /applications/planjobo/users
+zfs create -o mountpoint=/applications/planjobo/oralog /applications/planjobo/oralog
+zfs create -o mountpoint=/applications/planjobo/oradata /applications/planjobo/oradata
+zfs create -o mountpoint=/applications/planjobo/orabin /applications/planjobo/orabin
+
+root@nemesis # zfs list -r planjobo_pz
+NAME                                        USED  AVAIL  REFER  MOUNTPOINT
+planjobo_pz                                 418M  40.9G  24.5K  /zpool/planjobo_pz
+planjobo_pz/applications                    196K  40.9G  24.5K  none
+planjobo_pz/applications/oraagent          24.5K  40.9G  24.5K  /u01/oraagent
+planjobo_pz/applications/planjobo           147K  40.9G  24.5K  none
+planjobo_pz/applications/planjobo/orabin   24.5K  40.9G  24.5K  /applications/planjobo/orabin
+planjobo_pz/applications/planjobo/oradata  24.5K  40.9G  24.5K  /applications/planjobo/oradata
+planjobo_pz/applications/planjobo/oralog   24.5K  40.9G  24.5K  /applications/planjobo/oralog
+planjobo_pz/applications/planjobo/users    24.5K  40.9G  24.5K  /applications/planjobo/users
+planjobo_pz/applications/planjobo/xchange  24.5K  40.9G  24.5K  /applications/planjobo/xchange
+planjobo_pz/zone                            417M  40.9G   417M  /zones/planjobo_pz_NEW
+
+
+##################################################################################################################################################
+# 
+# synchro de planjobo_pz vers planjobo_pz_NEW
+#
+###################################################################################################################################################
+
+
+##### avec $ZONE en cours d'utilisation
+
+export ZONE=planjobo_pz
+export NEWZONE=planjobo_pz_NEW
+export TMP_FOLDER=/net/opsrv082/xchange/mb/zones/${ZONE}
+mkdir -p ${TMP_FOLDER}
+
+cat << EOT >${TMP_FOLDER}/synchro_list.txt
+/etc/inet/hosts
+/etc/hosts.allow
+/etc/hosts.deny
+/etc/inet/services
+/etc/logadm.conf
+/etc/auto_home
+/etc/group
+/etc/passwd
+/etc/shadow
+/etc/user_attr
+/etc/security/exec_attr
+/etc/security/prof_attr
+/etc/project
+/etc/pam.conf
+/etc/init.d/initd_lib.pl
+/u01
+/u02
+/var/opt/oracle
+/var/spool/cron/crontabs
+/var/cfengine
+/etc/ftpd
+/nsr
+/applications
+EOT
+
+
+
+export log_tag=RSYNC
+export at_launch='10:10'
+{
+echo "logger -pdaemon.notice -t${log_tag} begin rsync from ${ZONE} to ${NEWZONE}"
+for line in `cat ${TMP_FOLDER}/synchro_list.txt`
+do
+	if [ -f $line ]
+	then
+		echo "logger -pdaemon.notice -t${log_tag} begin /opt/OPrsync/bin/rsync -aHS --delete /zones/${ZONE}/root/${line} /zones/${NEWZONE}/root/${line}"
+		echo "/opt/OPrsync/bin/rsync -aHS --delete /zones/${ZONE}/root/${line} /zones/${NEWZONE}/root/${line}"
+		echo "logger -pdaemon.notice -t${log_tag} end /opt/OPrsync/bin/rsync -aHS --delete /zones/${ZONE}/root/${line} /zones/${NEWZONE}/root/${line}"
+	fi
+	if [ -d $line ]
+	then
+		echo "logger -pdaemon.notice -t${log_tag} begin /opt/OPrsync/bin/rsync -aHS --delete /zones/${ZONE}/root/${line}/ /zones/${NEWZONE}/root/${line}"
+		echo "/opt/OPrsync/bin/rsync -aHS --delete /zones/${ZONE}/root/${line}/ /zones/${NEWZONE}/root/${line}"
+		echo "logger -pdaemon.notice -t${log_tag} end /opt/OPrsync/bin/rsync -aHS --delete /zones/${ZONE}/root/${line}/ /zones/${NEWZONE}/root/${line}"
+	fi
+done
+echo "logger -pdaemon.notice -t${log_tag} begin rsync from ${ZONE} to ${NEWZONE}"
+}| at $at_launch
+
+
+tail -f /var/adm/messages | grep ${log_tag}
+
+---------------------------------------------
+
+##### application arretee sur $ZONE
+/opt/OPrsync/bin/rsync -avHS --delete /zones/eurlex_tz/root//applications/ /zones/eurlex_tz_NEW/root//applications 
+
+
+
+############################################################################################
+# arret des zones
+############################################################################################
+
+zlogin $ZONE 'init 0'
+zlogin $NEWZONE 'init 0'
+
+############################################################################################
+# desactive eurlex_tz et active eurlex_tz_NEW
+############################################################################################
+
+
+##### interface reseau temporaire
+zonecfg -z $NEWZONE 'remove net'
+
+##### interfaces reseau de $ZONE -> $NEWZONE
+zonecfg -z ${ZONE} export | perl -ne 's/\n/;/; print' | perl -ne 'while(m{add net;set address=(\d+\.\d+\.\d+\.\d+);set physical=(.*?);end;}g) {	print "\nzonecfg -z $ENV{NEWZONE} \"add net; set address=$1; set physical=$2; end\n\""}'
+
+
+cat /etc/zones/eurlex_tz_NEW.xml 
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE zone PUBLIC "-//Sun Microsystems Inc//DTD Zones//EN" "file:///usr/share/lib/xml/dtd/zonecfg.dtd.1">
+<!--
+    DO NOT EDIT THIS FILE.  Use zonecfg(1M) instead.
+-->
+<zone name="eurlex_tz_NEW" zonepath="/zones/eurlex_tz_NEW" autoboot="true" bootargs="-m verbose">
+  <inherited-pkg-dir directory="/lib"/>
+  <inherited-pkg-dir directory="/platform"/>
+  <inherited-pkg-dir directory="/sbin"/>
+  <inherited-pkg-dir directory="/usr"/>
+  <dataset name="eurlex_tz/applications"/>
+  <attr name="comment" type="string" value="zone de test pour eurlex en zfs"/>
+  <network address="158.167.98.179" physical="ce1"/>
+</zone>
+
+
+
+
+
+##### nom des zones
+
+echo $ZONE $NEWZONE
+
+zonecfg -z ${ZONE} <<EOT
+set zonename=${ZONE}_VXVM
+commit
+exit
+EOT
+
+zonecfg -z ${NEWZONE} <<EOT
+set zonename=${ZONE}
+commit
+exit
+EOT
+
+
+##### repertoires des zones
+
+17:04/root@grumpy # mv /zones/${ZONE} /zones/${ZONE}_VXVM
+17:05/root@grumpy # mv /zones/${NEWZONE} /zones/${ZONE}
+17:36/root@grumpy # chmod 700 /zones/eurlex_tz 
+
+
+
+
+17:08/root@grumpy # cp -p /etc/zones/eurlex_tz.xml /etc/zones/eurlex_tz.xml.201005281708
+17:08/root@grumpy # vi /etc/zones/eurlex_tz.xml
+6c6
+< <zone name="eurlex_tz" zonepath="/zones/eurlex_tz" autoboot="true" bootargs="-m verbose">
+---
+> <zone name="eurlex_tz" zonepath="/zones/eurlex_tz_NEW" autoboot="true" bootargs="-m verbose">
+
+17:11/root@grumpy # cp -p /etc/zones/index /etc/zones/index.201005281711
+17:12/root@grumpy # vi /etc/zones/index
+12c12
+< #eurlex_tz_VXVM:installed:/zones/eurlex_tz:32a13d68-0a5e-c48b-c583-945543cbd6c8
+---
+> eurlex_tz_VXVM:installed:/zones/eurlex_tz:32a13d68-0a5e-c48b-c583-945543cbd6c8
+17c17
+< eurlex_tz:installed:/zones/eurlex_tz:0ed6ff2e-128d-c3eb-8453-91eba00ca799
+---
+> eurlex_tz:installed:/zones/eurlex_tz_NEW:0ed6ff2e-128d-c3eb-8453-91eba00ca799
+
+
+
+##### modif du hostname dans les fichiers
+cat /zones/${ZONE}/root/etc/nodename
+cat /zones/${ZONE}/root/etc/hostname.*
+cat /zones/${ZONE}/root/etc/inet/hosts
+cat /zones/${ZONE}/root/etc/net/ticlts/hosts
+cat /zones/${ZONE}/root/etc/net/ticots/hosts
+cat /zones/${ZONE}/root/etc/net/ticotsord/hosts
+
+
+##### boot de la nouvelle zone
+zoneadm -z ${ZONE} boot && zlogin -C ${ZONE}
+
+
+##### services smf
+
+##### chech_host.sh
+
+cd /var/tmp
+cp -p /net/remus/export/software/Networker/Oracle/nmo42_solaris_64.tar.gz /var/tmp
+gunzip /var/tmp/nmo42_solaris_64.tar.gz
+tar xvfp /var/tmp/nmo42_solaris_64.tar
+pkgadd -d /var/tmp LGTOnmo
+rm -r /var/tmp/LGTOnmo*
+rm -r /var/tmp/nmo42_solaris_64*
+rm -r /var/tmp/lib64
+/usr/ccs/bin/what /lib/libnwora.so
+ln -s /etc/init.d/networker /etc/rc2.d/S95networker
+ln -s /etc/init.d/networker /etc/rc0.d/K05networker
+ln -s /lib/libnwora.so /usr/lib/libnwora.so
+ls -l /usr/lib/libnwora.so
+cp -p /net/remus/export/software/Networker/Oracle/saverman.pl /usr/sbin/saverman.pl
+chown root:root /usr/sbin/saverman.pl*
+chmod 755 /usr/sbin/saverman.pl*
+ls -l /usr/sbin/saverman.pl
+
+############################################################################################
+# coups de tournevis...
+############################################################################################
+
+6:59/root@grumpy # zfs list -r eurlex_tz
+NAME                                      USED  AVAIL  REFER  MOUNTPOINT
+eurlex_tz                                14.5G  24.7G  24.5K  /zpool/eurlex_tz
+eurlex_tz/applications                   14.1G  24.7G  24.5K  none
+eurlex_tz/applications/eurlex            24.5K  24.7G  24.5K  none
+eurlex_tz/applications/lexalert          6.26G  24.7G  24.5K  none
+eurlex_tz/applications/lexalert/orabin   3.06G  24.7G  3.06G  /applications/lexalert/orabin
+eurlex_tz/applications/lexalert/oradata  1.84G  24.7G  1.84G  /applications/lexalert/oradata
+eurlex_tz/applications/lexalert/oralog   79.1M  24.7G  79.1M  /applications/lexalert/oralog
+eurlex_tz/applications/lexalert/users    1.29G  24.7G  1.29G  /applications/lexalert/users
+eurlex_tz/applications/mtf               7.81G  24.7G  24.5K  none
+eurlex_tz/applications/mtf/users         7.81G  24.7G  7.81G  /applications/mtf/users
+eurlex_tz/applications/oraagent          24.5K  24.7G  24.5K  /u01/oraagent
+eurlex_tz/zone                            384M  24.7G   384M  /zones/eurlex_tz_NEW
+
+7:01/root@grumpy # zfs set mountpoint=/zones/eurlex_tz eurlex_tz/zone 
+cannot mount '/zones/eurlex_tz': directory is not empty
+property may be set but unable to remount filesystem
+
+7:12/root@grumpy # ls -ld /zones/eurlex_tz* 
+drwx------   5 root     root         512 Nov 20  2008 /zones/eurlex_tz
+drwxr-xr-x   2 root     root         512 May 28 18:14 /zones/eurlex_tz_NEW
+drwx------   2 root     root         512 Nov 20  2008 /zones/eurlex_tz_VXVM
+
+7:12/root@grumpy # du -sh /zones/eurlex_tz* 
+ 435M   /zones/eurlex_tz
+   1K   /zones/eurlex_tz_NEW
+   1K   /zones/eurlex_tz_VXVM
+
+7:13/root@grumpy # cat /zones/eurlex_tz/root/etc/release 
+                       Solaris 10 8/07 s10s_u4wos_12b SPARC
+           Copyright 2007 Sun Microsystems, Inc.  All Rights Reserved.
+                        Use is subject to license terms.
+                            Assembled 16 August 2007
+
+7:13/root@grumpy # mv /zones/eurlex_tz /zones/eurlex_tz_OLD
+7:14/root@grumpy # zfs mount -a
+
+
+7:14/root@grumpy # zfs list -r eurlex_tz 
+NAME                                      USED  AVAIL  REFER  MOUNTPOINT
+eurlex_tz                                14.5G  24.7G  24.5K  /zpool/eurlex_tz
+eurlex_tz/applications                   14.1G  24.7G  24.5K  none
+eurlex_tz/applications/eurlex            24.5K  24.7G  24.5K  none
+eurlex_tz/applications/lexalert          6.26G  24.7G  24.5K  none
+eurlex_tz/applications/lexalert/orabin   3.06G  24.7G  3.06G  /applications/lexalert/orabin
+eurlex_tz/applications/lexalert/oradata  1.84G  24.7G  1.84G  /applications/lexalert/oradata
+eurlex_tz/applications/lexalert/oralog   79.1M  24.7G  79.1M  /applications/lexalert/oralog
+eurlex_tz/applications/lexalert/users    1.29G  24.7G  1.29G  /applications/lexalert/users
+eurlex_tz/applications/mtf               7.81G  24.7G  24.5K  none
+eurlex_tz/applications/mtf/users         7.81G  24.7G  7.81G  /applications/mtf/users
+eurlex_tz/applications/oraagent          24.5K  24.7G  24.5K  /u01/oraagent
+eurlex_tz/zone                            384M  24.7G   384M  /zones/eurlex_tz
+
+
+7:14/root@grumpy # zfs get zoned | grep eurlex
+eurlex_tz                                zoned     off                                      default
+eurlex_tz/applications                   zoned     on                                       local
+eurlex_tz/applications/eurlex            zoned     on                                       local
+eurlex_tz/applications/lexalert          zoned     on                                       local
+eurlex_tz/applications/lexalert/orabin   zoned     on                                       local
+eurlex_tz/applications/lexalert/oradata  zoned     on                                       local
+eurlex_tz/applications/lexalert/oralog   zoned     on                                       local
+eurlex_tz/applications/lexalert/users    zoned     on                                       local
+eurlex_tz/applications/mtf               zoned     on                                       local
+eurlex_tz/applications/mtf/users         zoned     on                                       local
+eurlex_tz/applications/oraagent          zoned     on                                       local
+eurlex_tz/zone                           zoned     off                                      default
+
+
+7:16/root@eurlex_tz # svcs -a | egrep 'lex|mft'
+7:16/root@eurlex_tz # 
+7:16/root@eurlex_tz # svccfg import /applications/lexalert/users/system/svc/manifest/lexalert.xml  
+7:16/root@eurlex_tz # svccfg import /applications/mtf/users/system/svc/manifest/mtf:app.xml
+7:17/root@eurlex_tz # svcs -a | egrep 'lex|mtf'
+disabled        7:16:53 svc:/applications/lexalert:app
+disabled        7:16:54 svc:/applications/lexalert:ora
+disabled        7:17:46 svc:/applications/mtf:star
+disabled        7:17:48 svc:/applications/mtf:app
+
+7:27/root@eurlex_tz # pwd              
+/applications/lexalert/users/system/init.d
+7:27/root@eurlex_tz # ./lexalert start
+svcadm: Instance "svc:/applications/lexalert:app" has unsatisfied dependencies.
+svcadm: Instance "svc:/applications/lexalert:ora" is in maintenance state.
+
+7:28/root@eurlex_tz # svcs -a | grep lex
+offline         7:27:37 svc:/applications/lexalert:app
+maintenance     7:27:38 svc:/applications/lexalert:ora
+
+7:31/root@eurlex_tz # svcadm enable svc:/applications/lexalert:app
+7:31/root@eurlex_tz # svcadm enable svc:/applications/lexalert:ora
+
+##### voir avec dba
+
+7:38/root@eurlex_tz # mkdir -p /var/opt/oracle 
+7:40/root@eurlex_tz # chown -R oracle:dba /var/opt/oracle 
+7:40/root@eurlex_tz # ls -ld /var/opt/oracle             
+drwxr-xr-x   2 oracle   dba            2 May 31 07:39 /var/opt/oracle
+
+7:40/root@grumpy # cp -p /zones/eurlex_tz_OLD/root/var/opt/oracle/* /zones/eurlex_tz/root/var/opt/oracle 
+7:41/root@eurlex_tz # ls -l /var/opt/oracle
+total 5
+-rw-r--r--   1 oracle   dba           66 Dec 11  2008 oraInst.loc
+-rw-rw-r--   1 oracle   dba          774 Dec 11  2008 oratab
+
+7:41/root@eurlex_tz # pwd
+/applications/lexalert/users/system/init.d
+7:41/root@eurlex_tz # ./lexalert start
+svcadm: Instance "svc:/applications/lexalert:app" has unsatisfied dependencies.
+svcadm: Instance "svc:/applications/lexalert:ora" is in maintenance state.
+7:41/root@eurlex_tz # svcadm clear svc:/applications/lexalert:ora
+7:41/root@eurlex_tz # ./lexalert start 
+
+7:44/root@eurlex_tz # svcs -a | grep lex
+online          7:42:20 svc:/applications/lexalert:ora
+online          7:42:22 svc:/applications/lexalert:app
+
+
+7:29/root@eurlex_tz # cd /applications/mtf/users/system/init.d 
+7:30/root@eurlex_tz # ls -l
+total 5
+lrwxrwxrwx   1 root     root          24 May 28 14:30 mtf -> /etc/init.d/initd_lib.pl
+lrwxrwxrwx   1 root     root           3 May 28 14:30 mtf:app -> mtf
+lrwxrwxrwx   1 root     root           3 May 28 14:30 mtf:star -> mtf
+lrwxrwxrwx   1 root     root           3 May 28 14:30 mtf:wood -> mtf
+lrwxrwxrwx   1 root     root           3 May 28 14:30 mtf:woodweb -> mtf
+
+7:30/root@eurlex_tz # svcs -a | grep mtf
+disabled        7:17:46 svc:/applications/mtf:star
+disabled        7:17:48 svc:/applications/mtf:app
+
+7:30/root@eurlex_tz # ./mtf start
+7:30/root@eurlex_tz # svcs -a | grep mtf
+online          7:30:44 svc:/applications/mtf:app
+online          7:30:45 svc:/applications/mtf:star
+7:31/root@eurlex_tz # svcadm enable svc:/applications/mtf:app
+7:31/root@eurlex_tz # svcadm enable svc:/applications/mtf:star
+
+7:44/root@eurlex_tz # init 6
+
+7:49/root@eurlex_tz # svcs -xv
+svc:/application/print/server:default (LP print server)
+ State: disabled since Mon May 31 07:48:47 2010
+Reason: Disabled by an administrator.
+   See: http://sun.com/msg/SMF-8000-05
+   See: man -M /usr/share/man -s 1M lpsched
+Impact: 2 dependent services are not running:
+        svc:/application/print/rfc1179:default
+        svc:/application/print/ipp-listener:default
+7:49/root@eurlex_tz # 
+7:49/root@eurlex_tz # 
+7:49/root@eurlex_tz # 
+7:49/root@eurlex_tz # 
+7:49/root@eurlex_tz # svcs -a | egrep 'lex|mtf' 
+online          7:48:57 svc:/applications/mtf:app
+online          7:48:58 svc:/applications/mtf:star
+online          7:49:08 svc:/applications/lexalert:ora
+online          7:49:09 svc:/applications/lexalert:app
+7:49/root@eurlex_tz # 
+
+
+
+
+
+
+##### demande au test de verifier
+
+############################################################################################
+# envoie d'une demande par email de maj de la CMDB pour une zone
+############################################################################################
+
+
+
+export zone_name=eurlex_tz_NEW
+export zone_opsrv=temp5
+export appli_opsrv=
+export zone_alias=container
+export host=grumpy
+export cluster_used=no
+export node1=
+export node2=
+
+
+{
+echo "Nouvelle zone:\t\t\t${zone_name}"
+echo "opsrv de la zone:\t\t\t${zone_opsrv}"
+echo "opsrv de l'application:\t\t${appli_opsrv}"
+echo "alias de la zone:\t\t\t${zone_alias}"
+if [[ ${cluster_used} == yes ]]
+then
+	echo "primary cluster node:\t\t\t${node1}"
+	echo "secondary cluster node:\t\t\t${node2}"
+else
+	echo "hote physique:\t\t\t${host}"
+fi
+	echo "file systems:"
+	zfs list -o name,mountpoint
+} | mailx -s "mise a jour de la cmdb: ${zone_name}" betorma
+############################################################################################################################
+# creation du client unix 
+############################################################################################################################
+
+
+##### sur la zone
+
+export LOCATION=mercier   				# Mercier|EUFO
+export TYPE=test         			# Prod|Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+for group in ${GROUPS}; do
+  cat >/nsr/res/${group}.res <<EOT
+type: savepnpc;
+precmd: "/bin/date";
+pstcmd: "/bin/date", "/bin/sleep 5";
+timeout: "06:00:00";
+abort precmd with group: No;
+EOT
+done
+
+
+##### sur opbk01
+
+export IP=158.167.99.133
+export ZONE=eurlex_tz_NEW
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+export DIRECTIVE="Solaris 10 zones with compression"
+export LOCATION=mercier 			# Mercier|EUFO
+export TYPE=test				# Prod|Test
+export GROUPS="${LOCATION}_Unix_${TYPE}"
+
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export ALIASES="${ALIASES},${ZONE},${ZONE}.opoce.cec.eu.int"
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+(cat <<EOT
+#client_name;remote_access;groups;directive;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${DIRECTIVE};${ALIASES};${ZONE};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","directive","alias","zone","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: remus;
+                     comment: $c{zone} unix client;
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+                   directive: $c{directive};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: savepnpc;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s opbk01 -i -
+
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+}
+
+
+############################################################################################################################
+# creation du client RMAN
+############################################################################################################################
+
+##### sur opbk01
+export IP=
+export ZONE=eurlex_tz_NEW
+export LOCATION=mercier   			# Mercier|EUFO
+export TYPE=test          		# Prod|Test
+export DBC=RMAN_<APPL>_<ENV>
+export DBS=RMAN:<APPL>:appl:<appl>:redo_keep:100
+
+export CLIENT=$(nslookup ${IP} | grep 'name =' | cut -d = -f 2 | sed -e 's:\.opoce.*::g' -e 's: ::g')
+if [ "${TYPE}" = "Test" ]; then
+    export DAYS=03
+else
+    export DAYS=01
+fi
+export GROUPS="${LOCATION}_Rman_${TYPE}_Ctl_01,${LOCATION}_Rman_${TYPE}_Full_${DAYS},${LOCATION}_Rman_${TYPE}_Logs_01"
+if [ "${LOCATION}" = "Mercier" ]; then
+    export STORAGE="chronos,saturne"
+else
+    export STORAGE="saturne,chronos"
+fi
+export CLONE="chronos,saturne"
+export ALIASES="${CLIENT},${CLIENT}.opoce.cec.eu.int"
+export REMOTEACC="root@${CLIENT},oracle@${CLIENT},root@restore_tz,oracle@restore_tz"
+if [ "${ZONE}" != "${CLIENT}" ]; then
+    export REMOTEACC="${REMOTEACC},root@${ZONE},oracle@${ZONE}"
+fi
+
+
+
+(cat <<EOT
+#client_name;remote_access;groups;dbcomment;saveset;alias;storage_nodes;clone_nodes
+${CLIENT};${REMOTEACC};${GROUPS};${DBC};"${DBS}";${ALIASES};${STORAGE};${CLONE}
+EOT
+) |perl -ne 'next if /^\s*#/ ;chomp(); %c=() ; @{c}{"client_name","remote_access","groups","dbcomment","dbsaveset","alias","storage_nodes","clone_nodes"} = split(/\s*;\s*/, $_); $cmd= <<EOT
+create                  type: NSR client;
+                        name: $c{client_name};
+                      server: remus;
+                     comment: $c{dbcomment};
+                   save set: $c{dbsaveset};
+               browse policy: 60days;
+            retention policy: 60days;
+                       group: $c{groups};
+               remote access: $c{remote_access};
+                        ndmp: No;
+              backup command: saverman.pl;
+                     aliases: $c{alias};
+               storage nodes: $c{storage_nodes};
+         clone storage nodes: $c{clone_nodes};
+       recover storage nodes: $c{storage_nodes}
+EOT
+;print "$cmd\n";'|nsradmin -s remus -i -
+
+{
+nsradmin -i - <<EOT
+print type:nsr client; name: ${CLIENT}
+EOT
+}
+#########################################################################################
+# ajouter une zone et son opsrv au monitoring nagios
+#########################################################################################
+
+##### variables
+export ZONE=eurlex_tz_NEW
+export ZONE_IP=158.167.99.133
+export OPSRV_APP=
+export OPSRV_APP_IP=
+export SITE=mercier								##### 'eufo' ou 'mercier'
+export ENVIRONMENT=test							##### 'prod'ou 'test' ou 'developpement'
+
+##### creation du fichier de config pour le monitoring de l'opsrv applicatif
+cat >/applications/nagios/users/nagios/etc/objects/hosts/${OPSRV_APP}.cfg <<EOF
+define host{
+        use                     solaris-host            ; Name of host template to use
+        host_name               ${OPSRV_APP}
+        alias                   ${OPSRV_APP}
+        hostgroups              ${SITE}_${ENVIRONMENT}_servers_solaris_virtualLH
+        address                 ${OPSRV_APP_IP}
+        check_command           check-host-alive
+        max_check_attempts      3
+        }
+
+EOF
+
+##### creation du fichier de config pour le monitoring de la zone
+cat >/applications/nagios/users/nagios/etc/objects/hosts/${ZONE}.cfg <<EOF
+define host{
+        use                     solaris-host            ; Name of host template to use
+        host_name               ${ZONE}
+        alias                   ${ZONE}
+        hostgroups              ${SITE}_${ENVIRONMENT}_servers_solaris_virtualZones
+        address                 ${ZONE_IP}
+        check_command           check-host-alive        
+        max_check_attempts      3
+        }
+
+EOF
+
+##### verif de la configuration de nagios
+/applications/nagios/users/nagios/etc/init.d/nagios checkconfig
+
+##### redemarrage de nagios
+/applications/nagios/users/system/init.d/nagios stop
+/applications/nagios/users/system/init.d/nagios start
+while true; do sleep 2; ls -l /applications/nagios/users/nagios/var/status.dat; done

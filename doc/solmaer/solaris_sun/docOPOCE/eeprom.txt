@@ -1,0 +1,2 @@
+#x86 eeprom
+ls -l /boot/solaris/bootenv.rc
