@@ -1,0 +1,198 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Solaris Zones Cheat Sheet</title>
+<link href="../../default.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+<!--
+body {
+	background-color: #ccdd99;
+}
+-->
+</style></head>
+
+<body>
+<p class="header">Solaris Containers cheat sheet</p>
+<p>This a quick cheat sheet of the commands that can be used when using zones (containers), for a more complete guide see <a href="solaris_zones.htm">solaris zones</a>.</p>
+<p><strong>Zone States </strong></p>
+<table width="600" border="1">
+  <tr>
+    <td width="100">Configured</td>
+    <td width="484" class="code_text">Configuration has been completed and storage has been committed. Additional configuration is still required. </td>
+  </tr>
+  <tr>
+    <td>Incomplete</td>
+    <td class="code_text">Zone is in this state when it is being installed or uninstalled. </td>
+  </tr>
+  <tr>
+    <td>Installed</td>
+    <td class="code_text">The zone has a confirmed configuration, <em>zoneadm</em> is used to verify the configuration, Solaris packages have been installed, even through it has been installed, it still has no virtual platform associated with it. </td>
+  </tr>
+  <tr>
+    <td>Ready (active) </td>
+    <td class="code_text">Zone's virtual platform is established. The kernel creates the <em>zsched</em> process, the network interfaces are plumbed and filesystems mounted. The system also assigns a zone ID at this state, but no processes are associated with this zone. </td>
+  </tr>
+  <tr>
+    <td>Running (active) </td>
+    <td class="code_text">A zone enters this state when the first user process is created. This is the normal state for an operational zone. </td>
+  </tr>
+  <tr>
+    <td>Shutting down + Down (active) </td>
+    <td class="code_text">Normal state when a zone is being shutdown.</td>
+  </tr>
+</table>
+<p><strong>Files and Directories</strong></p>
+<table width="700" border="1">
+  <tr>
+    <td width="150">zone config file </td>
+    <td width="534" class="code_text">/etc/zones</td>
+  </tr>
+  <tr>
+    <td>zone index </td>
+    <td class="code_text">/etc/zones/index<br>
+    <br>
+    Note: used by /lib/svc/method/svc-zones to start and stop zones </td>
+  </tr>
+</table>
+<p><strong>Cheat sheet </strong></p>
+<table width="75%"  border="1">
+  <tr>
+    <td width="34%">Creating a zone </td>
+    <td width="66%" class="code_text"><p>zonecfg -z &lt;zone&gt;</p>
+    <p>see <a href="solaris_zones.htm">creating a zone</a> for a more details</p></td>
+  </tr>
+  <tr>
+    <td>deleting a zone from the global ssytem </td>
+    <td class="code_text">## halt the zone first, then uninstall it <br>
+      zoneadm -z &lt;zone&gt; halt<br>
+      zoneadm -z &lt;zone&gt; uninstall<br>
+      <br>
+      ## now you can delete it <br>
+    zonecfg -z &lt;zone&gt; delete -F </td>
+  </tr>
+  <tr>
+    <td>Display zones current configuration </td>
+    <td class="code_text">zonecfg -z &lt;zone&gt; info </td>
+  </tr>
+  <tr>
+    <td>Display zone name </td>
+    <td class="code_text">zonename</td>
+  </tr>
+  <tr>
+    <td>Create a zone creation file </td>
+    <td class="code_text">zonecfg -z &lt;zone&gt; export </td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td class="code_text">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>Verify a zone</td>
+    <td class="code_text">zoneadm -z &lt;zone&gt; verify </td>
+  </tr>
+  <tr>
+    <td>Installing a zone </td>
+    <td class="code_text">zoneadm -z &lt;zone&gt; install </td>
+  </tr>
+  <tr>
+    <td>Ready a zone </td>
+    <td class="code_text">zoneadm -z &lt;zone&gt; ready </td>
+  </tr>
+  <tr>
+    <td>boot a zone </td>
+    <td class="code_text">zoneadm -z &lt;zone&gt; boot </td>
+  </tr>
+  <tr>
+    <td>reboot a zone </td>
+    <td class="code_text">zoneadm -z &lt;zone&gt; reboot </td>
+  </tr>
+  <tr>
+    <td>halt a zone </td>
+    <td class="code_text">zoneadm -z &lt;zone&gt; halt </td>
+  </tr>
+  <tr>
+    <td>uninstalling a zone </td>
+    <td class="code_text">zoneadm -z &lt;zone&gt; uninstall -F </td>
+  </tr>
+  <tr>
+    <td>Veiwing zones </td>
+    <td class="code_text">zoneadm list -cv </td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td class="code_text">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>login into a zone </td>
+    <td class="code_text">zlogin &lt;zone&gt; </td>
+  </tr>
+  <tr>
+    <td>login to a zones console </td>
+    <td class="code_text">zlogin -C &lt;zone&gt; (use ~. to exit) </td>
+  </tr>
+  <tr>
+    <td>login into a zone in safe mode (recovery) </td>
+    <td class="code_text">zlogin -S &lt;zone&gt; </td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td class="code_text">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>add/remove a package (global zone) </td>
+    <td class="code_text"><p># pkgadd -G -d . &lt;package&gt;<br>
+            <br>
+        If the -G option is missing the package will be added to all zones </p></td>
+  </tr>
+  <tr>
+    <td>add/remove a package (non-global zone) </td>
+    <td class="code_text"><p># pkgadd -Z -d . &lt;package&gt; </p>
+        <p>If the -Z option is missing the package will be added to all zones</p></td>
+  </tr>
+  <tr>
+    <td>Query packages in all non-global zones </td>
+    <td class="code_text"># pkginfo -Z</td>
+  </tr>
+  <tr>
+    <td>query packages in a specified zone </td>
+    <td class="code_text"># pkginfo -z &lt;zone&gt; </td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td class="code_text">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>lists processes in a zone </td>
+    <td class="code_text"># ps -z &lt;zone&gt;</td>
+  </tr>
+  <tr>
+    <td>list the ipcs in a zone </td>
+    <td class="code_text"># ipcs -z &lt;zone&gt; </td>
+  </tr>
+  <tr>
+    <td>process grep in a zone </td>
+    <td class="code_text"># pgrep -z &lt;zone&gt; </td>
+  </tr>
+  <tr>
+    <td>list the ptree in a zone </td>
+    <td class="code_text"># ptree -z &lt;zone&gt; </td>
+  </tr>
+  <tr>
+    <td>Display all filesystems </td>
+    <td class="code_text"># df -Zk</td>
+  </tr>
+  <tr>
+    <td>display the zones process informtion</td>
+    <td class="code_text"><p># prstat -Z</p>
+      <p># prstat -z &lt;zone&gt;  <br>
+      </p>
+      <p>Note:</p>
+    <p>-Z reports information about processes and zones<br>
+      -z reports information about a particular zone
+    </p></td>
+  </tr>
+</table>
+</body>
+</html>

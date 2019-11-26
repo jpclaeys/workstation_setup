@@ -1,0 +1,431 @@
+<!doctype html>
+<html>
+<head>
+<title>docs.oracle.com 404 error. We're sorry, the page does not exist or is no longer available.</title>
+<meta charset="utf-8" />
+<meta name="robots" content="NOINDEX, NOFOLLOW">
+<!--jquery-->
+<script src="/en/dcommon/js/jquery-1.11.0.min.js"></script>
+
+<!-- add bootstrap -->
+<link rel="stylesheet" href="/en/dcommon/bootstrap/css/bootstrap.min.css">
+<script src="/en/dcommon/bootstrap/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="/en/dcommon/fonts/glyphicons-pro/glyphicons/css/glyphicons.css">
+<script>
+function onLoadFn() {
+document.getElementById("searchpage").addEventListener("submit", function(event){
+    event.preventDefault();
+    var prod = document.getElementById("category");
+  if(prod.value !== null && prod.value === 'solutions') {
+    window.location = "/en/solutions/solutions.html?search="+document.getElementById("searchInput").value;
+   }
+   else {
+    document.getElementById("searchpage").action = "/apps/search/search.jsp";
+    window.location = "/apps/search/search.jsp?q="+document.getElementById("searchInput").value+"&category="+prod.value;
+   }
+
+});
+}
+
+</script>
+<style>
+html, body {
+	margin: 0px;
+	padding: 0px;
+}
+body {
+	font-family: "Helvetica Neue", Helvetica, 'Open Sans', arial, sans-serif;
+	color: #2a2a2a;
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 1.5em;
+	background-color: #fff;
+}
+a:link, a:visited {
+	text-decoration: none;
+	color: #145c93; 
+}
+
+h1 {
+}
+h1.alert404{
+	color: #ff0000;
+	font-size: 8em;
+}
+h2 {
+	font-size: 18px;
+	line-height: 1.2em;
+	color: #333;
+	margin: 15px 0 10px 0;
+	font-weight: normal;
+}
+h3 {
+	font-size: 16px;
+	line-height: 1.2em;
+	font-weight: bold;
+
+	margin: 15px 0 4px 0;
+}
+.header{
+	width: 100%;
+	height: 38px;
+	margin: 0;
+	padding:0;
+	background-color: #f7f7f7;
+	display:block;
+	border-bottom:1px solid #fff;
+	-webkit-box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2);
+}
+.header img{
+	margin-left: 17px;
+	margin-top: 9px;
+}
+.hidden{
+position: absolute;
+left: 0;
+top: -500px;
+width: 1px;
+height: 1px;
+overflow: hidden;
+}
+#searchInput::-moz-placeholder{
+color:#666;
+}
+.footer-container {
+	border-top: 1px solid #d9dfe3;
+	width:100%;
+	float:left;
+	left: 0;
+	margin: 0 auto;
+	background: #eaeaea; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+	background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VhZWFlYSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+	background: -moz-linear-gradient(top, #eaeaea 0%, #ffffff 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eaeaea), color-stop(100%, #ffffff)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #eaeaea 0%, #ffffff 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #eaeaea 0%, #ffffff 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #eaeaea 0%, #ffffff 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #eaeaea 0%, #ffffff 100%); /* W3C */
+}
+.footer-list {
+	float:left;
+	margin: 0;
+	padding: 0;
+}
+.footer-list ul {
+	padding: 0;
+	margin: 0;
+	margin-left: -7px;
+}
+.footer-list li {
+	display: inline;
+	padding: 0 7px;
+	font-size: 11px;
+	border-right: 1px solid #cbcbcb;
+	list-style-type: none;
+}
+.footer-list li:last-child {
+	border-right: none;
+}
+.footer-list ul li a:link {
+	color:#145c93;
+}
+.copyright{
+clear:left;
+font-family: 'Open Sans', arial, sans-serif;
+font-size: 12px;
+display:block; 
+float:left}
+/**** bootstrap overrides ****/
+/* grey color 404 page */
+.btn-oracle-red {
+    color: #000;
+    background-color: #ff0000; /* #d9534f; */
+    border-color: #d43f3a
+}
+
+.btn-oracle-red:focus, .btn-oracle-red.focus {
+    color: #000;
+    background-color: #c9302c;
+    border-color: #761c19
+}
+
+.btn-oracle-red-red:hover {
+    color: #000;
+    background-color: #c9302c;
+    border-color: #ac2925
+}
+
+.btn-oracle-red:active, .btn-oracle-red.active, .open > .dropdown-toggle.btn-oracle-red {
+    color: #000;
+    background-color: #c9302c;
+    border-color: #ac2925
+}
+
+.btn-oracle-red:active:hover, .btn-oracle-red.active:hover, .open > .dropdown-toggle.btn-oracle-red:hover,
+.btn-oracle-red:active:focus, .btn-oracle-red.active:focus, .open > .dropdown-toggle.btn-oracle-red:focus,
+.btn-oracle-red:active.focus, .btn-oracle-red.active.focus, .open > .dropdown-toggle.btn-oracle-red.focus {
+    color: #000;
+    background-color: #ac2925;
+    border-color: #761c19
+}
+
+.btn-oracle-red:active, .btn-oracle-red.active, .open > .dropdown-toggle.btn-oracle-red {
+    color:#000;
+	background-image: none
+}
+
+.btn-oracle-red.disabled, .btn-oracle-red[disabled], fieldset[disabled] .btn-oracle-red,
+.btn-oracle-red.disabled:hover, .btn-oracle-red[disabled]:hover, fieldset[disabled] .btn-oracle-red:hover,
+.btn-oracle-red.disabled:focus, .btn-oracle-red[disabled]:focus, fieldset[disabled] .btn-oracle-red:focus,
+.btn-oracle-red.disabled.focus, .btn-oracle-red[disabled].focus, fieldset[disabled] .btn-oracle-red.focus,
+.btn-oracle-red.disabled:active, .btn-oracle-red[disabled]:active, fieldset[disabled] .btn-oracle-red:active,
+.btn-oracle-red.disabled.active, .btn-oracle-red[disabled].active, fieldset[disabled] .btn-oracle-red.active {
+    background-color: #d9534f;
+    border-color: #d43f3a
+}
+
+.btn-oracle-red .badge {
+    color: #d9534f;
+    background-color: #fff
+}
+
+ /* grey color 404 page */
+
+.btn-oracle-grey {
+  color: #000;
+  background-color: #bdbdbd;
+  border-color: #ccc;
+}
+.btn-oracle-grey:focus,
+.btn-oracle-grey.focus {
+  color: #000;
+  background-color: #e6e6e6;
+  border-color: #8c8c8c;
+}
+.btn-oracle-grey:hover {
+  color: #000;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+.btn-oracle-grey:active,
+.btn-oracle-grey.active,
+.open > .dropdown-toggle.btn-oracle-grey {
+  color: #000;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+.btn-oracle-grey:active:hover,
+.btn-oracle-grey.active:hover,
+.open > .dropdown-toggle.btn-oracle-grey:hover,
+.btn-oracle-grey:active:focus,
+.btn-oracle-grey.active:focus,
+.open > .dropdown-toggle.btn-oracle-grey:focus,
+.btn-oracle-grey:active.focus,
+.btn-oracle-grey.active.focus,
+.open > .dropdown-toggle.btn-oracle-grey.focus {
+  color: #000;
+  background-color: #d4d4d4;
+  border-color: #8c8c8c;
+}
+.btn-oracle-grey:active,
+.btn-oracle-grey.active,
+.open > .dropdown-toggle.btn-oracle-grey {
+  background-image: none;
+}
+.btn-oracle-grey.disabled:hover,
+.btn-oracle-grey[disabled]:hover,
+fieldset[disabled] .btn-oracle-grey:hover,
+.btn-oracle-grey.disabled:focus,
+.btn-oracle-grey[disabled]:focus,
+fieldset[disabled] .btn-oracle-grey:focus,
+.btn-oracle-grey.disabled.focus,
+.btn-oracle-grey[disabled].focus,
+fieldset[disabled] .btn-oracle-grey.focus {
+  background-color: #fff;
+  border-color: #ccc;
+}
+.btn-oracle-grey .badge {
+  color: #fff;
+  background-color: #333;
+}
+
+.obscure {
+	position: absolute !important;
+	clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+	clip: rect(1px, 1px, 1px, 1px);
+	background-color:#fff;
+	color:#000;
+}
+
+@media only screen and (min-width: 768px) {
+#searchInput{
+width: 220px; 
+box-shadow:none;
+border:none;
+}
+.searchBorder{
+border:1px solid #c2c2c2; 
+border-radius:5px; 
+padding:3px;
+display: inline-block; 
+margin: 0 auto;"
+}
+
+.searchText{
+/* copy of .obscure */
+	position: absolute !important;
+	clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+	clip: rect(1px, 1px, 1px, 1px);
+	background-color:#fff;
+	color:#000;
+}
+
+}
+</style>
+<script>
+function set404Page() {
+
+  var page = document.getElementById("page_404"), ref ="/app/css/oo_engine.js";
+  if (ref !== null && ref !== undefined && ref.length !== 0) {
+    if (!!(window.history && history.replaceState))
+      history.replaceState(null, null, ref);
+    else
+      page.innerHTML = ","+ref;
+  } 
+
+}
+function addLoadEvent(func) {
+  "use strict";
+  var oldOnload = window.onload;
+  if (typeof window.onload !== "function") {
+    window.onload = func;
+  } else {
+    window.onload = function () { oldOnload(); func(); };
+  }
+}
+addLoadEvent(set404Page);
+</script>
+</head>
+<body onload="onLoadFn();set404Page();">
+
+<div class="header">
+<img src="/en/dcommon/img/oracle-doc-logo.png" alt="Oracle Help Center" width="236" height="22" style="max-width: none;">
+</div>
+<div style="text-align: center; padding: 5px;">
+<h1 class="alert404">404</h1>
+<h2>We're sorry, the page<span id="page_404"></span> does not exist or is no longer available.</h2>
+<p>We have recorded the error (404) to help us fix the problem.<br>
+You may wish to try again using one of the tools below.</p>
+<p></p>  
+<form class="form-inline" autocomplete="off" style="text-align:center; width:auto" action="/apps/search/search.jsp" id="searchpage">
+<div class="searchBorder">
+  <div class="form-group">
+    <label class="obscure" for="searchInput">Search entry</label>
+    <input type="text" class="form-control" id="searchInput" name="q" placeholder="Search">
+  </div>
+  <div class="form-group">  
+   <label class="obscure" for="category">Select a Product</label>
+<select class="form-control btn-oracle-grey" id="category" name="category">
+<option value="all">All Products</option>
+<option value="solutions">Solutions</option>
+<option value="cloud">Cloud</option>
+<option value="applications">Applications</option>
+<option value="middleware">Middleware</option>
+<option value="database">Database</option>
+<option value="bigdata">Big Data</option>
+<option value="enterprisemanager">Enterprise Manager</option>
+<option value="engineeredsystems">Engineered Systems</option>
+<option value="java">Java</option>
+<option value="servers">Servers</option>
+<option value="virtualization">Virtualization</option>
+<option value="networking">Networking</option>
+<option value="storage">Storage</option>
+<option value="operatingsystems">Operating Systems</option>
+<option value="industries">Industries</option>
+</select>
+  </div>
+<label class="obscure" for="submitsearch">Submit search</label>
+<button id="submitsearch" type="submit" class="btn btn-oracle-red"><span class="glyphicons glyphicons-search" aria-hidden="true" style="font-size:19px"></span> <span class="searchText">Search</span></button>
+<!--input type="submit" id="SEARCHBUTTON" value="Submit Search" class="btn btn-oracle-red"-->
+</div>
+</form>
+<p>&nbsp;</p> 
+<div class="container-fluid">
+  <div class="row">
+	<div class="col-md-3">&nbsp;</div>
+	<div class="col-md-2 text-center"><p><a href="javascript:history.back(-1);">Back to Previous Page</a></p></div>
+	<div class="col-md-2 text-center"><p><a href="/">Home</a></p></div>
+	<div class="col-md-2 text-center"><p><a href="/en/browseall.html">Product Index</a></p></div>
+	<div class="col-md-3" >&nbsp;</div>
+  </div>
+</div>
+<h3>Oracle Help Center Categories</h3>
+<div class="container-fluid">
+  <div class="row">
+	<div class="col-md-3">&nbsp;</div>
+	<div class="col-md-2 ">
+    <p><a href="/en/solutions/">Solutions</a></p>
+		<p><a href="/en/middleware/">Middleware</a></p>
+		<p><a href="/en/enterprise-manager/">Enterprise Manager</a></p>
+		<p><a href="/en/servers/">Servers</a></p>
+		<p><a href="/en/storage/">Storage</a></p>
+	</div>
+	<div class="col-md-2">
+    <p><a href="/en/cloud/">Cloud</a></p>
+		<p><a href="/en/database/">Database</a></p>
+		<p><a href="/en/engineered-systems/">Engineered Systems</a></p>
+		<p><a href="/en/networking/">Networking</a></p>
+		<p><a href="/en/operating-systems/">Operating Systems</a></p>
+		<p><a href="https://apicatalog.oraclecloud.com/ui/">Cloud APIs</a></p>	
+	</div>
+	<div class="col-md-2">
+    <p><a href="/en/applications/">Applications</a></p>
+		<p><a href="/en/bigdata/">Big Data</a></p>
+		<p><a href="/en/java/">Java</a></p>
+		<p><a href="/en/virtualization/">Virtualization</a></p>
+		<p><a href="/en/industries/">Industries</a></p>		
+	</div>
+	<div class="col-md-3" >&nbsp;</div>
+  </div>
+</div>
+<h3>Oracle Websites</h3>
+<div class="container-fluid">
+  <div class="row">
+	<div class="col-md-3">&nbsp;</div>
+	<div class="col-md-2">
+		<p><a href="https://www.oracle.com/index.html">Oracle.com</a></p>
+		<p><a href="http://www.oracle.com/technetwork/">Oracle Technology Network</a></p>
+		<p><a href="https://support.oracle.com">My Oracle Support</a></p>
+	</div>
+	<div class="col-md-2">
+		<p><a href="https://cloud.oracle.com/">Oracle Cloud</a></p>
+		<p><a href="http://www.oracle.com/partners/index.html">Oracle Partner Network</a></p>
+		<p><a href="https://www.oracle.com/servers/index.html">Servers</a></p>
+	</div>
+	<div class="col-md-2">
+		<p><a href="https://education.oracle.com/">Oracle University</a></p>
+		<p><a href="https://apexapps.oracle.com/pls/apex/f?p=44785:1:0">Oracle Learning Library</a></p>
+	</div>
+	<div class="col-md-3" >&nbsp;</div>
+  </div>
+</div>
+</div>
+ <p>&nbsp;  </p>
+<footer class="footer-container clearboth" style="padding:10px 0 0 17px;">
+<div class="footer-list">
+      <ul>
+        <li> <a href="http://www.oracle.com/corporate/index.html" target="_blank">About Oracle</a> </li>
+        <li> <a href="http://www.oracle.com/us/corporate/contact/index.html" target="_blank">Contact Us</a> </li>
+        <li> <a href="http://www.oracle.com/us/legal/index.html" target="_blank">Legal Notices</a> </li>
+        <li> <a href="http://www.oracle.com/us/legal/terms/index.html" target="_blank">Terms of Use</a> </li>
+        <li> <a href="http://www.oracle.com/us/legal/privacy/index.html" target="_blank">Your Privacy Rights</a> </li>
+      </ul>
+</div>
+<div class="copyright"><a href="https://www.oracle.com/pls/topic/lookup?ctx=cpyr&id=en">Copyright &copy; 2017, Oracle and/or its affiliates. All rights reserved.</a></div>
+</footer>
+<!--Site Catalyst-->
+<script src="https://www.oracleimg.com/us/assets/metrics/ora_docs.js"></script>
+</body>
+</html>

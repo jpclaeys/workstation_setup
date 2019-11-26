@@ -1,0 +1,20 @@
+#-------------------------------------------------------------------------------
+# ~/.bash_profile: executed by the command interpreter for login shells.
+# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login exists.
+# see /usr/share/doc/bash/examples/startup-files for examples.
+# the files are located in the bash-doc package.
+#
+# Last modified:    09/12/2016 08:09:34
+# version:          4.1beta 
+#-------------------------------------------------------------------------------
+# the default umask is set in /etc/profile; for setting the umask
+# for ssh logins, install and configure the libpam-umask package.
+
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    BASHRC=$HOME/.bashrc
+    if [ -f "$BASHRC" ]; then
+	source $BASHRC
+    fi
+fi

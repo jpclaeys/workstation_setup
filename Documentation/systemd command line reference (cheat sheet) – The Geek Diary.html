@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<!-- saved from url=(0086)https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/ -->
+<html lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="description" content="The systemd system and service manager are responsible for controlling how services are started, stopped and otherwise managed on Red Hat Enterprise Linux 7 systems. By offering on-demand service start-up and better transactional dependency controls, systemd dramatically reduces startup times. As a systemd user, you can prioritize critical services over less important services.">
+<meta name="keywords" content="systemd command, systemd command line reference, systemd cheat sheet, systemctl commands, systemctl cheat sheet, systemctl reboot, systemctl service commands, journalctl commands">
+<meta name="robots" content="noodp,noydir">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>systemd command line reference (cheat sheet) – The Geek Diary</title>
+<link rel="amphtml" href="https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/amp/"><link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+<link rel="dns-prefetch" href="https://s.w.org/">
+<link rel="alternate" type="application/rss+xml" title="The Geek Diary » Feed" href="https://www.thegeekdiary.com/feed/">
+<link rel="alternate" type="application/rss+xml" title="The Geek Diary » Comments Feed" href="https://www.thegeekdiary.com/comments/feed/">
+<link rel="canonical" href="https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/">
+<script type="text/javascript" async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/analytics.js.download"></script><script src="./systemd command line reference (cheat sheet) – The Geek Diary_files/osd.js.download"></script><script src="./systemd command line reference (cheat sheet) – The Geek Diary_files/ca-pub-9806101468749934.js.download"></script><script type="text/javascript">window._wpemojiSettings={"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/11\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/11\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/www.thegeekdiary.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=4.9.8"}};!function(a,b,c){function d(a,b){var c=String.fromCharCode;l.clearRect(0,0,k.width,k.height),l.fillText(c.apply(this,a),0,0);var d=k.toDataURL();l.clearRect(0,0,k.width,k.height),l.fillText(c.apply(this,b),0,0);var e=k.toDataURL();return d===e}function e(a){var b;if(!l||!l.fillText)return!1;switch(l.textBaseline="top",l.font="600 32px Arial",a){case"flag":return!(b=d([55356,56826,55356,56819],[55356,56826,8203,55356,56819]))&&(b=d([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]),!b);case"emoji":return b=d([55358,56760,9792,65039],[55358,56760,8203,9792,65039]),!b}return!1}function f(a){var c=b.createElement("script");c.src=a,c.defer=c.type="text/javascript",b.getElementsByTagName("head")[0].appendChild(c)}var g,h,i,j,k=b.createElement("canvas"),l=k.getContext&&k.getContext("2d");for(j=Array("flag","emoji"),c.supports={everything:!0,everythingExceptFlag:!0},i=0;i<j.length;i++)c.supports[j[i]]=e(j[i]),c.supports.everything=c.supports.everything&&c.supports[j[i]],"flag"!==j[i]&&(c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&c.supports[j[i]]);c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&!c.supports.flag,c.DOMReady=!1,c.readyCallback=function(){c.DOMReady=!0},c.supports.everything||(h=function(){c.readyCallback()},b.addEventListener?(b.addEventListener("DOMContentLoaded",h,!1),a.addEventListener("load",h,!1)):(a.attachEvent("onload",h),b.attachEvent("onreadystatechange",function(){"complete"===b.readyState&&c.readyCallback()})),g=c.source||{},g.concatemoji?f(g.concatemoji):g.wpemoji&&g.twemoji&&(f(g.twemoji),f(g.wpemoji)))}(window,document,window._wpemojiSettings);</script><script src="./systemd command line reference (cheat sheet) – The Geek Diary_files/wp-emoji-release.min.js.download" type="text/javascript" defer=""></script>
+<style type="text/css">img.wp-smiley,img.emoji{display:inline!important;border:none!important;box-shadow:none!important;height:1em!important;width:1em!important;margin:0 .07em!important;vertical-align:-.1em!important;background:none!important;padding:0!important}</style>
+<link rel="stylesheet" id="wellness-pro-css" href="./systemd command line reference (cheat sheet) – The Geek Diary_files/style.css" type="text/css" media="all">
+<link rel="stylesheet" id="wellness-fonts-css" href="./systemd command line reference (cheat sheet) – The Geek Diary_files/css" type="text/css" media="all">
+<link rel="stylesheet" id="dashicons-css" href="./systemd command line reference (cheat sheet) – The Geek Diary_files/dashicons.min.css" type="text/css" media="all">
+<!--[if lt IE 9]>
+<script type='text/javascript' src='https://cdn.thegeekdiary.com/wp-content/themes/genesis/lib/js/html5shiv.min.js?ver=3.7.3'></script>
+<![endif]-->
+<script type="text/javascript" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/jquery.js.download"></script>
+<script type="text/javascript" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/jquery-migrate.min.js.download"></script>
+<link rel="https://api.w.org/" href="https://www.thegeekdiary.com/wp-json/">
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.thegeekdiary.com/xmlrpc.php?rsd">
+<link rel="alternate" type="application/json+oembed" href="https://www.thegeekdiary.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.thegeekdiary.com%2Fcentos-rhel-7-systemd-command-line-reference-cheat-sheet%2F">
+<link rel="alternate" type="text/xml+oembed" href="https://www.thegeekdiary.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.thegeekdiary.com%2Fcentos-rhel-7-systemd-command-line-reference-cheat-sheet%2F&amp;format=xml">
+<link rel="icon" href="https://cdn.thegeekdiary.com/wp-content/themes/wellness-pro/images/favicon.ico">
+<script async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/-"></script>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: \"ca-pub-9806101468749934\",
+          enable_page_level_ads: true
+     });
+</script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/js"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-44279375-1');</script><link rel="preload" href="./systemd command line reference (cheat sheet) – The Geek Diary_files/integrator.js.download" as="script"><script type="text/javascript" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/integrator.js.download"></script><link rel="preload" href="./systemd command line reference (cheat sheet) – The Geek Diary_files/integrator.js(1).download" as="script"><script type="text/javascript" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/integrator.js(1).download"></script></head>
+<body class="post-template-default single single-post postid-5909 single-format-standard header-full-width content-sidebar" itemscope="" itemtype="https://schema.org/WebPage"><noscript>&lt;meta HTTP-EQUIV="refresh" content="0;url='http://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/?PageSpeed=noscript'" /&gt;&lt;style&gt;&lt;!--table,div,span,font,p{display:none} --&gt;&lt;/style&gt;&lt;div style="display:block"&gt;Please click &lt;a href="http://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/?PageSpeed=noscript"&gt;here&lt;/a&gt; if you are not redirected within a few seconds.&lt;/div&gt;</noscript><div class="site-container"><ul class="genesis-skip-link"><li><a href="https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/#genesis-nav-primary" class="screen-reader-shortcut"> Skip to primary navigation</a></li><li><a href="https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/#genesis-content" class="screen-reader-shortcut"> Skip to content</a></li><li><a href="https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/#genesis-sidebar-primary" class="screen-reader-shortcut"> Skip to primary sidebar</a></li><li><a href="https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/#genesis-footer-widgets" class="screen-reader-shortcut"> Skip to footer</a></li></ul><header class="site-header" itemscope="" itemtype="https://schema.org/WPHeader"><div class="wrap"><div class="title-area"><p class="site-title" itemprop="headline"><a href="https://www.thegeekdiary.com/" title="The Geek Diary">The<span class="custom-title"> Geek </span>Diary</a></p><p class="site-description" itemprop="description">HowTos | Basics | Concepts</p></div></div></header><button class="menu-toggle dashicons-before dashicons-menu" aria-expanded="false" aria-pressed="false" role="button" id="genesis-mobile-nav-primary">Menu</button><nav class="nav-primary genesis-responsive-menu" aria-label="Main" itemscope="" itemtype="https://schema.org/SiteNavigationElement" id="genesis-nav-primary" style=""><div class="wrap"><ul id="menu-primary-navigation" class="menu genesis-nav-menu menu-primary js-superfish"><li id="menu-item-2833" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2833"><a href="https://www.thegeekdiary.com/category/solaris/solaris-11/" itemprop="url"><span itemprop="name">Solaris 11</span></a></li>
+<li id="menu-item-2717" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2717"><a href="https://www.thegeekdiary.com/category/solaris/" itemprop="url"><span itemprop="name">Solaris</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-2837" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2837"><a href="https://www.thegeekdiary.com/category/solaris/svm/" itemprop="url"><span itemprop="name">SVM</span></a></li>
+<li id="menu-item-2839" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2839"><a href="https://www.thegeekdiary.com/category/solaris/zfs/" itemprop="url"><span itemprop="name">ZFS</span></a></li>
+<li id="menu-item-2835" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2835"><a href="https://www.thegeekdiary.com/category/solaris/zones/" itemprop="url"><span itemprop="name">Zones</span></a></li>
+<li id="menu-item-2834" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2834"><a href="https://www.thegeekdiary.com/category/solaris/ldoms/" itemprop="url"><span itemprop="name">LDOMs</span></a></li>
+<li id="menu-item-2836" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2836"><a href="https://www.thegeekdiary.com/category/solaris/hardware/" itemprop="url"><span itemprop="name">Hardware</span></a></li>
+</ul>
+</li>
+<li id="menu-item-2719" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-has-children menu-item-2719"><a href="https://www.thegeekdiary.com/category/linux/" itemprop="url"><span itemprop="name">Linux</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-3892" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-3892"><a href="https://www.thegeekdiary.com/category/linux/centos-rhel-7/" itemprop="url"><span itemprop="name">CentOS/RHEL 7</span></a></li>
+<li id="menu-item-4702" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4702"><a href="https://www.thegeekdiary.com/category/linux/rhcsa-notes/" itemprop="url"><span itemprop="name">RHCSA notes</span></a></li>
+<li id="menu-item-5155" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-5155"><a href="https://www.thegeekdiary.com/category/linux/suse-linux-enterprise/" itemprop="url"><span itemprop="name">SuSE Linux Enterprise</span></a></li>
+<li id="menu-item-6970" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-6970"><a href="https://www.thegeekdiary.com/category/linux/linux-services/" itemprop="url"><span itemprop="name">Linux Services</span></a></li>
+</ul>
+</li>
+<li id="menu-item-2838" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2838"><a href="https://www.thegeekdiary.com/category/solaris/vxvm/" itemprop="url"><span itemprop="name">VxVM</span></a></li>
+<li id="menu-item-2718" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2718"><a href="https://www.thegeekdiary.com/category/vcs/" itemprop="url"><span itemprop="name">VCS</span></a></li>
+<li id="menu-item-2840" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2840"><a href="https://www.thegeekdiary.com/category/interview-questions/" itemprop="url"><span itemprop="name">Interview Questions</span></a></li>
+<li id="menu-item-2931" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2931"><a href="https://www.thegeekdiary.com/category/oracle/" itemprop="url"><span itemprop="name">oracle</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-4703" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4703"><a href="https://www.thegeekdiary.com/category/oracle/asm/" itemprop="url"><span itemprop="name">ASM</span></a></li>
+<li id="menu-item-4704" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4704"><a href="https://www.thegeekdiary.com/category/oracle/mysql/" itemprop="url"><span itemprop="name">mysql</span></a></li>
+<li id="menu-item-4705" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4705"><a href="https://www.thegeekdiary.com/category/oracle/rac/" itemprop="url"><span itemprop="name">RAC</span></a></li>
+<li id="menu-item-5035" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-5035"><a href="https://www.thegeekdiary.com/category/oracle/oracle-12c/" itemprop="url"><span itemprop="name">oracle 12c</span></a></li>
+<li id="menu-item-6987" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-6987"><a href="https://www.thegeekdiary.com/category/oracle/data-guard/" itemprop="url"><span itemprop="name">Data Guard</span></a></li>
+</ul>
+</li>
+<li id="menu-item-6964" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-6964"><a href="https://www.thegeekdiary.com/category/devops/" itemprop="url"><span itemprop="name">DevOps</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-6965" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-6965"><a href="https://www.thegeekdiary.com/category/devops/docker/" itemprop="url"><span itemprop="name">Docker</span></a></li>
+<li id="menu-item-8216" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-8216"><a href="https://www.thegeekdiary.com/category/devops/shell-scripting/" itemprop="url"><span itemprop="name">Shell Scripting</span></a></li>
+</ul>
+</li>
+<li id="menu-item-11700" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-11700"><a href="https://www.thegeekdiary.com/category/hadoop/" itemprop="url"><span itemprop="name">Hadoop</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-11701" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-11701"><a href="https://www.thegeekdiary.com/category/hadoop/hortonworks-hdp/" itemprop="url"><span itemprop="name">Hortonworks HDP</span></a></li>
+<li id="menu-item-11702" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-11702"><a href="https://www.thegeekdiary.com/category/hadoop/hortonworks-hdp/hdpca/" itemprop="url"><span itemprop="name">HDPCA</span></a></li>
+</ul>
+</li>
+</ul></div></nav><div class="site-inner"><div class="content-sidebar-wrap"><main class="content" id="genesis-content"><article class="post-5909 post type-post status-publish format-standard category-centos-rhel-7 entry" itemscope="" itemtype="https://schema.org/CreativeWork"><header class="entry-header"><h1 class="entry-title" itemprop="headline">systemd command line reference (cheat sheet)</h1>
+<p class="entry-meta">By <span class="entry-author" itemprop="author" itemscope="" itemtype="https://schema.org/Person"><a href="https://www.thegeekdiary.com/author/sandeep_patil/" class="entry-author-link" itemprop="url" rel="author"><span class="entry-author-name" itemprop="name">admin</span></a></span> </p></header><div class="entry-content" itemprop="text"><!-- Google Adsense Ads Manager plugin by Crunchify.com - Top post Ad START --><div style="text-align:center;"><p><script async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script>
+<!-- after_title_ad -->
+<ins class="adsbygoogle" style="display: block; height: 90px;" data-ad-client="ca-pub-9806101468749934" data-ad-slot="4616658401" data-ad-format="auto" data-adsbygoogle-status="done"><ins id="aswift_0_expand" style="display:inline-table;border:none;height:90px;margin:0;padding:0;position:relative;visibility:visible;width:760px;background-color:transparent;"><ins id="aswift_0_anchor" style="display:block;border:none;height:90px;margin:0;padding:0;position:relative;visibility:visible;width:760px;background-color:transparent;"><iframe width="760" height="90" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_0" name="aswift_0" style="left:0;position:absolute;top:0;width:760px;height:90px;" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/saved_resource.html"></iframe></ins></ins></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></p></div><!-- Google Adsense Ads Manager plugin by Crunchify.com - Top post Ad END --><p>The systemd system and service manager are responsible for controlling how services are started, stopped and otherwise managed on Red Hat Enterprise Linux 7 systems. By offering on-demand service start-up and better transactional dependency controls, systemd dramatically reduces startup times. As a systemd user, you can prioritize critical services over less important services.</p>
+<p>Although the systemd process replaces the init process (quite literally, /sbin/init is now a symbolic link to /usr/lib/systemd/systemd) for starting services at boot time and changing runlevels, systemd provides much more control than the init process does while still supporting existing init scripts. Here are some of the most commanly used systemd command examples:</p><!-- Google Adsense Ads Manager plugin by Crunchify.com - Middle post Ad START --><div style="text-align:center;"><p><style>.square-responsive{width:336px;height:280px}@media (max-width:450px){.square-responsive{width:300px;height:250px}}</style>
+<script async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script>
+<!-- square-responsive -->
+<ins class="adsbygoogle square-responsive" style="display: inline-block; width: 336px; height: 280px;" data-full-width-responsive="true" data-ad-client="ca-pub-9806101468749934" data-ad-slot="7337034404" data-adsbygoogle-status="done"><ins id="aswift_1_expand" style="display:inline-table;border:none;height:280px;margin:0;padding:0;position:relative;visibility:visible;width:336px;background-color:transparent;"><ins id="aswift_1_anchor" style="display:block;border:none;height:280px;margin:0;padding:0;position:relative;visibility:visible;width:336px;background-color:transparent;"><iframe width="336" height="280" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_1" name="aswift_1" style="left:0;position:absolute;top:0;width:336px;height:280px;" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/saved_resource(1).html"></iframe></ins></ins></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></p></div><!-- Google Adsense Ads Manager plugin by Crunchify.com - Middle post Ad END -->
+<h2>View systemd information</h2>
+<table class="table table-striped">
+<tbody><tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>systemctl list-dependencies</td>
+<td>show a unit’s dependecies</td>
+</tr>
+<tr>
+<td>systemctl list-sockets</td>
+<td>list the sockets</td>
+</tr>
+<tr>
+<td>systemctl list-jobs</td>
+<td>View active systemd jobs</td>
+</tr>
+<tr>
+<td>systemctl list-unit-files</td>
+<td>See unit files and their states</td>
+</tr>
+<tr>
+<td>systemctl list-units</td>
+<td>Show if units are loaded/active</td>
+</tr>
+<tr>
+<td>systemctl get-default</td>
+<td>List default target (like run level)</td>
+</tr>
+</tbody></table>
+<h2>Working with services</h2>
+<table class="table table-striped">
+<tbody><tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>systemctl stop service</td>
+<td>Stop a running service</td>
+</tr>
+<tr>
+<td>systemctl start service</td>
+<td>Start a service</td>
+</tr>
+<tr>
+<td>systemctl restart service</td>
+<td>Restart a running service</td>
+</tr>
+<tr>
+<td>systemctl reload service</td>
+<td>Reload all config files in service</td>
+</tr>
+<tr>
+<td>systemctl status service</td>
+<td>See if service is running/enabled</td>
+</tr>
+<tr>
+<td>systemctl enable service</td>
+<td>Enable a service to start on boot</td>
+</tr>
+<tr>
+<td>systemctl disable service</td>
+<td>Disable service–won’t start at boot</td>
+</tr>
+<tr>
+<td>systemctl show service</td>
+<td>Show properties of a service (or other units)</td>
+</tr>
+<tr>
+<td>systemctl -H host status network</td>
+<td>Run any systemctl command remotely</td>
+</tr>
+</tbody></table>
+<h2>Changing system states</h2>
+<table class="table table-striped">
+<tbody><tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>systemctl reboot</td>
+<td>Reboot the system (reboot.target)</td>
+</tr>
+<tr>
+<td>systemctl poweroff</td>
+<td>Power off the system (poweroff.target)</td>
+</tr>
+<tr>
+<td>systemctl emergency</td>
+<td>Put in emergency mode (emergency.target)</td>
+</tr>
+<tr>
+<td>systemctl default</td>
+<td>Back to default target (multi-user.target)</td>
+</tr>
+</tbody></table>
+<h2>Viewing log messages</h2>
+<table class="table table-striped">
+<tbody><tr class="tableizer-firstrow">
+<th>Command</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>journalctl</td>
+<td>Show all collected log messages</td>
+</tr>
+<tr>
+<td>journalctl -u network.service</td>
+<td>See network service messages</td>
+</tr>
+<tr>
+<td>journalctl -f</td>
+<td>Follow messages as they appear</td>
+</tr>
+<tr>
+<td>journalctl -k</td>
+<td>Show only kernel messages</td>
+</tr>
+</tbody></table>
+<p></p><!-- Google Adsense Ads Manager plugin by Crunchify.com - After post Ad START --><div style="text-align:left;"><p><script async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script>
+<!-- responsive-after-post -->
+<ins class="adsbygoogle" style="display: block; height: 94px;" data-ad-client="ca-pub-9806101468749934" data-ad-slot="9599170000" data-ad-format="auto" data-adsbygoogle-status="done"><ins id="aswift_2_expand" style="display: inline-table; border: none; height: 94px; margin: 0px; padding: 0px; position: relative; visibility: visible; width: 760px; background-color: transparent;"><ins id="aswift_2_anchor" style="display: block; border: none; height: 94px; margin: 0px; padding: 0px; position: relative; visibility: visible; width: 760px; background-color: transparent; overflow: hidden;"><iframe width="760" height="94" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_2" name="aswift_2" style="left: 0px; position: absolute; top: 0px; width: 760px; height: 94px;" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/saved_resource(2).html"></iframe></ins></ins></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></p></div><!-- Google Adsense Ads Manager plugin by Crunchify.com - After post Ad END --></div><footer class="entry-footer"><p class="entry-meta"><span class="entry-categories">Filed Under: <a href="https://www.thegeekdiary.com/category/linux/centos-rhel-7/" rel="category tag">CentOS/RHEL 7</a></span> </p><div class="related-posts"><h3 class="related-title">Some more articles you might also be interested in …</h3><ol class="related-list"><li><a href="https://www.thegeekdiary.com/centos-rhel-how-to-allow-or-deny-users-to-login-to-vsftp-server/" rel="bookmark" title="Permanent Link toCentOS / RHEL : How to allow or deny Users to login to VSFTP Server">CentOS / RHEL : How to allow or deny Users to login to VSFTP Server</a></li><li><a href="https://www.thegeekdiary.com/5-useful-examples-of-firewall-cmd-command/" rel="bookmark" title="Permanent Link to5 Useful Examples of firewall-cmd command">5 Useful Examples of firewall-cmd command</a></li><li><a href="https://www.thegeekdiary.com/centos-rhel-how-to-enable-ssl-for-apache/" rel="bookmark" title="Permanent Link toCentOS / RHEL : How to Enable SSL For Apache">CentOS / RHEL : How to Enable SSL For Apache</a></li><li><a href="https://www.thegeekdiary.com/centos-rhel-7-never-run-the-iptables-service-and-firewalld-service-at-the-same-time/" rel="bookmark" title="Permanent Link toCentOS / RHEL 7 : Never run the iptables service and FirewallD service at the same time!">CentOS / RHEL 7 : Never run the iptables service and FirewallD service at the same time!</a></li><li><a href="https://www.thegeekdiary.com/how-to-connect-to-an-active-directory-domain-using-realmd-configure-centos-rhel-7-as-active-directory-client/" rel="bookmark" title="Permanent Link toHow to connect to an Active Directory Domain using Realmd (Configure CentOS/RHEL 7 as active directory client)">How to connect to an Active Directory Domain using Realmd (Configure CentOS/RHEL 7 as active directory client)</a></li><li><a href="https://www.thegeekdiary.com/apache-http-server-most-commonly-used-containers-special-configuration-directives/" rel="bookmark" title="Permanent Link toApache HTTP server – most commonly used containers (special configuration directives)">Apache HTTP server – most commonly used containers (special configuration directives)</a></li><li><a href="https://www.thegeekdiary.com/how-to-configure-udev-rule-to-allow-read-only-permissions-on-usb-devices/" rel="bookmark" title="Permanent Link toHow to Configure UDEV rule to allow read-only permissions on USB devices">How to Configure UDEV rule to allow read-only permissions on USB devices</a></li><li><a href="https://www.thegeekdiary.com/centos-rhel-how-to-disable-and-blacklist-linux-kernel-module-to-prevent-it-from-loading-automatically/" rel="bookmark" title="Permanent Link toCentOS / RHEL : How to Disable and Blacklist Linux Kernel Module to prevent it from loading automatically">CentOS / RHEL : How to Disable and Blacklist Linux Kernel Module to prevent it from loading automatically</a></li><li><a href="https://www.thegeekdiary.com/centos-rhel-7-change-default-kernel-boot-with-old-kernel/" rel="bookmark" title="Permanent Link toCentOS / RHEL 7 : Change default kernel (boot with old kernel)">CentOS / RHEL 7 : Change default kernel (boot with old kernel)</a></li><li><a href="https://www.thegeekdiary.com/how-to-configure-iscsi-target-and-initiator-using-targetcli-in-centos-rhel-7/" rel="bookmark" title="Permanent Link toHow to configure iSCSI target using targetcli in CentOS / RHEL 7">How to configure iSCSI target using targetcli in CentOS / RHEL 7</a></li></ol></div></footer></article><div class="after-related-post widget-area"><div class="wrap"><section id="custom_html-6" class="widget_text widget widget_custom_html"><div class="widget_text widget-wrap"><h3 class="widgettitle widget-title">You May Also Like</h3>
+<div class="textwidget custom-html-widget"><script async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script>
+<!-- pbad -->
+<ins class="adsbygoogle" style="display: block; height: 438px;" data-ad-client="ca-pub-9806101468749934" data-ad-slot="6439358454" data-matched-content-rows-num="2" data-matched-content-columns-num="3" data-matched-content-ui-type="image_stacked" data-ad-format="autorelaxed" data-adsbygoogle-status="done"><ins id="aswift_3_expand" style="display:inline-table;border:none;height:438px;margin:0;padding:0;position:relative;visibility:visible;width:760px;background-color:transparent;"><ins id="aswift_3_anchor" style="display:block;border:none;height:438px;margin:0;padding:0;position:relative;visibility:visible;width:760px;background-color:transparent;"><iframe width="760" height="438" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_3" name="aswift_3" style="left:0;position:absolute;top:0;width:760px;height:438px;" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/saved_resource(3).html"></iframe></ins></ins></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div></div></section>
+</div></div></main><aside class="sidebar sidebar-primary widget-area q2w3-fixed-widget-container" role="complementary" aria-label="Primary Sidebar" itemscope="" itemtype="https://schema.org/WPSideBar" id="genesis-sidebar-primary" style="height: 1487px;"><h2 class="genesis-sidebar-title screen-reader-text">Primary Sidebar</h2><section id="search-2" class="widget widget_search"><div class="widget-wrap"><form class="search-form" itemprop="potentialAction" itemscope="" itemtype="https://schema.org/SearchAction" method="get" action="https://www.thegeekdiary.com/" role="search"><meta itemprop="target" content="https://www.thegeekdiary.com/?s={s}"><label class="search-form-label screen-reader-text" for="searchform-5b6d696c3078b0.34902050">Search this website</label><input itemprop="query-input" type="search" name="s" id="searchform-5b6d696c3078b0.34902050" placeholder="Search this website …"><input type="submit" value="Search"></form></div></section>
+<section id="custom_html-3" class="widget_text widget widget_custom_html"><div class="widget_text widget-wrap"><div class="textwidget custom-html-widget"><div style="text-align: center;"><style>.primary_sidebar_top_ad{width:336px;height:280px}@media (max-width:400px){.primary_sidebar_top_ad{width:300px;height:250px}}</style><script async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script><!-- primary_sidebar_top_ad --><ins class="adsbygoogle primary_sidebar_top_ad" style="display: inline-block; width: 336px; height: 280px;" data-full-width-responsive="true" data-ad-client="ca-pub-9806101468749934" data-ad-slot="3000324408" data-adsbygoogle-status="done"><ins id="aswift_4_expand" style="display:inline-table;border:none;height:280px;margin:0;padding:0;position:relative;visibility:visible;width:336px;background-color:transparent;"><ins id="aswift_4_anchor" style="display:block;border:none;height:280px;margin:0;padding:0;position:relative;visibility:visible;width:336px;background-color:transparent;"><iframe width="336" height="280" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_4" name="aswift_4" style="left:0;position:absolute;top:0;width:336px;height:280px;" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/saved_resource(4).html"></iframe></ins></ins></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div></div></div></section>
+<section id="recent-posts-2" class="widget widget_recent_entries"><div class="widget-wrap">	<h3 class="widgettitle widget-title">Recent Posts</h3>
+<ul>
+<li>
+<a href="https://www.thegeekdiary.com/how-to-kill-a-process-in-linux/">How to kill a process in Linux (kill, killall, pkill, xkill)</a>
+</li>
+<li>
+<a href="https://www.thegeekdiary.com/hdpca-practice-exam-questions-and-aws-instance-setup-details/">HDPCA Practice Exam Questions and AWS Instance Setup Details</a>
+</li>
+<li>
+<a href="https://www.thegeekdiary.com/hdpca-exam-objective-configure-hiveserver2-ha-part-2-configure-ha/">HDPCA Exam Objective – Configure HiveServer2 HA ( Part 2 – Configure HA )</a>
+</li>
+<li>
+<a href="https://www.thegeekdiary.com/how-to-configure-capacity-scheduler-queues-using-yarn-queue-manager/">How to configure Capacity Scheduler Queues Using YARN Queue Manager</a>
+</li>
+<li>
+<a href="https://www.thegeekdiary.com/how-to-create-hdfs-policies-in-ranger/">How to Create HDFS policies in Ranger</a>
+</li>
+</ul>
+</div></section>
+<section id="custom_html-2" class="widget_text widget widget_custom_html" style=""><div class="widget_text widget-wrap"><div class="textwidget custom-html-widget"><div style="text-align: center;"><style>.sidebar-responsive{width:300px;height:600px}@media (max-width:860px){.sidebar-responsive{width:336px;height:280px}}</style><script async="" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script><!-- sidebar-responsive --><ins class="adsbygoogle sidebar-responsive" style="display: inline-block; width: 300px; height: 600px;" data-full-width-responsive="true" data-ad-client="ca-pub-9806101468749934" data-ad-slot="1672277200" data-adsbygoogle-status="done"><ins id="aswift_5_expand" style="display:inline-table;border:none;height:600px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent;"><ins id="aswift_5_anchor" style="display:block;border:none;height:600px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent;"><iframe width="300" height="600" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_5" name="aswift_5" style="left:0;position:absolute;top:0;width:300px;height:600px;" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/saved_resource(5).html"></iframe></ins></ins></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+</div></div></div></section>
+</aside></div></div><div class="footer-widgets" id="genesis-footer-widgets"><h2 class="genesis-sidebar-title screen-reader-text">Footer</h2><div class="wrap"><div class="widget-area footer-widgets-1 footer-widget-area"><section id="text-98" class="widget widget_text"><div class="widget-wrap"><h3 class="widgettitle widget-title">Cheat Sheets</h3>
+<div class="textwidget"><ul>
+<li><a href="https://www.thegeekdiary.com/ldoms-ovm-for-sparc-command-line-reference-cheat-sheet/">LDOMs (OVM for SPARC) Command line reference</a></li>
+<li><a href="https://www.thegeekdiary.com/solaris-volume-manager-svm-command-line-reference-cheat-sheet/">Solaris Volume Manager (SVM) command line reference</a></li>
+<li><a href="https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/">Solaris ZFS command line reference</a></li>
+<li><a href="https://www.thegeekdiary.com/rhel-7-rhcsa-notes-cheat-sheets/">RHEL 7 – RHCSA Notes (Cheat Sheets)</a></li>
+<li><a href="https://www.thegeekdiary.com/centos-rhel-7-firewalld-command-line-reference-cheat-sheet/">CentOS / RHEL 7 : firewalld Cheat Sheet</a></li>
+<li><a href="https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/">systemd command line reference (cheat sheet)</a></li>
+</ul>
+</div>
+</div></section>
+</div><div class="widget-area footer-widgets-2 footer-widget-area"><section id="text-100" class="widget widget_text"><div class="widget-wrap"><h3 class="widgettitle widget-title">Solaris interview questions</h3>
+<div class="textwidget"><ul>
+<li><a href="https://www.thegeekdiary.com/the-ultimate-solaris-volume-manager-svm-interview-questions/">The ultimate Solaris Volume Manager (SVM) interview questions</a></li>
+<li><a href="https://www.thegeekdiary.com/the-ultimate-solaris-zones-containers-interview-questions/">The ultimate Solaris zones (containers) interview questions</a></li>
+<li><a href="https://www.thegeekdiary.com/the-ultimate-solaris-networking-interview-questions/">The ultimate Solaris networking interview questions</a></li>
+<li><a href="https://www.thegeekdiary.com/the-ultimate-zfs-interview-questions/">The ultimate ZFS interview questions</a></li>
+</ul>
+</div>
+</div></section>
+</div></div></div><footer class="site-footer" itemscope="" itemtype="https://schema.org/WPFooter"><div class="wrap"><nav class="nav-secondary" aria-label="Secondary" itemscope="" itemtype="https://schema.org/SiteNavigationElement"><div class="wrap"><ul id="menu-top-menu" class="menu genesis-nav-menu menu-secondary js-superfish"><li id="menu-item-316" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-316"><a href="https://www.thegeekdiary.com/archives/" itemprop="url"><span itemprop="name">Archives</span></a></li>
+<li id="menu-item-317" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-317"><a href="https://www.thegeekdiary.com/contact-us/" itemprop="url"><span itemprop="name">Contact Us</span></a></li>
+<li id="menu-item-2584" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2584"><a href="https://www.thegeekdiary.com/copyright-terms-and-privacy-policy/" itemprop="url"><span itemprop="name">Copyright</span></a></li>
+</ul></div></nav><p>©&nbsp;2018 · <a href="http://thegeekdiary.com/">The Geek Diary</a></p></div></footer></div><iframe id="google_osd_static_frame_6531574790154" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/saved_resource(6).html"></iframe><script type="text/javascript" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/skip-links.min.js.download"></script>
+<script type="text/javascript">var genesis_responsive_menu={"mainMenu":"Menu","subMenu":"Submenu","menuClasses":{"combine":[".nav-header",".nav-primary"]}};</script>
+<script type="text/javascript" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/responsive-menus.min.js.download"></script>
+<script type="text/javascript">var q2w3_sidebar_options=[{"sidebar":"sidebar","margin_top":10,"margin_bottom":150,"stop_id":"","screen_max_width":1180,"screen_max_height":0,"width_inherit":true,"refresh_interval":1500,"window_load_hook":true,"disable_mo_api":false,"widgets":["custom_html-2"]}];</script>
+<script type="text/javascript" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/q2w3-fixed-widget.min.js.download"></script>
+<script type="text/javascript" src="./systemd command line reference (cheat sheet) – The Geek Diary_files/wp-embed.min.js.download"></script>
+
+</body></html>

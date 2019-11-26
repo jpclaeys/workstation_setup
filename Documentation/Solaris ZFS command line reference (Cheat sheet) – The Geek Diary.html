@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<!-- saved from url=(0076)https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/ -->
+<html lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="keywords" content="zfs cheat sheet, zfs file system creation, zfs volume, zfs reservation, zfs quota, zfs compression, zfs snapshot, zfs, zfs clones, send and receive snapshots, destroy clones, destroy snapshots , send and receive">
+<meta name="robots" content="noodp,noydir">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solaris ZFS command line reference (Cheat sheet) – The Geek Diary</title>
+<link rel="amphtml" href="https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/amp/"><link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+<link rel="dns-prefetch" href="https://s.w.org/">
+<link rel="alternate" type="application/rss+xml" title="The Geek Diary » Feed" href="https://www.thegeekdiary.com/feed/">
+<link rel="alternate" type="application/rss+xml" title="The Geek Diary » Comments Feed" href="https://www.thegeekdiary.com/comments/feed/">
+<link rel="canonical" href="https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/">
+<script type="text/javascript" async="" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/analytics.js.download"></script><script src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/osd.js.download"></script><script src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/ca-pub-9806101468749934.js.download"></script><script type="text/javascript">window._wpemojiSettings={"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/11\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/11\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/www.thegeekdiary.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=4.9.8"}};!function(a,b,c){function d(a,b){var c=String.fromCharCode;l.clearRect(0,0,k.width,k.height),l.fillText(c.apply(this,a),0,0);var d=k.toDataURL();l.clearRect(0,0,k.width,k.height),l.fillText(c.apply(this,b),0,0);var e=k.toDataURL();return d===e}function e(a){var b;if(!l||!l.fillText)return!1;switch(l.textBaseline="top",l.font="600 32px Arial",a){case"flag":return!(b=d([55356,56826,55356,56819],[55356,56826,8203,55356,56819]))&&(b=d([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]),!b);case"emoji":return b=d([55358,56760,9792,65039],[55358,56760,8203,9792,65039]),!b}return!1}function f(a){var c=b.createElement("script");c.src=a,c.defer=c.type="text/javascript",b.getElementsByTagName("head")[0].appendChild(c)}var g,h,i,j,k=b.createElement("canvas"),l=k.getContext&&k.getContext("2d");for(j=Array("flag","emoji"),c.supports={everything:!0,everythingExceptFlag:!0},i=0;i<j.length;i++)c.supports[j[i]]=e(j[i]),c.supports.everything=c.supports.everything&&c.supports[j[i]],"flag"!==j[i]&&(c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&c.supports[j[i]]);c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&!c.supports.flag,c.DOMReady=!1,c.readyCallback=function(){c.DOMReady=!0},c.supports.everything||(h=function(){c.readyCallback()},b.addEventListener?(b.addEventListener("DOMContentLoaded",h,!1),a.addEventListener("load",h,!1)):(a.attachEvent("onload",h),b.attachEvent("onreadystatechange",function(){"complete"===b.readyState&&c.readyCallback()})),g=c.source||{},g.concatemoji?f(g.concatemoji):g.wpemoji&&g.twemoji&&(f(g.twemoji),f(g.wpemoji)))}(window,document,window._wpemojiSettings);</script><script src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/wp-emoji-release.min.js.download" type="text/javascript" defer=""></script>
+<style type="text/css">img.wp-smiley,img.emoji{display:inline!important;border:none!important;box-shadow:none!important;height:1em!important;width:1em!important;margin:0 .07em!important;vertical-align:-.1em!important;background:none!important;padding:0!important}</style>
+<link rel="stylesheet" id="wellness-pro-css" href="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/style.css" type="text/css" media="all">
+<link rel="stylesheet" id="wellness-fonts-css" href="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/css" type="text/css" media="all">
+<link rel="stylesheet" id="dashicons-css" href="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/dashicons.min.css" type="text/css" media="all">
+<!--[if lt IE 9]>
+<script type='text/javascript' src='https://cdn.thegeekdiary.com/wp-content/themes/genesis/lib/js/html5shiv.min.js?ver=3.7.3'></script>
+<![endif]-->
+<script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/jquery.js.download"></script>
+<script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/jquery-migrate.min.js.download"></script>
+<link rel="https://api.w.org/" href="https://www.thegeekdiary.com/wp-json/">
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.thegeekdiary.com/xmlrpc.php?rsd">
+<link rel="alternate" type="application/json+oembed" href="https://www.thegeekdiary.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.thegeekdiary.com%2Fsolaris-zfs-command-line-reference-cheat-sheet%2F">
+<link rel="alternate" type="text/xml+oembed" href="https://www.thegeekdiary.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.thegeekdiary.com%2Fsolaris-zfs-command-line-reference-cheat-sheet%2F&amp;format=xml">
+<link rel="icon" href="https://cdn.thegeekdiary.com/wp-content/themes/wellness-pro/images/favicon.ico">
+<script async="" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/-"></script>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: \"ca-pub-9806101468749934\",
+          enable_page_level_ads: true
+     });
+</script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async="" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/js"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-44279375-1');</script><link rel="preload" href="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/integrator.js.download" as="script"><script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/integrator.js.download"></script><link rel="preload" href="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/integrator.js(1).download" as="script"><script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/integrator.js(1).download"></script></head>
+<body class="post-template-default single single-post postid-1750 single-format-standard header-full-width content-sidebar" itemscope="" itemtype="https://schema.org/WebPage"><noscript>&lt;meta HTTP-EQUIV="refresh" content="0;url='http://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/?PageSpeed=noscript'" /&gt;&lt;style&gt;&lt;!--table,div,span,font,p{display:none} --&gt;&lt;/style&gt;&lt;div style="display:block"&gt;Please click &lt;a href="http://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/?PageSpeed=noscript"&gt;here&lt;/a&gt; if you are not redirected within a few seconds.&lt;/div&gt;</noscript><div class="site-container"><ul class="genesis-skip-link"><li><a href="https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/#genesis-nav-primary" class="screen-reader-shortcut"> Skip to primary navigation</a></li><li><a href="https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/#genesis-content" class="screen-reader-shortcut"> Skip to content</a></li><li><a href="https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/#genesis-sidebar-primary" class="screen-reader-shortcut"> Skip to primary sidebar</a></li><li><a href="https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/#genesis-footer-widgets" class="screen-reader-shortcut"> Skip to footer</a></li></ul><header class="site-header" itemscope="" itemtype="https://schema.org/WPHeader"><div class="wrap"><div class="title-area"><p class="site-title" itemprop="headline"><a href="https://www.thegeekdiary.com/" title="The Geek Diary">The<span class="custom-title"> Geek </span>Diary</a></p><p class="site-description" itemprop="description">HowTos | Basics | Concepts</p></div></div></header><button class="menu-toggle dashicons-before dashicons-menu" aria-expanded="false" aria-pressed="false" role="button" id="genesis-mobile-nav-primary">Menu</button><nav class="nav-primary genesis-responsive-menu" aria-label="Main" itemscope="" itemtype="https://schema.org/SiteNavigationElement" id="genesis-nav-primary" style=""><div class="wrap"><ul id="menu-primary-navigation" class="menu genesis-nav-menu menu-primary js-superfish"><li id="menu-item-2833" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2833"><a href="https://www.thegeekdiary.com/category/solaris/solaris-11/" itemprop="url"><span itemprop="name">Solaris 11</span></a></li>
+<li id="menu-item-2717" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-has-children menu-item-2717"><a href="https://www.thegeekdiary.com/category/solaris/" itemprop="url"><span itemprop="name">Solaris</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-2837" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2837"><a href="https://www.thegeekdiary.com/category/solaris/svm/" itemprop="url"><span itemprop="name">SVM</span></a></li>
+<li id="menu-item-2839" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-2839"><a href="https://www.thegeekdiary.com/category/solaris/zfs/" itemprop="url"><span itemprop="name">ZFS</span></a></li>
+<li id="menu-item-2835" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2835"><a href="https://www.thegeekdiary.com/category/solaris/zones/" itemprop="url"><span itemprop="name">Zones</span></a></li>
+<li id="menu-item-2834" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2834"><a href="https://www.thegeekdiary.com/category/solaris/ldoms/" itemprop="url"><span itemprop="name">LDOMs</span></a></li>
+<li id="menu-item-2836" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2836"><a href="https://www.thegeekdiary.com/category/solaris/hardware/" itemprop="url"><span itemprop="name">Hardware</span></a></li>
+</ul>
+</li>
+<li id="menu-item-2719" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2719"><a href="https://www.thegeekdiary.com/category/linux/" itemprop="url"><span itemprop="name">Linux</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-3892" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3892"><a href="https://www.thegeekdiary.com/category/linux/centos-rhel-7/" itemprop="url"><span itemprop="name">CentOS/RHEL 7</span></a></li>
+<li id="menu-item-4702" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4702"><a href="https://www.thegeekdiary.com/category/linux/rhcsa-notes/" itemprop="url"><span itemprop="name">RHCSA notes</span></a></li>
+<li id="menu-item-5155" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-5155"><a href="https://www.thegeekdiary.com/category/linux/suse-linux-enterprise/" itemprop="url"><span itemprop="name">SuSE Linux Enterprise</span></a></li>
+<li id="menu-item-6970" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-6970"><a href="https://www.thegeekdiary.com/category/linux/linux-services/" itemprop="url"><span itemprop="name">Linux Services</span></a></li>
+</ul>
+</li>
+<li id="menu-item-2838" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2838"><a href="https://www.thegeekdiary.com/category/solaris/vxvm/" itemprop="url"><span itemprop="name">VxVM</span></a></li>
+<li id="menu-item-2718" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2718"><a href="https://www.thegeekdiary.com/category/vcs/" itemprop="url"><span itemprop="name">VCS</span></a></li>
+<li id="menu-item-2840" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2840"><a href="https://www.thegeekdiary.com/category/interview-questions/" itemprop="url"><span itemprop="name">Interview Questions</span></a></li>
+<li id="menu-item-2931" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-2931"><a href="https://www.thegeekdiary.com/category/oracle/" itemprop="url"><span itemprop="name">oracle</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-4703" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4703"><a href="https://www.thegeekdiary.com/category/oracle/asm/" itemprop="url"><span itemprop="name">ASM</span></a></li>
+<li id="menu-item-4704" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4704"><a href="https://www.thegeekdiary.com/category/oracle/mysql/" itemprop="url"><span itemprop="name">mysql</span></a></li>
+<li id="menu-item-4705" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4705"><a href="https://www.thegeekdiary.com/category/oracle/rac/" itemprop="url"><span itemprop="name">RAC</span></a></li>
+<li id="menu-item-5035" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-5035"><a href="https://www.thegeekdiary.com/category/oracle/oracle-12c/" itemprop="url"><span itemprop="name">oracle 12c</span></a></li>
+<li id="menu-item-6987" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-6987"><a href="https://www.thegeekdiary.com/category/oracle/data-guard/" itemprop="url"><span itemprop="name">Data Guard</span></a></li>
+</ul>
+</li>
+<li id="menu-item-6964" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-6964"><a href="https://www.thegeekdiary.com/category/devops/" itemprop="url"><span itemprop="name">DevOps</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-6965" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-6965"><a href="https://www.thegeekdiary.com/category/devops/docker/" itemprop="url"><span itemprop="name">Docker</span></a></li>
+<li id="menu-item-8216" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-8216"><a href="https://www.thegeekdiary.com/category/devops/shell-scripting/" itemprop="url"><span itemprop="name">Shell Scripting</span></a></li>
+</ul>
+</li>
+<li id="menu-item-11700" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-11700"><a href="https://www.thegeekdiary.com/category/hadoop/" itemprop="url"><span itemprop="name">Hadoop</span></a>
+<button class="sub-menu-toggle dashicons-before dashicons-arrow-down-alt2" aria-expanded="false" aria-pressed="false" role="button"><span class="screen-reader-text">Submenu</span></button><ul class="sub-menu">
+<li id="menu-item-11701" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-11701"><a href="https://www.thegeekdiary.com/category/hadoop/hortonworks-hdp/" itemprop="url"><span itemprop="name">Hortonworks HDP</span></a></li>
+<li id="menu-item-11702" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-11702"><a href="https://www.thegeekdiary.com/category/hadoop/hortonworks-hdp/hdpca/" itemprop="url"><span itemprop="name">HDPCA</span></a></li>
+</ul>
+</li>
+</ul></div></nav><div class="site-inner"><div class="content-sidebar-wrap"><main class="content" id="genesis-content"><article class="post-1750 post type-post status-publish format-standard category-zfs entry" itemscope="" itemtype="https://schema.org/CreativeWork"><header class="entry-header"><h1 class="entry-title" itemprop="headline">Solaris ZFS command line reference (Cheat sheet)</h1>
+<p class="entry-meta">By <span class="entry-author" itemprop="author" itemscope="" itemtype="https://schema.org/Person"><a href="https://www.thegeekdiary.com/author/sandeep_patil/" class="entry-author-link" itemprop="url" rel="author"><span class="entry-author-name" itemprop="name">admin</span></a></span> </p></header><div class="entry-content" itemprop="text"><!-- Google Adsense Ads Manager plugin by Crunchify.com - Top post Ad START --><div style="text-align:center;"><p><script async="" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script>
+<!-- after_title_ad -->
+<ins class="adsbygoogle" style="display: block; height: 90px;" data-ad-client="ca-pub-9806101468749934" data-ad-slot="4616658401" data-ad-format="auto" data-adsbygoogle-status="done"><ins id="aswift_0_expand" style="display:inline-table;border:none;height:90px;margin:0;padding:0;position:relative;visibility:visible;width:760px;background-color:transparent;"><ins id="aswift_0_anchor" style="display:block;border:none;height:90px;margin:0;padding:0;position:relative;visibility:visible;width:760px;background-color:transparent;"><iframe width="760" height="90" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_0" name="aswift_0" style="left:0;position:absolute;top:0;width:760px;height:90px;" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/saved_resource.html"></iframe></ins></ins></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></p></div><!-- Google Adsense Ads Manager plugin by Crunchify.com - Top post Ad END --><p></p>
+<h2>Pool Related Commands</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zpool create datapool c0t0d0</td>
+<td>Create a basic pool named datapool</td>
+</tr>
+<tr>
+<td># zpool create -f datapool c0t0d0</td>
+<td>Force the creation of a pool</td>
+</tr>
+<tr>
+<td># zpool create -m /data datapool c0t0d0</td>
+<td>Create a pool with a different mount point than the default.</td>
+</tr>
+<tr>
+<td># zpool create datapool raidz c3t0d0 c3t1d0 c3t2d0</td>
+<td>Create RAID-Z vdev pool</td>
+</tr>
+<tr>
+<td># zpool add datapool raidz c4t0d0 c4t1d0 c4t2d0</td>
+<td>Add RAID-Z vdev to pool datapool</td>
+</tr>
+<tr>
+<td># zpool create datapool raidz1 c0t0d0 c0t1d0 c0t2d0 c0t3d0 c0t4d0 c0t5d0</td>
+<td>Create RAID-Z1 pool</td>
+</tr>
+<tr>
+<td># zpool create datapool raidz2 c0t0d0 c0t1d0 c0t2d0 c0t3d0 c0t4d0 c0t5d0</td>
+<td>Create RAID-Z2 pool</td>
+</tr>
+<tr>
+<td># zpool create datapool mirror c0t0d0 c0t5d0</td>
+<td>Mirror c0t0d0 to c0t5d0</td>
+</tr>
+<tr>
+<td># zpool create datapool mirror c0t0d0 c0t5d0 mirror c0t2d0 c0t4d0</td>
+<td>disk c0t0d0 is mirrored with c0t5d0 and disk c0t2d0 is mirrored withc0t4d0</td>
+</tr>
+<tr>
+<td># zpool add datapool mirror c3t0d0 c3t1d0</td>
+<td>Add new mirrored vdev to datapool</td>
+</tr>
+<tr>
+<td># zpool add datapool spare c1t3d0</td>
+<td>Add spare device c1t3d0 to the datapool</td>
+</tr>
+<tr>
+<td>## zpool create -n geekpool c1t3d0</td>
+<td>Do a dry run on pool creation</td>
+</tr>
+</tbody></table>
+<h2>Show Pool Information</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zpool status -x</td>
+<td>Show pool status</td>
+</tr>
+<tr>
+<td># zpool status -v datapool</td>
+<td>Show individual pool status in verbose mode</td>
+</tr>
+<tr>
+<td># zpool list</td>
+<td>Show all the pools</td>
+</tr>
+<tr>
+<td># zpool list -o name,size</td>
+<td>Show particular properties of all the pools (here, name and size)</td>
+</tr>
+<tr>
+<td># zpool list -Ho name</td>
+<td>Show all pools without headers and columns</td>
+</tr>
+</tbody></table>
+<h2>File-system/Volume related commands</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zfs create datapool/fs1</td>
+<td>Create file-system fs1 under datapool</td>
+</tr>
+<tr>
+<td># zfs create -V 1gb datapool/vol01</td>
+<td>Create 1 GB volume (Block device) in datapool</td>
+</tr>
+<tr>
+<td># zfs destroy -r datapool</td>
+<td>destroy datapool and all datasets under it.</td>
+</tr>
+<tr>
+<td># zfs destroy -fr datapool/data</td>
+<td>destroy file-system or volume (data) and all related snapshots</td>
+</tr>
+</tbody></table>
+<h2>Set ZFS file system properties</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zfs set quota=1G datapool/fs1</td>
+<td>Set quota of 1 GB on filesystem fs1</td>
+</tr>
+<tr>
+<td># zfs set reservation=1G datapool/fs1</td>
+<td>Set Reservation of 1 GB on filesystem fs1</td>
+</tr>
+<tr>
+<td># zfs set mountpoint=legacy datapool/fs1</td>
+<td>Disable ZFS auto mounting and enable mounting through /etc/vfstab.</td>
+</tr>
+<tr>
+<td># zfs set sharenfs=on datapool/fs1</td>
+<td>Share fs1 as NFS</td>
+</tr>
+<tr>
+<td># zfs set compression=on datapool/fs1</td>
+<td>Enable compression on fs1</td>
+</tr>
+</tbody></table>
+<h2> File-system/Volume related commands</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zfs create datapool/fs1</td>
+<td>Create file-system fs1 under datapool</td>
+</tr>
+<tr>
+<td># zfs create -V 1gb datapool/vol01</td>
+<td>Create 1 GB volume (Block device) in datapool</td>
+</tr>
+<tr>
+<td># zfs destroy -r datapool</td>
+<td>destroy datapool and all datasets under it.</td>
+</tr>
+<tr>
+<td># zfs destroy -fr datapool/data</td>
+<td>destroy file-system or volume (data) and all related snapshots</td>
+</tr>
+</tbody></table>
+<h2>Show file system info</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zfs list</td>
+<td>List all ZFS file system</td>
+</tr>
+<tr>
+<td># zfs get all datapool”</td>
+<td>List all properties of a ZFS file system</td>
+</tr>
+</tbody></table>
+<h2>Mount/Umount Related Commands</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zfs set mountpoint=/data datapool/fs1</td>
+<td>Set the mount-point of file system fs1 to /data</td>
+</tr>
+<tr>
+<td># zfs mount datapool/fs1</td>
+<td>Mount fs1 file system</td>
+</tr>
+<tr>
+<td># zfs umount datapool/fs1</td>
+<td>Umount ZFS file system fs1</td>
+</tr>
+<tr>
+<td># zfs mount -a</td>
+<td>Mount all ZFS file systems</td>
+</tr>
+<tr>
+<td># zfs umount -a</td>
+<td>Umount all ZFS file systems</td>
+</tr>
+</tbody></table>
+<h2>ZFS I/O performance</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zpool iostat 2</td>
+<td>Display ZFS I/O Statistics every 2 seconds</td>
+</tr>
+<tr>
+<td># zpool iostat -v 2</td>
+<td>Display detailed ZFS I/O statistics every 2 seconds</td>
+</tr>
+</tbody></table>
+<h2>ZFS maintenance commands</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zpool scrub datapool</td>
+<td>Run scrub on all file systems under data pool</td>
+</tr>
+<tr>
+<td># zpool offline -t datapool c0t0d0</td>
+<td>Temporarily offline a disk (until next reboot)</td>
+</tr>
+<tr>
+<td># zpool online</td>
+<td>Online a disk to clear error count</td>
+</tr>
+<tr>
+<td># zpool clear</td>
+<td>Clear error count without a need to the disk</td>
+</tr>
+</tbody></table>
+<h2>Import/Export Commands</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zpool import</td>
+<td>List pools available for import</td>
+</tr>
+<tr>
+<td># zpool import -a</td>
+<td>Imports all pools found in the search directories</td>
+</tr>
+<tr>
+<td># zpool import -d </td>
+<td>To search for pools with block devices not located in /dev/dsk</td>
+</tr>
+<tr>
+<td># zpool import -d /zfs datapool</td>
+<td>Search for a pool with block devices created in /zfs</td>
+</tr>
+<tr>
+<td># zpool import oldpool newpool</td>
+<td>Import a pool originally named oldpool under new name newpool</td>
+</tr>
+<tr>
+<td># zpool import 3987837483</td>
+<td>Import pool using pool ID</td>
+</tr>
+<tr>
+<td># zpool export datapool</td>
+<td>Deport a ZFS pool named mypool</td>
+</tr>
+<tr>
+<td># zpool export -f datapool</td>
+<td>Force the unmount and deport of a ZFS pool</td>
+</tr>
+</tbody></table>
+<h2>Snapshot Commands</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zfs snapshot datapool/fs1@12jan2014</td>
+<td>Create a snapshot named 12jan2014 of the fs1 filesystem</td>
+</tr>
+<tr>
+<td># zfs list -t snapshot</td>
+<td>List snapshots</td>
+</tr>
+<tr>
+<td># zfs rollback -r datapool/fs1@10jan2014</td>
+<td>Roll back to 10jan2014 (recursively destroy intermediate snapshots)</td>
+</tr>
+<tr>
+<td># zfs rollback -rf datapool/fs1@10jan2014</td>
+<td>Roll back must and force unmount and remount</td>
+</tr>
+<tr>
+<td># zfs destroy datapool/fs1@10jan2014</td>
+<td>Destroy snapshot created earlier</td>
+</tr>
+<tr>
+<td># zfs send datapool/fs1@oct2013 &amp;gt /geekpool/fs1/oct2013.bak</td>
+<td>Take a backup of ZFS snapshot locally</td>
+</tr>
+<tr>
+<td># zfs receive anotherpool/fs1 &amp;lt /geekpool/fs1/oct2013.bak</td>
+<td>Restore from the snapshot backup backup taken</td>
+</tr>
+<tr>
+<td># zfs send datapool/fs1@oct2013 | zfs receive anotherpool/fs1</td>
+<td>Combine the send and receive operation</td>
+</tr>
+<tr>
+<td># zfs send datapool/fs1@oct2013 | ssh node02 “zfs receive testpool/testfs”</td>
+<td>Send the snapshot to a remote system node02</td>
+</tr>
+</tbody></table>
+<h2>Clone Commands</h2>
+<table class="table table-striped">
+<tbody><tr>
+<td># zfs clone datapool/fs1@10jan2014 /clones/fs1</td>
+<td>Clone an existing snapshot</td>
+</tr>
+<tr>
+<td># zfs destroy datapool/fs1@10jan2014</td>
+<td>Destroy clone</td>
+</tr>
+</tbody></table>
+<p></p><!-- Google Adsense Ads Manager plugin by Crunchify.com - After post Ad START --><div style="text-align:left;"><p><script async="" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script>
+<!-- responsive-after-post -->
+<ins class="adsbygoogle" style="display: block; height: 83px;" data-ad-client="ca-pub-9806101468749934" data-ad-slot="9599170000" data-ad-format="auto" data-adsbygoogle-status="done"><ins id="aswift_1_expand" style="display: inline-table; border: none; height: 83px; margin: 0px; padding: 0px; position: relative; visibility: visible; width: 760px; background-color: transparent;"><ins id="aswift_1_anchor" style="display: block; border: none; height: 83px; margin: 0px; padding: 0px; position: relative; visibility: visible; width: 760px; background-color: transparent; overflow: hidden;"><iframe width="760" height="90" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_1" name="aswift_1" style="left:0;position:absolute;top:0;width:760px;height:90px;" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/saved_resource(1).html"></iframe></ins></ins></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></p></div><!-- Google Adsense Ads Manager plugin by Crunchify.com - After post Ad END --></div><footer class="entry-footer"><p class="entry-meta"><span class="entry-categories">Filed Under: <a href="https://www.thegeekdiary.com/category/solaris/zfs/" rel="category tag">ZFS</a></span> </p><div class="related-posts"><h3 class="related-title">Some more articles you might also be interested in …</h3><ol class="related-list"><li><a href="https://www.thegeekdiary.com/how-to-check-zpool-status-in-solaris/" rel="bookmark" title="Permanent Link toHow to check zpool status in Solaris">How to check zpool status in Solaris</a></li><li><a href="https://www.thegeekdiary.com/solaris-zfs-how-to-create-and-manage-mirrored-storage-pools/" rel="bookmark" title="Permanent Link toSolaris ZFS : How to Create and Manage Mirrored Storage Pools">Solaris ZFS : How to Create and Manage Mirrored Storage Pools</a></li><li><a href="https://www.thegeekdiary.com/how-to-use-zpool-split-to-split-an-rpool-in-solaris-11-sparc/" rel="bookmark" title="Permanent Link toHow To Use ‘zpool split’ to Split rpool in solaris 11 (SPARC)">How To Use ‘zpool split’ to Split rpool in solaris 11 (SPARC)</a></li><li><a href="https://www.thegeekdiary.com/how-to-backup-and-restore-zfs-root-pool-in-solaris-10/" rel="bookmark" title="Permanent Link toHow to Backup and Restore ZFS root pool in Solaris 10">How to Backup and Restore ZFS root pool in Solaris 10</a></li><li><a href="https://www.thegeekdiary.com/solaris-zfs-how-to-replace-a-failed-disk-in-rpool-x86/" rel="bookmark" title="Permanent Link toSolaris ZFS : How to replace a failed disk in rpool (x86)">Solaris ZFS : How to replace a failed disk in rpool (x86)</a></li><li><a href="https://www.thegeekdiary.com/zfs-tutorials-creating-zfs-snapshot-and-clones/" rel="bookmark" title="Permanent Link toZFS Tutorials : Creating ZFS snapshot and clones">ZFS Tutorials : Creating ZFS snapshot and clones</a></li><li><a href="https://www.thegeekdiary.com/zfs-tutorials-creating-zfs-pools-and-file-systems/" rel="bookmark" title="Permanent Link toZFS Tutorials : Creating ZFS pools and file systems">ZFS Tutorials : Creating ZFS pools and file systems</a></li><li><a href="https://www.thegeekdiary.com/solaris-zfs-how-to-import-2-pools-that-have-the-same-names/" rel="bookmark" title="Permanent Link toSolaris ZFS : How to import 2 pools that have the same names">Solaris ZFS : How to import 2 pools that have the same names</a></li><li><a href="https://www.thegeekdiary.com/how-to-update-the-boot_archive-for-zfs-root-in-solaris/" rel="bookmark" title="Permanent Link toHow to update the boot_archive for ZFS root in Solaris">How to update the boot_archive for ZFS root in Solaris</a></li><li><a href="https://www.thegeekdiary.com/how-to-find-the-space-consumed-by-zfs-snapshots/" rel="bookmark" title="Permanent Link toHow to find the space consumed by ZFS snapshots">How to find the space consumed by ZFS snapshots</a></li></ol></div></footer></article><div class="after-related-post widget-area"><div class="wrap"><section id="custom_html-6" class="widget_text widget widget_custom_html"><div class="widget_text widget-wrap"><h3 class="widgettitle widget-title">You May Also Like</h3>
+<div class="textwidget custom-html-widget"><script async="" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script>
+<!-- pbad -->
+<ins class="adsbygoogle" style="display: block; height: 438px;" data-ad-client="ca-pub-9806101468749934" data-ad-slot="6439358454" data-matched-content-rows-num="2" data-matched-content-columns-num="3" data-matched-content-ui-type="image_stacked" data-ad-format="autorelaxed" data-adsbygoogle-status="done"><ins id="aswift_2_expand" style="display:inline-table;border:none;height:438px;margin:0;padding:0;position:relative;visibility:visible;width:760px;background-color:transparent;"><ins id="aswift_2_anchor" style="display:block;border:none;height:438px;margin:0;padding:0;position:relative;visibility:visible;width:760px;background-color:transparent;"><iframe width="760" height="438" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_2" name="aswift_2" style="left:0;position:absolute;top:0;width:760px;height:438px;" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/saved_resource(2).html"></iframe></ins></ins></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div></div></section>
+</div></div></main><aside class="sidebar sidebar-primary widget-area q2w3-fixed-widget-container" role="complementary" aria-label="Primary Sidebar" itemscope="" itemtype="https://schema.org/WPSideBar" id="genesis-sidebar-primary" style="height: 1487px;"><h2 class="genesis-sidebar-title screen-reader-text">Primary Sidebar</h2><section id="search-2" class="widget widget_search"><div class="widget-wrap"><form class="search-form" itemprop="potentialAction" itemscope="" itemtype="https://schema.org/SearchAction" method="get" action="https://www.thegeekdiary.com/" role="search"><meta itemprop="target" content="https://www.thegeekdiary.com/?s={s}"><label class="search-form-label screen-reader-text" for="searchform-5b6ce9bf7655f4.52959060">Search this website</label><input itemprop="query-input" type="search" name="s" id="searchform-5b6ce9bf7655f4.52959060" placeholder="Search this website …"><input type="submit" value="Search"></form></div></section>
+<section id="custom_html-3" class="widget_text widget widget_custom_html"><div class="widget_text widget-wrap"><div class="textwidget custom-html-widget"><div style="text-align: center;"><style>.primary_sidebar_top_ad{width:336px;height:280px}@media (max-width:400px){.primary_sidebar_top_ad{width:300px;height:250px}}</style><script async="" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script><!-- primary_sidebar_top_ad --><ins class="adsbygoogle primary_sidebar_top_ad" style="display: inline-block; width: 336px; height: 280px;" data-full-width-responsive="true" data-ad-client="ca-pub-9806101468749934" data-ad-slot="3000324408" data-adsbygoogle-status="done"><ins id="aswift_3_expand" style="display:inline-table;border:none;height:280px;margin:0;padding:0;position:relative;visibility:visible;width:336px;background-color:transparent;"><ins id="aswift_3_anchor" style="display:block;border:none;height:280px;margin:0;padding:0;position:relative;visibility:visible;width:336px;background-color:transparent;"><iframe width="336" height="280" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_3" name="aswift_3" style="left:0;position:absolute;top:0;width:336px;height:280px;" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/saved_resource(3).html"></iframe></ins></ins></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div></div></div></section>
+<section id="recent-posts-2" class="widget widget_recent_entries"><div class="widget-wrap">	<h3 class="widgettitle widget-title">Recent Posts</h3>
+<ul>
+<li>
+<a href="https://www.thegeekdiary.com/how-to-kill-a-process-in-linux/">How to kill a process in Linux (kill, killall, pkill, xkill)</a>
+</li>
+<li>
+<a href="https://www.thegeekdiary.com/hdpca-practice-exam-questions-and-aws-instance-setup-details/">HDPCA Practice Exam Questions and AWS Instance Setup Details</a>
+</li>
+<li>
+<a href="https://www.thegeekdiary.com/hdpca-exam-objective-configure-hiveserver2-ha-part-2-configure-ha/">HDPCA Exam Objective – Configure HiveServer2 HA ( Part 2 – Configure HA )</a>
+</li>
+<li>
+<a href="https://www.thegeekdiary.com/how-to-configure-capacity-scheduler-queues-using-yarn-queue-manager/">How to configure Capacity Scheduler Queues Using YARN Queue Manager</a>
+</li>
+<li>
+<a href="https://www.thegeekdiary.com/how-to-create-hdfs-policies-in-ranger/">How to Create HDFS policies in Ranger</a>
+</li>
+</ul>
+</div></section>
+<section id="custom_html-2" class="widget_text widget widget_custom_html"><div class="widget_text widget-wrap"><div class="textwidget custom-html-widget"><div style="text-align: center;"><style>.sidebar-responsive{width:300px;height:600px}@media (max-width:860px){.sidebar-responsive{width:336px;height:280px}}</style><script async="" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/adsbygoogle.js.download"></script><!-- sidebar-responsive --><ins class="adsbygoogle sidebar-responsive" style="display: inline-block; width: 300px; height: 600px;" data-full-width-responsive="true" data-ad-client="ca-pub-9806101468749934" data-ad-slot="1672277200" data-adsbygoogle-status="done"><ins id="aswift_4_expand" style="display:inline-table;border:none;height:600px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent;"><ins id="aswift_4_anchor" style="display:block;border:none;height:600px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent;"><iframe width="300" height="600" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_4" name="aswift_4" style="left:0;position:absolute;top:0;width:300px;height:600px;" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/saved_resource(4).html"></iframe></ins></ins></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+</div></div></div></section>
+</aside></div></div><div class="footer-widgets" id="genesis-footer-widgets"><h2 class="genesis-sidebar-title screen-reader-text">Footer</h2><div class="wrap"><div class="widget-area footer-widgets-1 footer-widget-area"><section id="text-98" class="widget widget_text"><div class="widget-wrap"><h3 class="widgettitle widget-title">Cheat Sheets</h3>
+<div class="textwidget"><ul>
+<li><a href="https://www.thegeekdiary.com/ldoms-ovm-for-sparc-command-line-reference-cheat-sheet/">LDOMs (OVM for SPARC) Command line reference</a></li>
+<li><a href="https://www.thegeekdiary.com/solaris-volume-manager-svm-command-line-reference-cheat-sheet/">Solaris Volume Manager (SVM) command line reference</a></li>
+<li><a href="https://www.thegeekdiary.com/solaris-zfs-command-line-reference-cheat-sheet/">Solaris ZFS command line reference</a></li>
+<li><a href="https://www.thegeekdiary.com/rhel-7-rhcsa-notes-cheat-sheets/">RHEL 7 – RHCSA Notes (Cheat Sheets)</a></li>
+<li><a href="https://www.thegeekdiary.com/centos-rhel-7-firewalld-command-line-reference-cheat-sheet/">CentOS / RHEL 7 : firewalld Cheat Sheet</a></li>
+<li><a href="https://www.thegeekdiary.com/centos-rhel-7-systemd-command-line-reference-cheat-sheet/">systemd command line reference (cheat sheet)</a></li>
+</ul>
+</div>
+</div></section>
+</div><div class="widget-area footer-widgets-2 footer-widget-area"><section id="text-100" class="widget widget_text"><div class="widget-wrap"><h3 class="widgettitle widget-title">Solaris interview questions</h3>
+<div class="textwidget"><ul>
+<li><a href="https://www.thegeekdiary.com/the-ultimate-solaris-volume-manager-svm-interview-questions/">The ultimate Solaris Volume Manager (SVM) interview questions</a></li>
+<li><a href="https://www.thegeekdiary.com/the-ultimate-solaris-zones-containers-interview-questions/">The ultimate Solaris zones (containers) interview questions</a></li>
+<li><a href="https://www.thegeekdiary.com/the-ultimate-solaris-networking-interview-questions/">The ultimate Solaris networking interview questions</a></li>
+<li><a href="https://www.thegeekdiary.com/the-ultimate-zfs-interview-questions/">The ultimate ZFS interview questions</a></li>
+</ul>
+</div>
+</div></section>
+</div></div></div><footer class="site-footer" itemscope="" itemtype="https://schema.org/WPFooter"><div class="wrap"><nav class="nav-secondary" aria-label="Secondary" itemscope="" itemtype="https://schema.org/SiteNavigationElement"><div class="wrap"><ul id="menu-top-menu" class="menu genesis-nav-menu menu-secondary js-superfish"><li id="menu-item-316" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-316"><a href="https://www.thegeekdiary.com/archives/" itemprop="url"><span itemprop="name">Archives</span></a></li>
+<li id="menu-item-317" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-317"><a href="https://www.thegeekdiary.com/contact-us/" itemprop="url"><span itemprop="name">Contact Us</span></a></li>
+<li id="menu-item-2584" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2584"><a href="https://www.thegeekdiary.com/copyright-terms-and-privacy-policy/" itemprop="url"><span itemprop="name">Copyright</span></a></li>
+</ul></div></nav><p>©&nbsp;2018 · <a href="http://thegeekdiary.com/">The Geek Diary</a></p></div></footer></div><iframe id="google_osd_static_frame_9789224643955" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/saved_resource(5).html"></iframe><script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/comment-reply.min.js.download"></script>
+<script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/skip-links.min.js.download"></script>
+<script type="text/javascript">var genesis_responsive_menu={"mainMenu":"Menu","subMenu":"Submenu","menuClasses":{"combine":[".nav-header",".nav-primary"]}};</script>
+<script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/responsive-menus.min.js.download"></script>
+<script type="text/javascript">var q2w3_sidebar_options=[{"sidebar":"sidebar","margin_top":10,"margin_bottom":150,"stop_id":"","screen_max_width":1180,"screen_max_height":0,"width_inherit":true,"refresh_interval":1500,"window_load_hook":true,"disable_mo_api":false,"widgets":["custom_html-2"]}];</script>
+<script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/q2w3-fixed-widget.min.js.download"></script>
+<script type="text/javascript" src="./Solaris ZFS command line reference (Cheat sheet) – The Geek Diary_files/wp-embed.min.js.download"></script>
+
+</body></html>

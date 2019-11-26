@@ -1,0 +1,2014 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<!-- saved from url=(0060)https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html -->
+<html lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta http-equiv="Content-Language" content="en-US">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="GENERATOR" content="Adobe FrameMaker 7.0/HTML Export Filter">
+
+<link rel="STYLESHEET" href="./Overview of the XSCF Shell_files/unx_unstr_styles.css" charset="ISO-8859-1" type="text/css">
+<meta name="dc.title" content="SPARC Enterprise M3000/M4000/M5000/M8000/M9000 Servers XSCF User’s Guide">
+<meta name="description" content="This manual describes the system monitor and control facility, known as eXtended System Control Facility (XSCF), which is used to control, monitor, operate, and service SPARC Enterprise M3000/M4000/M">
+<meta name="identifier" content="821-2797-10">
+<meta name="date" content="December 2010">
+<meta name="issued" content="2010-11-25">
+<meta name="revision" content="Revision A">
+<meta name="collection" content="reference">
+<meta name="publisher" content="Oracle and/or its affiliates">
+<meta name="robots" content="index, follow">
+<title>Overview of the XSCF Shell
+</title>
+</head>
+<body bgcolor="#ffffff">
+<div>
+<div class="navbar" align="center">
+<table dir="LTR" summary="Navigation bar, includes the book title and navigation buttons" width="100%" cellpadding="0" cellspacing="0" border="0"><colgroup span="2"><col id="1" span="1" width="50%"><col id="2" span="1" width="50%">
+</colgroup><tbody><tr bgcolor="#cccccc">
+<td class="navbartitle" align="left" rowspan="1" colspan="1" abbr="ChapTitle">SPARC Enterprise M3000/M4000/M5000/M8000/M9000 Servers XSCF User’s Guide
+</td>
+<td valign="top" align="right" rowspan="1" colspan="1" abbr="NavButtons"><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/index.html"><img src="./Overview of the XSCF Shell_files/toc01.gif" title="Table Of Contents" alt="Table Of Contents" width="30" height="26" border="0"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch4p.html"><img src="./Overview of the XSCF Shell_files/prev01.gif" title="Previous Chapter" alt="Previous Chapter" width="30" height="26" border="0"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch6p.html"><img src="./Overview of the XSCF Shell_files/next01.gif" title="Next Chapter" alt="Next Chapter" width="30" height="26" border="0"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/ix.html"><img src="./Overview of the XSCF Shell_files/index01.gif" title="Book Index" alt="Book Index" width="30" height="26" border="0"></a>
+</td>
+</tr>
+</tbody></table>
+</div><p class="feedback">
+<script language="javascript" type="text/javascript" charset="UTF-8" src="./Overview of the XSCF Shell_files/oo_engine.js.download">
+</script><a>
+<script language="javascript" type="text/javascript" charset="UTF-8">O_GoT('<img src="/app/images/sm_3E6B8A_oo.gif" border="0" alt="Feedback link" title="Feedback">Feedback'); 
+</script></a></p>
+</div>
+<table dir="LTR" summary="Chapter Number" abbr="ChapNum" width="100%" border="0">
+<colgroup span="1"><col id="1" span="1">
+</colgroup><tbody><tr>
+<td align="right" class="ChapNumber"><span class="ChapNumPrefix"><a name="50450507_pgfId-143724"></a>C H A P T E R  </span>&nbsp;<span class="ChapNumNum">5</span><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a><a name="50450507_143724"></a>
+</td>
+</tr>
+</tbody></table>
+<table dir="LTR" summary="Chapter Title" abbr="ChapTitle" width="100%" border="0">
+<colgroup span="1"><col id="1" span="1" width="100%">
+</colgroup><tbody><tr>
+<td align="right" class="ChapTitle">
+<hr size="7" noshade=""><a name="50450507_pgfId-158706"></a><a name="50450507_89031"></a>Overview of the XSCF Shell
+</td>
+</tr>
+</tbody></table>
+<p class="Paragraph"><a name="50450507_pgfId-143725"></a>This chapter describes how to use the XSCF Shell. The chapter also describes how to use commands and log in with an XSCF user account. It also explains command errors. 
+</p><h2 class="Head1"><a name="50450507_pgfId-143727"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.1	Overview of the <a name="50450507_marker-157521"></a>XSCF Command Shell</h2>
+<p class="Paragraph"><a name="50450507_pgfId-143728"></a>Performing certain XSCF commands on the XSCF Shell terminal can display the server status so that control and configuration information related to system operation can be viewed. 
+</p>
+<p class="Paragraph"><a name="50450507_pgfId-143729"></a>The XSCF commands are effectively used by users who have created user accounts for the XSCF Shell terminal but cannot use the XSCF Web. 
+</p>
+<p class="Paragraph"><a name="50450507_pgfId-151105"></a>The following XSCF commands can be used from the XSCF Shell prompt (XSCF&gt;) displayed after login to XSCF. 
+</p>
+<p class="Paragraph"><a name="50450507_pgfId-151107"></a>There are nine user privilege types as described below. For details on setting the user privilege, see <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch2p.html#50450504_177572" class="XRef">Chapter 2</a>. For details on the operations available with each user privilege level, see <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch1p.html#50450503_1011592" class="XRef">Chapter 1</a> or the <em class="Emphasis">Administration Guide</em>.
+</p>
+<ul>
+<li class="Bullet1"><a name="50450507_pgfId-154515"></a>domainop: The user can refer to all status information in a domain. 
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-154524"></a>domainmgr: The user can perform domain power operations. 
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-163818"></a>domainadm: The user has domain administrator privilege and can perform every type of domain operation. 
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-154542"></a>platop: The user can refer to all status information in the entire system. 
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-143735"></a>platadm: The user has system administrator privilege and can use almost all XSCF Shell commands
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-154551"></a>useradm: The user can manage user accounts. 
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-154560"></a>auditop: The user can refer to the audit method of the XSCF and the audit records. 
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-143740"></a>auditadm: The user can control the audit to the XSCF. 
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-143742"></a>fieldeng: The user can perform the commands for FEs.
+</li>
+<p class="Linebreak">
+</p>
+</ul>
+<p class="Paragraph"><a name="50450507_pgfId-153618"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_77930" class="XRef">TABLE 5-1</a> outlines the XSCF Shell commands. For details on each command and user privileges, see the man page or the <i class="Title">XSCF Reference Manual</i>. 
+</p>
+<br>
+<table class="Titled" summary="Table that is numbered and titled" border="1" cellpadding="5" cellspacing="0" dir="LTR"><caption class="TableCaption-Wide"> <a name="50450507_pgfId-157819"> </a> TABLE 5-1 	 <a name="50450507_77930"> </a> <a name="50450507_marker-157815"> </a> XSCF Commands  </caption>
+<thead>
+<tr>
+<th scope="COL" rowspan="1" colspan="1" bgcolor="#CCCCCC">
+<p class="TableHead"><a name="50450507_pgfId-157823"></a>Command
+</p>
+</th>
+<th scope="COL" rowspan="1" colspan="1" bgcolor="#CCCCCC">
+<p class="TableHead"><a name="50450507_pgfId-157825"></a>Description
+</p>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157827"></a><kbd class="Filename-Command">adduser</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157829"></a>Creates an XSCF user account. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157831"></a><kbd class="Filename-Command">deleteuser</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157833"></a>Deletes an XSCF user account. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157835"></a><kbd class="Filename-Command">disableuser</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157837"></a>Disables an XSCF user account
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157839"></a><kbd class="Filename-Command">enableuser</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157841"></a>Enables an XSCF user account. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157843"></a><kbd class="Filename-Command">showuser</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157845"></a>Displays XSCF user account information. Alternatively, it displays the user's own user account information. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157847"></a><kbd class="Filename-Command">password</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157849"></a>Changes an XSCF user account password. Alternatively, it changes the user's own XSCF user account password. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157851"></a><kbd class="Filename-Command">setpasswordpolicy</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157853"></a>Configures the XSCF password policy. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157855"></a><kbd class="Filename-Command">showpasswordpolicy</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157857"></a>Displays the XSCF password policy. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166862"></a>setprivileges
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166864"></a>Assigns user privileges. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157859"></a><kbd class="Filename-Command">setloginlockout</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157861"></a>Configures the lockout of user accounts.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157863"></a><kbd class="Filename-Command">showloginlockout</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157865"></a>Displays the lockout setting of user accounts.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166475"></a><kbd class="Filename-Command">setnetwork</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166477"></a>Configures the XSCF network. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157867"></a><kbd class="Filename-Command">shownetwork</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157869"></a>Displays the XSCF network settings and XSCF-LAN network status. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157871"></a><kbd class="Filename-Command">setroute</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157873"></a>Configures the XSCF-LAN route.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157875"></a><kbd class="Filename-Command">showroute</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157877"></a>Displays XSCF-LAN route settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157879"></a><kbd class="Filename-Command">sethostname</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157881"></a>Specifies the XSCF-LAN host name and domain name. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157883"></a><kbd class="Filename-Command">showhostname</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157885"></a>Displays the XSCF-LAN host name and domain name.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157887"></a><kbd class="Filename-Command">setnameserver</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157889"></a>Sets the XSCF name servers (DNS servers) and the search paths. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157891"></a><kbd class="Filename-Command">shownameserver</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157893"></a>Displays the XSCF name servers and the search paths.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157895"></a><kbd class="Filename-Command">applynetwork</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157897"></a>Applies the network settings.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157899"></a><kbd class="Filename-Command">setdscp</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157901"></a>Configures DSCP.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157903"></a><kbd class="Filename-Command">showdscp</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157905"></a>Displays the DSCP settings.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157911"></a><kbd class="Filename-Command">nslookup</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157913"></a>Checks for the name resolution of a host name. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166486"></a>ping
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166488"></a>Checks the response for a host.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166482"></a>traceroute
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166484"></a>Displays the network path to the host by list.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167359"></a><kbd class="Filename-Command">setpacketfilters</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167361"></a>Sets the IP packet filtering rules to be used in the XSCF network. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167355"></a><kbd class="Filename-Command">showpacketfilters</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167367"></a>Displays the IP packet filtering rules that are set in the XSCF network.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157915"></a><kbd class="Filename-Command">settimezone</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157917"></a>Specifies the time zone.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157919"></a><kbd class="Filename-Command">showtimezone</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157921"></a>Displays the time zone setting. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164707"></a><kbd class="Filename-Command">setdate</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164709"></a>Sets the XSCF time.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157923"></a><kbd class="Filename-Command">showdate</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157925"></a>Displays the XSCF time. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157927"></a><kbd class="Filename-Command">setntp</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157929"></a>Configures the NTP server. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157931"></a><kbd class="Filename-Command">showntp</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157933"></a>Displays the NTP server setting.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164908"></a><kbd class="Filename-Command">resetdateoffset</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164910"></a>Resets the time subtraction between the XSCF and the domain.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167202"></a><kbd class="Filename-Command">showdateoffset</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167204"></a>Displays the time subtraction between the XSCF and the domain.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157935"></a><kbd class="Filename-Command">setssh</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157937"></a>Configures SSH. Generates RSA and DSA keys for SSH2 host authentication. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157940"></a><kbd class="Filename-Command">showssh</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157942"></a>Displays the SSH settings and fingerprint.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157944"></a><kbd class="Filename-Command">settelnet</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157946"></a>Configures telnet.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157948"></a><kbd class="Filename-Command">showtelnet</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157950"></a>Displays the telnet settings.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164690"></a><kbd class="Filename-Command">setautologout</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164692"></a>Sets the session timeout time of the XSCF Shell.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164686"></a><kbd class="Filename-Command">showautologout</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164688"></a>Displays the session timeout time of the XSCF Shell.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157952"></a><kbd class="Filename-Command">setsmtp</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157954"></a>Configures the SMTP server. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157956"></a><kbd class="Filename-Command">showsmtp</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157958"></a>Displays the the SMTP server settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157960"></a><kbd class="Filename-Command">setemailreport</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157962"></a>Configures mail notification. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157964"></a><kbd class="Filename-Command">showemailreport</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157966"></a>Displays the mail notification settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157968"></a><kbd class="Filename-Command">setlookup</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157970"></a>Enables or disables the use of an LDAP server for authentication and user privilege lookup. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157972"></a><kbd class="Filename-Command">showlookup</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157974"></a>Displays information about whether an LDAP server is used for authentication and user privilege lookup. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157976"></a><kbd class="Filename-Command">setldap</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157978"></a>Configures LDAP client settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157980"></a><kbd class="Filename-Command">showldap</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157982"></a>Displays LDAP client settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167342"></a><kbd class="Filename-Command">setad</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167344"></a>Configures Active Directory client settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167338"></a><kbd class="Filename-Command">showad</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167340"></a>Displays Active Directory client settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167350"></a><kbd class="Filename-Command">setldapssl</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167352"></a>Configures LDAP/SSL client settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167346"></a><kbd class="Filename-Command">showldapssl</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167348"></a>Displays LDAP/SSL client settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157984"></a><kbd class="Filename-Command">sethttps</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157986"></a>Configures the https settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-165678"></a><kbd class="Filename-Command">showhttps</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-165680"></a>Displays the https settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157988"></a><kbd class="Filename-Command">setupplatform</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<ul>
+<li class="TableBullet"><a name="50450507_pgfId-165960"></a> Sets up platform-specific settings.
+<br>Note: In the platform-specific settings, the following items can be optionally configured. Each item is the same as the setting of <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch2p.html#50450504_177572" class="XRef">Chapter 2</a>.
+</li>
+<li class="TableBullet"><a name="50450507_pgfId-165973"></a>User Account settings
+</li>
+<li class="TableBullet"><a name="50450507_pgfId-165964"></a>XSCF Network Settings
+</li>
+<li class="TableBullet"><a name="50450507_pgfId-165956"></a>Internal DSCP Network
+</li>
+<li class="TableBullet"><a name="50450507_pgfId-165955"></a>Domain Name Service
+</li>
+<li class="TableBullet"><a name="50450507_pgfId-165954"></a>Network Time Protocol
+</li>
+<li class="TableBullet"><a name="50450507_pgfId-165953"></a>SSH
+</li>
+<li class="TableBullet"><a name="50450507_pgfId-165952"></a>HTTPS Server
+</li>
+<li class="TableBullet"><a name="50450507_pgfId-165951"></a>Email Reports
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157992"></a><kbd class="Filename-Command">setarchiving</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157994"></a>Configures the log archiving function of XSCF.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157996"></a><kbd class="Filename-Command">showarchiving</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-157998"></a>Displays the settings of the log archiving function of XSCF.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158000"></a><kbd class="Filename-Command">setaudit</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158002"></a>Configures the auditing of XSCF.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158004"></a><kbd class="Filename-Command">showaudit</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158006"></a>Displays the settings of the audit of XSCF.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158008"></a><kbd class="Filename-Command">viewaudit</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158010"></a>Displays the audit records (Audit trail) of XSCF.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158012"></a><kbd class="Filename-Command">setsnmp</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158014"></a>Configures the SNMP Agent. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158016"></a><kbd class="Filename-Command">showsnmp</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158018"></a>Displays the SNMP Agent settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158020"></a><kbd class="Filename-Command">setsnmpusm</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158022"></a>Configures the USM management information for the SNMP agent.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158024"></a><kbd class="Filename-Command">showsnmpusm</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158026"></a>Displays the USM management information for the SNMP agent.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158028"></a><kbd class="Filename-Command">setsnmpvacm</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158030"></a>Configures the VACM management information for the SNMP agent.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158032"></a><kbd class="Filename-Command">showsnmpvacm</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158034"></a>Displays the VACM management information for the SNMP agent.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167214"></a><kbd class="Filename-Command">setsunmc</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167216"></a>Start or stop the Sun Management Center agent and make changes to its configuration.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167218"></a><kbd class="Filename-Command">showsunmc</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167220"></a>Show setup information and status of Sun Management Center agent.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158044"></a><kbd class="Filename-Command">setdcl</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158046"></a>Specifies the domain configuration information (DCL). 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158048"></a><kbd class="Filename-Command">showdcl</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158050"></a>Displays the domain configuration information.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158052"></a><kbd class="Filename-Command">showboards</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158054"></a>Displays the component information and the COD information about a system board. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158056"></a><kbd class="Filename-Command">showdevices</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158058"></a>Displays the domain information specified for a system board. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158060"></a><kbd class="Filename-Command">showdomainstatus</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158062"></a>Displays the domain status. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158064"></a><kbd class="Filename-Command">setupfru</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158066"></a>Specifies the number of XSB partitions of the system board and sets the memory mirror mode. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158068"></a><kbd class="Filename-Command">showfru</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158070"></a>Displays the specified number of XSB partitions of the system board and the memory mirror mode that is set.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158072"></a><kbd class="Filename-Command">testsb</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158074"></a>Diagnoses the system board. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158076"></a><kbd class="Filename-Command">addboard</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158078"></a>Adds a system board to a domain. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158080"></a><kbd class="Filename-Command">deleteboard</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158082"></a>Deletes a system board from a domain. Alternatively, it reserves a delete to the system board. If the deletion is reserved, the deletion is done after Oracle Solaris OS reboot. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158084"></a><kbd class="Filename-Command">moveboard</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158086"></a>Moves a system board to another domain. Alternatively, it reserves a move to the system board. If the movement is reserved, the deletion is done after Oracle Solaris OS reboot of source domain, and the assignment to the new domain is done. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158088"></a><kbd class="Filename-Command">replacefru</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158090"></a>Replaces a CPU/Memory Board unit, I/O unit, fan unit, PSU, or XSCF Unit in work performed according to the applicable guide.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158092"></a><kbd class="Filename-Command">addfru</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158094"></a>Installs a CPU/Memory Board unit, I/O unit, fan unit, or PSU in work performed according to the applicable guide. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158096"></a><kbd class="Filename-Command">deletefru</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158098"></a>Removes a CPU/Memory Board unit or I/O unit in work performed according to the applicable guide. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158100"></a><kbd class="Filename-Command">setdomainmode</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158102"></a>Sets a hardware initial diagnostic level (No, standard, maximum).
+</p>
+<p class="TableText"><a name="50450507_pgfId-158103"></a>Enables or disables break signal sending, host watchdog, automatic boot, and sets CPU operation mode.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167230"></a><kbd class="Filename-Command">showdomainmode</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167232"></a>Displays the domain host ID, the hardware initial diagnostic level, information of enabled or disabled status on break signal sending, Host watchdog, automatic boot, and displays CPU operation mode, ethernet address (mac address).
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158110"></a><kbd class="Filename-Command">sendbreak</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158112"></a>Sends a break signal to the server. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164817"></a><kbd class="Filename-Command">showresult</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164819"></a>Displays the exit status of the most recently executed command.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158114"></a><kbd class="Filename-Command">setlocale</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158116"></a>Sets locale. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158118"></a><kbd class="Filename-Command">showlocale</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158120"></a>Displays locale. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158122"></a><kbd class="Filename-Command">setaltitude</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158124"></a>Sets altitude. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158126"></a><kbd class="Filename-Command">showaltitude</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158128"></a>Displays altitude. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158130"></a><kbd class="Filename-Command">cfgdevice</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158132"></a>Sets the connection destination of the DVD drive unit and tape drive unit. Displays the setting status information. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158158"></a><kbd class="Filename-Command">console</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158160"></a>Connects to a domain console.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158162"></a><kbd class="Filename-Command">showconsolepath</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158164"></a>Displays the operating status of the main console.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167236"></a><kbd class="Filename-Command">showenvironment</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167238"></a>Displays the temperature, humidity, voltage, fan rotation speed, power consumption, and exhaust airflow.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158170"></a><kbd class="Filename-Command">showstatus</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158172"></a>Lists degraded components. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158174"></a><kbd class="Filename-Command">showhardconf</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158176"></a>Displays all components mounted in the server. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158178"></a><kbd class="Filename-Command">poweron</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158180"></a>Turns on power to all domains or the specified domain.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158182"></a><kbd class="Filename-Command">poweroff</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158184"></a>Turns off power to all domains or the specified domain. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158186"></a><kbd class="Filename-Command">reset</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158188"></a>Resets the specified domain. 
+</p>
+<p class="TableText"><a name="50450507_pgfId-158189"></a>Note: The following three reset modes are available: 
+</p>
+<p class="TableText"><a name="50450507_pgfId-158190"></a>por: Domain system reset
+</p>
+<p class="TableText"><a name="50450507_pgfId-158191"></a>request: Domain panic instruction 
+</p>
+<p class="TableText"><a name="50450507_pgfId-158192"></a>xir: Domain CPU reset
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158194"></a><kbd class="Filename-Command">setpowerupdelay</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158196"></a>Sets the warm-up time and the air-conditioning wait time. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158198"></a><kbd class="Filename-Command">showpowerupdelay</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158200"></a>Displays the warm-up time and the air-conditioning wait time settings. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158202"></a><kbd class="Filename-Command">setshutdowndelay</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158204"></a>Sets the UPS shutdown delay time at power failure. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164751"></a><kbd class="Filename-Command">showshutdowndelay</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164761"></a>Displays the UPS shutdown delay time at power failure. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158206"></a><kbd class="Filename-Command">setdualpowerfeed</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158208"></a>Sets the dual power feed.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164741"></a><kbd class="Filename-Command">showdualpowerfeed</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164743"></a>Displays the dual power feed.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158210"></a><kbd class="Filename-Command">setlocator</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158212"></a>Enables or disables the CHECK LED blinking. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158214"></a><kbd class="Filename-Command">showlocator</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158216"></a>Displays the LED status.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158218"></a><kbd class="Filename-Command">switchscf</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158220"></a>Switches the XSCF Unit state (Active/Standby). 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158222"></a><kbd class="Filename-Command">ioxadm</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158224"></a>Configures the External I/O Expansion Unit (IOBOX).
+</p>
+<p class="TableText"><a name="50450507_pgfId-158225"></a>Displays the External I/O Expansion Unit settings.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158227"></a><kbd class="Filename-Command">clockboard</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158229"></a>Sets/Displays the number of clock unit (CLKU) used when the next platform is powered on. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158231"></a><kbd class="Filename-Command">setdomparam </kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158233"></a>Rewrites the OpenBoot PROM environment variable that is compulsory. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-165411"></a><kbd class="Filename-Command">getflashimage</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-165413"></a>Gets the firmware update program. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158235"></a><kbd class="Filename-Command">flashupdate</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158237"></a>Updates the firmware program. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158239"></a><kbd class="Filename-Command">version</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158241"></a>Displays the comprehensive firmware (XCP) version. 
+</p>
+<p class="TableText"><a name="50450507_pgfId-158242"></a>Displays the XSCF firmware version. 
+</p>
+<p class="TableText"><a name="50450507_pgfId-158243"></a>Displays the OpenBoot PROM firmware version. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158245"></a><kbd class="Filename-Command">prtfru</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158247"></a>Displays the FRU-ROM data. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166543"></a>dumpconfig
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166545"></a>Saves XSCF configuration information to the specified destination.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166539"></a>restoreconfig
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166541"></a>Restores XSCF configuration information from the specified destination.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166535"></a>restoredefaults
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-166537"></a>Initialises the server or XSCF Unit to the factory shipping state.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158249"></a><kbd class="Filename-Command">snapshot</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158251"></a>Saves log information to the specified destination.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158269"></a><kbd class="Filename-Command">showmonitorlog</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158271"></a>Displays the XSCF monitoring messages on console in real time.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167248"></a><kbd class="Filename-Command">showlogs</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-167250"></a>Displays an error log, power log, event log, console log, panic log, IPL log, temperature/humidity log, and monitor message log. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158277"></a><kbd class="Filename-Command">fmadm</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158279"></a>Monitors or controls the Fault Management Diagnosis Engines (FMDE). 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158281"></a><kbd class="Filename-Command">fmdump</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158283"></a>Dumps the fault event log containing FM diagnosis results. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158285"></a><kbd class="Filename-Command">fmstat</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158287"></a>Displays the FMDE status. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164859"></a><kbd class="Filename-Command">unlockmaintenance</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164861"></a>Forcibly release the locked status of the XSCF.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164855"></a><kbd class="Filename-Command">rebootxscf</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-164857"></a>Resets the XSCF.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158289"></a><kbd class="Filename-Command">who</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158291"></a>Displays users who login to the XSCF. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158293"></a><kbd class="Filename-Command">man</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158295"></a>Displays the man page of the specified command.
+</p>
+<p class="TableText"><a name="50450507_pgfId-166921"></a>You can see the list of commands by executing <kbd class="Filename-Command">man intro</kbd>.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158297"></a><kbd class="Filename-Command">exit</kbd>
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-158299"></a>Ends the XSCF Shell. 
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+<hr noshade="" size="1">
+<table class="TipNote" dir="LTR" width="100%" summary="TipNote">
+<colgroup span="1">
+</colgroup><tbody><tr align="left" valign="top">
+<td rowspan="1" colspan="1" abbr="TipNoteText"><b class="TipNote">Note - </b><a name="50450507_pgfId-161693"></a><a name="50450507__Ref118287597"></a>In the M3000/M4000/M5000/M8000/M9000 servers, some of the commands are not available, depending on the model in use. For the support information of each command, see the man page or the <i class="Title">XSCF Reference Manual</i>.
+</td>
+</tr>
+</tbody></table>
+<hr noshade="" size="1">
+<br><h2 class="Head1"><a name="50450507_pgfId-144201"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.2	<a name="50450507_marker-157518"></a>Login to XSCF Shell</h2>
+<p class="Paragraph"><a name="50450507_pgfId-144202"></a>This section describes how to log in to XSCF. The user can log in to XSCF from an XSCF-LAN port using either SSH or telnet, or from the serial port. 
+</p><h3 class="Head2"><a name="50450507_pgfId-144204"></a>5.2.1	Before Logging In</h3>
+<p class="Paragraph"><a name="50450507_pgfId-144205"></a>Note the following before attempting to log in: 
+</p>
+<ul>
+<li class="Bullet1"><a name="50450507_pgfId-144206"></a>For details on how to create, add, and delete user accounts, see <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch2p.html#50450504_177572" class="XRef">Chapter 2</a>.
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144207"></a>After login, if the shell has not been accessed for a certain period, XSCF automatically terminates the shell. The default timeout period is 10 minutes. The timeout period can be specified. For details on specifying the timeout period, see <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch2p.html#50450504_177572" class="XRef">Chapter 2</a>.
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-158435"></a>In one domain, only one user can use the RW console (write-enabled console). While one user is using the RW console, another user cannot start another RW console in the same domain. For details on console connection, see <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch3p.html#50450505_139154" class="XRef">Chapter 3</a>.
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-158442"></a>When a login fails, see <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/52APNXPD.html#50450463_1003475" class="XRef">Appendix D</a>.
+</li>
+<p class="Linebreak">
+</p>
+</ul>
+<br>
+<hr noshade="" size="1">
+<table class="TipNote" dir="LTR" width="100%" summary="TipNote">
+<colgroup span="1">
+</colgroup><tbody><tr align="left" valign="top">
+<td rowspan="1" colspan="1" abbr="TipNoteText"><b class="TipNote">Note - </b><a name="50450507_pgfId-158443"></a>In this manual, the window of the XSCF Shell terminal is called the XSCF console.
+</td>
+</tr>
+</tbody></table>
+<hr noshade="" size="1">
+<br><h3 class="Head2"><a name="50450507_pgfId-144214"></a>5.2.2	Operation From a Terminal Connected to the Serial Port</h3>
+<p class="Paragraph"><a name="50450507_pgfId-144215"></a>This section describes how to log in from a terminal connected to the serial port. 
+</p>
+<p class="Step1"><a name="50450507_pgfId-144217"></a>	1.	After the terminal is connected to the serial port, press the Enter key on the terminal. 
+</p>
+<p class="Step1-"><a name="50450507_pgfId-155134"></a>	2.	Enter a user account and password when prompted by XSCF. 
+</p>
+<p class="Step1-"><a name="50450507_pgfId-144219"></a>	3.	Enter XSCF commands at the shell prompt (XSCF&gt;) that is displayed after login to XSCF. 
+</p>
+<p class="Paragraph"><a name="50450507_pgfId-144220"></a>The following is a login example:
+</p>
+<div class="Code">
+<br>
+<table class="Code" summary="Table for code examples and code output" border="1" cellpadding="5" cellspacing="0" dir="LTR">
+<tbody>
+<tr>
+<td scope="ROW">
+<pre class="ScreenText"><a name="50450507_pgfId-146370"></a>login:<kbd class="Filename-Command"> </kbd><kbd class="UserType">jsmith</kbd>
+<a name="50450507_pgfId-146371"></a>Password: <i class="Variable">xxxxxxxx</i>
+<a name="50450507_pgfId-146375"></a>XSCF&gt;
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+</div><h3 class="Head2"><a name="50450507_pgfId-144230"></a>5.2.3	Operation for Connecting Via the XSCF-LAN (SSH)</h3>
+<p class="Paragraph"><a name="50450507_pgfId-144231"></a>This section describes how to log in to XSCF through an XSCF-LAN (SSH) connection.
+</p>
+<p class="Step1"><a name="50450507_pgfId-155156"></a>	1.	Before logging in using SSH, check that the fingerprint is pre-stored. If you did not save the fingerprint, please connect to the serial port and use <kbd class="Filename-Command">showssh</kbd>(8) to make a memo of the fingerprint of the host public key. 
+</p>
+<p class="Step1-"><a name="50450507_pgfId-144232"></a>	2.	From an SSH client, specify the IP address or host name of XSCF and the port number, if necessary (default port number 22), and use SSH connection via XSCF-LAN. 
+</p>
+<p class="Step1-"><a name="50450507_pgfId-155141"></a>	3.	Enter a user account and password when prompted by XSCF.
+</p>
+<p class="Step1-"><a name="50450507_pgfId-155192"></a>	4.	The fingerprint of the host public key may be displayed with a request to confirm its authenticity. If it is authentic, enter "yes" as the response, since the XSCF is correct with confirming the fingerprint.
+</p>
+<p class="Step1-"><a name="50450507_pgfId-155193"></a>	5.	Enter XSCF commands at the shell prompt (XSCF&gt;) that is displayed after log in to XSCF. 
+</p>
+<br>
+<hr noshade="" size="1">
+<table class="TipNote" dir="LTR" width="100%" summary="TipNote">
+<colgroup span="1">
+</colgroup><tbody><tr align="left" valign="top">
+<td rowspan="1" colspan="1" abbr="TipNoteText"><b class="TipNote">Note - </b><a name="50450507_pgfId-144237"></a>To set the password for an XSCF user account, use the <kbd class="Filename-Command">password</kbd>(8) command. The <kbd class="Filename-Command">shownetwork</kbd>(8) command can be used to display XSCF-LAN setting information and the current network connection status.
+</td>
+</tr>
+</tbody></table>
+<hr noshade="" size="1">
+<br>
+<p class="Paragraph"><a name="50450507_pgfId-144241"></a>The following is a login example:
+</p>
+<div class="Code">
+<br>
+<table class="Code" summary="Table for code examples and code output" border="1" cellpadding="5" cellspacing="0" dir="LTR">
+<tbody>
+<tr>
+<td scope="ROW">
+<pre class="ScreenText"><a name="50450507_pgfId-164678"></a>[foo@phar foo]% <kbd class="UserType">ssh june@192.168.0.2</kbd>
+<a name="50450507_pgfId-164679"></a>The authenticity of host '192.168.0.2 (192.168.0.2)' can't be established.
+<a name="50450507_pgfId-164680"></a>RSA key fingerprint is 03:4b:b4:b2:3d:4d:0c:24:03:ca:f1:63:f2:a7:f3:35.
+<a name="50450507_pgfId-164681"></a>Are you sure you want to continue connecting ? [yes|no] : <kbd class="UserType">yes</kbd>
+<a name="50450507_pgfId-164682"></a>Warning: Permanently added '192.168.0.2' (RSA) to the list of known hosts.
+<a name="50450507_pgfId-164683"></a>foo@phar's password:<i class="Variable">xxxxxx</i>
+<a name="50450507_pgfId-164684"></a>XSCF&gt; 
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+</div>
+<p class="Paragraph"><a name="50450507_pgfId-164525"></a>When the SSH connection is done using a user key, install the user public key in XSCF in advance. See <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch2p.html#50450504_177572" class="XRef">Chapter 2</a> for instructions on how to install the user public key.
+</p>
+<p class="Paragraph"><a name="50450507_pgfId-164529"></a>The following example shows a login using a user public key:
+</p>
+<div class="Code">
+<br>
+<table class="Code" summary="Table for code examples and code output" border="1" cellpadding="5" cellspacing="0" dir="LTR">
+<tbody>
+<tr>
+<td scope="ROW">
+<pre class="ScreenText"><a name="50450507_pgfId-164532"></a>[client]# <kbd class="UserType">ssh nana@192.168.1.12</kbd>
+<a name="50450507_pgfId-164537"></a>Enter passphrase for key ‘/home/nana/.ssh/id_rsa’: <i class="Variable">xxxxxxx</i>
+<a name="50450507_pgfId-164538"></a>Warning: No xauth data; using fake authentication data for X11 forwarding.
+<a name="50450507_pgfId-164539"></a>Last login: Mon Sep 1 10:19:37 2006 from client
+<a name="50450507_pgfId-164540"></a>XSCF&gt;
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+</div><h3 class="Head2"><a name="50450507_pgfId-144253"></a>5.2.4	Operation For Connecting Via the XSCF-LAN (Telnet)</h3>
+<p class="Paragraph"><a name="50450507_pgfId-144254"></a>This section describes how to log in to XSCF via an XSCF-LAN (telnet) connection. 
+</p>
+<p class="Step1"><a name="50450507_pgfId-155934"></a>	1.	Enter the IP address or host name of XSCF and port number 23, and use telnet via XSCF-LAN.
+</p>
+<p class="Step1-"><a name="50450507_pgfId-158450"></a>	2.	Enter a user account and password from the XSCF console.
+</p>
+<p class="Step1-"><a name="50450507_pgfId-158451"></a>	3.	Enter XSCF commands at the shell prompt (XSCF&gt;) that is displayed after you login to XSCF.
+</p>
+<p class="Step1-"><a name="50450507_pgfId-155942"></a>	4.	The following is a login example:
+</p>
+<div class="Code">
+<br>
+<table class="Code" summary="Table for code examples and code output" border="1" cellpadding="5" cellspacing="0" dir="LTR">
+<tbody>
+<tr>
+<td scope="ROW">
+<pre class="ScreenText"><a name="50450507_pgfId-146609"></a>login:<kbd class="UserType">jsmith</kbd>
+<a name="50450507_pgfId-146610"></a>Password:<i class="Variable">xxxxxxxx</i>
+<a name="50450507_pgfId-146614"></a>XSCF&gt;
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+</div><h2 class="Head1"><a name="50450507_pgfId-144284"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.3	<a name="50450507_marker-165607"></a><a name="50450507_marker-165608"></a><a name="50450507_marker-165609"></a>View Server Status and Control Commands</h2>
+<p class="Paragraph"><a name="50450507_pgfId-155809"></a>This section describes the typical XSCF Shell commands that can be used to display the server status, operate the server, and control the server. For details on the commands, see the man page or the <i class="Title">XSCF Reference Manual</i>. For XSCF setup commands, see <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch2p.html#50450504_177572" class="XRef">Chapter 2</a>.
+</p>
+<ul>
+<li class="Bullet1"><a name="50450507_pgfId-155816"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_29374" class="XRef">showenvironment</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144288"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_38517" class="XRef">showlocator/setlocator</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144289"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_54254" class="XRef">showconsolepath</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144290"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_46138" class="XRef">fmadm / fmdump / fmstat</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144291"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_96753" class="XRef">showdomainstatus</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-147113"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_45989" class="XRef">reset / poweron / poweroff</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-155338"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_34566" class="XRef">sendbreak</a>
+</li>
+<p class="Linebreak">
+</p>
+</ul><h5 class="Head4"><a name="50450507_pgfId-144299"></a><a name="50450507_29374"></a>showenvironment </h5>
+<p class="Paragraph"><a name="50450507_pgfId-144300"></a>The <kbd class="Filename-Command">showenvironment</kbd>(8) command displays the values of all sensors in the server. By finding out the intake temperature, humidity, voltage, and fan rotation speed in the server, the system administrator can check for errors in the system environment. 
+</p>
+<p class="Paragraph"><a name="50450507_pgfId-167251"></a>In addition, by knowing the power consumption and volume of air exhausted from the server, the plant administrator can identify the specific areas in the installation site where the energy consumption can be reduced.
+</p><h5 class="Head4"><a name="50450507_pgfId-144303"></a><a name="50450507_38517"></a>showlocator/setlocator</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144304"></a>These commands display status information indicated by the LEDs on devices and the operator panel of the server. Finding out information on device errors is helpful in component degradation and replacement. Also, the system administrator can use the commands to identify the target device among many devices. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144305"></a><a name="50450507_54254"></a>showconsolepath</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144306"></a>The <kbd class="Filename-Command">showconsolepath</kbd>(8) command displays the operating status of the domain console. By finding out the users of domain consoles, the system administrator can notify the users before a user performs a server operation or server control. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144307"></a><a name="50450507_46138"></a>fmadm / fmdump / fmstat</h5>
+<p class="Paragraph"><a name="50450507_pgfId-163923"></a>The server has an architecture that performs fault management (FMA) for CPUs, memory, and the I/O system during Oracle Solaris OS operation. The system administrator can use the <kbd class="Filename-Command">fmadm</kbd>(8) command to display configuration and status information about individual FMA modules that detect faults, perform fault diagnoses, and resolve faults. The command can also list faulty and degraded resources. The <kbd class="Filename-Command">fmstat</kbd>(8) command displays the processing time and number of events for each FMA module. The <kbd class="Filename-Command">fmdump</kbd>(8) command displays detailed fault information so that system administrator can determine faulty resources. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144309"></a><a name="50450507_96753"></a>showdomainstatus</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144310"></a>The <kbd class="Filename-Command">showdomainstatus</kbd>(8) command displays the current operating status of a domain. The system administrator can find out the status of each domain from its power on time to its operation start time. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144311"></a><a name="50450507_45989"></a>reset / poweron / poweroff</h5>
+<p class="Paragraph"><a name="50450507_pgfId-163933"></a>There are three types of resets: the system reset, the panic instruction, and the CPU reset. To reset a domain, the system administrator can perform the <kbd class="Filename-Command">reset</kbd>(8) command with one of these three types specified. Performing the <kbd class="Filename-Command">poweron</kbd>(8) or <kbd class="Filename-Command">poweroff</kbd>(8) command can turn power on or off to a constructed domain in the system configuration. 
+</p><h5 class="Head4"><a name="50450507_pgfId-155321"></a><a name="50450507_34566"></a>sendbreak</h5>
+<p class="Paragraph"><a name="50450507_pgfId-155322"></a>The system administrator can use the <kbd class="Filename-Command">sendbreak</kbd>(8) command to send a break signal to the Oracle Solaris OS. 
+</p><h2 class="Head1"><a name="50450507_pgfId-144313"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.4	<a name="50450507_marker-165611"></a>Server Configuration Information Commands</h2>
+<p class="Paragraph"><a name="50450507_pgfId-144314"></a>This section describes the typical XSCF Shell commands used to display configuration information on components in the server, such as the number of CPUs and memory capacity, the XSCF network configuration, the time, and degradation information. 
+</p>
+<ul>
+<li class="Bullet1"><a name="50450507_pgfId-144315"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_43748" class="XRef">showhardconf</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144316"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_82552" class="XRef">shownetwork / showhostname / showroute / shownameserver / showdscp</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144317"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_98740" class="XRef">showntp / showdate</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144319"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_57299" class="XRef">showstatus</a>
+</li>
+<p class="Linebreak">
+</p>
+</ul><h5 class="Head4"><a name="50450507_pgfId-144324"></a><a name="50450507_43748"></a>showhardconf</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144325"></a>The <kbd class="Filename-Command">showhardconf</kbd>(8) command lists all the components mounted in the server and their status information. A problem component is indicated by a mark (*). The system administrator can check the component configurations and the numbers of different types of components. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144326"></a><a name="50450507_82552"></a>shownetwork / showhostname / showroute / shownameserver / showdscp</h5>
+<p class="Paragraph"><a name="50450507_pgfId-167395"></a>The <kbd class="Filename-Command">shownetwork</kbd>(8) command displays the IP addresses, masks, and network connection information for the XSCF-LAN and ISN installed in the XSCF Unit. Also, the <kbd class="Filename-Command">shownetwork</kbd>(8) command displays the XSCF network connection status. By finding out the amount of data sent or received through a particular interface, the system administrator can check the LAN connection status and the management network load. The <kbd class="Filename-Command">showhostname</kbd>(8) command displays the current host name for the XSCF unit. The <kbd class="Filename-Command">showroute</kbd>(8) command displays routing environment such as destination IP addresses. The <kbd class="Filename-Command">shownameserver</kbd>(8) displays the DNS server. The system administrator can view the interface information required for the XSCF network. The showdscp(8) command displays the IP addresses assigned for DSCP usage. The <kbd class="Filename-Command">showpacketfilters</kbd>(8) command displays the IP packet filtering rules that are set in the XSCF network.
+</p><h5 class="Head4"><a name="50450507_pgfId-164700"></a><a name="50450507_98740"></a>showntp / showdate</h5>
+<p class="Paragraph"><a name="50450507_pgfId-164701"></a>The <kbd class="Filename-Command">showntp</kbd>(8) command displays the NTP server configured with the server and the XSCF's own local clock informations. The <kbd class="Filename-Command">showdate</kbd>(8) command displays the system standard time (XSCF time). The system administrator can use the <kbd class="Filename-Command">showdate</kbd>(8) command to determine the reference time used in the server. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144332"></a><a name="50450507_57299"></a>showstatus</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144333"></a>The system administrator can use the <kbd class="Filename-Command">showstatus</kbd>(8) command to list degraded components. 
+</p><h2 class="Head1"><a name="50450507_pgfId-144335"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.5	<a name="50450507_marker-165612"></a>Domain Control and Maintenance Commands</h2>
+<p class="Paragraph"><a name="50450507_pgfId-144336"></a>This section describes the typical XSCF Shell commands that manage resource assignment to domains and resource removal from domains, install devices, remove devices, replace devices, and enable or disable functions. 
+</p>
+<ul>
+<li class="Bullet1"><a name="50450507_pgfId-156010"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_71138" class="XRef">showdevices / cfgdevice</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-156005"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_95349" class="XRef">console</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144339"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_29248" class="XRef">showdcl / setdcl</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144340"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_84293" class="XRef">showfru / setupfru</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144341"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_53180" class="XRef">addfru / deletefru / replacefru</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144342"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_84011" class="XRef">showboards / addboard / deleteboard / moveboard</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144343"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_71960" class="XRef">showdomainmode / setdomainmode</a>
+</li>
+<p class="Linebreak">
+</p>
+</ul><h5 class="Head4"><a name="50450507_pgfId-144355"></a><a name="50450507_71138"></a>showdevices / cfgdevice</h5>
+<p class="Paragraph"><a name="50450507_pgfId-164008"></a>The <kbd class="Filename-Command">cfgdevice</kbd>(8) command displays the domain to which a DVD drive unit or tape drive unit is assigned. Also, the <kbd class="Filename-Command">cfgdevice</kbd>(8) command can be used only on M8000/M9000 servers. The <kbd class="Filename-Command">showdevices</kbd>(8) command displays the operating status of resources installed on a system board (XSB). The system administrator can use this command to determine the devices to be assigned to a domain and check whether the DR function can be used to connect or disconnect an XSB. 
+</p><h5 class="Head4"><a name="50450507_pgfId-156024"></a><a name="50450507_95349"></a>console</h5>
+<p class="Paragraph"><a name="50450507_pgfId-156025"></a>The <kbd class="Filename-Command">console</kbd>(8) command establishes a connection to the domain console. This command supports both interactive and read-only connections.
+</p><h5 class="Head4"><a name="50450507_pgfId-144357"></a><a name="50450507_29248"></a>showdcl / setdcl</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144358"></a>The <kbd class="Filename-Command">showdcl</kbd>(8) command displays the domain configuration information (DCL) specified for individual domains or LSBs that compose a domain, and the <kbd class="Filename-Command">setdcl</kbd>(8) command specifies the configuration. The system administrator refers to and specifies DCL when adding an XSB to a domain. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144359"></a><a name="50450507_84293"></a>showfru / setupfru</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144360"></a>The <kbd class="Filename-Command">showfru</kbd>(8) command displays the locations of devices, such as system boards, mounted in the server and resource partition information, and the <kbd class="Filename-Command">setupfru</kbd>(8) command specifies these locations and this information. The system administrator can use the commands for effective use of resources. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144361"></a><a name="50450507_53180"></a>addfru / deletefru / replacefru</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144362"></a>The <kbd class="Filename-Command">addfru</kbd>(8) command is used to select a device, such as a CPU/Memory Board unit, I/O unit, fan unit, or PSU, to add it to the server, and the <kbd class="Filename-Command">deletefru</kbd>(8) and <kbd class="Filename-Command">replacefru</kbd>(8) commands are used to select and remove or replace, respectively, such a device mounted in the server. Each type of operation can be performed interactively with menus. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144363"></a><a name="50450507_84011"></a>showboards / addboard / deleteboard / moveboard</h5>
+<p class="Paragraph"><a name="50450507_pgfId-153316"></a>The <kbd class="Filename-Command">showboards</kbd>(8) command displays status information about a system board (XSB). The system administrator can use the command to find out whether a system board has been configured to a domain or unconfigured from it, and to find out whether this operation was successful. The <kbd class="Filename-Command">addboard</kbd>(8) command adds a system board to the domain, the <kbd class="Filename-Command">deleteboard</kbd>(8) command removes a system board, and the <kbd class="Filename-Command">moveboard</kbd>(8) command moves a system board.
+</p>
+<br>
+<hr noshade="" size="1">
+<table class="TipNote" dir="LTR" width="100%" summary="TipNote">
+<colgroup span="1">
+</colgroup><tbody><tr align="left" valign="top">
+<td rowspan="1" colspan="1" abbr="TipNoteText"><b class="TipNote">Note - </b><a name="50450507_pgfId-166618"></a>In the M3000 server, the domain configuration cannot be changed.
+</td>
+</tr>
+</tbody></table>
+<hr noshade="" size="1">
+<br><h5 class="Head4"><a name="50450507_pgfId-144365"></a><a name="50450507_71960"></a>showdomainmode / setdomainmode</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144366"></a>In a certain domain, the user may want to suppress the break signal or panic with host watchdog or disable the automatic boot function. The system administrator can use the <kbd class="Filename-Command">showdomainmode</kbd>(8) command to display the related function settings and the <kbd class="Filename-Command">setdomainmode</kbd>(8) command to suppress or disable one of these functions for a domain. Also, the <kbd class="Filename-Command">showdomainmode</kbd>(8) command displays a domain host ID and ethernet address (mac address). 
+</p><h2 class="Head1"><a name="50450507_pgfId-144368"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.6	<a name="50450507_marker-165613"></a>View and Archive the XSCF Logs</h2>
+<p class="Paragraph"><a name="50450507_pgfId-144369"></a>This section describes the XSCF commands that fetch and display server operation logs, console logs, temperature histories, and error logs from XSCF log files which also configure the information for archiving XSCF logs to a host. 
+</p>
+<p class="Paragraph"><a name="50450507_pgfId-144370"></a>For details on error logs, see <a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/52APNXPB.html#50450461_999288" class="XRef">Appendix B</a>.
+</p>
+<ul>
+<li class="Bullet1"><a name="50450507_pgfId-144371"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_20822" class="XRef">showlogs</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144372"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_38545" class="XRef">showarchiving / setarchiving</a>
+</li>
+<p class="Linebreak">
+</p>
+</ul><h5 class="Head4"><a name="50450507_pgfId-144375"></a><a name="50450507_20822"></a>showlogs</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144376"></a>The <kbd class="Filename-Command">showlogs</kbd>(8) command displays error logs, power logs, event logs, console logs, panic logs, IPL logs, and temperature/humidity logs. The system administrator can use the command to check the operating status of the server and the cause of any error in the system. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144377"></a><a name="50450507_38545"></a>showarchiving / setarchiving</h5>
+<p class="Paragraph"><a name="50450507_pgfId-155263"></a>The <kbd class="Filename-Command">showarchiving</kbd>(8) and <kbd class="Filename-Command">setarchiving</kbd>(8) commands display and specify, respectively, the information required for saving XSCF log information to servers. The system administrator can use these commands to set up automatic, secure archiving of logs to a specified archive host. 
+</p><h2 class="Head1"><a name="50450507_pgfId-144382"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.7	<a name="50450507_marker-165614"></a>User Management and Security Commands</h2>
+<p class="Paragraph"><a name="50450507_pgfId-144383"></a>This section describes the typical XSCF commands for user management and security management. 
+</p>
+<ul>
+<li class="Bullet1"><a name="50450507_pgfId-144384"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_35715" class="XRef">showuser / adduser / deleteuser / enableuser / disableuser</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144385"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_68409" class="XRef">password / setprivilege / showpasswordpolicy / setpasswordpolicy</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144386"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_83182" class="XRef">showlookup / setlookup / showldap / setldap / showad / setad / showldapssl / setldapssl</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-166693"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_87551" class="XRef">showaudit / setaudit / viewaudit</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144387"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_82118" class="XRef">showloginlockout / setloginlockout</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-167260"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_45739" class="XRef">showssh / setssh</a>
+</li>
+<p class="Linebreak">
+</p>
+</ul><h5 class="Head4"><a name="50450507_pgfId-144401"></a><a name="50450507_35715"></a>showuser / adduser / deleteuser / enableuser / disableuser</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144402"></a>The <kbd class="Filename-Command">showuser</kbd>(8) command can be used to list XSCF user accounts or display information about a particular user account. The <kbd class="Filename-Command">adduser</kbd>(8) and <kbd class="Filename-Command">deleteuser</kbd>(8) commands add and delete user accounts. The <kbd class="Filename-Command">enableuser</kbd>(8) and <kbd class="Filename-Command">disableuser</kbd>(8) commands enable and disable, respectively, user accounts. 
+</p><h5 class="Head4"><a name="50450507_pgfId-144403"></a><a name="50450507_68409"></a>password / setprivilege / showpasswordpolicy / setpasswordpolicy</h5>
+<p class="Paragraph"><a name="50450507_pgfId-147459"></a>The <kbd class="Filename-Command">password</kbd>(8) and <kbd class="Filename-Command">setprivilege</kbd>(8) commands set passwords and user privileges, respectively, for user accounts. The <kbd class="Filename-Command">showpasswordpolicy</kbd>(8) and <kbd class="Filename-Command">setpasswordpolicy</kbd>(8) commands display and specify the validity of passwords and other password policy information.
+</p><h5 class="Head4"><a name="50450507_pgfId-147460"></a><a name="50450507_83182"></a>showlookup / setlookup / showldap / setldap / showad / setad / showldapssl / setldapssl</h5>
+<p class="Paragraph"><a name="50450507_pgfId-167422"></a>The <kbd class="Filename-Command">showlookup</kbd>(8) and <kbd class="Filename-Command">setlookup</kbd>(8) commands display and specify information on whether an LDAP server should be used for looking up the authentication and the user privilege. The <kbd class="Filename-Command">showldap</kbd>(8) and <kbd class="Filename-Command">setldap</kbd>(8) commands display and specify LDAP client settings, which are used when retrieving data from an LDAP server. The <kbd class="Filename-Command">showad</kbd>(8) and <kbd class="Filename-Command">setad</kbd>(8) commands display and specify Active Directory client settings, which are used when retrieving user informations from an Active Directory server. The <kbd class="Filename-Command">showldapssl</kbd>(8) and <kbd class="Filename-Command">setldapssl</kbd>(8) commands display and specify LDAP/SSL client settings, which are used when retrieving user informations from an LDAP/SSL server.
+</p>
+<p class="Paragraph"><a name="50450507_pgfId-144406"></a>&nbsp;
+</p><h5 class="Head4"><a name="50450507_pgfId-144407"></a><a name="50450507_87551"></a>showaudit / setaudit / viewaudit</h5>
+<p class="Paragraph"><a name="50450507_pgfId-166668"></a>The <kbd class="Filename-Command">showaudit</kbd>(8) and <kbd class="Filename-Command">setaudit</kbd>(8) commands display and specify information such as which events can be subject for auditing. The system administrator can use the <kbd class="Filename-Command">viewaudit</kbd>(8) command to display audit records (audit trail). 
+</p><h5 class="Head4"><a name="50450507_pgfId-165617"></a><a name="50450507_82118"></a>showloginlockout / setloginlockout</h5>
+<p class="Paragraph"><a name="50450507_pgfId-166683"></a>The showloginlockout(8) and setloginlockout(8) commands display and specify information on whether to refuse a user login for a certain period of time after multiple attempts to log in to that user account failed.
+</p><h5 class="Head4"><a name="50450507_pgfId-167277"></a><a name="50450507_45739"></a>showssh / setssh</h5>
+<p class="Paragraph"><a name="50450507_pgfId-167275"></a>The <kbd class="Filename-Command">showssh</kbd>(8) and <kbd class="Filename-Command">setssh</kbd>(8) commands can be used to display and specify the information on whether or not to enable the SSH access when a user logs in to XSCF. These commands can be used in generating the host key, registering/deleting the user public key, setting the timeout period of XSCF Shell, and setting whether or not to permit the SSH access from domain to XSCF via DSCP.
+</p><h2 class="Head1"><a name="50450507_pgfId-165619"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.8	<a name="50450507_marker-165618"></a>Use the XSCF Other Commands</h2>
+<p class="Paragraph"><a name="50450507_pgfId-165620"></a>The following XSCF Shell commands end the XSCF Shell and display version information. (Note)
+</p>
+<ul>
+<li class="Bullet1"><a name="50450507_pgfId-151637"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_86378" class="XRef">exit</a>
+</li>
+<p class="Linebreak">
+</p>
+<li class="Bullet1"><a name="50450507_pgfId-144413"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_55839" class="XRef">version</a>
+</li>
+<p class="Linebreak">
+</p>
+</ul>
+<br>
+<hr noshade="" size="1">
+<table class="TipNote" dir="LTR" width="100%" summary="TipNote">
+<colgroup span="1">
+</colgroup><tbody><tr align="left" valign="top">
+<td rowspan="1" colspan="1" abbr="TipNoteText"><b class="TipNote">Note - </b><a name="50450507_pgfId-144415"></a>The server provides many other commands. For details on these commands, see the man page or the <i class="Title">XSCF Reference Manual</i>. 
+</td>
+</tr>
+</tbody></table>
+<hr noshade="" size="1">
+<br><h5 class="Head4"><a name="50450507_pgfId-144417"></a><a name="50450507_86378"></a>exit</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144418"></a>The <kbd class="Filename-Command">exit</kbd>(1) command ends the XSCF Shell.
+</p><h5 class="Head4"><a name="50450507_pgfId-144421"></a><a name="50450507_55839"></a>version</h5>
+<p class="Paragraph"><a name="50450507_pgfId-144422"></a>The <kbd class="Filename-Command">version</kbd>(8) command displays the comprehensive firmware version (XCP version, see Note) of the XSCF firmware and POST/OpenBoot PROM firmware. The system administrator can display version information when upgrading firmware. 
+</p>
+<br>
+<hr noshade="" size="1">
+<table class="TipNote" dir="LTR" width="100%" summary="TipNote">
+<colgroup span="1">
+</colgroup><tbody><tr align="left" valign="top">
+<td rowspan="1" colspan="1" abbr="TipNoteText"><b class="TipNote">Note - </b><a name="50450507_pgfId-144423"></a>XCP: XSCF Control Package that includes the programs which control the hardware components making up a computer system.
+</td>
+</tr>
+</tbody></table>
+<hr noshade="" size="1">
+<br><h2 class="Head1"><a name="50450507_pgfId-144428"></a>
+<div>
+<hr align="left" size="6" width="15%" noshade="">
+</div>5.9	<a name="50450507_marker-165627"></a>View XSCF Shell Error Messages</h2>
+<p class="Paragraph"><a name="50450507_pgfId-144431"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch5p.html#50450507_81020" class="XRef">TABLE 5-2</a> lists the typical messages from each XSCF Shell command.
+</p>
+<br>
+<table class="Titled" summary="Table that is numbered and titled" border="1" cellpadding="5" cellspacing="0" dir="LTR"><caption class="TableCaption-Wide"> <a name="50450507_pgfId-152306"> </a> TABLE 5-2 	Error Messages of XSCF Shell Commands <a name="50450507_81020"> </a>   </caption>
+<thead>
+<tr>
+<th scope="COL" rowspan="1" colspan="1" bgcolor="#CCCCCC">
+<p class="TableHead"><a name="50450507_pgfId-152310"></a>Message
+</p>
+</th>
+<th scope="COL" rowspan="1" colspan="1" bgcolor="#CCCCCC">
+<p class="TableHead"><a name="50450507_pgfId-152312"></a>Meaning
+</p>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152318"></a>Invalid parameter.
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152320"></a>An abnormal parameter error has occurred.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152322"></a>Operation failed.
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152324"></a>Abnormal end.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152326"></a>Permission denied.
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152328"></a>An execution authority error has occurred.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152330"></a>Operation not supported on this system.
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152332"></a>Unsupported function. 
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152334"></a>Operation interrupted.
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152336"></a>Processing interruption from user.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152338"></a>The current configuration does not support this operation.
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152340"></a>Abnormal configuration.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152342"></a>A hardware error occurred. Please check the error log for details.
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152344"></a>A hardware error has occurred.
+</p>
+</td>
+</tr>
+<tr>
+<td scope="ROW" rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-155050"></a>An internal error has occurred. Please contact your system administrator.
+</p>
+</td>
+<td rowspan="1" colspan="1">
+<p class="TableText"><a name="50450507_pgfId-152348"></a>An XSCF internal error has occurred.
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+<hr noshade="" size="1">
+<table class="TipNote" dir="LTR" width="100%" summary="TipNote">
+<colgroup span="1">
+</colgroup><tbody><tr align="left" valign="top">
+<td rowspan="1" colspan="1" abbr="TipNoteText"><b class="TipNote">Note - </b><a name="50450507_pgfId-152472"></a>The error message depends on the command. Therefore, you will occasionally see more messages.
+</td>
+</tr>
+</tbody></table>
+<hr noshade="" size="1">
+<br>
+<!--Begin SiteCatalyst code version: G.5.-->
+<script language="JavaScript" src="./Overview of the XSCF Shell_files/s_code_remote.js.download">
+</script>
+<!--End SiteCatalyst code version: G.5.-->
+<div class="navbar" align="center">
+<br>
+<br>
+<table dir="LTR" summary="Navigation bar, includes the book title and navigation buttons" width="100%" cellpadding="0" cellspacing="0" border="0"><colgroup span="3"><col id="1" span="1" width="45%"><col id="2" span="1" width="25%"><col id="3" span="1" width="30%">
+</colgroup><tbody><tr bgcolor="#cccccc">
+<td class="navbartitle" align="left" rowspan="1" colspan="1" abbr="ChapTitle">SPARC Enterprise M3000/M4000/M5000/M8000/M9000 Servers XSCF User’s Guide
+</td>
+<td class="navbartitle" align="right" rowspan="1" colspan="1" abbr="PartNum">821-2797-10
+</td>
+<td valign="top" align="right" rowspan="1" colspan="1" abbr="NavButtons"><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/index.html"><img src="./Overview of the XSCF Shell_files/toc01.gif" title="Table Of Contents" alt="Table Of Contents" width="30" height="26" border="0"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch4p.html"><img src="./Overview of the XSCF Shell_files/prev01.gif" title="Previous Chapter" alt="Previous Chapter" width="30" height="26" border="0"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/21ch6p.html"><img src="./Overview of the XSCF Shell_files/next01.gif" title="Next Chapter" alt="Next Chapter" width="30" height="26" border="0"></a><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/ix.html"><img src="./Overview of the XSCF Shell_files/index01.gif" title="Book Index" alt="Book Index" width="30" height="26" border="0"></a>
+</td>
+</tr>
+</tbody></table>
+</div><p class="feedback"><a>
+<script language="javascript" type="text/javascript" charset="UTF-8">O_GoT('<img src="/app/images/sm_3E6B8A_oo.gif" border="0" alt="Feedback link" title="Feedback">Feedback'); 
+</script></a></p>
+<p class="copyrightlink"><a href="https://docs.oracle.com/cd/E19580-01/821-2797-10/copyright.html">Copyright</a> © 2010, Oracle and/or its affiliates.  All rights reserved.</p>
+
+
+</body></html>

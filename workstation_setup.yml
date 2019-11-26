@@ -35,7 +35,7 @@
       - gkrellm
       - pssh
       - google-chrome-stable
-      - gnome-shell-extensions
+#      - gnome-shell-extensions
       - gnome-tweaks
       - solaar
       - vim
@@ -65,8 +65,24 @@
 
   - name: setup .bash_profile
     file:
-      src: ~/git/workstation_setup/.bash_profile
+      src: ~/git/workstation_setup/bin/bash_profile
       dest: ~/.bash_profile
+      state: link
+      force: true
+    tags: bash
+
+  - name: setup .bashrc
+    file:
+      src: ~/git/workstation_setup/bin/bashrc
+      dest: ~/.bashrc
+      state: link
+      force: true
+    tags: bash
+
+  - name: setup .bash_aliases
+    file:
+      src: ~/git/workstation_setup/bin/bash_aliases
+      dest: ~/.bash_aliases
       state: link
       force: true
     tags: bash
