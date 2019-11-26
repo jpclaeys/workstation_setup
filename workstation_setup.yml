@@ -4,46 +4,12 @@
 
   tasks:
   
-  - name: create python -> python3 symlink
-    file:
-      src: /usr/bin/python3
-      dest: /usr/bin/python
-      state: link
-    become: true
-    ignore_errors: true
-    tags: os
-
-  - name: Install other useful packages
-    dnf:
-      name: 
-      - bat
-      - exa
-      - htop
-      - ack
-      - task
-      - screen
-      - vim
-      - prettyping
-      - geany
-      - fping
-      - expect
-      - jq
-      - terminator
-      - rdesktop
-      - sysstat
-      - vlc
-      - gkrellm
-      - pssh
-      - google-chrome-stable
-#      - gnome-shell-extensions
-      - gnome-tweaks
-      - solaar
-      - vim
-      - nmap
-      state: latest
-    become: true
-    tags: pkgs
-
+  - name: setup my workstation setup repo
+    git:
+      repo: https://github.com/jpclaeys/workstation_setup.git
+      dest: ~/git/workstation_setup
+      update: no # We just need to make sure it's there
+    tags: git
 
   - name: setup some expected dirs
     file:
@@ -56,77 +22,10 @@
     - git
     - bash
 
-  - name: setup my workstation setup repo
-    git:
-      repo: https://github.com/jpclaeys/workstation_setup.git
-      dest: ~/git/workstation_setup
-      update: no # We just need to make sure it's there
-    tags: git
+  - name: create symlinks
+    include: symlinks.yml
 
-  - name: setup .bash_profile
-    file:
-      src: ~/git/workstation_setup/bin/bash_profile
-      dest: ~/.bash_profile
-      state: link
-      force: true
-    tags: bash
+  - name: Install other useful packages
+    include: packages.yml
 
-  - name: setup .bashrc
-    file:
-      src: ~/git/workstation_setup/bin/bashrc
-      dest: ~/.bashrc
-      state: link
-      force: true
-    tags: bash
-
-  - name: setup .bash_aliases
-    file:
-      src: ~/git/workstation_setup/bin/bash_aliases
-      dest: ~/.bash_aliases
-      state: link
-      force: true
-    tags: bash
-
-  - name: setup bin
-    file:
-      src: ~/git/workstation_setup/bin
-      dest: ~/bin
-      state: link
-    tags: bash
-
-  
-  - name: setup tpl
-    file:
-      src: ~/git/workstation_setup/tpl
-      dest: ~/tpl
-      state: link
-    tags: bash
-
-  - name: setup doc
-    file:
-      src: ~/git/workstation_setup/doc
-      dest: ~/doc
-      state: link
-    tags: bash
-
-  - name: setup bin
-    file:
-      src: ~/git/workstation_setup/bin
-      dest: ~/bin
-      state: link
-    tags: bash
-
-  - name: setup doc_oasis2
-    file:
-      src: ~/git/workstation_setup/doc_oasis2
-      dest: ~/doc_oasis2
-      state: link
-    tags: bash
-
-  - name: setup Documentation
-    file:
-      src: ~/git/workstation_setup/Documentation
-      dest: ~/Documentation
-      state: link
-    tags: bash
 

@@ -1,0 +1,34 @@
+
+---
+
+  - name: Install other useful packages
+    dnf:
+      name: 
+      - bat
+      - exa
+      - htop
+      - ack
+      - task
+      - screen
+      - vim
+      - prettyping
+      - geany
+      - fping
+      - expect
+      - jq
+      - terminator
+      - rdesktop
+      - sysstat
+      - vlc
+      - gkrellm
+      - pssh
+      - google-chrome-stable
+#      - gnome-shell-extensions
+      - gnome-tweaks
+      - solaar
+      - vim
+      - nmap
+      state: latest
+    become: true
+    tags: pkgs
+
