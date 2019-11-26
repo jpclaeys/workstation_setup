@@ -79,3 +79,38 @@
     tags: bash
 
   
+  - name: setup tpl
+    file:
+      src: ~/git/workstation_setup/tpl
+      dest: ~/tpl
+      state: link
+    tags: bash
+
+  - name: setup doc
+    file:
+      src: ~/git/workstation_setup/doc
+      dest: ~/doc
+      state: link
+    tags: bash
+
+  - name: setup bin
+    file:
+      src: ~/git/workstation_setup/bin
+      dest: ~/bin
+      state: link
+    tags: bash
+
+  - name: setup bin
+    file:
+      src: ~/git/workstation_setup/bin
+      dest: ~/bin
+      state: link
+    tags: bash
+
+  - name: setup bin
+    file:
+      src: ~/git/workstation_setup/bin
+      dest: ~/bin
+      state: link
+    tags: bash
+
