@@ -1,0 +1,13 @@
+Fixed:
+root@vostok:->/usr/nagios/plugins/check_mount 
+check_mount CRITICAL (1 critical error)(vfs: 14, mnt: 15, cl: 0, dfs: 0, zp: 0, zfs: 0): Different UUIDs for EFI boot disks /dev/sda1 and /dev/sdb1
+root@vostok:->efi_mirror -x
+1048576+0 records in
+1048576+0 records out
+536870912 bytes (537 MB) copied, 10.0329 s, 53.5 MB/s
+root@vostok:->/usr/nagios/plugins/check_mount 
+check_mount OK (vfs: 14, mnt: 15, cl: 0, dfs: 0, zp: 0, zfs: 0)
+
+Best regards,
+Andreas Kreuzinger
+

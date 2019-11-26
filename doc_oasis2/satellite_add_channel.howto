@@ -1,0 +1,28 @@
+===================================================================================================
+Satellite:
+----------
+
+Change channel
+systems \ All
+Filter by system Name: <sever> 	\ Go
+
+Then click on the system name
+
+
+Software
+Software Channels
+
+Select RHEL7 RC7.4.1 64-bit 
+confirm
+then check  the additionam chennels:
+ DIGIT Software Stack (v. 7.4.1 for 64-bit x86_64) (unlimited)
+ EPEL-7.4.1 (unlimited)
+
+Change subsriptions
+
+Then yum update both servers
+reboot both servers
+
+===================================================================================================
+
+

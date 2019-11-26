@@ -1,0 +1,89 @@
+
+$ ssh bkpmgt1
+# exec bash
+1 root@bkpmgt1:-> su - netwrkr
+Sun Microsystems Inc.   SunOS 5.10      Generic January 2005
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nw
+nw_autoCreate         nw_switchClientState  nwinstcreate          nwk_getGroupList      nwk_makeClientList    
+nw_removeClient       nwclust.pl            nwk_getClientList     nwk_getPoolList       nwk_whereIs           
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nw_switchClientState 
+missing option -f or couple -s -c
+        
+        Usage: 
+        nw_switchClientState.sh OPTIONS [OPTIONS] where:
+        OPTIONS are:
+                -s BKPSRV : backup server name for unix or windows clients
+                -c CLIENT : fully qualified domain name of the client to create
+                -f FILE (client@bkpsrv format) instead of couple -s -c : a list of clients to remove
+                -i IM0000000000 : SMT ticket number
+                -L LOGIN : your windows login
+        
+        [OPTIONS] are:
+                -y : yes, do it really; DUMMY mode by default
+                -g GROUP: group of the client; By default, all groups
+                -B STATE: Backup Enabled flag: one of "Enabled|Disabled (first letter in UPPERCASE mandatory)"
+                -C "COMMENT" : to put in the comment field; do not forget the " " 
+                -h : this help
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nwk_whereIs -c kennedy
+bkpsrv70;kennedy.cc.cec.eu.int;Enabled;RAC_POCU2_FS_00;Linux_Physical_Host
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nw_switchClientState -s bkpsrv70 -c kennedy.cc.cec.eu.int -i IM0000000000 -L segnefr -B Disabled -C "just a test" 
+---------------------------------------------------------------------------------------------------------
+**** nw_switchClientState.sh: Running in DUMMY mode. Commands are just displayed, NOTHING is really done on files ****
+---------------------------------------------------------------------------------------------------------
+
+Force state Disabled
+Bad string
+. type:NSR client;name:kennedy
+show name;scheduled backup;group;comment
+update scheduled backup:Disabled; comment:--IM0000000000_Disabled_by_segnefr_on_2016-09-22_just_a_test
+
+============================================================
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nwk_whereIs -c kennedy
+bkpsrv70;kennedy.cc.cec.eu.int;Enabled;RAC_POCU2_FS_00;Linux_Physical_Host
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nw_switchClientState -s bkpsrv70 -c kennedy.cc.cec.eu.int -i IM0000000000 -L segnefr -B Disabled -C "just a test" -y
+Force state Disabled
+Bad string
+updated resource id 2.45.68.52.0.0.0.0.85.63.100.51.158.167.160.75(12)
+                        name: kennedy.cc.cec.eu.int;
+            scheduled backup: Disabled;
+                     comment: \
+--IM0000000000_Disabled_by_segnefr_on_2016-09-22_just_a_test;
+                       group: RAC_POCU2_FS_00;
+============================================================
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nwk_whereIs -c kennedy
+bkpsrv70;kennedy.cc.cec.eu.int;Enabled;RAC_POCU2_FS_00;Linux_Physical_Host
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > 
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nw_switchClientState -s bkpsrv70 -c kennedy.cc.cec.eu.int -i IM0000000000 -L segnefr -B Enabled -C "just a test" -y
+Force state Enabled
+Client already in state: Enabled
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nwk_whereIs -c kennedy
+bkpsrv70;kennedy.cc.cec.eu.int;Enabled;RAC_POCU2_FS_00;Linux_Physical_Host
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > 
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > 
+nwk_whereIs -c crocodile
+bkpsrvb0;crocodile.cc.cec.eu.int;Enabled;CLU_0117_FS_03;Unix_Physical_Host
+
+nw_switchClientState -s bkpsrvb0 -c crocodile.cc.cec.eu.int -i IM0015220686 -L claeyje -B Disabled -C "Under installation" -y
+
+Force state Disabled
+Bad string
+
+updated resource id 1.180.58.235.0.0.0.39.82.149.150.126.158.167.160.20(20)
+                        name: crocodile.cc.cec.eu.int;
+            scheduled backup: Disabled;
+                     comment: \
+--IM0015220686_Disabled_by_claeyje_on_2017-01-10_Under_installation;
+                       group: CLU_0117_FS_03;
+============================================================
+
+
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nwk_whereIs -c crocodile
+bkpsrvb0;crocodile.cc.cec.eu.int;Enabled;CLU_0117_FS_03;Unix_Physical_Host
+wait a while ...
+netwrkr-bkpmgt1.cc.cec.eu.int:[] > nwk_whereIs -c crocodile
+bkpsrvb0;crocodile.cc.cec.eu.int;Disabled;CLU_0117_FS_03;Unix_Physical_Host
+

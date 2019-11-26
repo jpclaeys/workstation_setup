@@ -1,0 +1,28 @@
+Service-Related Oracle ILOM Commands
+The following table describes the Oracle ILOM shell commands most frequently used when performing service related tasks.
+
+Oracle ILOM Command
+Description
+help [command]	Displays a list of all available commands with syntax and descriptions. Specifying a command name as an option displays help for that command.
+
+start [-script] /HOST/console		Connects you to the host system.
+
+set /HOST send_break_action=break	Takes the host server from the OS to either kmdb or break menu, depending on the mode Solaris software was booted.
+set fru|component clear_fault_action=true	Clears the fault state for the FRU or the component.
+show /HOST/console/history		Displays the contents of the system's console buffer.
+set /HOST/bootmode property=value	[where property is state, config, or script] Controls the host server OpenBoot PROM firmware method of booting.
+
+stop /SYS				Powers off the host server.
+start /SYS				Powers on the host server.
+reset /SYS				Generates a hardware reset on the host server.
+reset /SP				Reboots the service processor.
+set /SYS keyswitch_state=value		(normal | standby | diag | locked)	Sets the virtual keyswitch.
+set /SYS/LOCATE value=value [Fast_blink | Off]	Turns the Locator LED on the server on or off.
+show faulty				Displays current system faults. See Check for Faults (show faulty Command).
+show /SYS keyswitch_state		Displays the status of the virtual keyswitch.
+show /SYS/LOCATE			Displays the current state of the Locator LED as either fast blink or off.
+show /SP/logs/event/list		Displays the history of all events logged in the service processor event log.
+show /HOST				Displays firmware versions and HOST status.
+show /SYS				Displays product information, including the part number and serial number.
+
+

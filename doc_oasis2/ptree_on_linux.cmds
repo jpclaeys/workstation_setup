@@ -1,0 +1,10 @@
+You can try to use the "--forest" flag of the ps command in order to show the hierarchy of the processes,
+
+ps -ef --forest
+
+man ps
+/tree
+To print a process tree:
+      ps -ejH
+      ps axjf
+

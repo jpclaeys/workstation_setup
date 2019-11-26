@@ -1,0 +1,48 @@
+Hi,
+
+I have adapted the script and added two options:
+"-c" to run a zpool clear on all unhealthy pools
+"-n" to run Nagios plugins check_mpxio and check_mount
+
+So the usual steps for the resync are:
+1) Online disks: $TOOLSREPOSITORY/user/kreuzan/check_zpools.sh -oHi,
+
+I have adapted the script and added two options:
+"-c" to run a zpool clear on all unhealthy pools
+"-n" to run Nagios plugins check_mpxio and check_mount
+
+So the usual steps for the resync are:
+1) Online disks: $TOOLSREPOSITORY/user/kreuzan/check_zpools.sh -o
+2) Check progress: $TOOLSREPOSITORY/user/kreuzan/check_zpools.sh -p
+3) If disks are still missing, run "$TOOLSREPOSITORY/user/kreuzan/check_zpools.sh -D" and repeat from step 1
+4) If pools are unhealthy and it states about "zpool clear", run "$TOOLSREPOSITORY/user/kreuzan/check_zpools.sh -c"
+5) Run Nagios checks: $TOOLSREPOSITORY/user/kreuzan/check_zpools.sh -n
+6) If there are still problems, fix them and repeat from step 5
+
+I have added this list at http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Projects/PAIR7LUNMigration-SPARC-HDSMOVE#Usual_steps
+
+Remarks:
+* Putting the disks online is slow, because it's running the online per disk per pool per server. So many server times many pools times many disks means that you will have to wait a long time.
+* I had the case where I had to run "-c" twice for one server. It doesn't hurt to have a longer server list because it will run the clear command only on unhealthy pools.
+
+And I have attached the latest version of SOLARIS_and_SOLARIS_Swap_Resync_Groups.xlsx to http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Projects/PAIR7LUNMigration-SPARC-HDSMOVE.
+I found out yesterday during the intervention that the list of hosts for group1 has changed. That's a bit late.
+If you have prepared the groups already, you might want to verify that they didn't change.
+
+Best regards,
+Andreas Kreuzinger
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Distribution list
+
+Subject:
+PAIR7LUNMigration-SPARC-HDSMOVE: checks for group #: OK
+
+Body:
+Dears,
+
+Please find hereafter the results of the checks on group <groupnumber> (All checks are ok)
+
+Note:
+Don't forget to update the Wiki page (Status: Pending --> Done)

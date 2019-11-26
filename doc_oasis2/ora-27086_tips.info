@@ -1,0 +1,47 @@
+ORA-27086 Tips
+Oracle Database Tips by Donald BurlesonFebruary 15, 2015
+Question:  I am running a job and I am getting this ORA-27086 error:
+
+ORA-27050: function called with invalid FIB/IOV structure
+Additional information: 2
+ORA-27086: unable to lock file - already in use
+Linux-x86_64 Error: 37: No locks available
+Additional information: 10
+
+What is the cause of the ORA-27086 error?
+
+Answer:  The oerr utility shows this for the ORA-27086 error:
+
+ORA-27086: unable to lock file - already in use 
+
+Cause: the file is locked by another process, indicating that it is currently in use by a database instance.
+
+Action: determine which database instance legitimately owns this file.
+
+This is not an Oracle error, it has an external cause an you will want to contact your OS systems administrator.  See MOSC Note 1418233.1 titled "Archiving Redo Logs Fails With ORA-19510, ORA-27086 Linux-x86_64 Error: 37: No locks available"
+
+1.  As an emergency workaround, this error can usually be remedied by re-booting the server.
+
+2.  In Linux and AIX you can fix the error by changing /etc/filesystems.  In Linux, the  option line, using nolock instead of llock
+
+-- LINUX
+# cat /etc/filesystems
+ . . . 
+option=nolock
+
+3.  The ORA-27086 error can also happen when NFS is hung.  You can check your OS logs to find "statd: server localhost not responding, timed out".
+
+4.  Check rpc.stat is working and you can restart again , and you have to Restart NFS Services.  Here is how to bounce NFS:
+
+/etc/init.d/nfs restart
+
+You can also bounce NFS by each service:
+
+# service nfslock stop
+# service nfs stop
+# service portmap stop
+# umount /proc/fs/nfsd Start :
+# service portmap start
+# service nfs start
+# service nfslock start
+# mount -t nfsd nfsd /proc/fs/nfsd

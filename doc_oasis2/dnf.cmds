@@ -1,0 +1,4 @@
+for i in {150..1}; do sudo dnf history info $i | grep "Command Line"| egrep -v 'update|upgrade';done
+
+dnf search
+

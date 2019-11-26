@@ -1,0 +1,21 @@
+example:
+---------
+# get the hostname's IP @ 
+host <hostname>
+
+Subject: 
+DC FILESHARING SERVICE - Change ACL (SR) - <hostname>
+Open a Ticket for DCTSC DCFilesharingServices
+Item: 
+DC FILESHARING SERVICE
+Module: 
+Change ACL
+
+Please change access to SHARE:
+Class: SR
+Type : Add 
+SHARE PATH Name : <share path>   (ex. nas-dclux-xprd.cc.cec.eu.int:/estat_ora_migration_test/files)
+Server IP address : <ip @>
+Comments :
+
+--> Ticket: 

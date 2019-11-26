@@ -1,0 +1,281 @@
+
+[claeyje@muscadet HBA]$ mypssH "bigbaby bashkara" '(lspci | grep Fibre | head -1)'
+[1] 13:26:43 [SUCCESS] bigbaby
+1b:00.0 Fibre Channel: Emulex Corporation Saturn-X: LightPulse Fibre Channel Host Adapter (rev 03)
+[2] 13:26:43 [SUCCESS] bashkara
+0c:00.0 Fibre Channel: Emulex Corporation Saturn-X: LightPulse Fibre Channel Host Adapter (rev 03)
+
+
+[claeyje@muscadet doc]$ mypssH "bigbaby bashkara" cat /etc/redhat-release
+[1] 15:59:56 [SUCCESS] bashkara
+Red Hat Enterprise Linux Server release 6.7 (Santiago)
+[2] 15:59:56 [SUCCESS] bigbaby
+Red Hat Enterprise Linux Server release 6.7 (Santiago)
+
+x3750-M4
+--> 
+1. fw (firmware)
+
+[claeyje@muscadet HBA]$ pwd && ll *.bin
+/home/claeyje/git/cfengine_data_static/system/firmware_LENOVO/LENOVO,System-x3750-M4/HBA
+-rw-r--r--. 1 claeyje claeyje 19M Mar 16 03:10 elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+
+
+2. dd (device driver) for RedHat 6.7
+/home/claeyje/git/cfengine_data_static/system/firmware_LENOVO/LENOVO,System-x3750-M4/HBA
+lrwxrwxrwx. 1 claeyje claeyje 49 May 17 12:04 drivers/RHEL6.7 -> elx-lnvgy_dd_fc_17a-11.2.209.7-4_rhel6_x86-64.tgz
+
+HL="bigbaby aladfar clarke majortom vega japetus bashkara korolev"
+
+[claeyje@muscadet log]$ mypssH "$HL" '(systool -c scsi_host -v -d host1 | egrep -i "fwrev|vers|modelname")'
+[7] 10:56:00 [SUCCESS] bashkara
+    fwrev               = "2.02X11 (U3D2.02X11), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "5.30a3"
+[8] 10:56:00 [SUCCESS] bigbaby
+    fwrev               = "2.03X14 (U3D2.03X14), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "11.20a6"
+
+
+
+
+
+
+root@bashkara:->
+cd /tmp
+
+6 root@bashkara:->systool -c scsi_host -v -d host1 | egrep -i 'fwrev|vers|modelname'
+    fwrev               = "2.02X11 (U3D2.02X11), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "5.30a3"
+
+7 root@bashkara:->tar -zxvf elx-lnvgy_dd_fc_17a-11.2.209.7-4_rhel6_x86-64.tgz
+./
+./SRPM/
+./SRPM/redhat-release-server-6Server-6.7/
+./SRPM/redhat-release-server-6Server-6.7/elx-lpfc-11.2.209.7-1.rhel6u7.src.rpm
+./SRPM/redhat-release-server-6Server-6.8/
+./SRPM/redhat-release-server-6Server-6.8/elx-lpfc-11.2.209.7-1.rhel6u8.src.rpm
+./install.sh
+./disks/
+./disks/elx-lpfc-11.2.209.7.rhel6u8.x86_64.iso
+./disks/elx-lpfc-11.2.209.7.rhel6u7.x86_64.iso
+./RPMS/
+./RPMS/redhat-release-server-6Server-6.7/
+./RPMS/redhat-release-server-6Server-6.7/elx-vector-map-1-1.rhel6u7.x86_64.rpm
+./RPMS/redhat-release-server-6Server-6.7/kmod-elx-lpfc-11.2.209.7-1.rhel6u7.x86_64.rpm
+./RPMS/redhat-release-server-6Server-6.8/
+./RPMS/redhat-release-server-6Server-6.8/elx-vector-map-1-1.rhel6u8.x86_64.rpm
+./RPMS/redhat-release-server-6Server-6.8/kmod-elx-lpfc-11.2.209.7-1.rhel6u8.x86_64.rpm
+8 root@bashkara:->./install.sh 
+
+-------------- get current os ------------------
+RHEL6
+-------------- rpms_exist_for_curr_kernel ------------------
+Searching for RHEL6 rpm
+Attempting to install RPM from directory '/tmp/RPMS/redhat-release-server-6Server-6.7'...
+-------------- install_rpm ------------------
+Attempting to install rpm...
+Installing elx-vector-map-1-1.rhel6u7.x86_64.rpm...
+Preparing...                ##################################################
+elx-lpfc-vector-map         ##################################################
+Installing kmod-elx-lpfc-11.2.209.7-1.rhel6u7.x86_64.rpm...
+Preparing...                ##################################################
+kmod-elx-lpfc               ##################################################
+
+root@bashkara:->systool -c scsi_host -v -d host1 | egrep -i 'fwrev|vers|modelname'
+    fwrev               = "2.02X11 (U3D2.02X11), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "5.30a3"
+10 root@bashkara:->disk-hbamap -v | egrep "model:|state:|driver version:|firmware version:" | sed 's/ version//g' | awk '{ print $2 }' | tr '\012' ' ' | xargs -n4 | grep -v offline | awk '{ print $1 " " $3 " " $4 }' | sort | uniq
+42D0485 Emulex 2.02X11
+11 root@bashkara:->modinfo qla2xxx | grep version
+version:        8.07.00.26.06.8-k
+srcversion:     50E0219D762F696CEE5A2D3
+vermagic:       2.6.32-696.3.2.el6.x86_64 SMP mod_unload modversions 
+
+
+8 root@bigbaby:->ll
+total 33804
+drwxr-xr-x  3 oracle  dc_dba         4096 Jun 21 10:25 CVU_12.1.0.2.0_resource/
+-rw-r--r--  1 root    root        7694293 Jun 21 11:02 elx-lnvgy_dd_fc_17a-11.2.209.7-4_rhel6_x86-64.tgz
+-rwxr-xr-x  1 root    root       19162291 Jun 21 11:12 elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+9 root@bigbaby:->tar -zxvf elx-lnvgy_dd_fc_17a-11.2.209.7-4_rhel6_x86-64.tgz
+./
+./SRPM/
+./SRPM/redhat-release-server-6Server-6.7/
+./SRPM/redhat-release-server-6Server-6.7/elx-lpfc-11.2.209.7-1.rhel6u7.src.rpm
+./SRPM/redhat-release-server-6Server-6.8/
+./SRPM/redhat-release-server-6Server-6.8/elx-lpfc-11.2.209.7-1.rhel6u8.src.rpm
+./install.sh
+./disks/
+./disks/elx-lpfc-11.2.209.7.rhel6u8.x86_64.iso
+./disks/elx-lpfc-11.2.209.7.rhel6u7.x86_64.iso
+./RPMS/
+./RPMS/redhat-release-server-6Server-6.7/
+./RPMS/redhat-release-server-6Server-6.7/elx-vector-map-1-1.rhel6u7.x86_64.rpm
+./RPMS/redhat-release-server-6Server-6.7/kmod-elx-lpfc-11.2.209.7-1.rhel6u7.x86_64.rpm
+./RPMS/redhat-release-server-6Server-6.8/
+./RPMS/redhat-release-server-6Server-6.8/elx-vector-map-1-1.rhel6u8.x86_64.rpm
+./RPMS/redhat-release-server-6Server-6.8/kmod-elx-lpfc-11.2.209.7-1.rhel6u8.x86_64.rpm
+10 root@bigbaby:->./install.sh
+
+-------------- get current os ------------------
+RHEL6
+-------------- rpms_exist_for_curr_kernel ------------------
+Searching for RHEL6 rpm
+Attempting to install RPM from directory '/tmp/RPMS/redhat-release-server-6Server-6.7'...
+-------------- install_rpm ------------------
+Attempting to install rpm...
+Installing elx-vector-map-1-1.rhel6u7.x86_64.rpm...
+Preparing...                ##################################################
+elx-lpfc-vector-map         ##################################################
+Installing kmod-elx-lpfc-11.2.209.7-1.rhel6u7.x86_64.rpm...
+Preparing...                ##################################################
+kmod-elx-lpfc               ##################################################
+
+ root@bigbaby:->modinfo qla2xxx | grep vers
+filename:       /lib/modules/2.6.32-696.3.2.el6.x86_64/kernel/drivers/scsi/qla2xxx/qla2xxx.ko
+version:        8.07.00.26.06.8-k
+srcversion:     50E0219D762F696CEE5A2D3
+vermagic:       2.6.32-696.3.2.el6.x86_64 SMP mod_unload modversions 
+
+root@bigbaby:->disk-hbamap -v| grep vers| sort -u
+      driver version:     Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6
+      firmware version:   2.03X14 (U3D2.03X14), sli-3
+
+ root@bashkara:->systool -c scsi_host -v -d host1 | egrep -i 'fwrev|vers|modelname'
+    fwrev               = "2.03X14 (U3D2.03X14), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "11.40a4"
+
+
+
+
+===================================================================================================
+
+
+[claeyje@muscadet HBA]$ scp elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin root@bashkara:/tmp
+elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin                                      100%   18MB  11.1MB/s   00:01    
+[claeyje@muscadet HBA]$ scp elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin root@bigbaby:/tmp
+elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin                                      100%   18MB  11.2MB/s   00:01    
+
+
+===================================================================================================
+
+
+14 root@bashkara:->chmod +x elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+15 root@bashkara:->disk-hbamap
+C#  INST   PORT WWN          MODEL    FCODE   STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----   -----    ----          -----------                                              ------  
+1   host1  10000090faa4975b  42D0485  5.30a3  offline  0000:0c:00.0  /sys/devices/pci0000:00/0000:00:01.0/0000:0c:00.0/host1  -       
+2   host2  10000090faa49747  42D0485  5.30a3  8Gb      0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host2  2       
+3   host3  10000090faa496fc  42D0485  5.30a3  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090faa4916a  42D0485  5.30a3  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -       
+16 root@bashkara:->./elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin -s
+
+--- Emulex Firmware Version 2.03x14 ---
+
+Performing firmware update. This may take several minutes. Please wait...
+
+-- SUCCESS -- All HBAs successfully updated.
+
+17 root@bashkara:->disk-hbamap
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+1   host1  10000090faa4975b  42D0485  11.40a4  offline  0000:0c:00.0  /sys/devices/pci0000:00/0000:00:01.0/0000:0c:00.0/host1  -       
+2   host2  10000090faa49747  42D0485  11.40a4  8Gb      0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host2  2       
+3   host3  10000090faa496fc  42D0485  11.40a4  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090faa4916a  42D0485  11.40a4  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -       
+
+ root@bashkara:->systool -c scsi_host -v -d host1 | egrep -i 'fwrev|vers|modelname'
+    fwrev               = "2.03X14 (U3D2.03X14), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "11.40a4"
+
+sr bigbaby
+1 root@bigbaby:->cd /tmp
+2 root@bigbaby:->ll
+total 33804
+drwxr-xr-x  3 oracle  dc_dba         4096 Jun 21 10:25 CVU_12.1.0.2.0_resource/
+-rw-r--r--  1 root    root        7694293 Jun 21 11:02 elx-lnvgy_dd_fc_17a-11.2.209.7-4_rhel6_x86-64.tgz
+-rw-r--r--  1 root    root       19162291 Jun 21 11:12 elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+
+3 root@bigbaby:->chmod +x elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+4 root@bigbaby:->disk-hbamap
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+1   host1  10000090fab193c1  42D0485  11.20a6  offline  0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host1  -       
+2   host2  10000090fab1822e  42D0485  11.20a6  8Gb      0000:20:00.0  /sys/devices/pci0000:00/0000:00:03.2/0000:20:00.0/host2  2       
+3   host3  10000090fab1847a  42D0485  11.20a6  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090fab18225  42D0485  11.20a6  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -       
+5 root@bigbaby:->./elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin -s
+
+--- Emulex Firmware Version 2.03x14 ---
+
+Performing firmware update. This may take several minutes. Please wait...
+
+-- SUCCESS -- All HBAs successfully updated.
+
+6 root@bigbaby:->disk-hbamap
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+1   host1  10000090fab193c1  42D0485  11.40a4  offline  0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host1  -       
+2   host2  10000090fab1822e  42D0485  11.40a4  8Gb      0000:20:00.0  /sys/devices/pci0000:00/0000:00:03.2/0000:20:00.0/host2  2       
+3   host3  10000090fab1847a  42D0485  11.40a4  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090fab18225  42D0485  11.40a4  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -       
+7 root@bigbaby:->systool -c scsi_host -v -d host1 | egrep -i 'fwrev|vers|modelname'
+    fwrev               = "2.03X14 (U3D2.03X14), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "11.40a4"
+
+ root@bashkara:->disk-hbamap -v| grep vers| sort -u
+      driver version:     Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6
+      firmware version:   2.03X14 (U3D2.03X14), sli-3
+
+
+[claeyje@muscadet HBA]$ sr bashkara '(disk-hbamap | grep -v offline  && disk-hbamap -v |grep vers| sort -u)'
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+2   host2  10000090faa49747  42D0485  11.40a4  8Gb      0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host2  2       
+3   host3  10000090faa496fc  42D0485  11.40a4  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+      driver version:     Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6
+      firmware version:   2.03X14 (U3D2.03X14), sli-3
+
+
+[claeyje@muscadet HBA]$ mypssH "bigbaby bashkara" '(systool -c scsi_host -v -d host3| egrep -i "fwrev|vers|modelname";disk-hbamap | grep -v offline  && disk-hbamap -v |grep vers| sort -u;modinfo qla2xxx | grep ^version)'
+[1] 13:32:02 [SUCCESS] bashkara
+    fwrev               = "2.03X14 (U3D2.03X14), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "11.40a4"
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+2   host2  10000090faa49747  42D0485  11.40a4  8Gb      0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host2  2       
+3   host3  10000090faa496fc  42D0485  11.40a4  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+      driver version:     Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6
+      firmware version:   2.03X14 (U3D2.03X14), sli-3
+version:        8.07.00.26.06.8-k
+[2] 13:32:02 [SUCCESS] bigbaby
+    fwrev               = "2.03X14 (U3D2.03X14), sli-3"
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6"
+    modelname           = "42D0485"
+    option_rom_version  = "11.40a4"
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+2   host2  10000090fab1822e  42D0485  11.40a4  8Gb      0000:20:00.0  /sys/devices/pci0000:00/0000:00:03.2/0000:20:00.0/host2  2       
+3   host3  10000090fab1847a  42D0485  11.40a4  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+      driver version:     Emulex LightPulse Fibre Channel SCSI driver 11.0.0.6
+      firmware version:   2.03X14 (U3D2.03X14), sli-3
+version:        8.07.00.26.06.8-k
+
+
+

@@ -1,0 +1,25 @@
+example1:
+recover
+recover> list
+recover> cd /var/log
+recover> list    
+recover> pwd
+recover> ls messages*
+recover> list
+recover> changetime May 20 10:00:00
+recover> ls messages*
+recover> add messages-20170516.gz
+recover> list
+recover> destination
+recover> recover
+recover> exit
+
+example2:
+recover
+recover> ls chommpser.db
+recover> add chommpser.db
+recover> list
+recover> recover
+recover> exit
+
+

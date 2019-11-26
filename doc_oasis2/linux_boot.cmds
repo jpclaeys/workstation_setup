@@ -1,0 +1,25 @@
+-----------------------------------------------------------------------------------------------------------------------------------
+When the boot process enters the "grub>" prompt, one have 2 choices
+-----------------------------------------------------------------------------------------------------------------------------------
+1. enter the lines as they appear in the /etc/grub.conf file
+
+grub> root (hd0,1)
+
+grub> kernel /vmlinuz-2.6.32-696.3.2.el6.x86_64 ro root=/dev/mapper/vgroot-root rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vgroot/root crashkernel=auto rd_LVM_LV=vgroot/swap console=tty0 console=ttyS1,115200 SYSFONT=latarcyrheb-sun16 rd_MD_UUID=dca2b671:25d5207a:20127a88:e18b8e26 KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM loglevel=3 nmi_watchdog=0 intel_idle.max_cstate=0 elevator=deadline transparent_hugepage=never
+
+grub> initrd /initramfs-2.6.32-696.3.2.el6.x86_64.img
+
+NB: on can add the "rdshell" argume,nt at the end of the "kernel" line
+-----------------------------------------------------------------------------------------------------------------------------------
+2. enter the efi mode:
+
+grub> quit
+
+--> the efi menu shows up
+
+1. enter efi
+2. boot manager
+3. boot from file
+4. select the first disk, the choose EFI, RedHat, grub.efi and press enter
+-----------------------------------------------------------------------------------------------------------------------------------
+NB: efibootmgr shows the boot order

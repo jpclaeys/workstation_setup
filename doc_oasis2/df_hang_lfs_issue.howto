@@ -1,0 +1,33 @@
+df hangs --> nfs share issue
+
+Ref: https://www.redhat.com/archives/rhl-list/2009-January/msg00633.html
+
+Find the blocking nfs share:
+
+cat /etc/mtab
+
+root@wlas0077:->cat /etc/mtab
+
+<snip>
+158.167.39.238:/ec/prod/app/kdump /tmp/tmp.eFga6OYEr2 nfs rw,nolock,tcp,addr=158.167.39.238 0 0
+nas-dclux-xprd.cc.cec.eu.int:/homeusr/files /home/user nfs rw,nosuid,sloppy,addr=10.226.36.11 0 0
+
+
+48 root@wlas0077:->host 158.167.39.238
+238.39.167.158.IN-ADDR.ARPA domain name pointer yonca.cc.cec.eu.int.
+
+sr yonca
+
+/etc/init.d/nfs restart
+
+3 root@yonca:->/etc/init.d/nfs restart
+Shutting down NFS mountd:                                  [  OK  ]
+Shutting down NFS daemon:                                  [  OK  ]
+Shutting down NFS quotas:                                  [  OK  ]
+Shutting down NFS services:                                [  OK  ]
+Starting NFS services:                                     [  OK  ]
+Starting NFS quotas:                                       [  OK  ]
+Starting NFS daemon:                                       [  OK  ]
+Starting NFS mountd:                                       [  OK  ]
+
+--> problem solved

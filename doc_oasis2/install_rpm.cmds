@@ -1,0 +1,24 @@
+How do I install a .rpm file?
+
+
+I think the easiest way is to open a terminal, navigate to the downloads folder
+
+$ cd ~/Downloads
+
+and then
+
+$ sudo dnf install NAME_OF_RPM.rpm
+
+link Comments
+differences about rpm -Uvh foo.rpm and sudo dnf foo.rpm . The main , dnf resolves dependency problems ,more here
+
+
+$ cd $HOME/Downloads
+To install for the first time use:
+
+$ su -c "rpm -ihv your_file.rpm"
+Or you can update an older version using:
+
+$ su -c "rpm -Uhv your_file.rpm"
+
+

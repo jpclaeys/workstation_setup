@@ -1,0 +1,10 @@
+Standard values for the resize
+	mCU			pCU
+mCU	vCPU	GB	pCU	vCPU	GB
+1-16	1-4	2-32	1-10	1-10	2-32
+17-32	2-8	34-64	11-20	11-20	2-64
+33-64   2-8	66-128
+
+NB:
+1 mCU = 2 GB of memory + some CPU
+1 pCU = 1 vCPU + some memory

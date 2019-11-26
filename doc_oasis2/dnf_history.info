@@ -1,0 +1,77 @@
+ID     | Command line             | Date and time    | Action(s)      | Altered
+-------------------------------------------------------------------------------
+    75 | install keychain         | 2017-04-10 14:03 | Install        |    1  <
+    74 | update                   | 2017-04-07 09:42 | Update         |   46 ><
+    73 | install gedit-plugin-mul | 2017-04-05 08:13 | Install        |    2 ><
+    72 | update                   | 2017-04-05 08:05 | E, I, U        |  140 ><
+    71 | update -y                | 2017-03-28 17:57 | E, I, U        |  216 ><
+    70 | update -y                | 2017-03-06 08:15 | E, I, O, U     |  224 ><
+    69 | install ecdc_oracle_rac_ | 2017-03-02 07:37 | Update         |    1 ><
+    68 | install gconf-editor     | 2017-02-27 08:33 | Install        |    1 ><
+    67 | install ntp              | 2017-02-23 14:01 | Install        |    2 ><
+    66 | update                   | 2017-02-20 10:32 | E, I, U        |  151 ><
+    65 | update -y                | 2017-02-07 10:12 | E, I, U        |  349 ><
+    64 | update                   | 2017-01-05 19:23 | O, U           |   27 ><
+    63 | install system-config-pr | 2017-01-03 12:18 | Install        |    1 ><
+    62 | install synergy-1.5.0-Li | 2016-12-29 17:58 | Downgrade      |    1 ><
+    61 | install python-matplotli | 2016-12-29 11:40 | Install        |   34 > 
+    60 | install smem             | 2016-12-29 11:18 | Install        |    1   
+    59 | update                   | 2016-12-28 12:44 | I, U           |    2   
+    58 | update -y                | 2016-12-27 16:32 | E, I, U        |  126  <
+    57 | install gkrellm          | 2016-12-27 13:19 | Install        |    3 ><
+    56 | update                   | 2016-12-19 10:57 | E, I, U        |   54 ><
+    55 | update                   | 2016-12-16 07:17 | Update         |   23 ><
+    54 | update -y                | 2016-12-14 15:44 | E, I, U        |   96 ><
+    53 | install wireshark        | 2016-12-13 09:08 | Install        |    3 ><
+    52 | update                   | 2016-12-09 12:32 | Update         |   70 ><
+    51 | install synergy-1.5.0-Li | 2016-12-07 08:49 | Install        |    1 > 
+    50 | remove synergy           | 2016-12-07 08:48 | Erase          |    2   
+    49 | update                   | 2016-12-07 07:54 | I, U           |    2   
+    48 | update                   | 2016-12-07 07:52 | Update         |    1  <
+    47 | update                   | 2016-12-06 08:07 | E, I, U        |  201 ><
+    46 | install sipcalc          | 2016-12-02 14:02 | Install        |    1 > 
+    45 | install vsftpd           | 2016-12-02 12:42 | Install        |    1   
+    44 | install solaar           | 2016-12-01 08:51 | Install        |    3   
+    43 | install fping            | 2016-11-25 10:02 | Install        |    1   
+    42 | install nmap             | 2016-11-25 10:02 | Install        |    1   
+    41 | install synergy-1.5.0-Li | 2016-11-24 15:34 | Install        |    1   
+    40 | remove synergy.x86_64    | 2016-11-24 15:33 | Erase          |    2   
+    39 | upgrade                  | 2016-11-24 13:30 | Update         |   37   
+    38 | install vim              | 2016-11-23 12:56 | Install        |    4   
+    37 | install meld             | 2016-11-23 12:55 | Install        |    2   
+    36 | --releasever=25 system-u | 2016-11-23 08:37 | D, E, I, O, U  | 1378 EE
+    35 | install dnf-plugin-syste | 2016-11-23 08:24 | Install        |    2   
+    34 | update --refresh         | 2016-11-23 08:23 | Update         |   17   
+    33 | remove gnome-rdp         | 2016-11-22 10:31 | Erase          |   13   
+    32 | install gnome-rdp        | 2016-11-22 09:53 | Install        |   13   
+    31 | remove nautilus-dropbox  | 2016-11-22 07:28 | Erase          |    1   
+    30 | install gnome-tweak-tool | 2016-11-21 13:48 | Install        |    4   
+    29 | update                   | 2016-11-21 12:54 | Update         |    1   
+    28 | install screen           | 2016-11-21 07:40 | Install        |    1   
+    27 | update                   | 2016-11-21 07:36 | E, I, U        |   33   
+    26 | remove gnome-rdp         | 2016-11-18 11:03 | Erase          |   13   
+    25 | install gnome-rdp        | 2016-11-18 10:57 | Install        |   13   
+    24 | remove gnome-rdp         | 2016-11-18 10:56 | Erase          |   13   
+    23 | install nmon             | 2016-11-18 10:09 | Install        |    1   
+    22 | install monitorix        | 2016-11-18 10:07 | Install        |   16   
+    21 | install monit            | 2016-11-18 10:06 | Install        |    1   
+    20 | install nload            | 2016-11-18 09:49 | Install        |    1   
+    19 | install pydf             | 2016-11-17 13:27 | Install        |    1   
+    18 | groupinstall Development | 2016-11-17 13:02 | Install        |   12   
+    17 | install python-gpgme     | 2016-11-17 10:44 | Install        |    1   
+    16 | install htop             | 2016-11-17 10:21 | Install        |    1   
+    15 | install google-chrome-st | 2016-11-17 09:55 | Install        |   85 E<
+    14 | install keepass          | 2016-11-17 09:43 | Install        |    4 > 
+    13 | update                   | 2016-11-17 07:14 | I, O, U        |  359 EE
+    12 | install terminator       | 2016-11-16 15:32 | Install        |   24   
+    11 | install pssh             | 2016-10-10 09:43 | Install        |    1   
+    10 | install /home/riallan/Do | 2016-09-28 14:41 | Install        |   11   
+     9 | install gnome-rdp        | 2016-09-23 15:13 | Install        |   23   
+     8 | install icedtea-web.x86_ | 2016-09-20 14:41 | Install        |   10   
+     7 | install perl-LWP-Protoco | 2016-09-15 07:49 | Install        |   35   
+     6 | install perl-Net-SCP     | 2016-09-15 07:45 | Install        |    2   
+     5 | install perl-Net-OpenSSH | 2016-09-15 07:44 | Install        |   38   
+     4 | install perl-Env         | 2016-09-15 07:43 | Install        |    1  <
+     3 | install svn              | 2016-09-07 10:53 | Install        |    3 > 
+     2 | update                   | 2016-09-06 16:48 | I, U           |  596 EE
+     1 |                          | 2016-06-14 18:32 | Install        | 1452 EE

@@ -1,0 +1,17 @@
+HNAMESLIST=(
+bla
+toto
+)
+
+HADDLIST=(
+10.11.12.13
+1.2.3.4
+)
+
+echo ${HNAMESLIST[@]}
+echo ${HADDLIST[@]}
+
+# Generate the dns entries:
+for ((i = 0; i < ${#HNAMESLIST[*]}; i++)); do echo "H(${HNAMESLIST[$i]}, ${HADDLIST[$i]})";done
+
+

@@ -1,0 +1,18 @@
+Adding a new NFS server in the check_mount script
+-------------------------------------------------
+
+If this is a new NFS server, one need to add it in the all_DC_server list in the check_mount script (in TEST dir)
+cd $CFDATA/software/nagios/plugins/TEST
+vi check_mount
+update line: 
+my $C_all_DC_server = qr{(?:estat-(?:nal|net)?nfssmb|est-nalnfssmb2)\.cc\.cec\.eu\.int};
+
+Perform a test:
+---------------
+make testremote NAME=check_mount HOST=<client>
+if ok, then push to prod:
+make copyprod
+
+Of course, wait for cfengine to propagate the new version.
+
+

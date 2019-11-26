@@ -1,0 +1,20 @@
+# If the scsi-rescan does not discover the new luns
+----------------------------------------------------
+# use this to rescan the bus with the following command
+
+# Get the HBA ID's 
+disk-hbamap | grep -v offline # get controllers in first column
+for i in {3..6} ; do echo "- - -" > /sys/class/scsi_host/host${i}/scan ; done
+
+---------------------------------------------------------------------------------------------------
+example:
+[claeyje@muscadet log]$ sr merak disk-hbamap | grep -v offline
+C#  INST   PORT WWN          MODEL    FCODE  STATE    SLOT  DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----  -----    ----  -----------                                              ------  
+3   host3  21000024ff54dff4  QLE2562  3.13   8Gb      5     /sys/devices/pci0000:00/0000:00:05.0/0000:0e:00.0/host3  2       
+5   host5  21000024ff54dff2  QLE2562  3.13   8Gb      2     /sys/devices/pci0000:80/0000:80:01.0/0000:86:00.0/host5  1       
+
+--> controllers 3 & 5
+for i in {3..5} ; do echo "- - -" > /sys/class/scsi_host/host${i}/scan ; done
+
+---------------------------------------------------------------------------------------------------

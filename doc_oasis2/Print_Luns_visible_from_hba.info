@@ -1,0 +1,96 @@
+Printing the LUNs visible from an HBA port
+
+https://bigthinkingapplied.com/finding-fc-san-lun-ids-on-solaris/
+
+HBAPORTS=(`fcinfo hba-port | awk '/HBA Port WWN/ {print $NF}'`); echo ${HBAPORTS[@]}
+
+for PORT in ${HBAPORTS[@]} ; do echo "HBA Port WWN: $PORT"; fcinfo remote-port -p $PORT -s | egrep 'Remote Port WWN:|OS Device Name:'|egrep -n 'Remote|OS'|sed 's/WWN:/WWN/' | awk -F":" '{print $1-1, $NF}'; done
+
+for PORT in ${HBAPORTS[@]} ; do echo "HBA Port WWN: $PORT"; fcinfo remote-port -p $PORT -s | egrep "Remote Port WWN:|OS Device Name:"|egrep -n "Remote|OS"|sed "s/WWN:/WWN/" | awk -F":" "{print \$1-1, \$NF}"; done
+
+
+40 root@kewel:->HBAPORTS=(`fcinfo hba-port | awk '/HBA Port WWN/ {print $NF}'`); echo ${HBAPORTS[@]}
+2100001b32912ee2 2100001b3291c9ec
+41 root@kewel:->
+41 root@kewel:->for PORT in ${HBAPORTS[@]} ; do echo "HBA Port WWN: $PORT"; fcinfo remote-port -p $PORT -s | egrep 'Remote Port WWN:|OS Device Name:'|egrep -n 'Remote|OS'|sed 's/WWN:/WWN/' | awk -F":" '{print $1-1, $NF}'; done
+HBA Port WWN: 2100001b32912ee2
+Remote Port WWN: 50060e8016525306
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300004009d0s2
+Remote Port WWN: 50060e8016525a06
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00004009d0s2
+Remote Port WWN: 50060e8016525351
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000526Fd0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005270d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005273d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005274d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005275d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005276d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005277d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005278d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005279d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Ad0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Bd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Cd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Dd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Ed0s2
+          OS Device Name: /dev/rdsk/c4t60060E801652530000015253000060BFd0s2
+          OS Device Name: /dev/rdsk/c4t60060E801652530000015253000060F0d0s2
+Remote Port WWN: 50060e8016525a51
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000526Fd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005270d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005273d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005274d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005275d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005276d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005277d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005278d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005279d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Ad0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Bd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Cd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Dd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Ed0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A000060BFd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A000060F0d0s2
+HBA Port WWN: 2100001b3291c9ec
+Remote Port WWN: 50060e8016525341
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000526Fd0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005270d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005273d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005274d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005275d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005276d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005277d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005278d0s2
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300005279d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Ad0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Bd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Cd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Dd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525300000152530000527Ed0s2
+          OS Device Name: /dev/rdsk/c4t60060E801652530000015253000060BFd0s2
+          OS Device Name: /dev/rdsk/c4t60060E801652530000015253000060F0d0s2
+Remote Port WWN: 50060e8016525a41
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000526Fd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005270d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005273d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005274d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005275d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005276d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005277d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005278d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00005279d0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Ad0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Bd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Cd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Dd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A0000527Ed0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A000060BFd0s2
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A000060F0d0s2
+Remote Port WWN: 50060e8016525316
+          OS Device Name: /dev/rdsk/c4t60060E80165253000001525300004009d0s2
+Remote Port WWN: 50060e8016525a16
+          OS Device Name: /dev/rdsk/c4t60060E8016525A000001525A00004009d0s2
+42 root@kewel:->
+42 root@kewel:->
+

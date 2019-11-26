@@ -1,0 +1,33 @@
+
+Upgrade VMware Tools
+---------------------
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/UpgradeVMTools
+
+Goto the vsphere interface, make sure that the cdrom is not mounted (VMware Tools: must be running, and not "upgrade")
+If not running status, then "Unmount VMware Tools Installer" in the "GuestOS" sub menu
+
+# Check current version
+vmware-toolbox-cmd -v
+
+# Mount the cdrom that contain the vmtools (hostname must be in uppercase!)
+
+HOST=`uname -n| cut -d. -f1| tr '[:lower:]' '[:upper:]'` && echo $HOST
+wget http://kickstart.cc.cec.eu.int/vmware/mount5.cgi?name=$HOST
+mount -t iso9660 /dev/cdrom /media
+
+ll /media
+tar xfz /media/VMware* -C /dev/shm
+ll /dev/shm/
+
+# Remove the installed VMWare tools (takes +/- 3 min)
+date && time /usr/bin/vmware-uninstall-tools.pl
+
+# Install the new version
+cd /dev/shm/vmware-tools-distrib/
+./vmware-install.pl -d
+
+# post checks
+vmware-toolbox-cmd -v
+if [ -x /bin/systemctl ];then /bin/systemctl status vmtoolsd | grep Active;elif [ -x /sbin/initctl ];then initctl status vmware-tools; else service vmware-tools status;fi
+/usr/nagios/plugins/check_services
+

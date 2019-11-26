@@ -1,0 +1,39 @@
+Howto solve redscreens on HP Blades
+
+Connect via RDP s-unx-jmx1.net1.cec.eu.int or s-unx-jmx2.net1.cec.eu.int
+
+Open firefox
+connect to the console (ex. https://bkpsnd3a-sc.cc.cec.eu.int/)
+root
+copy/paste the password
+
+>Remote console
+  Remote console
+    Hot keys tab
+      define ctrl T for F9 & hit "Save Hot Keys" box
+
+Launch
+   Web Start (Java)
+
+& enter the proxy user/pwd
+
+Power switch drop down menu
+   Press "Reset"
+
+when the "press F9 message appears", hit ctrl T key 
+
+
+Once in the BIOS menu, 
+  Select "System Default Options"
+     Restore Default system settings
+       yes, select to restore  --> system will restart
+
+Note this will also reset the date/time, so the fsck will complain bcause the file system has data in the future !
+
+Interrupt the boot again (using ctrl T), and select
+    Date and Time  : set th ecurrent date/time
+     <esc> 
+       F10
+
+system will restart, and should boot normally
+

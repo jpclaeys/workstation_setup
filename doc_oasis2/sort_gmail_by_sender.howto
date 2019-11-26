@@ -1,0 +1,11 @@
+Sort Gmail by Sender:
+---------------------
+You can use the below script to sort active view by sender. For browser’s other than Chrome, just copy-paste below code to the address bar. 
+For Chrome, go to Developer Tools by pressing F12 key, then select the console tab and then paste this code. Hit enter key and your mails will be sorted by sender. 
+Note that only the currently view will get sorted, so it is better to select maximum mails shown per page from Gmail settings.
+
+
+
+!function(){function e(e){var t,n,a,r,l=e.getElementsByTagName("td");for(a=0;a<l.length;a++){if("yX xY "==l[a].className)for(t=l[a].getElementsByTagName("div"),r=0;r<t.length;r++)if("yW"==t[r].className&&(n=t[r].getElementsByTagName("span"),n.length))return n[0].innerHTML;if(l[a].hasAttribute("role")&&"link"==l[a].getAttribute("role"))for(t=l[a].getElementsByTagName("div"),r=0;r<t.length;r++)if("y6"==t[r].className&&(n=t[r].getElementsByTagName("span"),n.length))return n[0].innerHTML}return""}function t(e,t){return e=e[0].toLowerCase(),t=t[0].toLowerCase(),t>e?-1:e>t?1:0}function n(n){var a=Array.prototype.slice.call(n.getElementsByTagName("tr"),0);if(a.length){for(var r=a[0].parentNode,l=[],g=0;g<a.length;g++)l[g]=[e(a[g]),a[g]];for(l=l.sort(t),g=0;g<l.length;g++)r.appendChild(l[g][1])}}for(var a=document.getElementsByTagName("table"),r=0;r<a.length;r++)if("F cf zt"==a[r].className){n(a[r]);break}}();
+
+

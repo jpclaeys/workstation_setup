@@ -1,0 +1,46 @@
+https://pubs.vmware.com/vsphere-50/index.jsp?topic=%2Fcom.vmware.vsphere.vm_admin.doc_50%2FGUID-92986CAA-4FDE-4AA0-A9E9-084FF9E03323.html
+
+Open a Virtual Machine Console in the vSphere Web Client
+With the vSphere Web Client, you can access a virtual machine's desktop by launching a console to the virtual machine. From the console, you can perform activities in the virtual machine such as configure operating system settings, run applications, monitor performance, and so on.
+
+Prerequisites
+■
+Ensure that the Client Integration Plug-in is installed in your Web browser.
+
+■
+Verify that the virtual machine has a guest operating system and that VMware Tools are installed.
+
+■
+Verify that the virtual machine is powered on.
+
+Procedure
+1
+Select a virtual machine.
+
+■
+In the virtual machines and templates inventory tree, select a group of virtual machines and select a virtual machine from the list on the right.
+
+■
+Search for a virtual machine and select it from the search results list.
+
+2
+In the Guest OS Details pane on the Summary tab, click Launch console.
+
+The virtual machine console opens in a new tab of the Web browser.
+
+3
+Click anywhere inside the console window to enable your mouse, keyboard, and other input devices to work in the console.
+
+4
+(Optional) Press Ctrl+Alt to release the cursor from the console window and work outside the console window.
+
+5
+(Optional) Click Full Screen to display the console in full screen mode.
+
+6
+(Optional) Press Ctrl+Alt+Enter to exit full screen mode.
+
+7
+(Optional) Click Send Ctrl-Alt-Delete to send a Ctrl+Alt+Delete to the guest operating system.
+
+

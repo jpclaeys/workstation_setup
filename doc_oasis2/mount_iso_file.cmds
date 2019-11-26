@@ -1,0 +1,21 @@
+How to mount an ISO image/file under Linux
+
+More about loop devices on Linux
+From the man page:
+
+The loop device is a block device that maps its data blocks not to a physical device such as a hard disk or optical disk drive, but to the blocks of a regular file in a filesystem or to another block device. This can be useful for example to provide a block device for a filesystem image stored in a file, so that it can be mounted with the mount command.
+
+A loop device is a pseudo-device that makes a file accessible as a block device. Loop devices are often used for CD ISO images and floppy disc images. Mounting a file containing a filesystem via such a loop mount makes the files within that filesystem accessible. They appear in the mount point directory using following Linux commands. So, how do you mount an ISO image file under Linux? You need to use mount command as follows:
+
+Procedure to mount ISO file/images under Linux
+1) You must login as a root user, if not root user then switch to root user using the su command:
+
+2) Use mount command as follows to mount iso file called disk1.iso:
+
+# sudo mount -o loop [-t iso9660] /path/to/disk1.iso /mnt
+
+
+How do I unmount the ISO image on Linux?
+Use the following command to unmount the ISO file/image on Linux:
+
+$ sudo umount /path/to/disk1.iso

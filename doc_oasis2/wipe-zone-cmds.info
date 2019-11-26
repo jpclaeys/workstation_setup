@@ -1,0 +1,136 @@
+LOCALZONE=oraext6
+HOST1=capybara
+HOST2=kerbau
+
+function wipe_zone ()
+{
+if [ $# -eq 0 ]; then
+  echo "Please provide the zonename"
+  return 1
+fi
+LOCALZONE=$1
+
+if [ -x /usr/cluster/bin/clnode ]; then 
+  echo "cluster mode"
+  HL=(`clnode list | cut -d "." -f1`); echo ${HL[@]}
+  HOST1=${HL[0]}; HOST2=${HL[1]}
+fi
+
+# Get secondary pools if any
+RSLIST=(`clrs list -g ${LOCALZONE}`); echo ${RSLIST[@]}
+RSLIST=(rs1 rs2)
+if [ `zpool list | grep -c $HOST` -gt 1 ]; then echo "Secondary pools are present";fi
+SECPOOLS=(`zpool list | awk '!/main/&&/'$HOST'/ {print $1}'`); echo ${SECPOOLS[@]}
+
+cmds=("")
+cmdindex=0;cmds[$cmdindex]="clrg offline ${LOCALZONE}"
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="for RS in ${RSLIST[@]}; do clrs disable \$RS;done"
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="for RS in ${RSLIST[@]}; do clrs delete  \$RS;done"
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="clrg delete ${LOCALZONE}"
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="zpool import ${LOCALZONE}-main"
+# Import Secondary pools if any
+if [ ${#SECPOOLS[@]} -gt 0 ]; then 
+  for PL in  ${SECPOOLS[@]}; do
+     cmdindex=$((cmdindex + 1));cmds[$cmdindex]="zpool import $PL"
+  done
+fi
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="zoneadm -z ${LOCALZONE} boot"
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="zoneadm -z ${LOCALZONE} halt"
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST1}.cc.cec.eu.int \"zonecfg -z ${LOCALZONE} delete -F\""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST2}.cc.cec.eu.int \"zonecfg -z ${LOCALZONE} delete -F\""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="zpool destroy ${LOCALZONE}-main && rmdir /ec/pools/${LOCALZONE}-main && rmdir /ec/zones/${LOCALZONE}"
+# Destroy Secondary pools if any
+if [ ${#SECPOOLS[@]} -gt 0 ]; then 
+  for PL in  ${SECPOOLS[@]}; do
+     cmdindex=$((cmdindex + 1));cmds[$cmdindex]="zpool destroy $PL"
+  done
+fi
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST1}.cc.cec.eu.int \"mv -f /etc/dcim/zones/${LOCALZONE}.tmpl /etc/dcim/zones/bkp.${LOCALZONE}.tmpl\""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST2}.cc.cec.eu.int \"mv -f /etc/dcim/zones/${LOCALZONE}.tmpl /etc/dcim/zones/bkp.${LOCALZONE}.tmpl\""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST1}.cc.cec.eu.int \"rm -rf /etc/dcim/zones/${LOCALZONE}.* /etc/zones/${LOCALZONE}.xml \""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST2}.cc.cec.eu.int \"rm -rf /etc/dcim/zones/${LOCALZONE}.* /etc/zones/${LOCALZONE}.xml \""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST1}.cc.cec.eu.int \"rmdir /ec/zones/${LOCALZONE} /ec/pools/${LOCALZONE}-main \""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST2}.cc.cec.eu.int \"rmdir /ec/zones/${LOCALZONE} /ec/pools/${LOCALZONE}-main \""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST1}.cc.cec.eu.int \"grep ${LOCALZONE}\: /etc/zones/index && echo CHECK INDEX FILE on ${HOST1}.cc.cec.eu.int\""
+cmdindex=$((cmdindex + 1));cmds[$cmdindex]="ssh ${HOST2}.cc.cec.eu.int \"grep ${LOCALZONE}\: /etc/zones/index && echo CHECK INDEX FILE on ${HOST2}.cc.cec.eu.int\""
+cmdindex=$((cmdindex + 1))     
+executeCMDsdry "${cmds[@]}"
+}
+
+
+executeCMDsdry () 
+{ 
+    local CMDS i;
+    CMDS=("$@");
+    echo "[-] Commands that will be executed:";
+    i=0;
+    while [ $i -lt ${#CMDS[@]} ]; do
+        echo "[$i] ${CMDS[$i]}";
+        i=$((i+1));
+    done;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5 root@sitatunga:->zpool list | grep $MYZONENAME
+wlareg01-main  108G  12.6G  95.9G  11%  ONLINE  /
+
+root@sitatunga:->clrg list | grep $MYZONENAME
+wlareg01
+10 root@sitatunga:-># Wipe the zone
+10 root@sitatunga:->#/usr/sbin/zone-wipe $MYZONENAME
+10 root@sitatunga:->/usr/sbin/zone-wipe $MYZONENAME | grep ^#% | cut -c 4- | uniq
+
+
+clrg offline wlareg01
+for i in zb net has lh; do clrs disable wlareg01-${i} ; done
+for i in zb net has lh; do clrs delete wlareg01-${i} ; done
+clrg delete wlareg01
+zpool import wlareg01-main
+zoneadm -z wlareg01 boot
+zoneadm -z wlareg01 halt
+ssh sitatunga.cc.cec.eu.int "zonecfg -z wlareg01 delete -F"
+ssh needletail.cc.cec.eu.int "zonecfg -z wlareg01 delete -F"
+zpool destroy wlareg01-main && rmdir /ec/pools/wlareg01-main && rmdir /ec/zones/wlareg01
+ssh sitatunga.cc.cec.eu.int "mv -f /etc/dcim/zones/wlareg01.tmpl /etc/dcim/zones/bkp.wlareg01.tmpl"
+ssh needletail.cc.cec.eu.int "mv -f /etc/dcim/zones/wlareg01.tmpl /etc/dcim/zones/bkp.wlareg01.tmpl"
+ssh sitatunga.cc.cec.eu.int "rm -rf /etc/dcim/zones/wlareg01.* /etc/zones/wlareg01.xml "
+ssh needletail.cc.cec.eu.int "rm -rf /etc/dcim/zones/wlareg01.* /etc/zones/wlareg01.xml "
+ssh sitatunga.cc.cec.eu.int "rmdir /ec/zones/wlareg01 /ec/pools/wlareg01-main "
+ssh needletail.cc.cec.eu.int "rmdir /ec/zones/wlareg01 /ec/pools/wlareg01-main "
+ssh sitatunga.cc.cec.eu.int "grep wlareg01\: /etc/zones/index && echo CHECK INDEX FILE on sitatunga.cc.cec.eu.int"
+ssh needletail.cc.cec.eu.int "grep wlareg01\: /etc/zones/index && echo CHECK INDEX FILE on needletail.cc.cec.eu.int"
+
+
+[-] Commands that will be executed:
+[0] clrg offline oraext6
+[1] for RS in rs1 rs2; do clrs disable $RS;done
+[2] for RS in rs1 rs2; do clrs delete  $RS;done
+[3] clrg delete oraext6
+[4] zpool import oraext6-main
+[5] zoneadm -z oraext6 boot
+[6] zoneadm -z oraext6 halt
+[7] ssh capybara.cc.cec.eu.int "zonecfg -z oraext6 delete -F"
+[8] ssh kerbau.cc.cec.eu.int "zonecfg -z oraext6 delete -F"
+[9] zpool destroy oraext6-main && rmdir /ec/pools/oraext6-main && rmdir /ec/zones/oraext6
+[10] ssh capybara.cc.cec.eu.int "mv -f /etc/dcim/zones/oraext6.tmpl /etc/dcim/zones/bkp.oraext6.tmpl"
+[11] ssh kerbau.cc.cec.eu.int "mv -f /etc/dcim/zones/oraext6.tmpl /etc/dcim/zones/bkp.oraext6.tmpl"
+[12] ssh capybara.cc.cec.eu.int "rm -rf /etc/dcim/zones/oraext6.* /etc/zones/oraext6.xml "
+[13] ssh kerbau.cc.cec.eu.int "rm -rf /etc/dcim/zones/oraext6.* /etc/zones/oraext6.xml "
+[14] ssh capybara.cc.cec.eu.int "rmdir /ec/zones/oraext6 /ec/pools/oraext6-main "
+[15] ssh kerbau.cc.cec.eu.int "rmdir /ec/zones/oraext6 /ec/pools/oraext6-main "
+[16] ssh capybara.cc.cec.eu.int "grep oraext6\: /etc/zones/index && echo CHECK INDEX FILE on capybara.cc.cec.eu.int"
+[17] ssh kerbau.cc.cec.eu.int "grep oraext6\: /etc/zones/index && echo CHECK INDEX FILE on kerbau.cc.cec.eu.int"
+[?] Confirm execution on host muscadet [yes no skip]: 
+[

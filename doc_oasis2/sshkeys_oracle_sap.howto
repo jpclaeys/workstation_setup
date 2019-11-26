@@ -1,0 +1,5 @@
+In order to define ssh keys for oracle account on sap environment, one need to add these keys on the oracle-sap file in the following diractory:
+
+/home/claeyje/git/cfengine_main/data/system/ssh-keys/users
+
+It will be propagated by means of the cfengine tasks

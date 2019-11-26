@@ -1,0 +1,2 @@
+tail  /var/cfengine/promise_summary.log
+returns the start and stop timestamps

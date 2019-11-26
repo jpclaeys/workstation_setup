@@ -1,0 +1,1159 @@
+TICKET=IM0015366513
+HOST1=saneucegmsrep3a
+HOST2=saneucegmsrep4a
+
+IM0015340116: VM Move Analysis
+Container Name : saneucegmsrep3a & saneucegmsrep4a
+Destination POOL : VM_SHS
+Service Level : Acceptance at WL level but PROD SHS at unix level
+Mobility : Load Balanced
+Number of Cus : No need to change. Currently 4 CUs each
+Reason : SHS application
+Comment : You may pick any of the available IP from vLAN 1126 : 10.200.5.96/28
+
+---------------------------------------------------------------------------------------------------
+# CCOR: subnet & gateway info (http://croc.net1.cec.eu.int/List_CR_Subnets_by_Room.aspx)
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+
+Subnet		Logical	Domain	VLan	CIDR	Mask			Gateway		Usage
+10.200.5.96	LUX_DC		1126	/28	255.255.255.240		10.200.5.97	SHS_SANTE_EUCEG_MSREP_INTERNAL_ACC
+---------------------------------------------------------------------------------------------------
+
+
+[claeyje@muscadet ~]$ un_status saneucegmsrep3a
+production
+[claeyje@muscadet ~]$ un_status saneucegmsrep4a
+production
+[claeyje@muscadet ~]$ blackout
+===> Usage: blackout <host> <ticket> [<duration>]                           <===
+[claeyje@muscadet ~]$ blackout saneucegmsrep3a IM0015366513
+===> Blackout host: "saneucegmsrep3a" for 1440 min; ticket: "IM0015366513"  <===
+[?] Confirm execution [yes no]: y
+OK   : saneucegmsrep3a scheduled in downtime from 2017-02-02-07-35 for 1440 minutes
+[claeyje@muscadet ~]$ blackout saneucegmsrep4a IM0015366513
+===> Blackout host: "saneucegmsrep4a" for 1440 min; ticket: "IM0015366513"  <===
+[?] Confirm execution [yes no]: y
+OK   : saneucegmsrep4a scheduled in downtime from 2017-02-02-07-35 for 1440 minutes
+
+
+[claeyje@muscadet ~]$ ipcalc 10.200.5.96/28
+Network:	10.200.5.96/28
+Netmask:	255.255.255.240 = 28
+Broadcast:	10.200.5.111
+
+Address space:	Private Use
+Address class:	Class A
+HostMin:	10.200.5.97
+HostMax:	10.200.5.110
+Hosts/Net:	14
+
+---------------------------------------------------------------------------------------------------
+Reserve an IP in DNS
+
+
+cd $DNSREPO
+
+HOST1NEW=${HOST1}-new
+HOST2NEW=${HOST2}-new
+IPRANGE=10.200.5.96
+
+./newDns $HOST1NEW $IPRANGE $TICKET
+./newDns $HOST2NEW $IPRANGE $TICKET
+
+
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+
+[claeyje@muscadet dns]$ TICKET=IM0015366513
+[claeyje@muscadet dns]$ HOST1=saneucegmsrep3a
+[claeyje@muscadet dns]$ HOST2=saneucegmsrep4a
+[claeyje@muscadet dns]$ 
+[claeyje@muscadet dns]$ HOST1NEW=${HOST1}-new
+[claeyje@muscadet dns]$ HOST2NEW=${HOST2}-new
+[claeyje@muscadet dns]$ IPRANGE=10.200.5.96
+[claeyje@muscadet dns]$ ./newDns $HOST1NEW $IPRANGE $TICKET
+
+[-] Basic checks
+[v] Path to DNS repo: /home/claeyje/dns
+[v] Caipa available
+
+[-] Entry creation
+[v] Selected IP: 10.200.5.47
+[v] New DNS entry: H(saneucegmsrep3a-new, 10.200.5.47)
+
+[-] Do you want to add this entry to DNS (y/n) ? y
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+Committed revision 14643.
+[v] DNS updated
+
+[*] Waiting 30sec for DNS to be propagated
+
+[-] Testing forward and reverse resolution:
+[*] forward:
+[v] 10.200.5.47     saneucegmsrep3a-new.cc.cec.eu.int
+[*] reverse:
+[v] 10.200.5.47     saneucegmsrep3a-new.cc.cec.eu.int
+[v] DNS creation successful
+[claeyje@muscadet dns]$ ./newDns $HOST2NEW $IPRANGE $TICKET
+
+[-] Basic checks
+[v] Path to DNS repo: /home/claeyje/dns
+[v] Caipa available
+
+[-] Entry creation
+[v] Selected IP: 10.200.5.237
+[v] New DNS entry: H(saneucegmsrep4a-new, 10.200.5.237)
+
+[-] Do you want to add this entry to DNS (y/n) ? y
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+Committed revision 14644.
+[v] DNS updated
+
+[*] Waiting 30sec for DNS to be propagated
+
+[-] Testing forward and reverse resolution:
+[*] forward:
+[v] 10.200.5.237    saneucegmsrep4a-new.cc.cec.eu.int
+[*] reverse:
+[v] 10.200.5.237    saneucegmsrep4a-new.cc.cec.eu.int
+[v] DNS creation successful
+
+[claeyje@muscadet dns]$ getip saneucegmsrep3a-new.cc.cec.eu.int
+Name:	saneucegmsrep3a-new.cc.cec.eu.int Address: 10.200.5.47
+[claeyje@muscadet dns]$ getip saneucegmsrep4a-new.cc.cec.eu.int
+Name:	saneucegmsrep4a-new.cc.cec.eu.int Address: 10.200.5.237
+
+---------------------------------------------------------------------------------------------------
+# Change cfengine config
+
+1. update ip config of the machine
+  1.1. ${CFDATA}/system/network/if/${hostname}/ifcfg-eth* with the ip and the netmask
+  1.2. ${CFDATA}/system/network/if/${hostname}/network with the default gw
+2. update the relevant Dmz group in ${CFINPUTS}/classes.conf, choose the proper DMZ group relevant for the VM
+
+cfmain
+git pull
+echo $HOST1 $HOST1NEW
+
+for H in $HOST1 $HOST2; do
+echo "---> [$H] <---"
+ls ${CFDATA}/system/network/if/${H}/ifcfg-eth*
+ls ${CFDATA}/system/network/if/${H}/network
+ls ${CFINPUTS}/classes.conf
+# Find the hosting environment for the SHS group
+grep -B2 ^SHS ${CFINPUTS}/classes.conf
+echo "--> [$H] - ifcfg-eth"
+cat ${CFDATA}/system/network/if/${H}/ifcfg-eth*
+echo "--> [$H] - network"
+cat ${CFDATA}/system/network/if/${H}/network
+done
+
+update ifcfg-eth?
+update network
+update classes.conf
+
+git status
+
+git commit -am "$TICKET JPC"
+
+git pull && git push
+
+sudo updatedb
+
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+
+---------------------------------------------------------------------------------------------------
+# CCOR: subnet & gateway info (http://croc.net1.cec.eu.int/List_CR_Subnets_by_Room.aspx)
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+Subnet		Logical	Domain	VLan	CIDR	Mask			Gateway	
+10.200.5.96	LUX_DC		1126	/28	255.255.255.240		10.200.5.97
+---------------------------------------------------------------------------------------------------
+New DNS entry: H(saneucegmsrep3a-new, 10.200.5.47)
+New DNS entry: H(saneucegmsrep4a-new, 10.200.5.237)
+
+
+[claeyje@muscadet dns]$ for H in $HOST1 $HOST2; do
+> echo "---> [$H] <---"
+> ls ${CFDATA}/system/network/if/${H}/ifcfg-eth*
+> ls ${CFDATA}/system/network/if/${H}/network
+> ls ${CFINPUTS}/classes.conf
+> # Find the hosting environment for the SHS group
+> grep -B2 ^SHS ${CFINPUTS}/classes.conf
+> echo "--> [$H] - ifcfg-eth"
+> cat ${CFDATA}/system/network/if/${H}/ifcfg-eth*
+> echo "--> [$H] - network"
+> cat ${CFDATA}/system/network/if/${H}/network
+> done
+---> [saneucegmsrep3a] <---
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep3a/ifcfg-eth0
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep3a/network
+/home/claeyje/git/cfengine_main/inputs/classes.conf
+
+# Secure Hosting Environment
+SHS = OracleRACSHS diglhwp1 diglhwp2 eeaspwgpshs1a eeaspwgpshs1p eeaspwgpshs2a eeaspwgpshs2p eucegocp1 eucegocp2 pwgpshsdtp1 pwgpshsdtp2 sanedelivery1p sanedelivery2p sanetrustex1p sanetrustex2p sanetrustgui1p sanetrustgui2p saneuceggw1p saneuceggw2p saneucegmsrep1p saneucegmsrep2p saneucegmsrep3p saneucegmsrep4p
+--> [saneucegmsrep3a] - ifcfg-eth
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=158.166.5.107
+NETMASK=255.255.255.0
+ONBOOT=yes
+--> [saneucegmsrep3a] - network
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=saneucegmsrep3a.cc.cec.eu.int
+GATEWAY=158.166.5.1
+NOZEROCONF=false
+---> [saneucegmsrep4a] <---
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep4a/ifcfg-eth0
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep4a/network
+/home/claeyje/git/cfengine_main/inputs/classes.conf
+
+# Secure Hosting Environment
+SHS = OracleRACSHS diglhwp1 diglhwp2 eeaspwgpshs1a eeaspwgpshs1p eeaspwgpshs2a eeaspwgpshs2p eucegocp1 eucegocp2 pwgpshsdtp1 pwgpshsdtp2 sanedelivery1p sanedelivery2p sanetrustex1p sanetrustex2p sanetrustgui1p sanetrustgui2p saneuceggw1p saneuceggw2p saneucegmsrep1p saneucegmsrep2p saneucegmsrep3p saneucegmsrep4p
+--> [saneucegmsrep4a] - ifcfg-eth
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=158.166.5.105
+NETMASK=255.255.255.0:
+ONBOOT=yes
+--> [saneucegmsrep4a] - network
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=saneucegmsrep4a.cc.cec.eu.int
+GATEWAY=158.166.5.1
+NOZEROCONF=false
+
+[claeyje@muscadet cfengine_main]$ TICKET=IM0015366513
+[claeyje@muscadet cfengine_main]$ HOST1=saneucegmsrep3a
+[claeyje@muscadet cfengine_main]$ HOST2=saneucegmsrep4a
+
+[claeyje@muscadet cfengine_main]$ git pull
+remote: Counting objects: 64528, done
+remote: Finding sources: 100% (409/409)
+remote: Total 409 (delta 319), reused 409 (delta 319)
+Receiving objects: 100% (409/409), 29.10 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (319/319), completed with 42 local objects.
+From ssh://gerrit/cfengine/main
+   134f027..b3d1daf  master     -> origin/master
+First, rewinding head to replay your work on top of it...
+Fast-forwarded master to b3d1daf23472a3946e2c4c7a48cba65e699af34d.
+
+# Check after changes
+[claeyje@muscadet dns]$ for H in $HOST1 $HOST2; do
+> echo "---> [$H] <---"
+> ls ${CFDATA}/system/network/if/${H}/ifcfg-eth*
+> ls ${CFDATA}/system/network/if/${H}/network
+> ls ${CFINPUTS}/classes.conf
+> # Find the hosting environment for the SHS group
+> grep -B2 ^SHS ${CFINPUTS}/classes.conf
+> echo "--> [$H] - ifcfg-eth"
+> cat ${CFDATA}/system/network/if/${H}/ifcfg-eth*
+> echo "--> [$H] - network"
+> cat ${CFDATA}/system/network/if/${H}/network
+> done
+---> [saneucegmsrep3a] <---
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep3a/ifcfg-eth0
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep3a/network
+/home/claeyje/git/cfengine_main/inputs/classes.conf
+
+# Secure Hosting Environment
+SHS = OracleRACSHS diglhwp1 diglhwp2 eeaspwgpshs1a eeaspwgpshs1p eeaspwgpshs2a eeaspwgpshs2p eucegocp1 eucegocp2 pwgpshsdtp1 pwgpshsdtp2 sanedelivery1p sanedelivery2p sanetrustex1p sanetrustex2p sanetrustgui1p sanetrustgui2p saneuceggw1p saneuceggw2p saneucegmsrep1p saneucegmsrep2p saneucegmsrep3p saneucegmsrep4p saneucegmsrep3a saneucegmsrep4a
+--> [saneucegmsrep3a] - ifcfg-eth
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=10.200.5.47
+NETMASK=255.255.255.240
+ONBOOT=yes
+--> [saneucegmsrep3a] - network
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=saneucegmsrep3a.cc.cec.eu.int
+GATEWAY=10.200.5.97
+NOZEROCONF=false
+---> [saneucegmsrep4a] <---
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep4a/ifcfg-eth0
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep4a/network
+/home/claeyje/git/cfengine_main/inputs/classes.conf
+
+# Secure Hosting Environment
+SHS = OracleRACSHS diglhwp1 diglhwp2 eeaspwgpshs1a eeaspwgpshs1p eeaspwgpshs2a eeaspwgpshs2p eucegocp1 eucegocp2 pwgpshsdtp1 pwgpshsdtp2 sanedelivery1p sanedelivery2p sanetrustex1p sanetrustex2p sanetrustgui1p sanetrustgui2p saneuceggw1p saneuceggw2p saneucegmsrep1p saneucegmsrep2p saneucegmsrep3p saneucegmsrep4p saneucegmsrep3a saneucegmsrep4a
+--> [saneucegmsrep4a] - ifcfg-eth
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=10.200.5.237
+NETMASK=255.255.255.240
+ONBOOT=yes
+--> [saneucegmsrep4a] - network
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=saneucegmsrep4a.cc.cec.eu.int
+GATEWAY=10.200.5.97
+NOZEROCONF=false
+
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   data/system/network/if/saneucegmsrep3a/ifcfg-eth0
+	modified:   data/system/network/if/saneucegmsrep3a/network
+	modified:   data/system/network/if/saneucegmsrep4a/ifcfg-eth0
+	modified:   data/system/network/if/saneucegmsrep4a/network
+	modified:   inputs/classes.conf
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[claeyje@muscadet cfengine_main]$ git commit -am "$TICKET JPC"
+[master 62b479b] IM0015366513 JPC
+ 5 files changed, 7 insertions(+), 7 deletions(-)
+[claeyje@muscadet cfengine_main]$ git pull && git push
+Current branch master is up to date.
+Counting objects: 14, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (14/14), done.
+Writing objects: 100% (14/14), 1.11 KiB | 0 bytes/s, done.
+Total 14 (delta 9), reused 0 (delta 0)
+remote: Resolving deltas: 100% (9/9)
+remote: Processing changes: (\)/bin/tar: inputs/bin/cfe_classes.pl: time stamp 2017-02-02 09:13:12 is 187.138030462 s in the future
+remote: /bin/tar: inputs/bin: time stamp 2017-02-02 09:13:12 is 187.137741044 s in the future
+remote: /bin/tar: inputs/classes.conf: time stamp 2017-02-02 09:13:12 is 187.12968653 s in the future
+remote: /bin/tar: inputs/t/check_classes.t: time stamp 2017-02-02 09:13:12 is 187.129548856 s in the future
+remote: /bin/tar: inputs/t: time stamp 2017-02-02 09:13:12 is 187.129509175 s in the future
+remote: /bin/tar: inputs: time stamp 2017-02-02 09:13:12 is 187.129489795 s in the future
+remote: ===[output from gerrit hook: ref-update]===
+remote: [I] [cfengine/main|ref-update] Running inputs/t/check_classes.t in /ec/prod/app/git/hooks_workdir/1486023004_cfengine_main_ref_update_62b479b8/inputs
+remote: ok 1 - ./bin/cfe_classes.pl -c classes.conf --validate
+remote: 1..1
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine/main
+   b3d1daf..62b479b  master -> master
+
+---------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+Last cfagent run with the old IP
+
+on the target host run cfagent, to have the updated config files in place
+verify if network config files have been updated as expected
+/etc/sysconfig/network-scripts/ifcfg-eth0 for the ip and netmask
+/etc/sysconfig/network for the default gw
+
+on both nodes:Last cfagent run with the old IP
+
+on the target host run cfagent, to have the updated config files in place
+verify if network config files have been updated as expected
+/etc/sysconfig/network-scripts/ifcfg-eth0 for the ip and netmask
+/etc/sysconfig/network for the default gw
+ecdc-cfengine run
+
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+
+[claeyje@muscadet log]$ sr saneucegmsrep3a
+3 root@saneucegmsrep3a:->cat /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=158.166.5.107
+NETMASK=255.255.255.0
+ONBOOT=yes
+4 root@saneucegmsrep3a:->ecdc-cfengine run
+ warning: File object '/etc/auto_home' exists, contrary to promise
+ warning: File object '/etc/auto_direct' exists, contrary to promise
+ warning: File object '/etc/auto.master' exists, contrary to promise
+ warning: File object '/etc/auto.net' exists, contrary to promise
+ warning: File object '/etc/auto.misc' exists, contrary to promise
+ warning: File object '/etc/auto.smb' exists, contrary to promise
+ warning: File object '/etc/autofs_ldap_auth.conf' exists, contrary to promise
+5 root@saneucegmsrep3a:->cat /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=10.200.5.47
+NETMASK=255.255.255.240
+ONBOOT=yes
+6 root@saneucegmsrep3a:->cat /etc/sysconfig/network
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=saneucegmsrep3a.cc.cec.eu.int
+GATEWAY=10.200.5.97
+NOZEROCONF=false
+
+
+claeyje@muscadet log]$ sr saneucegmsrep4a
+1 root@saneucegmsrep4a:->ecdc-cfengine run
+2 root@saneucegmsrep4a:->cat /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=10.200.5.237
+NETMASK=255.255.255.240
+ONBOOT=yes
+3 root@saneucegmsrep4a:->cat /etc/sysconfig/network
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=saneucegmsrep4a.cc.cec.eu.int
+GATEWAY=10.200.5.97
+NOZEROCONF=false
+
+---------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+Shutdown
+
+$CFINPUTS/bin/blackout_hosts now 1h $SMT-TICKET-NUMBER $HOST
+Shutdown
+
+$CFINPUTS/bin/blackout_hosts now 1h $SMT-TICKET-NUMBER $HOST
+on the VM, in /etc/udev/rules.d/70-persistent-net.rules remove the entry for the network interface (usually eth0)
+if all network config updated proplerly and looks good, shutdown the VM (or if there is a schedule, then shutdown the VM within the scheduled time)
+on the VM, in /etc/udev/rules.d/70-persistent-net.rules remove the entry for the network interface (usually eth0)
+if all network config updated proplerly and looks good, shutdown the VM (or if there is a schedule, then shutdown the VM within the scheduled time)
+
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+# Check on nagios site that the hosts are blacked-out
+http://www.dcim.cc.cec.eu.int/nagios/
+Host Name	Entry Time	Author	Comment	Start Time	End Time	Type	Duration	Downtime ID	Trigger ID	Actio
+saneucegmsrep3a	02-02-2017 07:35:00	nagios admin	claeyje: IM0015366513	02-02-2017 07:35:00	03-02-2017 07:35:00	Fixed	1d 0h 0m 0s	23553	N/A	Delete/Cancel This Scheduled Downtime Entry
+saneucegmsrep4a	02-02-2017 07:35:00	nagios admin	claeyje: IM0015366513	02-02-2017 07:35:00	03-02-2017 07:35:00	Fixed	1d 0h 0m 0s	23554	N/A	Delete/Cancel This Scheduled Downtime Entry
+
+7 root@saneucegmsrep3a:->cat /etc/udev/rules.d/70-persistent-net.rules
+# This file was automatically generated by the /lib/udev/write_net_rules
+# program, run by the persistent-net-generator.rules rules file.
+#
+# You can modify it, as long as you keep each rule on a single
+# line, and change only the value of the NAME= key.
+
+# PCI device 0x15ad:0x07b0 (vmxnet3)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:50:56:8b:13:cf", ATTR{type}=="1", KERNEL=="eth*", NAME="eth0"
+
+root@saneucegmsrep3a:->vi /etc/udev/rules.d/70-persistent-net.rules
+9 root@saneucegmsrep3a:->cat /etc/udev/rules.d/70-persistent-net.rules
+# This file was automatically generated by the /lib/udev/write_net_rules
+# program, run by the persistent-net-generator.rules rules file.
+#
+# You can modify it, as long as you keep each rule on a single
+# line, and change only the value of the NAME= key.
+
+# PCI device 0x15ad:0x07b0 (vmxnet3)
+
+
+4 root@saneucegmsrep4a:->cat /etc/udev/rules.d/70-persistent-net.rules
+# This file was automatically generated by the /lib/udev/write_net_rules
+# program, run by the persistent-net-generator.rules rules file.
+#
+# You can modify it, as long as you keep each rule on a single
+# line, and change only the value of the NAME= key.
+
+# PCI device 0x15ad:0x07b0 (vmxnet3)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:50:56:8b:39:9e", ATTR{type}=="1", KERNEL=="eth*", NAME="eth0"
+root@saneucegmsrep4a:->vi /etc/udev/rules.d/70-persistent-net.rules
+root@saneucegmsrep4a:->cat /etc/udev/rules.d/70-persistent-net.rules
+# This file was automatically generated by the /lib/udev/write_net_rules
+# program, run by the persistent-net-generator.rules rules file.
+#
+# You can modify it, as long as you keep each rule on a single
+# line, and change only the value of the NAME= key.
+
+# PCI device 0x15ad:0x07b0 (vmxnet3)
+
+---------------------------------------------------------------------------------------------------
+10 root@saneucegmsrep3a:->init 0
+11 root@saneucegmsrep3a:->Connection to saneucegmsrep3a closed by remote host.
+
+8 root@saneucegmsrep4a:->init 0
+9 root@saneucegmsrep4a:->Connection to saneucegmsrep4a closed by remote host.
+
+
+---------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+# Create ticket for VMWare team
+
+The VMWare team needs a case to move the VM over to the DMZ farm. It is a normal dctsc task
+
+Create ticket for VMWare team
+
+The VMWare team needs a case to move the VM over to the DMZ farm. It is a normal dctsc task
+
+Move VM to DMZ (SR)
+
+* Can only be requested by OS Teams (Unix/Windows), if you are NOT an OS Team, liaise with your OS Team for your request *
+Please move the VM to the following DMZ VLAN: 
+VM name: <name of the virtual machine> 
+VLAN ID: <VLAN ID / Subnet where the VM must be moved to>
+Scheduled : <Date & Time>  
+
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+
+
+
+Container Name : saneucegmsrep3a & saneucegmsrep4a
+Destination POOL : VM_SHS
+Service Level : Acceptance at WL level but PROD SHS at unix level
+Mobility : Load Balanced
+Number of Cus : No need to change. Currently 4 CUs each
+Reason : SHS application
+Comment : You may pick any of the available IP from vLAN 1126 : 10.200.5.96/28
+
+
+
+Template: DCTSC VMWARE
+
+Module: MOVE VM TO DMZ
+
+Subject: DCTSC VMWARE - MOVE VM (SR) - saneucegmsrep3a
+
+Please move the VM to the following Pool: 
+VM name: saneucegmsrep3a
+VLAN ID: vLAN 1126 : 10.200.5.96/28
+Destination Pool: SHS
+Scheduled : today 02022017 between 10:00 and 13:00  
+
+--> Ticket: IM0015377842
+
+
+
+Template: DCTSC VMWARE
+
+Module: MOVE VM
+
+Subject: DCTSC VMWARE - MOVE VM (SR) - saneucegmsrep4a
+
+Please move the VM to the following Pool: 
+VM name: saneucegmsrep4a
+VLAN ID: vLAN 1126 : 10.200.5.96/28
+Please move the VM to the following Pool: Destination Pool: SHS
+Scheduled : today 02022017 between 10:00 and 13:00  
+
+--> Ticket: IM0015377866
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+Set main ticket in wait on 3rd party
+
+Description:
+------------
+Move preparation has been done.
+VM's have been shut down.
+"Move VM TO DMZ" tickets have been created for VMWARE Team.
+---------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+Fix subnet issue
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+[claeyje@muscadet log]$ TICKET=IM0015366513
+[claeyje@muscadet log]$ cfmain
+[claeyje@muscadet cfengine_main]$ git pull
+remote: Counting objects: 64855, done
+remote: Finding sources: 100% (309/309)
+remote: Total 309 (delta 217), reused 309 (delta 217)
+Receiving objects: 100% (309/309), 38.81 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (217/217), completed with 26 local objects.
+From ssh://gerrit/cfengine/main
+   62b479b..d11c8b3  master     -> origin/master
+First, rewinding head to replay your work on top of it...
+Fast-forwarded master to d11c8b34a314c350d46e113acbc3516b268ddb46.
+[claeyje@muscadet cfengine_main]$ 
+[claeyje@muscadet cfengine_main]$ git commit -am "$TICKET JPC"
+[master 07df057] IM0015366513 JPC
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+[claeyje@muscadet cfengine_main]$ git pull && git push
+Current branch master is up to date.
+Counting objects: 6, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (6/6), 556 bytes | 0 bytes/s, done.
+Total 6 (delta 5), reused 0 (delta 0)
+remote: Resolving deltas: 100% (5/5)
+remote: Processing changes: (\)/bin/tar: data/system/network/netmasks: time stamp 2017-02-02 16:14:22 is 185.461279575 s in the future
+remote: /bin/tar: data/system/network: time stamp 2017-02-02 16:14:22 is 185.460730298 s in the future
+remote: /bin/tar: data/system: time stamp 2017-02-02 16:14:22 is 185.46056073 s in the future
+remote: /bin/tar: data/t/check_netmasks.t: time stamp 2017-02-02 16:14:22 is 185.460234909 s in the future
+remote: /bin/tar: data/t: time stamp 2017-02-02 16:14:22 is 185.460053556 s in the future
+remote: /bin/tar: data: time stamp 2017-02-02 16:14:22 is 185.459897109 s in the future
+remote: ===[output from gerrit hook: ref-update]===
+remote: [I] [cfengine/main|ref-update] Running data/t/check_netmasks.t in /ec/prod/app/git/hooks_workdir/1486048276_cfengine_main_ref_update_07df0570/data
+remote: ok 1 - no errors during check of system/network/netmasks
+remote: 1..1
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine/main
+   d11c8b3..07df057  master -> master
+[claeyje@muscadet cfengine_main]$ sudo updatedb
+
+sr ns
+ecdc-cfengine run
+
+---------------------------------------------------------------------------------------------------
+Check: 
+
+Fri Feb  3 11:25:45 CET 2017
+# CIDR is > 26 - check manually
+10.200.5.105
+10.200.5.109
+10.200.5.108
+10.200.5.104
+10.200.5.107
+10.200.5.106
+10.200.5.110
+
+---------------------------------------------------------------------------------------------------
+
+
+[-] Basic checks
+[v] Path to DNS repo: /home/claeyje/dns
+[v] Caipa available
+
+[-] Entry creation
+[v] Selected IP: # CIDR is > 26 - check manually
+10.200.5.106
+[v] New DNS entry: H(saneucegmsrep3a-new, # CIDR is > 26 - check manually
+10.200.5.106)
+
+[-] Do you want to add this entry to DNS (y/n) ? y
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+svn: E165001: Commit failed (details follow):
+svn: E165001: Commit blocked by pre-commit hook (exit code 255) with output:
+2017-02-03 11:34:10: ##### START pre-commit #####
+2017-02-03 11:34:10: ##### USER=claeyje REV=14660-bg7 REPO=/ec/prod/app/sis/svn-data/dns #####
+2017-02-03 11:34:10: U   zones/cf/cc.cec.eu.int
+2017-02-03 11:34:10: [-] Checking zones/cf/cc.cec.eu.int
+2017-02-03 11:34:10: + svnlook cat -t 14660-bg7 /ec/prod/app/sis/svn-data/dns zones/cf/cc.cec.eu.int
+2017-02-03 11:34:10: + /ec/prod/app/sis/svn-data/dns/hooks/check_cf.pl
+2017-02-03 11:34:10: invalid line 11101: '10.200.5.106)'
+2017-02-03 11:34:10: + ret=255
+2017-02-03 11:34:10: + set +x
+2017-02-03 11:34:10: [!] error in zones/cf/cc.cec.eu.int
+2017-02-03 11:34:10: ##### END pre-commit #####
+
+
+[!] error while commiting. please check logs - EXIT 50
+
+
+
+---------------------------------------------------------------------------------------------------
+
+TICKET=IM0015366513
+HOST1=saneucegmsrep3a
+HOST2=saneucegmsrep4a
+
+3 root@dnsmaster:->caipa reserve 10.200.5.96
+# CIDR is > 26 - check manually
+10.200.5.104
+4 root@dnsmaster:->caipa reserve 10.200.5.96
+# CIDR is > 26 - check manually
+10.200.5.109
+
+H(saneucegmsrep3a-new, 10.200.5.104)
+H(saneucegmsrep4a-new, 10.200.5.109)
+
+
+---------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+H(trigger-sc, 10.134.30.241)
+[claeyje@muscadet dns]$ svn log -l 5
+------------------------------------------------------------------------
+r14667 | urbinda | 2017-02-03 11:59:36 +0100 (Fri, 03 Feb 2017) | 1 line
+
+Adding new dns entry for host gazeem-sc with ip 10.134.30.206 - IM0015311487
+------------------------------------------------------------------------
+r14666 | urbinda | 2017-02-03 11:56:28 +0100 (Fri, 03 Feb 2017) | 1 line
+
+Adding new dns entry for host gideon-sc with ip 10.134.29.62 - IM0015311487
+------------------------------------------------------------------------
+r14665 | urbinda | 2017-02-03 11:51:20 +0100 (Fri, 03 Feb 2017) | 1 line
+
+Adding new dns entry for host sparks-sc with ip 10.134.25.49 - IM0015311487
+------------------------------------------------------------------------
+r14664 | urbinda | 2017-02-03 11:46:13 +0100 (Fri, 03 Feb 2017) | 1 line
+
+Adding new dns entry for host trigger-sc with ip 10.134.30.241 - IM0015311487
+------------------------------------------------------------------------
+r14663 | urbinda | 2017-02-03 11:43:18 +0100 (Fri, 03 Feb 2017) | 1 line
+
+Adding new dns entry for host gothel-sc with ip 10.134.30.250 - IM0015311487
+------------------------------------------------------------------------
+[claeyje@muscadet dns]$ 
+[claeyje@muscadet dns]$ 
+[claeyje@muscadet dns]$ 
+[claeyje@muscadet dns]$ svn diff
+Index: cc.cec.eu.int
+===================================================================
+--- cc.cec.eu.int       (revision 14665)
++++ cc.cec.eu.int       (working copy)
+@@ -11101,4 +11101,3 @@ 
+ H(wlas0093, 10.137.7.193)
+ H(gothel-sc, 10.134.30.250)
+ H(trigger-sc, 10.134.30.241)
+-H(sparks-sc, 10.134.25.49)
+[claeyje@muscadet dns]$ tail cc.cec.eu.int
+H(jackass-sc, 10.134.29.47)
+H(wlas0090, 10.137.7.32)
+H(wlas0092, 10.137.5.121)
+H(wlas0091, 10.137.7.52)
+H(wlas0089, 10.137.7.47)
+H(wlpc0199, 10.137.5.105)
+H(wlpc0198, 10.137.6.53)
+H(wlas0093, 10.137.7.193)
+H(gothel-sc, 10.134.30.250)
+H(trigger-sc, 10.134.30.241)
+[claeyje@muscadet dns]$ svn check
+Unknown subcommand: 'check'
+Type 'svn help' for usage.
+[claeyje@muscadet dns]$ svn checkout
+svn: E205001: Try 'svn help checkout' for more information
+svn: E205001: Not enough arguments provided
+[claeyje@muscadet dns]$ svn diff
+Index: cc.cec.eu.int
+===================================================================
+--- cc.cec.eu.int       (revision 14665)
+
++++ cc.cec.eu.int       (working copy)
+@@ -11101,4 +11101,3 @@ 
+ H(wlas0093, 10.137.7.193)
+ H(gothel-sc, 10.134.30.250)
+ H(trigger-sc, 10.134.30.241)
+-H(sparks-sc, 10.134.25.49)
+[claeyje@muscadet dns]$ svn update
+Updating '.':
+Skipped 'cc.cec.eu.int' -- Node remains in conflict
+At revision 14667.
+Summary of conflicts:   
+  Skipped paths: 1
+[claeyje@muscadet dns]$ svn update --accept
+svn: missing argument: --accept
+Type 'svn help' for usage.
+[claeyje@muscadet dns]$ 
+[claeyje@muscadet dns]$ svn resolve
+Conflict discovered in file 'cc.cec.eu.int'.
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (mc) my side of conflict, (tc) their side of conflict,
+        (s) show all options: df
+--- cc.cec.eu.int.r14665        - THEIRS
++++ cc.cec.eu.int       - MERGED
+@@ -11101,4 +11101,3 @@ 
+ H(wlas0093, 10.137.7.193)
+ H(gothel-sc, 10.134.30.250)
+ H(trigger-sc, 10.134.30.241)
+-H(sparks-sc, 10.134.25.49)
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (r) mark resolved, (mc) my side of conflict,
+        (tc) their side of conflict, (s) show all options: m
+Merging 'cc.cec.eu.int'.
+Conflicting section found during merge:
+(1) their version (at line 11104)                        |(2) your version (at line 11105)
+---------------------------------------------------------+---------------------------------------------------------
+H(sparks-sc, 10.134.25.49)                               |H(saneucegmsrep3a-new, 10.200.5.104)
+                                                         |H(saneucegmsrep4a-new, 10.200.5.109)
+---------------------------------------------------------+---------------------------------------------------------
+Select: (1) use their version, (2) use your version,
+        (12) their version first, then yours,
+        (21) your version first, then theirs,
+        (e1) edit their version and use the result,
+        (e2) edit your version and use the result,
+        (eb) edit both versions and use the result,
+        (p) postpone this conflicting section leaving conflict markers,
+        (a) abort file merge and return to main menu: 1
+Merge of 'cc.cec.eu.int' completed.
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (r) mark resolved, (mc) my side of conflict,
+        (tc) their side of conflict, (s) show all options: df
+
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (r) mark resolved, (mc) my side of conflict,
+        (tc) their side of conflict, (s) show all options: ^Csvn: warning: W155027: Unable to resolve conflicts on '/home/claeyje/dns'
+svn: E155027: Failure occurred resolving one or more conflicts
+[claeyje@muscadet dns]$ svn update
+Updating '.':
+Skipped 'cc.cec.eu.int' -- Node remains in conflict
+At revision 14667.
+Summary of conflicts:   
+  Skipped paths: 1
+[claeyje@muscadet dns]$ svn resolve
+Conflict discovered in file 'cc.cec.eu.int'.
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (mc) my side of conflict, (tc) their side of conflict,
+        (s) show all options: df
+Select: (p) postpone, (df) show diff, (e) edit file, (m) merge,
+        (r) mark resolved, (mc) my side of conflict,
+        (tc) their side of conflict, (s) show all options: tc
+Resolved conflicted state of 'cc.cec.eu.int'
+[claeyje@muscadet dns]$ svn update
+Updating '.':
+U    cc.cec.eu.int
+Updated to revision 14667.
+[claeyje@muscadet dns]$ tail cc.cec.eu.int
+...
+H(gazeem-sc, 10.134.30.206)
+[claeyje@muscadet dns]$ svn up
+Updating '.':
+At revision 14667.
+[claeyje@muscadet dns]$ echo "H(saneucegmsrep3a-new, 10.200.5.104)" >> cc.cec.eu.int
+[claeyje@muscadet dns]$ echo "H(saneucegmsrep4a-new, 10.200.5.109)" >> cc.cec.eu.int
+[claeyje@muscadet dns]$ tail cc.cec.eu.int
+...
+H(gazeem-sc, 10.134.30.206)
+H(saneucegmsrep3a-new, 10.200.5.104)
+H(saneucegmsrep4a-new, 10.200.5.109)
+[claeyje@muscadet dns]$ svn ci -m "$TICKET JPC"
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+Committed revision 14668.
+
+---------------------------------------------------------------------------------------------------
+
+8 root@dnsmaster:->getent hosts saneucegmsrep3a-new
+10.200.5.104    saneucegmsrep3a-new.cc.cec.eu.int
+
+9 root@dnsmaster:->getent hosts saneucegmsrep4a-new
+10.200.5.109    saneucegmsrep4a-new.cc.cec.eu.int
+
+10 root@dnsmaster:->host saneucegmsrep3a-new
+saneucegmsrep3a-new.cc.cec.eu.int has address 10.200.5.104
+
+11 root@dnsmaster:->host saneucegmsrep4a-new
+saneucegmsrep4a-new.cc.cec.eu.int has address 10.200.5.109
+
+---------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+# Change cfengine config
+
+TICKET=IM0015366513
+HOST1=saneucegmsrep3a
+HOST2=saneucegmsrep4a
+
+10 root@dnsmaster:->host saneucegmsrep3a-new
+saneucegmsrep3a-new.cc.cec.eu.int has address 10.200.5.104
+
+11 root@dnsmaster:->host saneucegmsrep4a-new
+saneucegmsrep4a-new.cc.cec.eu.int has address 10.200.5.109
+
+
+1. update ip config of the machine
+  1.1. ${CFDATA}/system/network/if/${hostname}/ifcfg-eth* with the ip and the netmask
+  1.2. ${CFDATA}/system/network/if/${hostname}/network with the default gw
+2. update the relevant Dmz group in ${CFINPUTS}/classes.conf, choose the proper DMZ group relevant for the VM
+
+
+cfmain
+git pull
+echo $HOST1 $HOST1NEW
+
+for H in $HOST1 $HOST2; do
+echo "---> [$H] <---"
+ls ${CFDATA}/system/network/if/${H}/ifcfg-eth*
+ls ${CFDATA}/system/network/if/${H}/network
+# Find the hosting environment for the SHS group
+grep -B2 ^SHS ${CFINPUTS}/classes.conf
+echo "--> [$H] - ifcfg-eth"
+cat ${CFDATA}/system/network/if/${H}/ifcfg-eth*
+echo "--> [$H] - network"
+done
+
+update ifcfg-eth?
+update network
+update classes.conf
+
+git status
+
+git commit -am "$TICKET JPC"
+
+git pull && git push
+
+sudo updatedb
+
+
+
+
+---------------------------------------------------------------------------------------------------
+---> [saneucegmsrep3a] <---
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep3a/ifcfg-eth0
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep3a/network
+
+# Secure Hosting Environment
+SHS = OracleRACSHS diglhwp1 diglhwp2 eeaspwgpshs1a eeaspwgpshs1p eeaspwgpshs2a eeaspwgpshs2p eucegocp1 eucegocp2 pwgpshsdtp1 pwgpshsdtp2 sanedelivery1p sanedelivery2p sanetrustex1p sanetrustex2p sanetrustgui1p sanetrustgui2p saneuceggw1p saneuceggw2p saneucegmsrep1p saneucegmsrep2p saneucegmsrep3a saneucegmsrep3p saneucegmsrep4a saneucegmsrep4p
+--> [saneucegmsrep3a] - ifcfg-eth
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=10.200.5.47
+NETMASK=255.255.255.240
+ONBOOT=yes
+--> [saneucegmsrep3a] - network
+---> [saneucegmsrep4a] <---
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep4a/ifcfg-eth0
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep4a/network
+
+# Secure Hosting Environment
+SHS = OracleRACSHS diglhwp1 diglhwp2 eeaspwgpshs1a eeaspwgpshs1p eeaspwgpshs2a eeaspwgpshs2p eucegocp1 eucegocp2 pwgpshsdtp1 pwgpshsdtp2 sanedelivery1p sanedelivery2p sanetrustex1p sanetrustex2p sanetrustgui1p sanetrustgui2p saneuceggw1p saneuceggw2p saneucegmsrep1p saneucegmsrep2p saneucegmsrep3a saneucegmsrep3p saneucegmsrep4a saneucegmsrep4p
+--> [saneucegmsrep4a] - ifcfg-eth
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=10.200.5.237
+NETMASK=255.255.255.240
+ONBOOT=yes
+--> [saneucegmsrep4a] - network
+
+[claeyje@muscadet cfengine_main]$ git pull
+remote: Counting objects: 65078, done
+remote: Finding sources: 100% (165/165)
+remote: Total 165 (delta 137), reused 165 (delta 137)
+Receiving objects: 100% (165/165), 11.06 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (137/137), completed with 22 local objects.
+From ssh://gerrit/cfengine/main
+   d0fd085..abd1a9d  master     -> origin/master
+First, rewinding head to replay your work on top of it...
+Fast-forwarded master to abd1a9d875da167f58638b5356653a4b7d432918.
+[claeyje@muscadet cfengine_main]$ 
+
+[claeyje@muscadet cfengine_main]$ vi /home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep3a/ifcfg-eth0
+[claeyje@muscadet cfengine_main]$ vi /home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep4a/ifcfg-eth0 
+
+[claeyje@muscadet cfengine_main]$ for H in $HOST1 $HOST2; do echo "---> [$H] <---"; ls ${CFDATA}/system/network/if/${H}/ifcfg-eth*; ls ${CFDATA}/system/network/if/${H}/network grep -B2 ^SHS ${CFINPUTS}/classes.conf; echo "--> [$H] - ifcfg-eth"; cat ${CFDATA}/system/network/if/${H}/ifcfg-eth*; echo "--> [$H] - network"; done
+---> [saneucegmsrep3a] <---
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep3a/ifcfg-eth0
+ls: invalid option -- '2'
+Try 'ls --help' for more information.
+--> [saneucegmsrep3a] - ifcfg-eth
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=10.200.5.104
+NETMASK=255.255.255.240
+ONBOOT=yes
+--> [saneucegmsrep3a] - network
+---> [saneucegmsrep4a] <---
+/home/claeyje/git/cfengine_main/data/system/network/if/saneucegmsrep4a/ifcfg-eth0
+ls: invalid option -- '2'
+Try 'ls --help' for more information.
+--> [saneucegmsrep4a] - ifcfg-eth
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=10.200.5.109
+NETMASK=255.255.255.240
+ONBOOT=yes
+--> [saneucegmsrep4a] - network
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+        modified:   data/system/network/if/saneucegmsrep3a/ifcfg-eth0
+        modified:   data/system/network/if/saneucegmsrep4a/ifcfg-eth0
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[claeyje@muscadet cfengine_main]$ git commit -am "$TICKET JPC"
+[master c5ffe2d] IM0015366513 JPC
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+[claeyje@muscadet cfengine_main]$ git pull && git push
+Current branch master is up to date.
+Counting objects: 10, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (10/10), done.
+Writing objects: 100% (10/10), 834 bytes | 0 bytes/s, done.
+Total 10 (delta 6), reused 0 (delta 0)
+remote: Resolving deltas: 100% (6/6)
+remote: 
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine/main
+   abd1a9d..c5ffe2d  master -> master
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working tree clean
+
+[claeyje@muscadet cfengine_main]$ sudo updatedb
+
+---------------------------------------------------------------------------------------------------
+
+Update and commit DNS config to remove the ${hostname} / old ip entry and to rename ${hostname}-new to ${hostname}
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+
+remove old entries 
+
+
+[claeyje@muscadet dns]$ vi cc.cec.eu.int 
+[claeyje@muscadet dns]$ svn ci -m "IM0015366513 - JPC"
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+Committed revision 14660.
+[claeyje@muscadet dns]$ grep 10.200.5 cc.cec.eu.int 
+[claeyje@muscadet dns]$ getent host 10.200.5.96
+Unknown database: host
+Try `getent --help' or `getent --usage' for more information.
+[claeyje@muscadet dns]$ getent hosts 10.200.5.96
+[claeyje@muscadet dns]$ svn ci -m "$TICKET JPC"
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+Committed revision 14670.
+
+---------------------------------------------------------------------------------------------------
+# Check new IP addresses.
+---------------------------------------------------------------------------------------------------
+
+[claeyje@muscadet dns]$ echo $HOST1; host $HOST1
+saneucegmsrep3a
+saneucegmsrep3a.cc.cec.eu.int has address 10.200.5.104
+[claeyje@muscadet dns]$ echo $HOST2; host $HOST2
+saneucegmsrep4a
+saneucegmsrep4a.cc.cec.eu.int has address 10.200.5.109
+[claeyje@muscadet dns]$ host 10.200.5.104
+Host 104.5.200.10.in-addr.arpa. not found: 3(NXDOMAIN)  ---> NOK 
+[claeyje@muscadet dns]$ host 10.200.5.109
+Host 109.5.200.10.in-addr.arpa. not found: 3(NXDOMAIN)  ---> NOK
+
+
+---------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+Clear the ssh keys for the old IP 
+
+---------------------------------------------------------------------------------------------------
+Output:
+-------
+[claeyje@muscadet dns]$ sr jumpstartx /ec/prod/server/jumpstart/ECSI/Tools/cleanCFEngineKeys.sh  $HOST1
+	CHECKING CFENGINE SERVER: cfeng1
+	checking  on cfeng1:/ec/prod/server/cf/.cfagent/ppkeys/root-10.200.5.104.pub
+
+	CHECKING CFENGINE SERVER: cfeng2
+	checking  on cfeng2:/ec/prod/server/cf/.cfagent/ppkeys/root-10.200.5.104.pub
+
+No key files found, program exiting
+
+
+
+---------------------------------------------------------------------------------------------------
+7/7/17
+-------
+Check reverse dns
+
+[claeyje@muscadet log]$ host saneucegmsrep3a
+saneucegmsrep3a.cc.cec.eu.int has address 10.200.5.104
+[claeyje@muscadet log]$ host saneucegmsrep4a
+saneucegmsrep4a.cc.cec.eu.int has address 10.200.5.109
+
+9 root@dnsmaster:->host 10.200.5.104
+104.5.200.10.in-addr.arpa is an alias for 104.96-111.5.200.10.in-addr.arpa.
+104.96-111.5.200.10.IN-ADDR.ARPA domain name pointer saneucegmsrep3a.cc.cec.eu.int.
+
+10 root@dnsmaster:->host 10.200.5.109
+109.5.200.10.in-addr.arpa is an alias for 109.96-111.5.200.10.in-addr.arpa.
+109.96-111.5.200.10.IN-ADDR.ARPA domain name pointer saneucegmsrep4a.cc.cec.eu.int.
+
+---------------------------------------------------------------------------------------------------
+
+Put the hosts back to production state in United
+
+Check
+un_status saneucegmsrep3a
+un_status saneucegmsrep4a
+---------------------------------------------------------------------------------------------------
+07/02/2014 11:40
+
+[claeyje@muscadet log]$ un_status saneucegmsrep3a
+production
+[claeyje@muscadet log]$ un_status saneucegmsrep4a
+production
+
+---------------------------------------------------------------------------------------------------
+7/2/17: 12:40
+-------------
+
+connect on the host via ssh: OK
+
+Check automounter on both nodes:
+was running, --> stop and chkconfig autofs off
+
+------------------------------------------------------
+
+Nagios check all
+
+1 root@saneucegmsrep3a:->/usr/nagios/plugins/check_all
+check_backups OK (mminfo, saneucegmsrep3a E, backups for 14 filesystems are ok, 0 NOT ok)(saneucegmsrep3a.cc.cec.eu.int): Backup inclusion status is not a live status (time to run: 4 s)
+check_cfengine3 OK : promise Promises (promises: 99.26/99.86, repaired: 0.14/0.74), promise update (promises: 99.50/99.83, repaired: 0.17/0.50)
+check_cobol OK : cobol is not installed
+check_df OK FS: 30, FS checked: 5, checks: 10
+check_disks_health OK : no check on virtual hosts
+check_etchosts OK
+check_files OK (103 checked)
+check_fs OK
+check_hardware OK :  No HW check on virtual machines
+check_if OK (cfg: 2/2; dns: 1; netm: 1)
+check_java OK : Ignoring on linux
+check_mount OK (vfs: 19, mnt: 19, cl: 0, dfs: 0, zp: 0, zfs: 0)
+check_mpxio OK no check on virtual hosts
+check_ntp2 CRITICAL (1 critical error): 1 dead peer(s), Offset -0.000049 secs, jitter 0.057 msec, peer is stratum 2
+check_os_setup OK VMware; Linux; redhat-vm-6-default64-8.0.cfg: VMware HW and tools status are not checked, 1 additional package
+check_passwd OK (passwd checked)
+check_perms OK
+check_rsc OK : no check on virtual hosts
+check_services OK (services: 15, sub: 9, ok: 15, exceptions: 4): No automounter expected on this host
+check_softinst OK (cfg: 0, directories: 0)
+check_kernel_parameter OK
+
+1 errors - please check output of plugins ./check_ntp2
+
+
+5 root@saneucegmsrep4a:->/usr/nagios/plugins/check_all
+check_backups OK (mminfo, saneucegmsrep4a E, backups for 14 filesystems are ok, 0 NOT ok)(saneucegmsrep4a.cc.cec.eu.int): Backup inclusion status is not a live status (time to run: 3 s)
+check_cfengine3 OK : promise Promises (promises: 99.31/99.88, repaired: 0.12/0.69), promise update (promises: 99.50/99.83, repaired: 0.17/0.50)
+check_cobol OK : cobol is not installed
+check_df OK FS: 30, FS checked: 5, checks: 10
+check_disks_health OK : no check on virtual hosts
+check_etchosts OK
+check_files OK (103 checked)
+check_fs OK
+check_hardware OK :  No HW check on virtual machines
+check_if OK (cfg: 2/2; dns: 1; netm: 1)
+check_java OK : Ignoring on linux
+check_mount OK (vfs: 19, mnt: 19, cl: 0, dfs: 0, zp: 0, zfs: 0)
+check_mpxio OK no check on virtual hosts
+check_ntp2 CRITICAL (1 critical error): 1 dead peer(s), Offset -0.000032 secs, jitter 0.087 msec, peer is stratum 2
+check_os_setup OK VMware; Linux; redhat-vm-6-default64-8.0.cfg: VMware HW and tools status are not checked, 1 additional package
+check_passwd OK (passwd checked)
+check_perms OK
+check_rsc OK : no check on virtual hosts
+check_services OK (services: 15, sub: 9, ok: 15, exceptions: 4): No automounter expected on this host
+check_softinst OK (cfg: 0, directories: 0)
+check_kernel_parameter OK
+
+1 errors - please check output of plugins ./check_ntp2
+
+
+---------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+

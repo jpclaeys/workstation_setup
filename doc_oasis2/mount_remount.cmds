@@ -1,0 +1,44 @@
+mount  -o remount,rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768 -F nfs /ec/prod/server/oracle/env-prod-user-files
+mount
+nasic201-v1128-001.cc.cec.eu.int:/ENV_CLIMA_ets_001_prod on /ec/prod/server/oracle/env-prod-user-files type nfs (rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768,nolock,addr=10.200.9.20)
+mount  -o remount,rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768 -F nfs /ec/prod/server/oracle/env-prod-user-files
+mount
+nasic201-v1128-001.cc.cec.eu.int:/ENV_CLIMA_ets_001_prod on /ec/prod/server/oracle/env-prod-user-files type nfs (rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768)
+
+29 root@strelka:->mount  -o remount,rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768 -F nfs /ec/prod/server/oracle/env-prod-user-files
+30 root@strelka:->mount | grep "user-files "
+nasic201-v1128-001.cc.cec.eu.int:/ENV_CLIMA_ets_001_prod on /ec/prod/server/oracle/env-prod-user-files type nfs (rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768)
+
+
+tests
+22 root@strelka:->mount  -o remount,rw,hard,rsize=32768,wsize=32768,nolock /ec/prod/server/oracle/env-prod-user-files
+mount.nfs: an incorrect mount option was specified
+23 root@strelka:->mount  -o remount,rw,hard,rsize=32768,wsize=32768,nolock -F nfs /ec/prod/server/oracle/env-prod-user-files
+mount: you must specify the filesystem type
+24 root@strelka:->mount  -o remount,rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768 -F nfs /ec/prod/server/oracle/env-prod-user-files
+25 root@strelka:->mount | grep "user-files "
+nasic201-v1128-001.cc.cec.eu.int:/ENV_CLIMA_ets_001_prod on /ec/prod/server/oracle/env-prod-user-files type nfs (rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768)
+26 root@strelka:->mount  -o remount,rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768 -F nfs /ec/prod/server/oracle/env-prod-user-files
+27 root@strelka:->mount  -o remount,rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768,nolock -F nfs /ec/prod/server/oracle/env-prod-user-files
+mount: you must specify the filesystem type
+28 root@strelka:->mount  -o remount,rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768,nolock  /ec/prod/server/oracle/env-prod-user-files
+mount.nfs: an incorrect mount option was specified
+29 root@strelka:->mount  -o remount,rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768,nolock -F nfs /ec/prod/server/oracle/env-prod-user-files
+mount: you must specify the filesystem type
+30 root@strelka:->umount /ec/prod/server/oracle/env-prod-user-files
+31 root@strelka:->mount  -o rw,noac,hard,rsize=32768,wsize=32768,nolock -F nfs /ec/prod/server/oracle/env-prod-user-files
+mount: you must specify the filesystem type
+32 root@strelka:->mount  -o rw,noac,hard,rsize=32768,wsize=32768,nolock  /ec/prod/server/oracle/env-prod-user-files
+33 root@strelka:->mount | grep "user-files "
+nasic201-v1128-001.cc.cec.eu.int:/ENV_CLIMA_ets_001_prod on /ec/prod/server/oracle/env-prod-user-files type nfs (rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768,noac,hard,rsize=32768,wsize=32768,nolock,addr=10.200.9.21)
+34 root@strelka:->umount /ec/prod/server/oracle/env-prod-user-files
+35 root@strelka:->mount  -o noac,nolock  /ec/prod/server/oracle/env-prod-user-files
+36 root@strelka:->mount | grep "user-files "
+nasic201-v1128-001.cc.cec.eu.int:/ENV_CLIMA_ets_001_prod on /ec/prod/server/oracle/env-prod-user-files type nfs (rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768,noac,nolock,addr=10.200.9.21)
+
+Bonne nouvelle, ça fonctionne avec: rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768,noac,nolock.
+
+3 root@belka:->grep "user-files " /etc/fstab
+#nas-dclux-xprd.cc.cec.eu.int:/orauser/files  /ec/prod/server/oracle/user-files nfs hard,bg,intr,suid,rsize=32768,wsize=32768 0 0
+nasic201-v1128-001.cc.cec.eu.int:/ENV_CLIMA_ets_001_prod /ec/prod/server/oracle/env-prod-user-files nfs rw,nosuid,bg,intr,hard,rsize=32768,wsize=32768 0 0 
+

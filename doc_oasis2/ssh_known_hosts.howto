@@ -1,0 +1,11 @@
+Connection issue from progress for user bmcptrl: prompting for a password:
+
+Solution:
+add the host entry in the GlobalKnownHostsFile /etc/ssh/ssh_known_hosts like it's the case for the other hosts
+
+--> run manually
+chmod 600 know_hosts in the bmcptrl homedir/.ssh
+ssh medusa (for axample)
+answer "yes" --> this will add the entry in the known_hosts 
+The add this entry to /etc/ssh/ssh_known_hosts 
+Remove the entry in the bmcptrl homedir/.ssh/known_hosts

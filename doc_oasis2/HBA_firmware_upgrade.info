@@ -1,0 +1,94 @@
+For Lenovo 3750
+---------------
+cd /home/claeyje/git/cfengine_data_static/system/firmware_LENOVO/LENOVO,System-x3750-M4/HBA
+
+
+ll *.bin
+take the most recent one
+
+[claeyje@muscadet HBA]$ ll *.bin
+-rw-r--r--. 1 claeyje claeyje 20M May  6 03:10 elx-lnvgy_fw_fc_16a-2.03x7-10_linux_32-64.bin
+-rw-rw-r--. 1 claeyje claeyje 19M Sep 27  2017 elx-lnvgy_fw_fc_17a-2.03x14-14_linux_x86-64.bin
+-rw-r--r--. 1 claeyje claeyje 19M Mar  7 03:10 elx-lnvgy_fw_fc_17b-2.03x14-16_linux_x86-64.bin
+-rw-r--r--. 1 claeyje claeyje 19M Mar 16 03:10 elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+
+
+copy elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin to the destination host:
+
+scp elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin root@kinglouie:/tmp
+scp elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin root@medusa:/tmp
+
+
+sr  kinglouie
+cd /tmp
+check the current version:
+disk-hbamap
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+1   host1  10000090fab181ee  42D0485  11.20a6  offline  0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host1  -       
+2   host2  10000090fab19380  42D0485  11.20a6  8Gb      0000:20:00.0  /sys/devices/pci0000:00/0000:00:03.2/0000:20:00.0/host2  2       
+3   host3  10000090fab196e3  42D0485  11.20a6  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090fab18205  42D0485  11.20a6  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -    
+
+
+3 root@kinglouie:->chmod +x elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+6 root@kinglouie:->./elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin -s
+
+--- Emulex Firmware Version 2.03x14 ---
+
+Performing firmware update. This may take several minutes. Please wait...
+
+-- SUCCESS -- All HBAs successfully updated.
+
+7 root@kinglouie:->disk-hbamap
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+1   host1  10000090fab181ee  42D0485  11.40a4  offline  0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host1  -       
+2   host2  10000090fab19380  42D0485  11.40a4  8Gb      0000:20:00.0  /sys/devices/pci0000:00/0000:00:03.2/0000:20:00.0/host2  2       
+3   host3  10000090fab196e3  42D0485  11.40a4  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090fab18205  42D0485  11.40a4  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -       
+
+ root@kinglouie:->systool -c scsi_host -v -d host1 | grep -i vers
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.2.172.0"
+    option_rom_version  = "11.40a4"
+
+
+
+[claeyje@muscadet HBA]$ sr medusa
+1 root@medusa:->cd /tmp
+2 root@medusa:->ll *.bin
+total 18756
+-rw-r--r--  1 root   root   19162291 May 14 09:46 elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+
+3 root@medusa:->chmod +x elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin
+4 root@medusa:->
+4 root@medusa:->disk-hbamap 
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+1   host1  10000090fab186ff  42D0485  11.20a6  offline  0000:0c:00.0  /sys/devices/pci0000:00/0000:00:01.0/0000:0c:00.0/host1  -       
+2   host2  10000090fab18734  42D0485  11.20a6  8Gb      0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host2  2       
+3   host3  10000090fab186fa  42D0485  11.20a6  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090fab1874c  42D0485  11.20a6  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -       
+
+6 root@medusa:->./elx-lnvgy_fw_fc_17b-2.03x14-21_linux_x86-64.bin -s
+
+--- Emulex Firmware Version 2.03x14 ---
+
+Performing firmware update. This may take several minutes. Please wait...
+
+-- SUCCESS -- All HBAs successfully updated.
+
+7 root@medusa:->disk-hbamap 
+C#  INST   PORT WWN          MODEL    FCODE    STATE    SLOT          DEVICE PATH                                              FABRIC  
+--  ----   --------          -----    -----    -----    ----          -----------                                              ------  
+1   host1  10000090fab186ff  42D0485  11.40a4  offline  0000:0c:00.0  /sys/devices/pci0000:00/0000:00:01.0/0000:0c:00.0/host1  -       
+2   host2  10000090fab18734  42D0485  11.40a4  8Gb      0000:1b:00.0  /sys/devices/pci0000:00/0000:00:03.0/0000:1b:00.0/host2  2       
+3   host3  10000090fab186fa  42D0485  11.40a4  8Gb      0000:4b:00.0  /sys/devices/pci0000:40/0000:40:02.0/0000:4b:00.0/host3  1       
+4   host4  10000090fab1874c  42D0485  11.40a4  offline  0000:50:00.0  /sys/devices/pci0000:40/0000:40:02.2/0000:50:00.0/host4  -    
+
+
+root@medusa:->systool -c scsi_host -v -d host1 | grep -i vers
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.1.6"
+    option_rom_version  = "11.40a4"
+
+

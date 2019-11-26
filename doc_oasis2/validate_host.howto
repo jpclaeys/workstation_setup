@@ -1,0 +1,14 @@
+
+getent hosts <host>
+
+un_info <host>
+
+grep <host> cc.cec.eu.int
+
+
+egrep "\(ecasl(\)|,)" cc.cec.eu.int | grep -c ALIAS
+
+[ `egrep "\(ecasl(\)|,)" cc.cec.eu.int | grep -c ALIAS` -gt 0 ] && echo "host is an alias"
+host is an alias
+
+

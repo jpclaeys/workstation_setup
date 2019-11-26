@@ -1,0 +1,68 @@
+
+my $C_url_MoveList2 = 'http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_MoveList2/';
+my $C_url_GlobalAndZones1 = 'http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_GlobalAndZones1/';
+my $C_url_InfoHostsCfeFlags = 'http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_InfoHostsCfeFlags/match?dmz=1&osfam=SunOS';
+my $C_url_InfoHostsHDS1 = 'http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_InfoHostsHDS1/';
+my $C_url_AllClustersNames1 = 'http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_AllClustersNames1/';
+
+my $C_used_states = qr{^(?:rolledback|todo)$};
+my $C_dropped_states = qr{^(?:abandoned|done|expired|in progress)$};
+
+my $C_zone_vlan_cmd = '/sbin/ifconfig -a | /usr/bin/grep BROADCAST';
+my $C_global_zone_vlan_cmd = '/usr/sbin/print-cdp -ap';
+my $C_rc_cmd = '/usr/bin/grep version /etc/ecsi_solaris_version';
+my $C_zfscheckluns_cmd = '/usr/sbin/zfs-checkluns';
+my $C_zpool_cmd = '/usr/sbin/zpool list -H -oname';
+
+my $C_ssh_user = 'root';
+
+my $C_upcoming_interventions = 'upcoming_interventions.pl';
+
+my $C_host_pattern = qr{^[a-z][a-z\d\-]+$};
+
+my $C_DMZ_flag = '/etc/dcim/flag.cfengine_group.AllDmz';
+
+my $C_cc_domain = 'cc.cec.eu.int';
+
+curl http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_MoveList2
+curl http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_GlobalAndZones1
+curl http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_InfoHostsCfeFlags/match?dmz=1&osfam=SunOS
+curl http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_InfoHostsHDS1
+curl http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_AllClustersNames1
+
+
+HL="wlaemp01 wxiabama sgdpop wlamar01 priama1p priamc1p"
+PATTERN="'`echo $HL|sed 's/ /|/g'`'";echo $PATTERN
+
+[claeyje@muscadet tmp]$ 
+curl http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_MoveList2 | egrep $PATTERN
+abandoned;4383;sgdpop;IM0015579723;2017-04-13 14:37:42;2017-06-26 23:59:59;potto;cluster116;;
+abandoned;4384;wlamar01;IM0015579723;2017-04-13 14:44:27;2017-06-26 23:59:59;potto;cluster116;;
+done;3242;priama1p;IM0014870942;2016-08-22 15:57:04;2016-09-29 23:59:59;;;potto;cluster116
+done;3245;sgdpop;IM0014870942;2016-08-22 15:59:48;2016-09-29 23:59:59;;;potto;cluster116
+done;3247;wxiabama;IM0014870942;2016-08-22 16:01:17;2016-09-29 23:59:59;;;potto;cluster116
+todo;4382;wxiabama;IM0015579723;2017-04-13 14:36:01;2017-06-26 23:59:59;potto;cluster116;redpoll;cluster225
+todo;4385;priama1p;IM0015579723;2017-04-13 14:47:15;2017-06-26 23:59:59;potto;cluster116;hoiho;cluster238
+todo;4389;wlamar01;IM0015579723;2017-04-13 15:15:58;2017-06-26 23:59:59;potto;cluster116;hoiho;cluster238
+todo;4421;sgdpop;IM0015579723;2017-04-14 07:45:49;2017-06-26 23:59:59;potto;cluster116;hoiho;cluster238
+
+
+[claeyje@muscadet tmp]$ un_cluster 225
+redpoll;cluster225;
+tawaki;cluster225;
+[claeyje@muscadet tmp]$ un_cluster 238
+hoiho;cluster238;
+kawaupaka;cluster238;
+
+[claeyje@muscadet tmp]$ curl http://srvdbapp.cc.cec.eu.int/serverdb/views/csvnoheader/ws_MoveList2| grep IM0015579723
+
+abandoned;4383;sgdpop;IM0015579723;2017-04-13 14:37:42;2017-06-26 23:59:59;potto;cluster116;;
+abandoned;4384;wlamar01;IM0015579723;2017-04-13 14:44:27;2017-06-26 23:59:59;potto;cluster116;;
+
+todo;4381;wlaemp01;IM0015579723;2017-04-13 14:33:39;2017-06-26 23:59:59;potto;cluster116;redpoll;cluster225
+todo;4382;wxiabama;IM0015579723;2017-04-13 14:36:01;2017-06-26 23:59:59;potto;cluster116;redpoll;cluster225
+todo;4385;priama1p;IM0015579723;2017-04-13 14:47:15;2017-06-26 23:59:59;potto;cluster116;hoiho;cluster238
+todo;4386;priamc1p;IM0015579723;2017-04-13 14:49:14;2017-06-26 23:59:59;potto;cluster116;hoiho;cluster238
+todo;4389;wlamar01;IM0015579723;2017-04-13 15:15:58;2017-06-26 23:59:59;potto;cluster116;hoiho;cluster238
+todo;4421;sgdpop;IM0015579723;2017-04-14 07:45:49;2017-06-26 23:59:59;potto;cluster116;hoiho;cluster238
+

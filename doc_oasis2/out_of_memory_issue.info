@@ -1,0 +1,9 @@
+After a deep investigation we found the root cause for the wlas0003 out of memory problems. 
+
+The system had been configured with enabled the memory hugepages: 
+
+vm.hugetlb_shm_group = 2180 
+vm.nr_hugepages = 32768
+
+This configuration is not standard, not tested and it was not requested to UNIX Team. It was applied by Laurent Weislo on 21/03/2018.
+

@@ -1,0 +1,41 @@
+Synergy fix altgr issue
+When using synergy, if your AltGr actions do not do its thang on the client, try adding this in your config:
+under section: screens, add "altgr = alt" under the client.
+
+Example config:
+
+section: screens
+  server:
+    halfDuplexCapsLock = false
+    halfDuplexNumLock = false
+    halfDuplexScrollLock = false
+    xtestIsXineramaUnaware = false
+    switchCorners = none
+    switchCornerSize = 0
+  client:
+     halfDuplexCapsLock = false
+     halfDuplexNumLock = false
+     halfDuplexScrollLock = false
+     xtestIsXineramaUnaware = false
+     switchCorners = none
+     switchCornerSize = 0
+     altgr = alt
+end
+
+section: aliases
+end
+
+section: links
+  server:
+    right: client
+  client:
+    left: server
+end
+
+section: options
+  relativeMouseMoves = false
+  screenSaverSync = true
+  win32KeepForeground = false
+  switchCorners = none
+  swithCornerSize = 0
+end

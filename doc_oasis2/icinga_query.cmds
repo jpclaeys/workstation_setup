@@ -1,0 +1,3 @@
+icinga2_query.pl st_err | grep "VMware tools could be upgraded"
+
+icinga2_query.pl os_vm_tools

@@ -1,0 +1,14 @@
+Collecting system information on a local system using removable media
+The following procedure describes how to collect system information on a local system using removable
+media.
+Step 1. Insert the media into the system, and if necessary, mount the removable media.
+Step 2. On a command line, change to the directory for the removable media.
+Step 3. Enter the following command to collect system information:
+lnvgy_utl_dsa__dsalxxx-10.x_portable_platform [-x] [-v] [-text]
+where the and platform is the supported operating system.
+This command creates compressed CIM-XML output by default. You can also create HTML output
+by specifying the -v option and ASCII text output by specifying the -text option. If you specify
+the -x option, compressed CIM-XML output is not created, and you must specify the -v or -text
+option, or both.
+
+lnvgy_utl_dsa_dsala7d-10.3_portable_rhel6_x86-64.bin

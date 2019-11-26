@@ -1,0 +1,48 @@
+
+===================================================================================================================================
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Team/HowToUseCat
+===================================================================================================================================
+
+Adding a new entry
+
+Seems to only work on Windows because they don't use FQDNs
+Go to CAT
+On the top menu, select from Library Tools the menu Documents
+From submenu New Document select Maintenance
+Fill in the form:
+Notification type:
+Normal Maintenance
+Urgent Maintenance
+Subject
+Justification
+Impact analysis: Fill in the impacted environments. Usually the impact will be unavailability
+Probably the Risk Analysis
+From and To: Date/time for the intervention
+Contact: The Unix engineer who will do the intervention
+Save with OK
+You should get a verification email
+Follow the link and make sure that in the section DC Calendar details the option Leading Team is set to C3 - UX
+After the intervention
+
+You have to update the status:
+Go to CAT by either
+following the link you got via mail
+Go down to the "DC Calendar details"
+Select from the "Status" drop down list
+Usually only the values "OK" and "NOK" are used.
+searching for the entry
+Generic search (Warning: That's usually not working very well.)
+Using one of these predefined searches. On the URL with FQDN no links will work.
+Entries with Leading Team is C3 - UX: with FQDN without FQDN
+Entries with Leading Team is C3 - UX, sorted by Descending End Date: with FQDN without FQDN
+Entries with Leading Team is C3 - UX and Event Type is Planned Maintenance, sorted by Descending End Date: with FQDN without FQDN
+Entries with Leading Team is C3 - UX and Event Type is Urgent Maintenance, sorted by Descending End Date: with FQDN without FQDN
+When you have found the entry, select the check box at the left side of the entry
+Click Update Event Status on the top of the site
+Select from the Event Status list
+Usually only the values "OK" and "NOK" are used.
+Optionally provide a comment
+Click Update Event
+The link to the tool is: http://s-msp-sp-prd1.net1.cec.eu.int/CAT/Forms/AllItems.aspx
+===================================================================================================================================
+

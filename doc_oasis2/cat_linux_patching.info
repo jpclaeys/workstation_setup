@@ -1,0 +1,411 @@
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Linux patching CAT example:
+---------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------
+CAT clarifications:
+
+For the upcoming Linux patching please put the following in the additional information:
+Due to a security kernel patching (CVE-2016-7117), the impacted servers will need to be rebooted during this intervention
+
+The justification should read something like:
+"In order to respond to a known security bug, servers need to be patched in order to restore a good level of security"
+
+And the subject should be something like:
+System security patching and reboot
+
+For the notification type, we should not use "Emergency" and instead use "Normal Maintenance"
+Emergency should be reserved for real emergencies. Let's avoid screaming fire before there actually is a fire!
+
+Also, the risk analysis should contain a real risk description like "Application compatibility issues" and the mitigation is to roll back to the previous version of packages.
+
+Thanks
+-----------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------
+
+olrcprod3 (albireo) and olrmcprod1 (nasa)
+
+Notification type: Normal Maintenance
+
+Subject: System security patching and reboot.
+
+Description: The following application environments will be unavailable.
+
+Justification: In order to respond to a known security bug, servers need to be patched in order to restore a good level of security.
+
+Reference NB:  
+
+Impact Analysis:
+	Impacted Elements: <hosts list> olrcprod3 (albireo) and olrmcprod1 (nasa)
+	Impact:	unavailabilty
+
+Risk analysis:
+	Description: Kernel Patch.
+	Impact in case of occurrence: Application compatibility issues
+	Mitigation:  Roll back to the previous version of packages
+
+Additional Information: ​
+Due to a security kernel patching (CVE-2016-7117), the impacted servers will need to be rebooted during this intervention.
+The patch being applied requires all Oracle instances in the Cluster to be shutdown, so the related Databases will lose redundancy for the duration of the intervention.
+
+From: 31/07/2017 10:00
+
+To:   31/07/2017 12:00
+
+Proposed official message:
+A reboot of the Impacted Elements is needed (security patching)
+
+Contact: Jean-Pierre Claeys
+
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-07-04%20-%2009-57%20-%20System%20security%20patching%20and%20reboot_.xml&ClientInstalled=true&Source=http%3A%2F%2Fs%2Dmsp%2Dsp%2Dprd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+olrcprod3 (menkib), olrmcprod1 (korovel) and olrprod1 (muscida)
+
+Notification type: Normal Maintenance
+
+Subject: System security patching and reboot.
+
+Description: The following application environments will be unavailable.
+
+Justification: In order to respond to a known security bug, servers need to be patched in order to restore a good level of security.
+
+Reference NB:  
+
+Impact Analysis:
+	Impacted Elements: <hosts list> olrcprod3 (menkib), olrmcprod1 (korovel) and olrprod1 (muscida)
+	Impact:	unavailabilty
+
+Additional Information: ​
+Due to a security kernel patching (CVE-2016-7117), the impacted servers will need to be rebooted during this intervention.
+The patch being applied requires all Oracle instances in the Cluster to be shutdown, so the related Databases will lose redundancy for the duration of the intervention.
+
+Risk analysis:
+	Description: Kernel Patch.
+	Impact in case of occurrence: Application compatibility issues
+	Mitigation:  Roll back to the previous version of packages
+
+From: 01/08/2017 10:00
+
+To:   01/08/2017 12:00
+
+Proposed official message:
+A reboot of the Impacted Elements is needed (security patching)
+
+Contact: Jean-Pierre Claeys
+
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-07-04 - 10-21 - System security patching and reboot_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultView=Main Page&DefaultItemOpen=1][CAT]]
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+olrprod1 (acrux)
+
+Notification type: Normal Maintenance
+
+Subject: System security patching and reboot.
+
+Description: The following application environments will be unavailable.
+
+Justification: In order to respond to a known security bug, servers need to be patched in order to restore a good level of security.
+
+Reference NB:  
+
+Impact Analysis:
+	Impacted Elements: <hosts list> olrprod1 (acrux)
+	Impact:	unavailabilty
+
+Additional Information: ​
+Due to a security kernel patching (CVE-2016-7117), the impacted servers will need to be rebooted during this intervention.
+The patch being applied requires all Oracle instances in the Cluster to be shutdown, so the related Databases will lose redundancy for the duration of the intervention.
+
+Risk analysis:
+	Description: Kernel Patch.
+	Impact in case of occurrence: Application compatibility issues
+	Mitigation:  Roll back to the previous version of packages
+
+From: 02/08/2017 10:00
+
+To:   02/08/2017 12:00
+
+Proposed official message:
+A reboot of the Impacted Elements is needed (security patching)
+
+Contact: 
+Jean-Pierre Claeys
+
+
+
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-07-04%20-%2010-24%20-%20System%20security%20patching%20and%20reboot_.xml&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+olrcprod2 (aladfar), olrprod10 (curiosity)
+
+Notification type: Normal Maintenance
+
+Subject: System security patching and reboot.
+
+Description: The following application environments will be unavailable.
+
+Justification: 
+In order to respond to a known security bug, servers need to be patched in order to restore a good level of security.
+
+Reference NB:  
+
+Impact Analysis:
+	Impacted Elements: <hosts list> olrcprod2 (aladfar), olrprod10 (curiosity)
+	Impact:	unavailabilty
+
+Additional Information: ​
+Due to a security kernel patching (CVE-2016-7117), the impacted servers will need to be rebooted during this intervention.
+The patch being applied requires all Oracle instances in the Cluster to be shutdown, so the related Databases will lose redundancy for the duration of the intervention.
+
+Risk analysis:
+	Description: Kernel Patch.
+	Impact in case of occurrence: Application compatibility issues
+	Mitigation:  Roll back to the previous version of packages
+
+From: 03/08/2017 10:00
+
+To:   03/08/2017 12:00
+
+Proposed official message:
+A reboot of the Impacted Elements is needed (security patching)
+
+Contact: 
+Jean-Pierre Claeys
+
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-07-04%20-%2010-28%20-%20System%20security%20patching%20and%20reboot_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultView=Main%20Page&DefaultItemOpen=1][CAT]]
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+olrprod3 (merak,albali)
+
+Notification type: Normal Maintenance
+
+Subject: 
+System security patching and reboot.
+
+Description: 
+The following application environments will be unavailable.
+
+Justification: 
+In order to respond to a known security bug, servers need to be patched in order to restore a good level of security.
+
+Reference NB:  
+
+Impact Analysis:
+	Impacted Elements: <hosts list> olrprod3 (merak,albali)
+	Impact:	unavailabilty
+
+Additional Information: ​
+Due to a security kernel patching (CVE-2016-7117), the impacted servers will need to be rebooted during this intervention.
+The patch being applied requires all Oracle instances in the Cluster to be shutdown, so the related Databases will lose redundancy for the duration of the intervention.
+
+Risk analysis:
+	Description: Kernel Patch.
+	Impact in case of occurrence: Application compatibility issues
+	Mitigation:  Roll back to the previous version of packages
+
+From: 25/07/2017 18:00
+
+To:   25/07/2017 20:00
+
+Proposed official message:
+A reboot of the Impacted Elements is needed (security patching)
+
+Contact: 
+Jean-Pierre Claeys
+
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-07-04 - 10-54 - System security patching and reboot_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultView=Main Page&DefaultItemOpen=1][CAT]]
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+olrcprod2 (merez), olrprod10 (mercury)
+
+Notification type: Normal Maintenance
+
+Subject: System security patching and reboot.
+
+Description: The following application environments will be unavailable.
+
+Justification: 
+In order to respond to a known security bug, servers need to be patched in order to restore a good level of security.
+
+Reference NB:  
+
+Impact Analysis:
+	Impacted Elements: <hosts list> olrcprod2 (merez), olrprod10 (mercury)
+	Impact:	unavailabilty
+
+Additional Information: ​
+Due to a security kernel patching (CVE-2016-7117), the impacted servers will need to be rebooted during this intervention.
+The patch being applied requires all Oracle instances in the Cluster to be shutdown, so the related Databases will lose redundancy for the duration of the intervention.
+
+Risk analysis:
+	Description: Kernel Patch.
+	Impact in case of occurrence: Application compatibility issues
+	Mitigation:  Roll back to the previous version of packages
+
+From: 04/08/2017 10:00
+
+To:   04/08/2017 12:00
+
+Proposed official message:
+A reboot of the Impacted Elements is needed (security patching)
+
+Contact: 
+Jean-Pierre Claeys
+
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-07-04 - 10-32 - System security patching and reboot_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultView=Main Page&DefaultItemOpen=1][CAT]]
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+Linux Patching (CVE-2017-1000253 - CVE-2017-7541 - CHG: CH0001544667) 
+
+Notification type: Normal Maintenance
+
+Subject: Red Hat Linux security update on several servers.
+
+Description: The following application environments will be unavailable.
+
+Reference NB: 
+CH0001544667
+
+Justification: 
+In order to mitigate a Red Hat Linux security risk identified as important, several servers will be updated to the latest Red Hat Linux recommended security patch.
+
+Impact Analysis:
+	Impacted Elements: see attached lists (test_lnx_hosts_BATCH2.txt, s_lnx_hosts.txt, dev_lnx_hosts.txt)
+	Impact:	unavailabilty
+
+Additional Information: ​
+Due to a security kernel patching (CVE-2017-1000253 - CVE-2017-7541 - CHG: CH0001544667), the impacted servers will need to be rebooted during this intervention.
+
+Risk analysis:
+	Description: patching failure.
+	Impact in case of occurrence: reboot
+	Mitigation:  Rollback to the previous version
+
+From: 18/10/2017 20:00
+
+To:   18/10/2017 23:59
+
+Proposed official message:
+A reboot of the Impacted Elements is needed (security patching).
+
+Contact: 
+Jean-Pierre Claeys
+
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-10-09%20-%2008-22%20-%20Red%20Hat%20Linux%20security%20update%20on%20several%20servers_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-10-09%20-%2008-22%20-%20Red%20Hat%20Linux%20security%20update%20on%20several%20servers_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+Linux Patching - Meltdown/Spectre (CVE-2017-5754 CVE-2017-5753 CVE-2017-5715) - CHG: CH0001570248
+
+Notification type: Normal Maintenance
+
+Subject: Red Hat Linux security update on several servers.
+
+Description: The following application environments will be unavailable.
+
+Reference NB: 
+CH0001570248
+
+Justification: 
+In order to mitigate a Red Hat Linux security risk identified as important, several servers will be updated to the latest Red Hat Linux recommended security patch.
+
+Impact Analysis:
+	Impacted Elements: see attached files.
+	Impact:	unavailabilty
+
+Additional Information: ​
+​Meltdown & Spectre patches included.
+
+Risk analysis:
+	Description: Patching failure.
+	Impact in case of occurrence: Reboot
+	Mitigation:  Rollback
+
+From: 
+To:   
+
+Proposed official message:
+A reboot of the Impacted Elements is needed (security patching).
+
+Contact: 
+Jean-Pierre Claeys
+
+[[][CAT]]
+
+
+Ticket for VMware:
+------------------
+Subject:
+Red Hat Linux security update on several servers - power cycle RH systems - vHW level Upgrade
+
+Description:
+
+Part of our security patch circle is the vHW upgrade.
+So please prepare your flow and adjust vHW upgrade level during power on action.
+You will find these VMs powered off. Upgrade vHW & power on from vmware team.
+
+Power on scheduled date/time: dd/mm hh:mm
+Attached you can find the list of affected VM's.
+
+When you finish the power on action plan, please contact the Unix member for post-checks based on this plan:
+
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Projects/LinuxPatching-Meltdown-Spectre
+
+Scheduled with user:
+After    : 19/06 10:00
+Before   : 19/06 12:00
+
+User (CUID): ZZZ_DATACENTER UNIX
+Reporting user: claeyje
+
+Template: N/A
+Incident type: REQUEST FOR CHANGE
+Configuration item: Unknown CI
+System: Undefined        : automatically filled in
+Component: Undefined     : automatically filled in
+
+
+Urgency: LOW
+Impact: LOW
+
+Call Code:  OTHER
+
+Attach host list file !!!!
+
+Ticket: IM0016694691
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+

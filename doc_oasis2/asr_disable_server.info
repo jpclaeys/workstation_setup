@@ -1,0 +1,27 @@
+frank.segner@yumprd.tech.ec.europa.eu 13:18
+asr> list_asset -h crocodile-sc
+IP_ADDRESS HOST_NAME SERIAL_NUMBER PARENT_SERIAL ASR PROTOCOL SOURCE LAST_HEARTBEAT PRODUCT_NAME 
+---------- --------- ------------- ------------- --- -------- ------ -------------- ------------ 
+10.218.117.139 crocodile-sc BCF0847030 Y SNMP XSCF-FMA NA Sun SPARC Enterprise M5000 Server 
+
+Please use My Oracle Support 'http://support.oracle.com <http://support.oracle.com/> ' to view the activation status.
+
+asr>
+asr> list_asset -h crocodile-sc
+IP_ADDRESS HOST_NAME SERIAL_NUMBER PARENT_SERIAL ASR PROTOCOL SOURCE LAST_HEARTBEAT PRODUCT_NAME 
+---------- --------- ------------- ------------- --- -------- ------ -------------- ------------ 
+10.218.117.139 crocodile-sc BCF0847030 N SNMP XSCF-FMA NA Sun SPARC Enterprise M5000 Server 
+
+Please use My Oracle Support 'http://support.oracle.com <http://support.oracle.com/> ' to view the activation status.
+
+asr>
+host asrproxy
+This conversation is being saved in your Outlook Inbox folder.
+SEGNER Frank (DIGIT-EXT) 13:21
+Andreas also has a script for this:  
+.../git/tools/user/kreuzan/asr_status.sh   ...
+CLAEYS Jean-Pierre (DIGIT-EXT) 13:25
+Thanks Frank
+SEGNER Frank (DIGIT-EXT) 13:27
+actually forgot the:  ´asr> disable_asset -h crocodile-sc´
+between the two copy & paste´s 

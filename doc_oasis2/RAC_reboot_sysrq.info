@@ -1,0 +1,35 @@
+RedHat info on sysrq message
+https://access.redhat.com/solutions/396583
+
+System rebooted with message 'SysRq : Resetting' in the /var/log/messages file.
+ SOLUTION VERIFIED - Updated May 26 2014 at 4:55 PM - English 
+Environment
+Red Hat Enterprise Linux 6
+Red Hat Enterprise Linux 5
+Oracle RAC
+Issue
+Server has rebooted with the following output in the /var/log/messages file prior to the reboot:
+Raw
+Apr  3 11:35:14 <hostname> kernel: SysRq : Resetting
+Apr  3 11:42:42 <hostname> syslogd 1.4.1: restart.
+Apr  3 11:42:42 <hostname> kernel: klogd 1.4.1, log source = /proc/kmsg started.
+Resolution
+Identify the application that caused the SysRq to be triggered and disable it.
+In case of Oracle RAC Node eviction, contact Oracle Clusterware Technical Support Team and verify the corresponding log files of Oracle Clusterware.
+Root Cause
+The SysRq facility received a "SysRq event" that caused it to report "Resetting". This is an indication that a user, or privileged process, initiated a SysRq reboot event (b).
+Please see: How can I use the SysRq facility to collect information from a server which has hung ? 
+
+In some cases, this message can be due to a node being fenced in Oracle RAC. By default Oracle Cluster Services Synchronization Daemon (CSSD) reboot the server during Oracle RAC node eviction.
+Verify that the SysRq facility is currently activated on the system:
+Raw
+$ grep sysrq /etc/sysctl.conf 
+kernel.sysrq = 1
+sysctl on atlantis
+1 root@atlantis:-> grep sysrq /etc/sysctl.conf
+kernel.sysrq = 1
+console events
+Index,Severity,Service State,Source,Date,Sequence #,Event ID,Message,AuxLog
+1,I,no,System,04/01/2018 10:36:30.211,8858,400000B000000000,"The server was soft reset.",
+2,I,no,System,04/01/2018 10:31:58.963,8857,400000BF00000000,"Operating System status has changed to offline.",
+

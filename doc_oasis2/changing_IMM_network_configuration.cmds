@@ -1,0 +1,35 @@
+QRadar: Changing the IMM networking configuration
+
+http://www-01.ibm.com/support/docview.wss?uid=swg21989387
+
+
+About IMM Network Configurations
+
+Depending on the hardware revision of your appliance, your appliance might have an IMM or an IMM2. Generally speaking, QRadar M4 appliances use IMM2 while older QRadar M3 appliances use IMM. 
+
+For both IMM types, you have the option to set up or update your IMM networking configuration by using the different Web Interfaces of each IMM type. Needless to say, to make networking changes by using the Web Interface, an existing and functioning networking configuration must already be in place so that the Web Interface is accessible. If the Web Interface is not accessible or not convenient, you can also make these changes by using the Advanced Setting Utility (ASU) available on QRadar command line. See the "Related URLs" section for more information about both IMM versions and the Advanced Settings Utility. 
+
+
+Network Configurations from the IMM2 Web Interface
+
+Follow these steps to make changes to your networking configuration by using an IMM2 Web Interface: 
+Log in to the Web Interface of the IMM2 of your appliance.
+Click IMM Management > Network as shown in this example:
+
+Use the form that is displayed to update the hostname, IP address, subnet mask, and default gateway information as shown:
+
+
+
+Network Configuration from the ASU
+
+Advanced Settings Utility is a tool included by default with your QRadar Software that allows you to interact with the IMM/IMM2 of the appliance from the shell interface. To update your networking configuration using the ASU follow these steps: 
+Connect to your appliance using SSH with the root user.
+Go to the ASU directory using:
+cd /opt/ibm/toolscenter/asu
+Use these commands to update your networking configuration as needed:
+./asu64 set IMM.HostName1 IMM-hostname -kcs
+./asu64 set IMM.HostIPAddress1 IMM-IP-Address -kcs
+./asu64 set IMM.HostIPSubnet1 IMM-subnet -kcs
+./asu64 set IMM.GatewayIPAddress1 Gateway-IP -kcs
+Use this command to reboot the IMM:
+./asu64 rebootimm --kcs

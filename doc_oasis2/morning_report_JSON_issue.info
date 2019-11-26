@@ -1,0 +1,44 @@
+[claeyje@muscadet ~]$ morning_report
+Can't locate JSON.pm in @INC (you may need to install the JSON module) (@INC contains: /usr/local/lib64/perl5 /usr/local/share/perl5 /usr/lib64/perl5/vendor_perl /usr/share/perl5/vendor_perl /usr/lib64/perl5 /usr/share/perl5) at /home/claeyje/git/cfengine_main/inputs/bin/icinga2_query.pl line 10.
+BEGIN failed--compilation aborted at /home/claeyje/git/cfengine_main/inputs/bin/icinga2_query.pl line 10.
+===> Editing file: /tmp/morning_report.log                                  <===
+
+[claeyje@muscadet ~]$ log
+(wd now: ~/log)
+
+[claeyje@muscadet log]$ sudo dnf install perl-JSON
+
+Last metadata expiration check: 0:48:24 ago on Mon 11 Dec 2017 06:57:01 CET.
+Dependencies resolved.
+==============================================================================================================================================================================================================================================
+ Package                                                   Arch                                                   Version                                                        Repository                                              Size
+==============================================================================================================================================================================================================================================
+Installing:
+ perl-JSON                                                 noarch                                                 2.94-2.fc27                                                    fedora                                                  94 k
+
+Transaction Summary
+==============================================================================================================================================================================================================================================
+Install  1 Package
+
+Total download size: 94 k
+Installed size: 244 k
+Is this ok [y/N]: y
+Downloading Packages:
+perl-JSON-2.94-2.fc27.noarch.rpm                                                                                                                                                                              285 kB/s |  94 kB     00:00    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Total                                                                                                                                                                                                          39 kB/s |  94 kB     00:02     
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                                                                                                                                                                                      1/1 
+  Installing       : perl-JSON-2.94-2.fc27.noarch                                                                                                                                                                                         1/1 
+  Running scriptlet: perl-JSON-2.94-2.fc27.noarch                                                                                                                                                                                         1/1 
+  Verifying        : perl-JSON-2.94-2.fc27.noarch                                                                                                                                                                                         1/1 
+
+Installed:
+  perl-JSON.noarch 2.94-2.fc27                                                                                                                                                                                                                
+
+Complete!
+

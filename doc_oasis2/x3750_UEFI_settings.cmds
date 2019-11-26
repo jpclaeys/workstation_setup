@@ -1,0 +1,289 @@
+asu show PXE.NicPortPxeMode*
+
+
+
+asu set PXE.PXE.NicPortPxeMode.1 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.2 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.3 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.4 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.5 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.6 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.7 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.8 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.9 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.10 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.11 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.12 "UEFI and Legacy Support"
+
+
+
+asu set OperatingModes.ChooseOperatingMode "Custom Mode"
+
+
+
+asu set Processors.ProcessorPerformanceStates "Enable"
+
+
+
+asu set Power.PowerPerformanceBias "Platform Controlled"
+
+
+
+asu set Power.PlatformControlledType "Maximum Performance"
+
+
+
+asu set Power.10GbMezzCardStandbyPower "Enable"
+
+
+
+asu set Processors.DirectCacheAccessDCA "Enable"
+
+
+
+asu set Processors.C-States "Enable"
+
+
+
+asu set Memory.MemoryPowerManagement "Automatic"
+
+
+
+asu set DevicesandIOPorts.PCI64-BitResourceAllocation "Enable"
+
+
+
+asu set DevicesandIOPorts.MMConfigBase "2GB"
+
+
+
+asu set DevicesandIOPorts.RemoteConsole "Enable"
+
+
+
+asu set DevicesandIOPorts.SerialPortSharing "Enable"
+
+
+
+asu set DevicesandIOPorts.SerialPortAccessMode "Shared"
+
+
+
+asu set DevicesandIOPorts.SPRedirection "Enable"
+
+
+
+asu set DevicesandIOPorts.Com1ActiveAfterBoot "Enable"
+
+
+
+asu set DevicesandIOPorts.Com1TerminalEmulation "VT100"
+
+
+
+asu set DevicesandIOPorts.Com2ActiveAfterBoot "Enable"
+
+
+
+asu set DevicesandIOPorts.Com2TerminalEmulation "VT100"
+
+
+
+asu set UEFI.BootModes.QuietBoot "Disable"
+
+
+
+asu set BackupBankManagement.BackupBankManagementMethod "Auto Promotion"
+
+
+
+asu set BackupBankManagement.NumberOfSuccessfulConsecutiveBoots "2"
+
+
+
+asu set BackupBankManagement.NumberOfWeeks "4"
+
+
+
+asu show PXE.NicPortPxeMode*
+
+
+asu show PXE.NicPortMacAddress.*
+asu show PXE.NicPortPxeMode*
+
+
+
+asu set PXE.PXE.NicPortPxeMode.1 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.2 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.3 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.4 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.5 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.6 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.7 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.8 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.9 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.10 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.11 "UEFI and Legacy Support"
+
+
+
+asu set PXE.PXE.NicPortPxeMode.12 "UEFI and Legacy Support"
+
+
+
+asu set OperatingModes.ChooseOperatingMode "Custom Mode"
+
+
+
+asu set Processors.ProcessorPerformanceStates "Enable"
+
+
+
+asu set Power.PowerPerformanceBias "Platform Controlled"
+
+
+
+asu set Power.PlatformControlledType "Maximum Performance"
+
+
+
+asu set Power.10GbMezzCardStandbyPower "Enable"
+
+
+
+asu set Processors.DirectCacheAccessDCA "Enable"
+
+
+
+asu set Processors.C-States "Enable"
+
+
+
+asu set Memory.MemoryPowerManagement "Automatic"
+
+
+
+asu set DevicesandIOPorts.PCI64-BitResourceAllocation "Enable"
+
+
+
+asu set DevicesandIOPorts.MMConfigBase "2GB"
+
+
+
+asu set DevicesandIOPorts.RemoteConsole "Enable"
+
+
+
+asu set DevicesandIOPorts.SerialPortSharing "Enable"
+
+
+
+asu set DevicesandIOPorts.SerialPortAccessMode "Shared"
+
+
+
+asu set DevicesandIOPorts.SPRedirection "Enable"
+
+
+
+asu set DevicesandIOPorts.Com1ActiveAfterBoot "Enable"
+
+
+
+asu set DevicesandIOPorts.Com1TerminalEmulation "VT100"
+
+
+
+asu set DevicesandIOPorts.Com2ActiveAfterBoot "Enable"
+
+
+
+asu set DevicesandIOPorts.Com2TerminalEmulation "VT100"
+
+
+
+asu set UEFI.BootModes.QuietBoot "Disable"
+
+
+
+asu set BackupBankManagement.BackupBankManagementMethod "Auto Promotion"
+
+
+
+asu set BackupBankManagement.NumberOfSuccessfulConsecutiveBoots "2"
+
+
+
+asu set BackupBankManagement.NumberOfWeeks "4"
+
+
+
+asu show PXE.NicPortPxeMode*
+
+
+asu show PXE.NicPortMacAddress.*
+

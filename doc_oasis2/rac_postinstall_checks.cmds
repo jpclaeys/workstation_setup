@@ -1,0 +1,4 @@
+ ecdc-lsslots  | grep Fib
+ disk-list -q
+ disk-hbamap
+

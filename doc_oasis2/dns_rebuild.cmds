@@ -1,0 +1,10 @@
+2017-10-18 10:57:54: ##### ERROR with dns reconfiguration on dnsmaster.cc.cec.eu.int #####
+2017-10-18 10:57:54: [!] Changes are now committed but the new DNS configuration is not active.
+2017-10-18 10:57:54: [!] DNS reconfiguration will be attempted again on the next commit.
+2017-10-18 10:57:54: [!] If you want force a rebuild immediately, run this command on dnsmaster.cc.cec.eu.int:
+2017-10-18 10:57:54: [!]   sudo -i -u dnsupdate /ec/prod/app/dnsupdate/zones/bin/svn_update.sh
+2017-10-18 10:57:54: Null message body; hope that's ok
+2017-10-18 10:57:54: ##### END post-commit #####
+
+sr ns sudo -i -u dnsupdate /ec/prod/app/dnsupdate/zones/bin/svn_update.sh
+

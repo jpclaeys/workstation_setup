@@ -1,0 +1,46 @@
+
+How to increase resilvering and/or scrub speed
+Modified on: Wed, 26 Oct, 2016 at 10:05 PM
+
+Problem
+When a disk fails and it is replaced, a resilvering process is initiated. The problem is that the resilvering job can take a long time to complete with the default settings.
+
+Solution
+Note: additional IO used by the resilvering will be taken from other functionalities like virtualisation or sharing. Affected functionalities may perform slower than usual.
+
+We can increase the scrub/resilvering speed by allocating disk IO.  Run the following commands:    
+
+# Increase resilvering IO priority
+echo zfs_resilver_min_time_ms/w1388 | mdb -kw   # 5000
+echo zfs_resilver_delay/w0 | mdb -kw
+
+# Increase scrub IO priority
+echo zfs_scan_min_time_ms/w1388 | mdb -kw
+echo zfs_scrub_delay/w0 | mdb -kw 
+    
+
+After scrub/resilvering is done, set back the default values:    
+
+# Reset resilvering IO priority to defaults
+echo zfs_resilver_min_time_ms/wbb8 | mdb -kw  # 3000
+echo zfs_resilver_delay/w2 | mdb -kw
+
+# Reset scrub IO priority to defaults
+echo zfs_scan_min_time_ms/w3e8 | mdb -kw     # 1000
+echo zfs_scrub_delay/w4 | mdb -kw 
+
+
+
+#--------------------------------------------------------------------------
+# Speed up ZFS resilver (boost)
+#--------------------------------------------------------------------------
+echo zfs_resilver_delay/W0|mdb -kw  > /dev/null 2>&1
+echo zfs_resilver_min_time_ms/W0t3000|mdb -kw > /dev/null 2>&1
+
+#--------------------------------------------------------------------------
+# Set ZFS resilvering back to throttling (handbrake)
+#--------------------------------------------------------------------------
+echo zfs_resilver_delay/W2|mdb -kw  > /dev/null 2>&1 
+echo zfs_resilver_min_time_ms/W0t300|mdb -kw > /dev/null 2>&1 
+
+

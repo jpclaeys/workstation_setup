@@ -1,0 +1,45 @@
+FYI, there is a small script to query the united views and return a JSON output that you may find useful.
+It comes with a bash autocomplete script to complete the view name as well as any optional field to query on.
+
+It's in the UNIX tools repo (ssh://gerrit/tools) in user/riessar/ws
+Direct link for the  TT: http://www.dcim.cc.cec.eu.int/cgit/tools/plain/user/riessar/ws
+
+-	Save it in ~/bin or somewhere else that is in your $PATH
+-	Install dependencies (fedora): yum install jq perl-URI
+-	To install the autocomplete script: `ws -a >> ~/.bashrc` and source ~/.bashrc
+
+Usage:
+ws <tab><tab> (shows views) <tab><tab> (shows optional fields)
+
+Syntax: /home/riessar/bin.ec/ws [-e <local|test|prod>] [-v] [-a] <ws_view>
+  -e  environment (prod by default)
+  -v  verbose
+  -a  show bash autocompletion script
+
+The field query syntax is explained here:  http://www.dcim.cc.cec.eu.int/wiki/view/ToolsTeam/UnitedWebServices#Query_Syntax
+
+Examples:
+
+-	All accounts on host cfe3-1: 
+ws ws_gui_user_accounts hostname=cfe3-1
+-	All linux hosts in buffer or ignored:
+ws ws_listallhosts10 'osfam=Linux&(hstatus=ignored|hstatus=buffer)'
+
+Note: please don't run expensive views too often (for example not in a script that runs on all hosts)
+
+To do further modifications to the JSON output you can pipe to jq:
+
+-	Account names (only) for host cfe3-1:
+ws ws_gui_user_accounts hostname=cfe3-1 | jq -r '.[].username'
+Output: 
+nagios
+comvlt
+netwrkr
+oracle
+bmcptrl
+cfengine
+
+(text above copied to http://www.dcim.cc.cec.eu.int/wiki/view/ToolsTeam/UnitedWebServices)
+
+
+

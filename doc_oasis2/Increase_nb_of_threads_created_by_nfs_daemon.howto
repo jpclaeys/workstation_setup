@@ -1,0 +1,40 @@
+How to increase the number of threads created by the NFS daemon in RHEL 4, 5 and 6?
+ SOLUTION VERIFIED - Updated August 14 2015 at 6:30 PM - English 
+Environment
+Red Hat Enterprise Linux 4
+Red Hat Enterprise Linux 5
+Red Hat Enterprise Linux 6
+NFS
+Issue
+In case of a NFS server with a high load, it may be advisable to increase the number of the threads created during the nfsd server start up.
+How to increase the threads created by nfs daemon in Red Hat Enterprise Linux?
+RPCNFSDCOUNT
+nfs thread count / nfsd thread count
+Resolution
+Edit the following line in /etc/sysconfig/nfs
+
+Raw
+RPCNFSDCOUNT=8
+RPCNFSDCOUNT is the number of threads that will be started. Increase this to start more threads.
+
+Diagnostic Steps
+To check if there are enough threads started, execute the following command:
+
+Raw
+cat /proc/net/rpc/nfsd
+Review the following line:
+
+Raw
+th 16 0 2.610 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+The first number is the total number of NFS server threads started. The second number indicates whether at any time all of the threads were running at once. The remaining numbers are a thread count time histogram.
+
+You may use a script similar to the following to monitor thread usage over time:
+
+Raw
+while :
+do
+    date
+    grep "^th" /proc/net/rpc/nfsd
+    sleep 300
+done
+NOTE: This has changed in RHEL 6: Why does value for busy threads in 'th'(thread) line remains zero in /proc/net/rpc/nfsd?

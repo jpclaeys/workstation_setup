@@ -1,0 +1,12 @@
+# Cleanup wtmpx file
+---------------------
+ll -h /var/adm/wtmpx
+# Instead of deleting wtmpx file, wipe the file contents
+svcs utmp
+svcadm disable utmp
+cat /dev/null > /var/adm/wtmpx
+svcadm enable utmp
+svcs utmp
+ll -h /var/adm/wtmpx
+
+

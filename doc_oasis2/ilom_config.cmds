@@ -1,0 +1,8 @@
+To configure the ILOM (From your computer): 
+
+ssh -o StrictHostKeyChecking=no -l root waitaha "ilomconfig modify network --ipaddress=10.134.47.193  --netmask=255.255.248.0 --gateway=10.134.40.1; ilomconfig list network"
+
+To list only the network (from your computer)
+
+ssh -o StrictHostKeyChecking=no -l root waitaha "ilomconfig list network"
+

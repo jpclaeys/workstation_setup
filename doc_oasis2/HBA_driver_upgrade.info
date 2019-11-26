@@ -1,0 +1,129 @@
+---------------------------------------------------------------------------------------------------
+disk-hbamap -v | egrep "model:|state:|driver version:|firmware version:" | sed 's/ version//g' | awk '{ print $2 }' | tr '\012' ' ' | xargs -n4 | grep -v offline | awk '{ print $1 " " $3 " " $4 }' | sort | uniq
+modinfo qla2xxx | grep version
+systool -c scsi_host -v -d host1 | grep -i vers
+---------------------------------------------------------------------------------------------------
+Examples:
+---------
+
+16 root@kinglouie:->disk-hbamap -v | egrep "model:|state:|driver version:|firmware version:" | sed 's/ version//g' | awk '{ print $2 }' | tr '\012' ' ' | xargs -n4 | grep -v offline | awk '{ print $1 " " $3 " " $4 }' | sort | uniq
+42D0485 Emulex 2.03X14
+17 root@kinglouie:->modinfo qla2xxx | grep version
+version:        8.07.00.26.06.8-k
+srcversion:     8D6E3FEA4BB50A3AD0A3A01
+vermagic:       2.6.32-696.18.7.el6.x86_64 SMP mod_unload modversions 
+
+ root@kinglouie:->systool -c scsi_host -v -d host1 | grep -i vers
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.2.172.0"
+    option_rom_version  = "11.40a4"
+---------------------------------------------------------------------------------------------------
+
+14 root@medusa:->disk-hbamap -v | egrep "model:|state:|driver version:|firmware version:" | sed 's/ version//g' | awk '{ print $2 }' | tr '\012' ' ' | xargs -n4 | grep -v offline | awk '{ print $1 " " $3 " " $4 }' | sort | uniq
+42D0485 Emulex 2.03X14
+
+15 root@medusa:->modinfo qla2xxx | grep version
+version:        8.07.00.26.06.8-k
+srcversion:     8D6E3FEA4BB50A3AD0A3A01
+vermagic:       2.6.32-696.18.7.el6.x86_64 SMP mod_unload modversions 
+
+
+
+[claeyje@muscadet HBA]$ scp elx-lnvgy_dd_fc_17a-11.2.172.0-2_rhel6_x86-64.tgz root@kinglouie:/tmp
+elx-lnvgy_dd_fc_17a-11.2.172.0-2_rhel6_x86-64.tgz                                   100%   15MB  11.0MB/s   00:01    
+[claeyje@muscadet HBA]$ scp elx-lnvgy_dd_fc_17a-11.2.172.0-2_rhel6_x86-64.tgz root@medusa:/tmp
+elx-lnvgy_dd_fc_17a-11.2.172.0-2_rhel6_x86-64.tgz                                   100%   15MB  11.2MB/s   00:01    
+[claeyje@muscadet HBA]$ cp elx-lnvgy_dd_fc_17a-11.2.172.0-2_rhel6_x86-64.tgz /tmp
+
+
+[claeyje@muscadet tmp]$ tar -ztvf elx-lnvgy_dd_fc_17a-11.2.172.0-2_rhel6_x86-64.tgz
+drwxr-xr-x root/root         0 2016-12-16 09:29 ./
+drwxrwxrwx root/root         0 2016-12-16 09:29 ./SRPM/
+drwxr-xr-x root/root         0 2016-12-16 09:29 ./SRPM/redhat-release-server-6Server-6.7/
+-rw-r--r-- root/root    614371 2016-12-16 09:12 ./SRPM/redhat-release-server-6Server-6.7/elx-lpfc-11.2.172.0-1.rhel6u7.src.rpm
+drwxr-xr-x root/root         0 2016-12-16 09:29 ./SRPM/redhat-release-server-6Server-6.8/
+-rw-r--r-- root/root    614371 2016-12-16 09:13 ./SRPM/redhat-release-server-6Server-6.8/elx-lpfc-11.2.172.0-1.rhel6u8.src.rpm
+-rwxrwxrwx root/root      7898 2016-12-16 09:13 ./install.sh
+drwxrwxrwx root/root         0 2016-12-16 09:29 ./disks/
+-rw-r--r-- root/root   2017280 2016-12-16 09:12 ./disks/elx-lpfc-11.2.172.0.rhel6u7.x86_64.iso
+-rw-r--r-- root/root   2017280 2016-12-16 09:13 ./disks/elx-lpfc-11.2.172.0.rhel6u8.x86_64.iso
+drwxrwxrwx root/root         0 2016-12-16 09:29 ./RPMS/
+drwxr-xr-x root/root         0 2016-12-16 09:29 ./RPMS/redhat-release-server-6Server-6.7/
+-rw-r--r-- root/root   1609764 2016-12-16 09:12 ./RPMS/redhat-release-server-6Server-6.7/kmod-elx-lpfc-11.2.172.0-1.rhel6u7.x86_64.rpm
+-rw-r--r-- root/root     11232 2016-12-16 09:29 ./RPMS/redhat-release-server-6Server-6.7/elx-vector-map-1-1.rhel6u7.x86_64.rpm
+drwxr-xr-x root/root         0 2016-12-16 09:29 ./RPMS/redhat-release-server-6Server-6.8/
+-rw-r--r-- root/root   1611456 2016-12-16 09:13 ./RPMS/redhat-release-server-6Server-6.8/kmod-elx-lpfc-11.2.172.0-1.rhel6u8.x86_64.rpm
+
+[claeyje@muscadet tmp]$ tar -zxvf elx-lnvgy_dd_fc_17a-11.2.172.0-2_rhel6_x86-64.tgz
+
+./install.sh
+21 root@kinglouie:->./install.sh 
+
+-------------- get current os ------------------
+RHEL6
+-------------- rpms_exist_for_curr_kernel ------------------
+Searching for RHEL6 rpm
+Attempting to install RPM from directory '/tmp/RPMS/redhat-release-server-6Server-6.7'...
+-------------- install_rpm ------------------
+Attempting to install rpm...
+-------------- check_if_already_installed ------------------
+Checking if the rpm is already installed...
+Installing elx-vector-map-1-1.rhel6u7.x86_64.rpm...
+Preparing...                ########################################### [100%]
+   1:elx-lpfc-vector-map    ########################################### [100%]
+-------------- check_if_already_installed ------------------
+Checking if the rpm is already installed...
+Installing kmod-elx-lpfc-11.2.172.0-1.rhel6u7.x86_64.rpm...
+Preparing...                ########################################### [100%]
+   1:kmod-elx-lpfc          ########################################### [100%]
+
+
+
+21 root@medusa:->./install.sh 
+
+-------------- get current os ------------------
+RHEL6
+-------------- rpms_exist_for_curr_kernel ------------------
+Searching for RHEL6 rpm
+Attempting to install RPM from directory '/tmp/RPMS/redhat-release-server-6Server-6.7'...
+-------------- install_rpm ------------------
+Attempting to install rpm...
+-------------- check_if_already_installed ------------------
+Checking if the rpm is already installed...
+Installing elx-vector-map-1-1.rhel6u7.x86_64.rpm...
+Preparing...                ########################################### [100%]
+   1:elx-lpfc-vector-map    ########################################### [100%]
+-------------- check_if_already_installed ------------------
+Checking if the rpm is already installed...
+Installing kmod-elx-lpfc-11.2.172.0-1.rhel6u7.x86_64.rpm...
+Preparing...                ########################################### [100%]
+   1:kmod-elx-lpfc          ########################################### [100%]
+
+
+
+---------------------------------------------------------------------------------------------------
+
+22 root@kinglouie:->systool -c scsi_host -v -d host1 | grep -i vers
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.1.6"
+    option_rom_version  = "11.40a4"
+
+root@medusa:->systool -c scsi_host -v -d host1 | grep -i vers
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.0.1.6"
+    option_rom_version  = "11.40a4"
+
+---------------------------------------------------------------------------------------------------
+
+root@kinglouie:->disk-hbamap -v | egrep "model:|state:|driver version:|firmware version:" | sed 's/ version//g' | awk '{ print $2 }' | tr '\012' ' ' | xargs -n4 | grep -v offline | awk '{ print $1 " " $3 " " $4 }' | sort | uniq
+42D0485 Emulex 2.03X14
+
+4 root@kinglouie:->modinfo qla2xxx | grep version
+version:        8.07.00.26.06.8-k
+srcversion:     8D6E3FEA4BB50A3AD0A3A01
+vermagic:       2.6.32-696.18.7.el6.x86_64 SMP mod_unload modversions 
+5 root@kinglouie:->systool -c scsi_host -v -d host1 | grep -i vers
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.2.172.0"
+    option_rom_version  = "11.40a4"
+
+8 root@medusa:->systool -c scsi_host -v -d host1 | grep -i vers
+    lpfc_drvr_version   = "Emulex LightPulse Fibre Channel SCSI driver 11.2.172.0"
+    option_rom_version  = "11.40a4"
+

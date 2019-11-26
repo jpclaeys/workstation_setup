@@ -1,0 +1,13 @@
+noincsearch VIM Command
+Explanation
+noincsearch command is used to turn off incremental highlighting of the searching string while typing.
+Usage:
+:set noincsearch
+
+
+
+[claeyje@muscadet ~]$ cat .vimrc
+syntax off
+set nohlsearch
+set t_Co=0
+

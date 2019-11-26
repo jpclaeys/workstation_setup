@@ -1,0 +1,10 @@
+KREUZINGER Andreas (DIGIT-EXT) 12:45: 
+systemctl status serial-getty@ttyS0.service
+systemctl restart serial-getty@ttyS0.service
+systemctl enable serial-getty@ttyS0.service
+KREUZINGER Andreas (DIGIT-EXT) 13:06: 
+start serial DEV=ttyS0 SPEED=115200
+start serial DEV=ttyS1 SPEED=115200
+status serial DEV=ttyS0
+status serial DEV=ttyS1
+

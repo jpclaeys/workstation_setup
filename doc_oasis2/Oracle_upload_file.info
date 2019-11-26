@@ -1,0 +1,28 @@
+[claeyje@muscadet log]$ sr unixadmin2
+
+2 root@unixadmin2:->ecdc-upload-oraclefiles 
+[?] Usage: /usr/sbin/ecdc-upload-oraclefiles file sr-number [oracle-portal-username]
+[?]        (where oracle-portal-username is usualy your EC mail address)
+[?]        If it is stored in /root/defaults.conf as 'DefaultOracleUser=$USER'
+[?]        it can be ommitted on the command line
+3 root@unixadmin2:->echo $USER
+root
+4 root@unixadmin2:->ll /var/tmp
+-rw------- 1 root    root    21504081 Jan  2 16:15 explorer.85e65f06.dibbler.cc.cec.eu.int-2017.01.02.11.57.tar.gz
+
+5 root@unixadmin2:->ecdc-upload-oraclefiles 
+[?] Usage: /usr/sbin/ecdc-upload-oraclefiles file sr-number [oracle-portal-username]
+[?]        (where oracle-portal-username is usualy your EC mail address)
+[?]        If it is stored in /root/defaults.conf as 'DefaultOracleUser=$USER'
+[?]        it can be ommitted on the command line
+6 root@unixadmin2:->ecdc-upload-oraclefiles /var/tmp/explorer.85e65f06.dibbler.cc.cec.eu.int-2017.01.02.11.57.tar.gz 3-13956123601 JEAN-PIERRE.CLAEYS@EXT.EC.EUROPA.EU
+[-] summary
+[v] Filename: /var/tmp/explorer.85e65f06.dibbler.cc.cec.eu.int-2017.01.02.11.57.tar.gz
+[v] SR-Number: 3-13956123601
+[v] Oracle Portal Username: JEAN-PIERRE.CLAEYS@EXT.EC.EUROPA.EU
+
+Do you want to initiate the upload (y/n) ? y
+Enter host password for user 'JEAN-PIERRE.CLAEYS@EXT.EC.EUROPA.EU':
+######################################################################## 100.0%
+[v] file successfuly uploaded
+

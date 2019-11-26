@@ -1,0 +1,60 @@
+HP ILO 4
+
+System Information
+
+
+Subsystems and Devices
+Subsystems and Devices	Status
+Agentless Management Service	 Not available
+BIOS/Hardware Health	 Degraded
+Fans	 OK
+Memory	 Degraded
+Network	 OK
+Processors	 OK
+Storage	 OK
+Temperatures	 OK
+
+
+Click on memory:
+
+
+
+Advanced Memory Protection (AMP)
+
+
+AMP Status
+
+AMP Mode Status
+Degraded Advanced ECC
+Configured AMP Mode
+Advanced ECC
+Supported AMP Modes
+
+Advanced ECC
+Online Spare (Rank Sparing)
+
+Memory Summary
+Location	Number of Sockets	Total Memory	Operating Frequency	Operating Voltage
+Processor 1 	8 	8 GB 	1600 MHz 	1.5 V 
+Processor 2 	8 	8 GB 	1600 MHz 	1.5 V 
+
+
+Memory Details ( show empty sockets ) 
+Memory Location	Socket	Status	HPE Memory	Part Number	Type	Size	Maximum Frequency	Minimum Voltage	Ranks	Technology
+Processor 1 	1 	  Good, In Use 	HPE SmartMemory  	647648-071  	DIMM DDR3 	4096 MB 	1600 MHz 	1.5 V 	1 	RDIMM 
+Processor 1 	3 	  Degraded 	HPE SmartMemory  	647648-071  	DIMM DDR3 	4096 MB 	1600 MHz 	1.5 V 	1 	RDIMM 
+Processor 2 	1 	  Good, In Use 	HPE SmartMemory  	647648-071  	DIMM DDR3 	4096 MB 	1600 MHz 	1.5 V 	1 	RDIMM 
+Processor 2 	3 	  Good, In Use 	HPE SmartMemory  	647648-071  	DIMM DDR3 	4096 MB 	1600 MHz 	1.5 V 	1 	RDIMM 
+
+
+Click on BIOS/Hardware Health:
+
+click on view CSV
+							
+ILO Event log:
+--------------
+﻿﻿"ID","Severity","Class","Last Update","Initial Update","Count","Description",
+"25","Critical","POST Message","10/31/2017 11:54","10/31/2017 11:54","2","POST Error: 207-Memory initialization error on Processor 1 Socket 3. The operating system may not have access to all of the memory installed in the system.",
+"24","Critical","POST Message","08/22/2017 12:01","08/22/2017 12:01","2","POST Error: 207-Memory initialization error on Processor 1 Socket 3. The operating system may not have access to all of the memory installed in the system.",
+"23","Critical","POST Message","07/06/2017 10:03","07/06/2017 10:03","2","POST Error: 207-Memory initialization error on Processor 1 Socket 3. The operating system may not have access to all of the memory installed in the system.",
+

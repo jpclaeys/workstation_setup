@@ -1,0 +1,37 @@
+-----------------------------------------------------------------------------------------------------------------------------------
+Subject:		DCTSC UNIX HOUSING - /var is used >90%  on ...
+
+Template:		DCTSC UNIX HOUSING
+
+Classification
+
+Incident type:  	REQUEST FOR INFORMATION
+Configuration Item:	DC_DCTSC_UNIX HOUSING
+
+System:			SERVICE
+Component:		DC ICT SERVICES
+Item:			UNIX-NAGIOS
+Module:			PLUGIN - DISKFREE
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Description example:
+--------------------
+
+@CT: please send to application owner:
+
+wlaemp08;PROD_DISKFREE;2;check_df CRITICAL (1 critical error)FS: 28, FS checked: 5, checks: 10: filesystem usage of standard FS /var is used 91% (>90%)
+
+The mailbox size for the user empeurea is 1.4 GB; please cleanup.
+
+root@wlaemp08:->ll -h /var/spool/mail/empeurea
+-rw-rw---- 1 empeurea mail 1.4G Mar 16 08:07 /var/spool/mail/empeurea
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Comment for the morning report
+------------------------------
+
+ - Ticket IM0015500889 has been opened for the application owner
+
+-----------------------------------------------------------------------------------------------------------------------------------
+

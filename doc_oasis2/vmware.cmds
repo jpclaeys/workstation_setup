@@ -1,0 +1,39 @@
+URL: https://www.systutorials.com/38764/how-to-install-run-and-uninstall-vmware-player-and-virtualbox-on-fedora-linux/
+
+How to Install, Run and Uninstall VMware Player and VirtualBox on Fedora Linux
+
+
+VMware Player ∞
+Install VMware Player ∞
+Download the installation bundle from VMware’s website. For example, the file we download is: VMware-Player-4.0.0-471780.x86_64.bundle .
+
+Install needed kernel header and devel packages
+
+# yum install kernel-headers kernel-devel
+Run the bundle file
+
+# sh VMware-Player-4.0.0-471780.x86_64.bundle
+Then just follow the instruction of the GUI of the VMware installer, and you can finish the installation.
+
+Run VMware Player ∞
+Just execute
+
+$ vmplayer
+Start a virtual machine just by one command
+
+$ vmplayer /path/to/virtual/machine/config.vmx
+Give the path to the virtual machine configuration file (a .vmx file under the virtual machine’s directory) to vmplayer as its parameter.
+
+Uninstall VMware Player ∞
+VMware installer provides the method to uninstall VMware products. We can use this tool
+
+# vmware-installer  --uninstall-product vmware-player
+It has a GUI and just follow its instruction to finish the uninstallation.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Re: Fedora 26 VMware Player not working
+Hi,
+
+I run into the same problem. The instructions under http://rglinuxtech.com/?p=1992 solved it for me.
+
+As mentioned in the comments you should also run "/etc/init.d/vmware restart" after the "depmod -a" command.

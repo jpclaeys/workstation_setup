@@ -1,0 +1,8 @@
+21 root@pratincole:->clrs show -v oraprod13-has| nawk -F ":" '/Zpools:/ {print $NF}'
+                                       oraprod13-main oraprod13-data oraprod13-redo oraprod13-archives
+22 root@pratincole:->ZPL=(`clrs show -v oraprod13-has| nawk -F ":" '/Zpools:/ {print $NF}'`); echo ${ZPL[@]}
+oraprod13-main oraprod13-data oraprod13-redo oraprod13-archives
+23 root@pratincole:->
+23 root@pratincole:->
+23 root@pratincole:->ZPL=(`clrs show -v oraprod13-has| nawk -F ":" '/Zpools:/ {print $NF}'`); echo ${ZPL[@]}
+oraprod13-main oraprod13-data oraprod13-redo oraprod13-archives

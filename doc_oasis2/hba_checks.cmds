@@ -1,0 +1,20 @@
+---------------------------------------------------------------------------------------------------
+fcinfo hba-port -l
+print-cdp
+disk-hbamap -v
+cfgadm -al | grep ::
+luxadm -e port
+fcinfo hba-port -l| egrep 'HBA Port|State:|OS Device'
+
+disk-hbamap -v | egrep "model:|state:|driver version:|firmware version:" | sed 's/ version//g' | awk '{ print $2 }' | tr '\012' ' ' | xargs -n4 | grep -v offline | awk '{ print $1 " " $3 " " $4 }' | sort | uniq
+modinfo qla2xxx | grep ^ver | sort -u
+
+systool -c scsi_host -v -d host1 | egrep -i 'fwrev|vers|modelname'
+
+mypssh "$HOSTLIST" '(disk-hbamap | grep -v offline  && systool -c scsi_host -v -d host`disk-hbamap | awk '/host/ {print $1;exit}'`| egrep -i "fwrev|fw_vers|driver_vers|fcode|modelname"| egrep -v "= \"\""  && disk-hbamap -v | grep -A7 host3 | grep vers | sort -u && modinfo qla2xxx | grep ^ver | sort -u)'
+
+
+disk-hbamap | grep -v offline  && systool -c scsi_host -v -d host`disk-hbamap | awk '/host/ {print $1;exit}'`| egrep -i "fwrev|fw_vers|driver_vers|fcode|modelname"| egrep -v "= \"\""  && disk-hbamap -v | grep -A7 host | grep vers | sort -u && modinfo qla2xxx | grep ^ver | sort -u
+
+---------------------------------------------------------------------------------------------------
+

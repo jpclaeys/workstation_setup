@@ -1,0 +1,61 @@
+Subject: new subnets
+
+1. add in $CFDATA/system/network/netmasks
+#DMZ DC System Controllers
+10.138.49.0     255.255.255.0
+
+
+2. git pull && git push
+
+
+3. sr ns "ecdc-cfengine run"
+
+
+4.cd $DNSREPO
+
+
+5.svn up
+
+
+6 reserve ip with caipa
+
+
+7. svn ci -m "ticket number"
+
+
+8. send ticket to SNET for delegation as explained http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/PrepareForNewSubnet
+
+
+9. add in $DNSREPO/domains
+REVERSE(10.138.49, cc.cec.eu.int)
+
+
+10. create file $DNSREPO/49.138.10 with the content:
+
+SOA(REV(10.138.49))
+
+include(cf/dnsservers_no_tc)
+
+REVERSE(10.138.49)
+
+
+11. svn add $DNSREPO/49.138.10
+
+
+12. svn ci -m "ticket number"
+
+
+13. add in $CFDATA/services/named-slave/named.conf-bind9-slave
+zone "49.138.10.IN-ADDR.ARPA" in {
+    type slave;
+    file "db.10.138.49";
+    masters {158.167.212.100;};
+};
+
+
+14. git pull && git push
+
+
+15. for h in ns dnssrv1 dnssrv2 dnssrv3; do sr $h "ecdc-cfengine run"; done
+
+

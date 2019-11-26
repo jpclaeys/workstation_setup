@@ -1,0 +1,78 @@
+---------------------------------------------------------------------------------------------------
+mypssH "$HL" '(lspci | grep Fibre | head -1)'
+---------------------------------------------------------------------------------------------------
+FOR QLOGIC HBA on x3850
+------------------------
+Cfr Wiki: http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/IBMFlashingFirmware
+
+Qlogic
+Copy the tar.gz files to the host, extract it, build it and load it.
+ 
+# For firmware: 
+ 
+gzip -d qlogic-firmware-8.07.00-1.noarch.rpm.gz 
+rpm -ivh --replacefiles qlogic-firmware-8.07.00-1.noarch.rpm 
+ 
+# For driver: 
+  
+tar -xzvf qla2xxx* && cd qla2xxx* 
+./extras/build.sh install 
+
+---------------------------------------------------------------------------------------------------
+
+[claeyje@muscadet HBA]$ pwd
+/home/claeyje/git/cfengine_data_static/system/
+
+HL=
+mypssH "$HL" cat /etc/redhat-release
+
+mypssh "$HL" '(disk-hbamap | grep -v offline  && systool -c scsi_host -v -d host3| egrep -i "fwrev|fw_vers|driver_vers|fcode|modelname"| egrep -v "= \"\""  && disk-hbamap -v | grep -A7 host3 | grep vers | sort -u && modinfo qla2xxx | grep ^version)'
+
+---------------------------------------------------------------------------------------------------
+Upgrading firmware:
+-------------------
+
+[claeyje@muscadet HBA]$ pwd
+/home/claeyje/git/cfengine_data_static/system/firmware_LENOVO/IBM,System-x3850-X5/HBA
+
+for H in $HL; do scp <filename> root@$H:/tmp;done
+
+mypssH "$HL" '(cd /tmp; gzip -d <gz filename>; rpm -ivh --replacefiles <rpm filename>)'
+---------------------------------------------------------------------------------------------------
+Output example:
+---------------
+[1] 13:08:37 [SUCCESS] japetus
+Preparing...                ##################################################
+qlogic-firmware             ##################################################
+---------------------------------------------------------------------------------------------------
+Upgrading device driver:
+------------------------
+
+for H in $HL; do scp ../../HBA-drivers/QLogic/qla2xxx-src-v8.07.00.34.06.0-k.tar.gz root@$H:/tmp;done
+
+mypssH "$HL" '(cd /tmp;tar -xzvf qla2xxx*.gz && cd qla2xxx* ; ./extras/build.sh install)'
+---------------------------------------------------------------------------------------------------
+Output example:
+---------------
+[1] 13:14:02 [SUCCESS] japetus
+<snip>
+QLA2XXX -- Building the qla2xxx driver...
+make: Entering directory `/usr/src/kernels/2.6.32-696.3.2.el6.x86_64'
+  Building modules, stage 2.
+  MODPOST 1 modules
+make: Leaving directory `/usr/src/kernels/2.6.32-696.3.2.el6.x86_64'
+QLA2XXX -- Installing the qla2xxx modules to /lib/modules/2.6.32-696.3.2.el6.x86_64/extra/qlgc-qla2xxx/...
+QLA2XXX -- Installing udev rule to capture FW dump...
+
+<snip>
+---------------------------------------------------------------------------------------------------
+
+mypssH "$HL" '(modinfo qla2xxx | grep ^version)'
+
+
+mypssh "$HL" '(disk-hbamap | grep -v offline  && systool -c scsi_host -v -d host3| egrep -i "fwrev|fw_vers|driver_vers|fcode|modelname"| egrep -v "= \"\""  && disk-hbamap -v | grep -A7 host3 | grep vers | sort -u && modinfo qla2xxx | grep ^version)'
+
+# Device driver info
+mypssH "$HL" '(printf "%-16s" `hostname| cut -d\. -f1`  && modinfo qla2xxx | grep ^version)'| grep -v SUCC
+
+---------------------------------------------------------------------------------------------------

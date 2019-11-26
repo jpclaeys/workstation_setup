@@ -1,0 +1,78 @@
+---------------------------------------------------------------------------------------------------
+# How to Disable the backups
+---------------------------------------------------------------------------------------------------
+
+• disable backup (either via a ticket you previously raised to backup team or using the nw_switchclientstatus script on bkpmgt1) 
+
+sr bkpmgtp1
+su - netwrkr
+
+TICKET=IM0015888313
+HOST=dsbsftp
+COMMENT="move VM"
+
+nwk_whereIs -c $HOST
+BKPSRV=`nwk_whereIs -c $HOST| cut -d";" -f1`; echo $BKPSRV
+nw_switchClientState -s $BKPSRV -c ${HOST}.cc.cec.eu.int -i $TICKET  -L claeyje -B Disabled -C "$COMMENT" -y
+nwk_makeClientList
+nwk_whereIs -c $HOST
+
+# Check backup status
+sr bkpmgtp1 '(su -c "/ec/prod/server/backup/scripts/bin/nwk_whereIs.sh -c dsbsftp" netwrkr)'
+check_backup_status $HOST
+
+---------------------------------------------------------------------------------------------------
+
+NB: Scripts location:
+/ec/prod/server/backup/scripts/bin/nwk_switchClientState.sh
+/ec/prod/server/backup/scripts/bin/nwk_whereIs.sh
+
+17/08 10:06 netwrkr@bkpmgtp1:[~](0)$ nwk_switchClientState.sh
+missing option -f or couple -s -c
+
+        Usage:
+        nwk_switchClientState.sh OPTIONS [OPTIONS] where:
+        OPTIONS are:
+                -s BKPSRV : backup server name for unix or windows clients
+                -c CLIENT : fully qualified domain name of the client to create
+                -f FILE (client@bkpsrv format) instead of couple -s -c : a list of clients to remove
+                -i IM0000000000 : SMT ticket number
+                -L LOGIN : your windows login
+
+        [OPTIONS] are:
+                -y : yes, do it really; DUMMY mode by default
+                -g GROUP: group of the client; By default, all groups
+                -B STATE: Backup Enabled flag: one of "Enabled|Disabled (first letter in UPPERCASE mandatory)"
+                -C "COMMENT" : to put in the comment field; do not forget the " "
+                -h : this help
+
+# echo "usage:" $PROG_NAME "(-s BKPSRV (unix|windows) -c CLIENT | -f FILE (client@bkpsrv format) ) -i IM0000000000  -L LOGIN [-C \"comment\"] [-y (yes do it really; DUMMY mode by default)] "
+
+---------------------------------------------------------------------------------------------------
+output:
+-------
+
+17/08 09:10 netwrkr@bkpmgtp1:[~](0)$ TICKET=IM0015888313
+17/08 09:14 netwrkr@bkpmgtp1:[~](0)$ HOST=dsbsftp
+
+
+17/08 09:23 netwrkr@bkpmgtp1:[~](0)$ nwk_whereIs -c $HOST
+bkpsrv70;dsbsftp.cc.cec.eu.int;Enabled;ESX_DCPCPC10_FS_04;Linux_Physical_Host
+
+17/08 09:23 netwrkr@bkpmgtp1:[~](0)$ nw_switchClientState -s  bkpsrv70 -c ${HOST}.cc.cec.eu.int -i $TICKET  -L claeyje -B Disabled -C "move VM" -y 
+Force state Disabled
+updated resource id 3.136.18.229.0.0.0.0.88.248.136.226.158.167.160.75(4)
+                        name: dsbsftp.cc.cec.eu.int;
+            scheduled backup: Disabled;
+                     comment: \
+Current_query_setLinux_ESX_cluster_DC_PCPC10_--IM0015888313_Disabled_by_claeyj\
+e_on_2017-08-17_move_VM;
+                       group: ESX_DCPCPC10_FS_04;
+============================================================
+17/08 09:32 netwrkr@bkpmgtp1:[~](0)$ nwk_makeClientList
+17/08 09:34 netwrkr@bkpmgtp1:[~](0)$ nwk_whereIs -c $HOST
+bkpsrv70;dsbsftp.cc.cec.eu.int;Disabled;ESX_DCPCPC10_FS_04;Linux_Physical_Host
+
+
+---------------------------------------------------------------------------------------------------
+

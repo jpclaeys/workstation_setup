@@ -1,0 +1,17 @@
+For samba shares we have a set of utilities that come with the samba Install samba suite:
+
+smbtree
+smbtree is a smb browser program in text mode. It is similar to the "Network Neighborhood" found on Windows computers. It prints a tree with all the known domains, the servers in those domains and the shares on the servers. Manpage
+smbstatus
+
+smbstatus is a very simple program to list the current Samba connections. Manpage
+By invoking the following a list of shares will be displayed:
+smbstatus --shares
+
+smbd -b| grep CONFIGFILE
+   CONFIGFILE: /etc/samba/smb.conf
+
+smbd -b | grep smb.conf
+testparm /etc/samba/smb.conf
+
+

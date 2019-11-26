@@ -1,0 +1,94 @@
+
+Script to get some info in United - some routines are used by cron to generate reports. Oracle wildcards are often usable ...
+
+	-h | --help    : this help
+	-v | --verbose : verbose
+	-w | --deepverbose : verbose in sql and ldap libraries
+
+	HOST info : (may apply to containers, servers or machines)
+	schema : --host xxx --info obj, to obtain information "obj" on server xxx. ( Short options : -a xxx -i obj ) 
+		-i | --info upgrade     : information about upgrade needed on a given host
+		-i | --info uptime      : information about uptime needed on a given host
+		-i | --info users       : information about users of a given host
+		-i | --info luns        : information about luns of a given host
+		-i | --info status      : returns status of a given host, Oracle wildcards
+		-i | --info location    : location of a given machine
+		-i | --info model       : returns model of a given machine
+		-i | --info ecmodel     : returns EC model of a given machine
+		-i | --info hpblades    : returns enclosure and blades attached to it, given either enclosure or a blade
+		-i | --info globale     : returns the global of a given container
+		-i | --info clustermbr  : returns all members (actif or decommisioned) of a cluster or RAC cluster specified with -a xxx
+		-i | --info savesets    : returns savesets for a given hosts (backups with level and status for a given host)
+		-i | --info pkglist     : returns list of standard packages and added/missing packages for a given host - under devlp.
+		-i | --info opelist     : returns list of operation done for this host
+		-i | --info opehist     : returns list of operation done for this host (with all states history ...)
+		-i | --info respool     : returns list of assignement of this host to resource pool
+
+	HOSTS reports : 
+		-r | --report status    : gives the list of hosts and their status
+		-r | --report activ     : gives the list of activ hosts, i.e. not off/decomm/ignored, i.e. to which we can ssh
+		-r | --report rc-list   : gives list of RC, description, type and status, as well as number of running hosts using it
+		-r | --report rc-hw     : gives list of RC and matching hardware, ie all type/RC combinations in activity
+		-r | --report crcmconf  : gives list of machines which are NOT crcm confirmed (check CS and ecmodels needed)
+		-r | --report rac       : gives list of rac clusters and their nodes
+
+	RESPOOLS INFO : (deleted pools are _not_ displayed)
+		--respool list    : list all pools and their properties
+		--respool slist   : list all pools and their properties - short output
+		--respool vmlist  : list all VM pools and their properties - VM group compatible format
+		--respool storcat : list all pools and their storage properties (storage category and their classes)
+		--respool subnets : list all pools and their allowed subnets
+		--respool xxxx    : gives info on a given resource pool, name being like output of list above, Oracle wildcards
+
+	SEARCH INFO : 
+		--slun xxx : report information for a given LUN, oracle wildcard, case insensitive, for example %CULDEVd0 for Solaris, %CULDEV for linux
+		--swwn xxx : report information for a given WWN, oracle wildcard
+		--smac xxx : report information for a given MAC, oracle wildcard (mac as xx:xx:xx:xx:xx:xx, case insensitive)
+		--srvname listall : list all families we can query for host names
+		--srvname xxxx  : list possible names free in family xxxx
+
+	USER INFO : 
+		--owner xxx   : gives info on objects owned by a given owner, Oracle wildcards
+		--user xxx    : gives info on a given user, Oracle wildcards, based on collect as primary search
+		--uwish xxx   : gives info on a given user, Oracle wildcards, based on wishes as primary search
+		--userh xxx   : gives history info on a given user, Oracle wildcards
+		--userk nnn   : gives info on a given user whose UID is nnn
+		--ldap xxxx   : gives the CED ldap information for xxxx
+		--excep xxx   : gives exceptions for user xxxx
+		--dead nnn    : gives list of users removed from LDAP since more than nnn days (can be fraction of day, min.24 hours)
+		--kill nnn       : display ldap and user info and echo text for ticket removal template (rollach)
+		--group xxx   : gives info on a given group, Oracle wildcards, based on wish + collected hosts
+
+	ID CONVERSION : 
+		--keyhost xxx   : get info on host having primary key 'xxx'
+		--keyrc xxx     : get info on rc having primary key 'xxx'
+		--keyhstat xxx  : get info on status value having primary key 'xxx'
+		--serialcrs xxx : return simple name of machine having serial number 'xxx', used for scripts, Oracle wildcards
+		--serial xxx    : same as serialcrs (for hist. reasons)
+		--serialhid xxx : return simple name of host having host id string 'xxx', used for scripts, Oracle wildcards
+
+	GENERATING EXPORT FILES : 
+		--bkpinfo   : report information for backup team on stdout
+		--bkpreport : report information for backup team to csv file
+		--pvm       : report PVM information for Sun Oracle
+		--pvmsend   : report PVM information for Sun Oracle to file and sends it per mail (crontab)
+
+	RESTORE INFO : 
+		--recozfs xxx : displays command lines to recreate zfs on a given zone (pool must be created with correct settings)
+
+	CFengine CLASSES INFO : 
+		--cfclass listall   : displays all cfengine classes stored
+		--cfclass listused  : displays all cfengine classes stored, having at least one host using it
+		--cfclass host xxx  : displays all cfengine classes of a given host, Oracle wildcards
+		--cfclass query xxx : displays all hosts matching a cfengine class expression, argument like 'redhat_s_6.OracleRACFinal|!BkpServer'
+
+	VALIDATION INFO : 
+		--validate chowndir hostx dirx userx : validate chown to userx of directory  dirx on hostx 
+
+	LOOKUP INFO : 
+		--lookup poolnet poolname subnet : returns all hosts of a given resource pool, having a given subnet bound, subnet as base/cidr like 1.2.3.0/24
+
+
+note : Oracle wildcards are '%' and '_' to resp. replace many or one character.
+
+

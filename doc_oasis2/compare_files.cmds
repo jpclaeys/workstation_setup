@@ -1,0 +1,57 @@
+https://linux.die.net/man/1/comm
+
+comm(1) - Linux man page
+
+Name
+
+comm - compare two sorted files line by line
+Synopsis
+
+comm [OPTION]... FILE1 FILE2
+Description
+
+Compare sorted files FILE1 and FILE2 line by line.
+
+With no options, produce three-column output. Column one contains lines unique to FILE1, column two contains lines unique to FILE2, and column three contains lines common to both files.
+
+-1
+suppress column 1 (lines unique to FILE1)
+-2
+suppress column 2 (lines unique to FILE2)
+-3
+suppress column 3 (lines that appear in both files)
+
+example:
+--------
+comm -23 hosts_full_sorted hosts_255_sorted > hosts_clean
+
+example:
+--------
+comm -23 a.txt b.txt
+By default, comm outputs 3 columns: left-only, right-only, both. The -1, -2 and -3 switches suppress these columns.
+
+So, -23 hides the right-only and both columns, showing the lines that appear only in the first (left) file.
+
+If you want to find lines that appear in both, you can use -12, which hides the left-only and right-only columns, leaving you with just the both column.
+
+example:
+--------
+[claeyje@muscadet tmp]$ [ `comm -23 f1 f2 | wc -l` -gt 0 ] && echo "Missing entries in f2"
+Missing entries in f2
+
+example:
+--------
+[claeyje@muscadet tmp]$ grep -v -f cluster236_softinst.orig cluster231_softinst.orig
+vim:10-7.2:every:unxsoftinst01.cc.cec.eu.int:/ec/prod/server/repository:/ec/sw/vim/7.2:/ec/sw
+
+F1=cluster231_softinst.orig
+F2=cluster236_softinst.orig
+
+if [ `grep -cv -f $F2 $F1` -gt 0 ]; then
+ echo "Missing entries in $F2"
+ grep -v -f $F2 $F1
+fi
+
+
+
+

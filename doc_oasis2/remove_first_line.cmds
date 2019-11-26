@@ -1,0 +1,5 @@
+# Omitting the first line from any Linux command output
+
+awk '{if(NR>1)print}'
+OR
+sed -n '1!p'

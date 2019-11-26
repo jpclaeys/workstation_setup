@@ -1,0 +1,2 @@
+sr <hostname> sudo -l -U sapadm | grep -B2 root
+

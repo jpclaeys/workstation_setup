@@ -1,0 +1,83 @@
+dig 97.96-111.5.200.10.in-addr.arpa @dnssrv1
+
+-> must reply dnsmaster
+
+dig 97.96-111.5.200.10.in-addr.arpa @ns22lux.europa.eu
+
+-> must reply 
+
+;; AUTHORITY SECTION:
+160-175.4.200.10.in-addr.arpa. 3600 IN	NS	dnssrv2.cc.cec.
+eu.int.dig 97.96-111.5.200.10.in-addr.arpa @dnssrv1
+
+-> must reply dnsmaster
+
+dig 97.96-111.5.200.10.in-addr.arpa @ns22lux.europa.eu
+
+-> must reply 
+
+;; AUTHORITY SECTION:
+160-175.4.200.10.in-addr.arpa. 3600 IN	NS	dnssrv2.cc.cec.
+eu.int.
+160-175.4.200.10.in-addr.arpa. 3600 IN	NS	dnssrv1.cc.cec.
+eu.int.
+160-175.4.200.10.in-addr.arpa. 3600 IN	NS	dnssrv3.cc.cec.
+eu.int.
+
+
+Script:   checkreverse.sh 10.200.5.96-111.97
+
+######## SNET RESOLVER ########
+10.in-addr.arpa.	3600	IN	NS	ns22lux.cec.eu.
+int.
+10.in-addr.arpa.	3600	IN	NS	ns22bru.cec.eu.
+int.
+######## MASTER ########
+96-111.5.200.10.in-addr.arpa. 300 IN	SOA	dnsmaster.cc.cec
+.eu.int. digit-dcim-unix.cec.eu.int. 2017020602 300 600 1209600 300
+
+
+
+
+#!/bin/bash
+
+
+echo "######## SNET ########"
+
+dig -x $1 @ns22lux.europa.eu +norec | grep '	NS'
+
+echo "######## MASTER ########"
+
+dig -x $1 @dnsmaster.cc.cec.eu.int +norec | egrep '	(SOA|NS)'
+
+160-175.4.200.10.in-addr.arpa. 3600 IN	NS	dnssrv1.cc.cec.
+eu.int.
+160-175.4.200.10.in-addr.arpa. 3600 IN	NS	dnssrv3.cc.cec.
+eu.int.
+
+
+Script:   checkreverse.sh 10.200.5.96-111.97
+
+######## SNET RESOLVER ########
+10.in-addr.arpa.	3600	IN	NS	ns22lux.cec.eu.
+int.
+10.in-addr.arpa.	3600	IN	NS	ns22bru.cec.eu.
+int.
+######## MASTER ########
+96-111.5.200.10.in-addr.arpa. 300 IN	SOA	dnsmaster.cc.cec
+.eu.int. digit-dcim-unix.cec.eu.int. 2017020602 300 600 1209600 300
+
+
+
+
+#!/bin/bash
+
+
+echo "######## SNET ########"
+
+dig -x $1 @ns22lux.europa.eu +norec | grep '	NS'
+
+echo "######## MASTER ########"
+
+dig -x $1 @dnsmaster.cc.cec.eu.int +norec | egrep '	(SOA|NS)'
+

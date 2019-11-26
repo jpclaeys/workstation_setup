@@ -1,0 +1,57 @@
+[claeyje@muscadet ~]$ sr acouchi
+# exec bash
+1 root@acouchi:->cat /etc/sytsem
+cat: cannot open /etc/sytsem
+<snip>
+* Begin MDD root info (do not edit)
+rootdev:/pseudo/md@0:0,100,blk
+* End MDD root info (do not edit)
+<snip>
+
+3 root@acouchi:->df -h /
+Filesystem             size   used  avail capacity  Mounted on
+/dev/md/dsk/d100       3.9G   2.4G   1.5G    61%    /
+4 root@acouchi:->metastat -c d100
+d100             m  4.0GB d110 d120
+    d110         s  4.0GB /dev/dsk/c0t5000CCA0251546A4d0s0
+    d120         s  4.0GB /dev/dsk/c0t5000CCA025163D30d0s0
+
+7 root@acouchi:->metaroot /dev/dsk/c0t5000CCA0251546A4d0s0
+
+8 root@acouchi:->cat /etc/system
+*ident  "@(#)system     1.18    97/06/27 SMI" /* SVR4 1.5 */
+*
+* SYSTEM SPECIFICATION FILE
+*
+<snip>
+* Begin MDD root info (do not edit)
+* End MDD root info (do not edit)
+
+
+9 root@acouchi:->cat /etc/vfstab
+#device         device          mount           FS      fsck    mount   mount
+#to mount       to fsck         point           type    pass    at boot options
+#
+<snip>
+/dev/dsk/c0t5000CCA0251546A4d0s0        /dev/rdsk/c0t5000CCA0251546A4d0s0       /       ufs     1       no      -
+<snip>
+
+10 root@acouchi:->metaroot d100
+
+11 root@acouchi:->cat /etc/vfstab
+
+#device         device          mount           FS      fsck    mount   mount
+#to mount       to fsck         point           type    pass    at boot options
+#
+<snip>
+/dev/md/dsk/d100        /dev/md/rdsk/d100       /       ufs     1       no      -
+<snip>
+
+12 root@acouchi:->cat /etc/system
+*ident  "@(#)system     1.18    97/06/27 SMI" /* SVR4 1.5 */
+*
+* SYSTEM SPECIFICATION FILE
+<snip>
+* Begin MDD root info (do not edit)
+rootdev:/pseudo/md@0:0,100,blk
+* End MDD root info (do not edit)

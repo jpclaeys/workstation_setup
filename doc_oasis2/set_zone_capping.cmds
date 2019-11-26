@@ -1,0 +1,12 @@
+The capping is now correct (a temporary problem it seems), and unixadmin1 has been resized manually at 14:24 :
+
+  906  2017-10-13 14:24:46 : zone-update-CU -x unixadmin1 8192M 16384M 5.332
+
+So indeed, situation at 14:28 is clear :)
+
+Can i just encourage you to use the command according to wiki i.e.
+zone-update-CU -d unixadmin1 
+This is more cautious and probably more accurate than entering manual parameters.
+As described in wiki :
+"Since CU values have to be updated in DB before any modification, we should not have to use the command precising the values to be set , except for DMZ :"
+

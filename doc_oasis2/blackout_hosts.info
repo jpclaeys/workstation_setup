@@ -1,0 +1,45 @@
+TICKET=
+HOST=
+
+echo $TICKET
+echo $HOST
+
+
+on nagios1p
+
+for HOST in $(cat latest); do /ec/prod/app/nagios/scripts/schedule_downtime.ksh -s 2016-12-17-09-55 -d 420 -c "staiapa" -l "${HOST}"; sleep 5; done
+ 
+
+ This script is used for scheduling the downtime of unix hosts
+
+ USAGE:
+ ./schedule_downtime.ksh -s  <start_time in YYYY-MM-dd-HH-mm> -d  <duration in munites> -e <end_time in YYYY-MM-dd-HH-mm> -c  <username: comments in double quotes> -l  <hosts separated by space in double quotes >
+
+
+- If start_time is not given ,  by default the current time will be considered
+- For End Time you have to specify either duration or end_time
+
+ EXAMPLE:
+
+ ./schedule_downtime.ksh -d  60 -c  "bhatnam:This an example comment" -l  "host1 host2 host3 host4"
+
+/ec/prod/app/nagios/scripts/schedule_downtime.ksh -d <duration in min> -c "<windows login: comments>" -l "<HOST>"
+
+
+blackout () 
+{ 
+    if [ $# -lt 2 ]; then
+        echo "Usage: blackout <host> <ticket> [<duration>]";
+        return 1;
+    fi;
+    HOST=$1;
+    TICKET=$2;
+    DURATION=${3:-1440};
+    NAGIOSHOST=nagios1p.cc.cec.eu.int;
+    SCRIPT="/ec/prod/app/nagios/scripts/schedule_downtime.ksh";
+    USERNAME=claeyje;
+    echo "===> Blackout host: \"$HOST\" for $DURATION min; ticket: \"$TICKET\"";
+    confirmexecution || return 1;
+    ssh -q -l root ${NAGIOSHOST} "${SCRIPT} -d ${DURATION} -c \"${USERNAME}: ${TICKET}\" -l \"${HOST}\""
+}
+

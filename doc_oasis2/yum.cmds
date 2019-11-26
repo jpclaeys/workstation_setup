@@ -1,0 +1,125 @@
+30 root@pansrv3l:->history | awk -F":" '{print $NF}'
+ passwd panadmd
+ collect-luns 
+ collect-all 
+rw /etc/php.ini
+rwx /etc/httpd
+ yum install graphviz nmap net-snmp net-snmp-libs net-snmp-utils libaio-devel  xorg-x11-fonts-75dpi xorg-x11-fonts-misc graphviz sudo net-tools flex fping
+ yum install net-snmp-perl perl-NetAddr-IP perl-Net-SSLeay perl-Net-LibIDN perl-Net-Telnet perl-Socket6 perl-CPAN perl-XML-SAX perl-libwww-perl perl-XML-Twig perl-IO-Socket-INET6 perl-DBI perl-DBD-mysql perl-JSON perl-Time-HiRes perl-IO-Socket-SSL perl-XML-Simple  perl-HTML-Treeperl-Encode-Localeyum install php php-common php-zip php-pear-DB php-pdo php-mysql php-ldap php-cli php-gd php-pdo php-snmp php-mbstring
+rw /etc/php.ini
+rwx /etc/httpd
+ rhn-channel -l 
+ rhn-channel -L -u dcluxorg
+ rhn-channel -a -c epel-68 -u dcluxorg
+ rhn-channel -l 
+ yum install fping perl-XML-Simple perl-HTML-Treeperl-Encode-Localeyum php-pear-DB php-snmp php-mbstring
+ rhn-channel -a -c rhel-x86_64-server-optional-6.8.0 -u dcluxorg
+ yum install fping perl-XML-Simple perl-HTML-Treeperl-Encode-Localeyum php-pear-DB php-snmp php-mbstring
+ rhn-channel -l 
+ rhn-channel -a -c rhel6-rc6.8 -u dcluxorg
+ rhn-channel -l 
+ rhn-channel -L -u dcluxorg
+ rhn-channel -a -c digit-x86_64-software-stack-6.8.0 -u dcluxorg
+ yum install fping perl-XML-Simple perl-HTML-Treeperl-Encode-Localeyum php-pear-DB php-snmp php-mbstring
+ rhn-channel -L -u dcluxorg
+ rhn-channel -a -c rhel6-sap-rc6.8 -u dcluxorg
+ yum install fping perl-XML-Simple perl-HTML-Treeperl-Encode-Localeyum php-pear-DB php-snmp php-mbstring
+ yum list available | grep -i tree
+ yum list available | grep -i tree | grep -i perl
+ yum list available | grep -i html | grep -i tree
+ yum list available | grep -i encode | grep -i locale
+ yum install perl-HTML-Tree.noarch perl-Encode-Locale.noarch
+ yum install  php-mbstring php-snmp
+ yum install  perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB
+ yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB
+ yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+ yum list perl-HTML-Treeperl-Encode-Locale
+ yum list perl-XML-Simple
+ rpm -qa | grep perl-XML-Simple
+ rpm -qa | grep -i perl-XML-Simple
+ rpm -qa | grep -i php-pear-DB
+ rpm -qa | grep -i php
+ yum install php-pear-DB
+ yum install perl-HTML-Treeperl-Encode-Locale
+ yum install perl-XML-Simple
+ history 15
+  yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+ yum install perl-HTML-Treeperl-Encode-Locale
+ yum install php-pear-DB
+ uname -a
+ yum install perl-HTML-Tree perl-Encode-Locale
+ yum repo list
+ yum repolist
+ yum install --nogpgcheck perl-HTML-Tree perl-Encode-Locale
+ yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+ yum install --nogpgcheck php-pear-DB
+ yum install --nogpgcheck php-pear-DByum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+ yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+ yum list perl-HTML-Tree perl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+ yum list  perl-HTML-Tree perl-Encode-Locale perl-XML-Simple  php-pear-DB
+ history
+
+
+----------------------------
+
+21 root@pansrv4l:->history | awk -F":" '{print $NF}'
+ passwd panadmd
+ yum install graphviz nmap net-snmp net-snmp-libs net-snmp-utils libaio-devel  xorg-x11-fonts-75dpi xorg-x11-fonts-misc graphviz sudo net-tools flex fping
+
+ yum install net-snmp-perl perl-NetAddr-IP perl-Net-SSLeay perl-Net-LibIDN perl-Net-Telnet perl-Socket6 perl-CPAN perl-XML-SAX perl-libwww-perl perl-XML-Twig perl-IO-Socket-INET6 perl-DBI perl-DBD-mysql perl-JSON perl-Time-HiRes perl-IO-Socket-SSL perl-XML-Simple  perl-HTML-Treeperl-Encode-Localeyum install php php-common php-zip php-pear-DB php-pdo php-mysql php-ldap php-cli php-gd php-pdo php-snmp php-mbstring
+
+ rhn-channel -a -c epel-68 -u dcluxorg
+ yum install fping perl-XML-Simple perl-HTML-Treeperl-Encode-Localeyum php-pear-DB php-snmp php-mbstring
+ rhn-channel -L -u dcluxorg
+ rhn-channel -a -c rhel-x86_64-server-optional-6.8.0 -u dcluxorg
+ yum install fping perl-XML-Simple perl-HTML-Treeperl-Encode-Localeyum php-pear-DB php-snmp php-mbstring
+
+ Public key for perl-Encode-Locale-1.03-5.el6.noarch.rpm is not installed
+ yum install perl-HTML-Tree.noarch perl-Encode-Locale.noarch
+ yum install  php-mbstring php-snmp
+ yum install  perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB
+ yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB
+ yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+ yum install php-pear-DB
+  yum install perl-HTML-Treeperl-Encode-Locale
+ yum install perl-XML-Simple
+ history
+ clear
+  yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+ yum search perl| grep -i html
+ yum search perl| grep -i html| grep -i tree
+ yum install --nogpgcheck perl-HTML-Tree perl-Encode-Locale
+ yum install --nogpgcheck php-pear-DB
+  yum list perl-HTML-Treeperl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+  yum list perl-HTML-Tree perl-Encode-Locale perl-XML-Simple  php-pear-DB | sed 's/  / /g'
+
+
+Skip dependencies:
+-------------------
+The rpm command has the --nodeps option that you can use. The following command will install or update the package ignoring dependencies but automatically looking up the download URL from your repositories with repoquery which is in package yum-utils.
+
+rpm -Uvh --nodeps $(repoquery --location winswitch)
+After that, a regular yum update will likely succeed without dependency errors.
+
+Nodeps and Force
+-----------------
+Rpm offers command line options --nodeps and --force. They are intended to allow the admin to put pkgs in place despite conflicting files, unresolved dependencies or just about anything else.
+
+Yum does not implement these options in any way due to the destructive nature of what these options are capable of doing.
+
+Why are --nodeps and --force bad for yum:
+
+yum is a package manager and automatic dependency solver. if you use --nodeps it is no longer solving dependencies it is the equivalent of rpm2cpio except it is also updating the rpmdb with broken information
+--nodeps is only used when a package or system is badly broken. As a general rule if you find you cannot put the screw in the hole with a screw driver you should not go get a hammer.
+--force tells rpm - if there are any pkg or file conflicts just blow them all away with what I'm giving you. Again - not a good idea if you want to keep your system running well. It's like gardening with a backhoe.
+When you go to update yum relies on an assumption that the rpmdb is roughly correct. We've added functionality to warn you when we notice your rpmdb does not have dependency closure - but it is likely that using --nodeps and --force will screw up updates.
+If you find you have no way out and you NEED --nodeps and/or --force - well - this is why they are available in rpm. If you are knowledgeable enough to know you need ignore dependency resolution and force the files into place then you should also be knowledgeable enough to know how to use them with rpm.
+
+What to use instead:
+
+yum shell: the yum shell will let you remove pkg1 and install pkg2 in a single transaction so you don't have to use --nodeps as a hold-over to swap two conflicting pkgs out
+yum reinstall: if you just need to reinstall all the files of an installed pkg just use yum reinstall
+yum downgrade: gotta go back to an older version of a pkg b/c the new one is broken? Yum downgrade can do that.
+package-cleanup: package-cleanup is a yum-util to help you sort out what things might be terribly wrong with your system
+yum history redo/undo: If the last transaction hosed things up and you need to try it all over again or maybe you just want to get rid of it - try the YumHistory commands 'undo' and 'redo'
+

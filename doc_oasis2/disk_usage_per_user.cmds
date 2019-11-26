@@ -1,0 +1,1 @@
+find . -printf "%u  %s\n" | awk '{user[$1]+=$2}; END{ for( i in user) print i " " user[i]}'

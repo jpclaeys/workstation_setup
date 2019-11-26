@@ -1,0 +1,431 @@
+===================================================================================================================================
+LU for ...
+
+Notification type: Normal Maintenance
+
+Subject: Live upgrade of ... server.
+
+Justification: This standalone server has to be upgraded to the latest version to comply with our service requirements.
+
+Impact analysis: 
+	Impacted element(s): "..."
+	Impact:	unavailability
+
+Additional Information: The zones "..."  will be offline during the upgrade.
+
+From:	
+
+To:	
+
+Contact: Jean-Pierre Claeys
+
+===================================================================================================================================
+
+Planned
+Live upgrade of gaspergou server
+
+This standalone server has to be upgraded to the latest version to comply with our service requirements. 
+
+Tuesday, May 23, 2017 20:00
+Tuesday, May 23, 2017 23:00
+
+Live upgrade of gaspergou.
+The zones "wlsabamt, cedtest1, wltdig01, juriscjt, fametest and aeoswebt""wlsabamt, cedtest1, wltdig01, juriscjt, fametest and aeoswebt" will be offline during the upgrade. 
+
+
+Notification type: Normal Maintenance
+
+
+
+The following application environments will be unavailable.
+
+-------------------------------------------------------------------------------
+LU for katiti
+
+
+Notification type: Normal Maintenance
+
+Subject: Live upgrade katiti server.
+
+Justification: This standalone server has to be upgraded to the latest version to comply with our service requirements.
+
+Impact analysis: 
+	Impacted element(s): "wltoib01 wltcom01 aeosftpt wltsg02 bodiffud wsanphyt"
+	Impact:	unavailability
+
+From:	Tuesday, May 23, 2017 17:00
+To:	Tuesday, May 23, 2017 19:00
+
+
+Additional Information: The zones "wltoib01 wltcom01 aeosftpt wltsg02 bodiffud wsanphyt"  will be offline during the upgrade.
+
+Contact: Jean-Pierre Claeys
+
+-----------------------------------------------------------------------------------------------------------------------------------
+LU for tinamou
+
+Notification type: Normal Maintenance
+
+Subject: Live upgrade of tinamou server.
+
+Justification: This standalone server has to be upgraded to the latest version to comply with our service requirements.
+
+Impact analysis: 
+	Impacted element(s): "dighosn1 euramist boedev1 boetest1 regifst more-pnetrept digitcudd wltsg01 regifss wltdig02 estdexpt"
+	Impact:	unavailability
+
+From:	Tuesday, May 22, 2017 17:00
+To:	Tuesday, May 22, 2017 19:00
+
+
+Additional Information: The zones "dighosn1 euramist boedev1 boetest1 regifst more-pnetrept digitcudd wltsg01 regifss wltdig02 estdexpt"  will be offline during the upgrade.
+
+Contact: Jean-Pierre Claeys
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention
+--------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Live upgrade of cluster235 - servers papasula/kororaa
+
+Justification:
+These servers have to be upgraded to the latest version to comply with our service requirements. 
+
+Impact analysis: 
+	Impacted element(s): servers papasula/kororaa
+	Impact:	unavailability
+
+Additional Information: 
+The servers papasula/kororaa will be offline during the upgrade. 
+There are no local zones configured so far.
+
+From: Saturday, July 	15, 2017 10:00
+To:   Saturday, July 	15, 2017 13:00
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-07-03%20-%2013-19%20-%20Live%20upgrade%20of%20cluster235%20-%20servers%20papasula_kororaa.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention 1
+-----------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Upgrade firmware - Solaris system RC - security CVE patching
+
+Justification:
+In order to apply the latest production Solaris RC 11.5.1 and latest fw level, several SPARC hosts will be updated.
+
+Impact analysis: 
+	Impacted element(s): servers cluster232	anvilhead/potoyunco
+	Impact:	unavailability
+
+Additional Information: 
+Latest RC: 11.5.1
+Latest FW level: 8.9.9
+
+Risk Analysis
+	Description: Upgrade failure
+	Impact:	Reboot
+	Upgrade failureProbability: Low
+	Mitigation: Rollback
+
+From: Sunday, December 03, 2017 10:00
+To:   Sunday, December 03, 2017 14:00
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2011-55%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention 2
+-----------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Upgrade firmware - Solaris system RC - security CVE patching
+
+Justification:
+In order to apply the latest production Solaris RC 11.5.1 and latest fw level, several SPARC hosts will be updated.
+
+Impact analysis: 
+	Impacted element(s): server ovambo
+	Impact:	unavailability
+
+Additional Information: 
+Latest RC: 11.5.1
+Latest FW level: 8.9.9
+
+Risk Analysis
+	Description: Upgrade failure
+	Impact:	Reboot
+	Upgrade failureProbability: Low
+	Mitigation: Rollback
+
+
+From: Saturday, December 09, 2017 10:00
+To:   Saturday, December 09, 2017 14:00
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-29%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention 3
+-----------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Upgrade firmware - Solaris system RC - security CVE patching
+
+Justification:
+In order to apply the latest production Solaris RC 11.5.1 and latest fw level, several SPARC hosts will be updated.
+
+Impact analysis: 
+	Impacted element(s): server chenonetta
+	Impact:	unavailability
+
+Additional Information: 
+Latest RC: 11.5.1
+Latest FW level: 8.9.9
+
+Risk Analysis
+	Description: Upgrade failure
+	Impact:	Reboot
+	Upgrade failureProbability: Low
+	Mitigation: Rollback
+
+From: 17/12 10:00
+To:   17/12 14:00
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-36%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-36%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1
+-----------------------------------------------------------------------------------------------------------------------------------
+UpgradeUpgrade firmware - Solaris system RC 11.5.1 - security CVE patching
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention 4
+-----------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Upgrade firmware - Solaris system RC 11.5.1 - security CVE patching
+
+Justification:
+In order to apply the latest production Solaris RC 11.5.1 and latest fw level, several SPARC hosts will be updated.
+
+Impact analysis: 
+	Impacted element(s): servers cluster204	dormouse/zokor
+	Impact:	unavailability
+
+Additional Information: 
+Latest RC: 11.5.1
+Latest FW level: 8.9.9
+
+Risk Analysis
+	Description: Upgrade failure
+	Impact:	Reboot
+	Upgrade failureProbability: Low
+	Mitigation: Rollback
+
+From: Saturday, January 06, 2018  10:00
+To:   Saturday, January 06, 2018  14:00
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-48%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%2011_5_1%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-48%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%2011_5_1%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1
+-----------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention 5
+-----------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Upgrade firmware - Solaris system RC 11.5.1 - security CVE patching
+
+Justification:
+In order to apply the latest production Solaris RC 11.5.1 and latest fw level, several SPARC hosts will be updated.
+
+Impact analysis: 
+	Impacted element(s): servers cluster229	fulmar/melabaob
+	Impact:	unavailability
+
+Additional Information: 
+Latest RC: 11.5.1
+Latest FW level: 8.9.9
+
+Risk Analysis
+	Description: Upgrade failure
+	Impact:	Reboot
+	Upgrade failureProbability: Low
+	Mitigation: Rollback
+
+From: Tuesday, January 16, 2018 20:00
+To:   Tuesday, January 16, 2018 23:59
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-54%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%2011_5_1%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-54%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%2011_5_1%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1
+
+-----------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention 6
+-----------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Upgrade firmware - Solaris system RC 11.5.1 - security CVE patching
+
+Justification:
+In order to apply the latest production Solaris RC 11.5.1 and latest fw level, several SPARC hosts will be updated.
+
+Impact analysis: 
+	Impacted element(s): servers cluster246	kukula/moho
+	Impact:	unavailability
+
+Additional Information: 
+Latest RC: 11.5.1
+Latest FW level: 8.9.9
+
+Risk Analysis
+	Description: Upgrade failure
+	Impact:	Reboot
+	Upgrade failureProbability: Low
+	Mitigation: Rollback
+
+From: Saturday, January 27, 2018 10:00
+To:   Saturday, January 27, 2018 14:00
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-59%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%2011_5_1%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-22%20-%2013-59%20-%20Upgrade%20firmware%20-%20Solaris%20system%20RC%2011_5_1%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1
+----------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention 2-new
+--------------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Solaris system RC 11.5.1 - security CVE patching
+
+Justification:
+In order to apply the latest production Solaris RC 11.5.1, several SPARC hosts will be updated.
+
+Impact analysis: 
+	Impacted element(s): server ovambo
+	Impact:	unavailability
+
+Additional Information: 
+Latest RC: 11.5.1
+
+Risk Analysis
+	Description: Upgrade failure
+	Impact:	Reboot
+	Upgrade failureProbability: Low
+	Mitigation: Rollback
+
+
+From: Monday, January 15, 2018 20:00
+To:   Monday, January 15, 2018 23:59
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-12-11%20-%2011-27%20-%20Solaris%20system%20RC%2011_5_1%20-%20security%20CVE%20patching.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1][CAT]]
+
+Commengt in Upcoming interventions:
+[IM0016169825] - Solaris system RC 11.5.1 - security CVE patching
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
+Planned intervention
+--------------------
+
+Notification type: 
+Normal Maintenance
+
+Subject: 
+Upgrade firmware - Solaris system RC 11.5.1 - security CVE patching
+
+Justification:
+In order to apply the latest production Solaris RC 11.5.1 and latest fw level, several SPARC hosts will be updated.
+
+Impact analysis: 
+	Impacted element(s): servers .....
+	Impact:	unavailability
+
+Additional Information: 
+Latest RC: 11.5.1
+Latest FW level: 8.9.9
+
+Risk Analysis
+	Description: Upgrade failure
+	Impact:	Reboot
+	Upgrade failureProbability: Low
+	Mitigation: Rollback
+
+From: 
+To:   
+
+Contact: 
+Jean-Pierre Claeys
+
+URL:
+[[][CAT]]
+
+-----------------------------------------------------------------------------------------------------------------------------------
+

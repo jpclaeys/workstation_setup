@@ -1,0 +1,9 @@
+How to remove line in file using perl
+
+perl -ne 'print unless /<mypattern>/' -i <myfile>
+
+# If the pattern contains "/"
+sed -i '\|<mountpoint>|d' /etc/fstab
+
+When you use a nonstandard character for a pattern delimiter, such as |pattern|, the first use of that character must be escaped:
+

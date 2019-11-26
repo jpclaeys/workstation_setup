@@ -1,0 +1,129 @@
+MOS - create a service request
+--------------------------------
+
+run an explorer: update-explorer
+Output file in: /var/crash/explorer/
+
+example: 
+explorer.862148f8.<hostname>.cc.cec.eu.int-2017.03.07.06.49.tar.gz
+
+copy the explorer file on the Linux WKS:
+cp root@<hostname>:/var/crash/explorer/*.gz /var/tmp
+
+
+If one cannot connect to the server, the create a snapshot from the ILOM (web)
+
+To run the ILOM snapshot, please follow the instructions below: 
+
+1) Open a web browser 
+
+2) Enter the IP address for the ILOM's Net Mgmt port 
+
+3) Log into the ILOM's web GUI with the "root" account 
+(the default password from the factory is "changeme") 
+
+4) Note the ILOM version listed on the first web page of output 
+
+5) Click the "Maintenance" tab 
+
+6) for ILOM 2.x: Click on the "Data Collector" sub tab 
+for ILOM 3.x: Click on the "Snapshot" sub tab 
+
+7) Make sure that "Normal" is selected and that "Logs Only" is Disabled or unchecked before click on the button to run the ILOM snapshot 
+
+8) Save as .zip file (the ILOM snapshot output) to your local system from where you are running the web browser 
+
+9) Email me the snapshot once it is done saving it (the ILOM snapshot will be really small, only 150 KB on average) 
+
+
+
+
+Get the serial #:
+-----------------
+eeprom | grep -i ChassisSerialNumber
+# or 
+un_inventory <hostname>
+ex:
+Machine      : INV 02DI20125663764 - SN BDF124556F - IDT IDT007596 - OBP OBP 4.33.5.d - SC not found
+
+Get the host location:
+-----------------------
+un_location <hostname>
+
+web site: https://support.oracle.com
+Location     : Building BETZ, room -1/500, rack 3223;3 (5,40)
+
+
+Sign In
+
+
+Create SR
+Screen title: Create Service Request: Problem"
+
+a. Problem Summary: 
+<hostname> - ex. Hardwre Error: disk issue
+
+b. Problem description:
+ex. Insert the output of the iostat -xneE c1t0d0
+root@<hostname>:->iostat -xeE c1t0d0
+                         extended device statistics         ---- errors --- 
+device    r/s    w/s   kr/s   kw/s wait actv  svc_t  %w  %b s/w h/w trn tot 
+sd3       0.2    8.5    5.0  298.8  0.0  0.4   47.7   0  10  28 552   6 586 
+sd3       Soft Errors: 28 Hard Errors: 552 Transport Errors: 6 
+Vendor: SEAGATE  Product: ST930003SSUN300G Revision: 0E71 Serial No: 111573GTWF 
+Size: 300.00GB <300000000000 bytes>
+Media Error: 4 Device Not Ready: 0 No Device: 0 Recoverable: 28 
+Illegal Request: 0 Predictive Failure Analysis: 0 
+
+c. Error Codes
+leave blank if there are no error codes
+
+d. Hardware Serial Number
+Enter the HW serial number, and then click on the "Validate Serial Number" box
+--> This will get the required info :
+  Asset Name: 
+  Organization:
+  Product
+  Support Identifier
+
+e. Choose Operating System/Version: Oracle Solaris on SPARC (64-bit) - 10
+f. Problem Type: 
+  ex. Disk Errors or Issues
+
+
+click on "Next" (upper right corner)
+Screen title: Create Service Request: Solutions"
+
+Answers to Previous Questions:
+
+Problem Type: Disk Errors or Issues
+Answer Question 1: 
+Are you able to provide an Explorer from the system with the disk issue(s) ?
+Select "YES"
+select Specific Date and Time listed below
+ex. Today
+
+click on "Continue"
+
+click on "Next"
+
+Screen title: Create Service Request: More Details"
+
+click on Attach to send the explorer
+
+click on "Next"
+
+Screen title: Create Service Request: Severity/Contact"
+
+a. Select severity level
+  default: 3 - Minor loss of service
+
+b. Who should we contactfor more information ?
+   
+c. verify this hardware address is where the equipment is located et Edit Service Address
+
+   check box: "yes, the Service Address is correct"
+
+click on "Submit" 
+
+

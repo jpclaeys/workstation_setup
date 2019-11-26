@@ -1,0 +1,13 @@
+===================================================================================================================================
+# Oracle Clusterware Control command:
+# Use the crsctl status resource command to obtain the status and configuration information of many particular resources.
+# -t : Specify the -t parameter to display the output in tabular form. 
+crsctl stat res -t
+
+# Check cluster health
+# on local node
+crsctl check cluster
+# On all nodes of the cluster
+crsctl check cluster -all 
+===================================================================================================================================
+

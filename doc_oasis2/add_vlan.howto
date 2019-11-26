@@ -1,0 +1,257 @@
+Wiki: http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/NetworkConnectionRequest
+
+Guide: http://www.dcim.cc.cec.eu.int/pub/UNIX/NetworkConnectionRequest/CRF-Generator_SOP_v1.1.pdf?t=1505396564
+
+Create http://croc.net1.cec.eu.int/Jobs_CRCM.aspxan 
+
+CRF Generation Tool: (Windows only)
+------------------------------------
+http://s-croc-prod:8080/croc-web/#!/crocmdashboard
+
+Select VR (Vlan change request)
+Asset Identifier: enter the IDT # without the "IDT00" part: (ex. 772 for takapu)
+
+Click on search to list all interfaces of search assets.
+
+Check the required interfaces (ex NET0; NET2 will atomatically be selected)
+
+Then you can add them to a pool by clicking on "Add to Cart"
+--> "2 connections added to cart" msg shows up
+
+After you can make a new search and add to extend your request, also you can click on "To cart view"
+for checking you request
+This last view before CRF generation allows you to make a final check on your request. At this step,
+you can remove unwished rows, come back to the selection for adding new connections, etc.
+
+When validated, click on "CRF generation".
+
+You will receive an email in your personal mailbox with the CRF file pre-filled draft.
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Save the attached Excel file in following location: 
+U:\SIS\FO-Unix\Connections\NET\2017
+
+Update the file:
+Excel fields:
+-------------
+
+Location: (already filled in)
+
+Login Name: claeyje (already filled in)
+
+Appointment Required:
+Contact Name:	Jean-Pierre CLAEYS
+Phone Number:	35667
+
+Additional information:
+Please add VLAN 478 into the trunk list. All other VLANs should remain. 
+
+In the "Trunk List" tab, add the VLAN that needs to be added
+
+Save file: YYYMMMDD_<hostname>_add_VLAN_<VLANID>.xls
+
+Validate the Excel file:
+http://croc.net1.cec.eu.int/Jobs_CRCM.aspx
+
+Wait for a new mail with the validated Excel file
+
+-----------------------------------------------------------------------------------------------------------------------------------
+SMT: Open a scheduled ticket for CRS
+-------------------------------------
+http://www.dcim.cc.cec.eu.int/wiki/view/DCTSC/ComputerRoomsRequests#A_14._Logical_LAN_connection_change
+
+Template: 
+DCTSC C3-DSB CRS - (14) - Logical LAN Connection Change
+F9
+Affected User: ZZZ_DATACENTER UNIX
+Reported by different Contact: claeyje
+Attachments tab:
+Add the Excel file(s)
+
+Description:
+-------------
+Please process the attached CRF.xls file(s).
+
+!!! Schedule the ticket !!! 
+Start: ASAP
+End: 1 week later
+
+Assign to:
+DATACENTER CRS
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+TICKET=IM0016085362
+
+Add VLAN 478 to cluster236 for the zone move
+
+
+todo;5101;ntplux2;IM0016085362;2017-10-31 09:48:33;2017-12-14 23:59:59;umbrette;cluster231;patranca;cluster236[claeyje@muscadet tmp]$ clusterhosts 231
+mollymawk umbrette
+[claeyje@muscadet tmp]$ clusterhosts 236
+patranca takapu
+
+[claeyje@muscadet tmp]$ mylocate umbrette| grep 478
+/home/claeyje/git/cfengine_main/data/system/network/if/umbrette/hostname.igb478000
+/home/claeyje/git/cfengine_main/data/system/network/if/umbrette/hostname.igb478002
+
+[claeyje@muscadet tmp]$ mylocate umbrette| grep 478|xargs -i cat {}
+158.167.228.44 netmask + broadcast + group ipmp478 deprecated -failover up
+158.167.228.48 netmask + broadcast + group ipmp478 deprecated -failover up
+
+[claeyje@muscadet tmp]$ grep umbrette $DNSREPO/cc.cec.eu.int | grep 478
+H(umbrette-478-test0,  158.167.228.44)
+H(umbrette-478-test1,  158.167.228.48)
+
+
+VLAN 478:
+158.167.228.0		LUX_DC	478	/22	255.255.252.0	158.167.228.1	158.167.228.6
+
+[claeyje@muscadet tmp]$ sipcalc 158.167.228.0/22
+-[ipv4 : 158.167.228.0/22] - 0
+
+[CIDR]
+Host address		- 158.167.228.0
+Host address (decimal)	- 2661803008
+Host address (hex)	- 9EA7E400
+Network address		- 158.167.228.0
+Network mask		- 255.255.252.0
+Network mask (bits)	- 22
+Network mask (hex)	- FFFFFC00
+Broadcast address	- 158.167.231.255
+Cisco wildcard		- 0.0.3.255
+Addresses in network	- 1024
+Network range		- 158.167.228.0 - 158.167.231.255
+Usable range		- 158.167.228.1 - 158.167.231.254
+
+
+sr ns
+caipa list 158.167.228.0| sort | head -10
+
+158.167.228.100
+158.167.228.101
+158.167.228.103
+158.167.228.104
+158.167.228.105
+158.167.228.106
+158.167.228.107
+158.167.228.108
+158.167.228.109
+158.167.228.110
+
+
+
+
+5 root@dnsmaster:->caipa reserve 158.167.228.103
+158.167.228.103
+6 root@dnsmaster:->caipa reserve 158.167.228.104
+158.167.228.104
+7 root@dnsmaster:->caipa reserve 158.167.228.105
+158.167.228.105
+8 root@dnsmaster:->caipa reserve 158.167.228.106
+158.167.228.106
+9 root@dnsmaster:->caipa list-reserved
+158.167.228.103 => 17 seconds ago (3583 seconds left)
+158.167.228.105 => 11 seconds ago (3589 seconds left)
+158.167.228.104 => 14 seconds ago (3586 seconds left)
+158.167.228.106 => 8 seconds ago (3592 seconds left)
+10 root@dnsmaster:->
+
+H(patranca-478-test0, 158.167.228.103)
+H(patranca-478-test1, 158.167.228.104)
+
+H(takapu-478-test0, 158.167.228.105)
+H(takapu-478-test1, 158.167.228.106)
+
+[claeyje@muscadet dns]$ backupdnsfile -v
+===> DNSBACKUPFILE:= /var/tmp/dns/cc.cec.eu.int_13112017083550326           <===
+
+dns
+svn up
+
+vi cc.cec.eu.int
+
+# add entries for takapu & patranca
+
+
+svn ci -m "IM0016085362 - JPC"
+
+
+check dns & reverse
+
+check_dns_entries takapu
+check_dns_entries patranca
+-----------------------------------------------------------------------------------------------------------------------------------
+[claeyje@muscadet tmp]$ mylocate umbrette| grep 478
+/home/claeyje/git/cfengine_main/data/system/network/if/umbrette/hostname.igb478000
+/home/claeyje/git/cfengine_main/data/system/network/if/umbrette/hostname.igb478002
+
+[claeyje@muscadet tmp]$ mylocate umbrette| grep 478|xargs -i cat {}
+158.167.228.44 netmask + broadcast + group ipmp478 deprecated -failover up
+158.167.228.48 netmask + broadcast + group ipmp478 deprecated -failover up
+
+Create new entries for patranca & takapu
+
+
+cfmain
+git pull > /dev/null
+
+echo "158.167.228.103 netmask + broadcast + group ipmp478 deprecated -failover up" > $CFDATA/system/network/if/patranca/hostname.igb478000
+echo "158.167.228.104 netmask + broadcast + group ipmp478 deprecated -failover up" > $CFDATA/system/network/if/patranca/hostname.igb478002
+
+echo "158.167.228.105 netmask + broadcast + group ipmp478 deprecated -failover up" > $CFDATA/system/network/if/takapu/hostname.igb478000
+echo "158.167.228.106 netmask + broadcast + group ipmp478 deprecated -failover up" > $CFDATA/system/network/if/takapu/hostname.igb478002
+
+git status
+
+git add $CFDATA/system/network/if/patranca/hostname.igb478000
+git add $CFDATA/system/network/if/patranca/hostname.igb478002
+git add $CFDATA/system/network/if/takapu/hostname.igb478000
+git add $CFDATA/system/network/if/takapu/hostname.igb478002
+
+git status
+
+git diff
+
+git commit -am "IM0016085362 JPC"
+
+git pull && git push
+
+mypssH "patranca takapu" ecdc-cfengine run
+mypssH "patranca takapu" '(ls -l /etc/hostname.igb*)'
+mypssH "patranca takapu" '(cat /etc/hostname.igb478*)'
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+sr takapu
+cd /etc
+ifconfig igb478000 plumb
+ifconfig igb478002 plumb
+
+ifconfig igb478000 `cat hostname.igb478000`
+ifconfig igb478002 `cat hostname.igb478002`
+ifinfo
+ecdc-get_cdp
+print-cdp -a
+ping patranca-478-test0
+ping patranca-478-test1
+
+sr patranca
+
+cd /etc
+ifconfig igb478000 plumb
+ifconfig igb478002 plumb
+
+ifconfig igb478000 `cat hostname.igb478000`
+ifconfig igb478002 `cat hostname.igb478002`
+ifinfo
+ecdc-get_cdp
+print-cdp -a
+ping takapu-478-test0
+ping takapu-478-test1
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+

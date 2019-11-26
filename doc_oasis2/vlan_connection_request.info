@@ -1,0 +1,78 @@
+1 root@amarkhor:->print-cdp
+Interface        Ethernet address  Slot       Switch         Port                 VLAN 
+bge0             0:14:4f:ea:d6:72  IOU0/ETH0  betz-dc_lf173  Ethernet1/96         3596 
+bge2             0:14:4f:ea:c9:3e  IOU1/ETH0  betz-dc_lf174  Ethernet1/96         3596 
+2 root@amarkhor:->ifinfo
+
+        Link  Autoneg   Status   Speed    Mode   Ethernet-Address Real-nic
+--------------------------------------------------------------------------
+        bge0  ON       UP     1GB     FDX   0:14:4f:ea:d6:72        -
+        bge2  ON       UP     1GB     FDX   0:14:4f:ea:c9:3e        -
+   bge458000  ON       UP     1GB     FDX   0:14:4f:ea:d6:72     bge0
+   bge458002  ON       UP     1GB     FDX   0:14:4f:ea:c9:3e     bge2
+3 root@amarkhor:->
+
+
+Croc main page (url: http://croc.net1.cec.eu.int/)
+Select "Connection Management" (url: http://croc.net1.cec.eu.int/Home_CRCM.aspx)
+Select "CRF Detail (Connection Request Form)(url: http://croc.net1.cec.eu.int/List_CRF_Detail.aspx)
+
+Type: Name
+Value: <hostname>
+Conn. Type: LAN
+Click on "Select"
+Sort by Date/Time
+
+CRF Ref	Item	CE	Status	Date/Time	IDT#	Device Name	Location	Con. Type	Int. Slot	Int. Port	Plug Type	Action	Patch	Param 1	Param 2	Param 3	Param 4	T
+
+CRF Ref	Item	CE	Status	Date/Time	IDT#	Device Name	Location	Con. Type	Int. Slot	Int. Port	Plug Type	Action	Patch	Param 1	Param 2	Param 3	Param 4	T
+CR-21615	01:1	A	CLOSED	07/10/2016 12:00	IDT003902	amarkhor	BETZ/-1/500-R3309;3	LAN Dual	IOU0	ETH0	RJ45	CONNECT	3319.026	LUX_DC	10.218.144.0	254	1000TX (FD)	T
+CR-21615	01:2	A	CLOSED	07/10/2016 12:00	IDT003902	amarkhor	BETZ/-1/500-R3309;3	LAN Dual	IOU1	ETH0	RJ45	CONNECT	3307.026	LUX_DC	10.218.144.0	254	1000TX (FD)	T
+
+
+Create http://croc.net1.cec.eu.int/Jobs_CRCM.aspxan Excel file for the
+Location fot the Excel sheet
+U:\SIS\FO-Unix\Connections\NET\2017
+
+Validate the Excel file:
+http://croc.net1.cec.eu.int/Jobs_CRCM.aspx
+
+
+SMT: create a ticket for CRS
+-----------------------------
+http://www.dcim.cc.cec.eu.int/wiki/view/DCTSC/ComputerRoomsRequests#A_14._Logical_LAN_connection_change
+
+Available SMT Template: DCTSC C3-DSB CRS - (14) - Logical LAN Connection Change
+
+---------------------------------------------------------------------------------------------------
+VLAN Change - (SR)
+
+The SMT Template to use is named DCTSC C3-SIS CRS - Connections Management
+The SCIM is received from the SMT template but don't forget to select the MODULE value "VLAN CHANGE"
+The ticket "Subject" must be : DCTSC C3-SIS CRS - VLAN Change
+Attach a completed CRF that has been checked by the CRF Validation Tool
+If required, the ticket must be scheduled with the same Start/End Dates as the ones in the attached CRF.
+---------------------------------------------------------------------------------------------------
+
+Template:	DCTSC DATACENTER CRS - Connection Management
+Module:		VLAN CHANGE
+Item:		CONNECTIONS MANAGEMENT (should be filled in automatically)
+
+Subject: 	DCTSC C3-SIS CRS - VLAN Change
+
+Description:
+-------------
+Please process the attached CRF.xls file(s).
+
+!!! Schedule the ticket !!! 
+Start: ASAP
+End: 1 week later
+
+---------------------------------------------------------------------------------------------------
+
+DCTSC C3-SIS CRS - VLAN Change
+Ticket IM0015570673
+
+---------------------------------------------------------------------------------------------------
+
+

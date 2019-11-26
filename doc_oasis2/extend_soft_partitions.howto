@@ -1,0 +1,40 @@
+
+
+function freespaceforsp ()
+{
+# Determine the amount of free space on a device that is used with SP
+# Use command: metarecover -v -n -p -m 
+
+FS=${1:-"/ec/sw/oracle"}
+SP=`df -h $FS | grep "$FS" |  awk '!/Filesystem/ {print $1}' | awk -F"/" '{print $NF}'`
+if [ ! -z $SP ]; then
+MIR=`metastat -p $SP | grep $SP | cut -d " " -f3`
+echo "Soft Partition: $SP; on Mirror: $MIR"
+#metarecover -n -v /dev/md/rdsk/$MIR -p -m | awk '/FREE/ {n+=$NF}END{printf "Free space: %-.1f GB\n", n/2048/1024}'
+metarecover -n -v /dev/md/rdsk/$MIR -p -m | nawk -v md=$MIR '/FREE/ {n+=$NF}END{printf "Free space on %s: %-.1f GB\n", md, n/2048/1024}'
+fi
+}
+
+
+
+# Extend a soft partition
+
+(
+FS="/ec/sw/oracle"
+SP=`df -h $FS | grep "$FS" |  awk '!/Filesystem/ {print $1}' | awk -F"/" '{print $NF}'`
+EXTEND=4g
+echo "Commands to be executed:"
+echo metattach $SP $EXTEND
+echo growfs -M $FS /dev/md/rdsk/$SP
+)
+
+
+(
+FS="/ec/sw"
+SP=`df -h $FS | grep "$FS" |  awk '!/Filesystem/ {print $1}' | awk -F"/" '{print $NF}'`
+EXTEND=2g
+echo "Commands to be executed:"
+echo metattach $SP $EXTEND
+echo growfs -M $FS /dev/md/rdsk/$SP
+)
+

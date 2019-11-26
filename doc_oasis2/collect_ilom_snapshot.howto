@@ -1,0 +1,27 @@
+Upload Files/Attachments
+For file uploads over 2GB or Explorer, CORES, or other Sun diagnostic files, refer to		How to Send Data to Oracle	
+
+Recommended File 1)	
+	
+ILOM/Snapshot Data
+Example Filename:	     	ILOM Data
+Constraints:		Please generate a new ILOM data after the problem has occurred (do not send old files)
+How to Obtain:		See Simple instructions to collect ILOM snapshot
+How to Upload:		Please use the [attach] button to the right of this text
+Importance:		ILOM data upload is critical to fast problem resolution - diagnosis may be delayed if not provided.
+See note 2077387.1
+
+	
+Attach
+crossbil-sc_1244BDYE93_2018-01-11T10-07-02.zip
+
+Additional Files	
+	
+Do you have other files that can help solve your Service Request?
+
+	
+Attach
+
+Simple instructions to collect ILOM snapshot
+https://support.oracle.com/epmos/faces/DocumentDisplay?id=2077387.1
+

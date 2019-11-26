@@ -1,0 +1,1 @@
+root bkpmgtp1 ~ #dig 0.0-63.12.133.10.in-addr.arpa. @ns21lux.europa.eu -t NS +auth | egrep '^[0-9-]'

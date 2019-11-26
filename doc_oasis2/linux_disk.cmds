@@ -1,0 +1,131 @@
+[root@s-malt log]# dmsetup info /dev/dm-10
+Name:              vgraid-applications
+State:             ACTIVE
+Read Ahead:        256
+Tables present:    LIVE
+Open count:        1
+Event number:      0
+Major, minor:      253, 10
+Number of targets: 1
+UUID: LVM-PQkQCNR0K2rEZBtBdloU6Ife5CmYJ0VGJGOzJein0WYvmeOvY2v45gCh621bUK4j
+
+
+[root@s-malt log]# dmsetup ls --tree
+vgraid-oracle (253:4)
+ └─ (104:17)
+vgraid-swap (253:9)
+ └─ (104:17)
+vgraid-data (253:5)
+ └─ (104:17)
+vgraid-dump (253:8)
+ └─ (104:17)
+vgraid-applications (253:10)
+ └─ (104:17)
+vgroot-swap (253:3)
+ └─ (104:2)
+vglocal-splunkforwarder (253:11)
+ └─ (104:3)
+vgroot-root (253:0)
+ └─ (104:2)
+vgraid-archive (253:7)
+ └─ (104:17)
+vgraid-redo (253:6)
+ └─ (104:17)
+vgroot-usr (253:2)
+ └─ (104:2)
+vgroot-var (253:1)
+ └─ (104:2)
+vglocal-redo (253:12)
+ └─ (104:3)
+
+[root@s-malt cciss]# dmsetup ls --tree| grep -A1  :10
+vgraid-applications (253:10)
+ └─ (104:17)
+
+[root@s-malt log]# lvs -o +devices -a
+  LV              VG      Attr   LSize   Origin Snap%  Move Log Copy%  Convert Devices                  
+  redo            vglocal -wi-ao  20.00G                                       /dev/cciss/c0d0p3(64)    
+  splunkforwarder vglocal -wi-ao   2.00G                                       /dev/cciss/c0d0p3(0)     
+  applications    vgraid  -wi-ao 350.00G                                       /dev/cciss/c0d1p1(861184)
+  archive         vgraid  -wi-ao 100.00G                                       /dev/cciss/c0d1p1(801792)
+  data            vgraid  -wi-ao   3.00T                                       /dev/cciss/c0d1p1(10240) 
+  dump            vgraid  -wi-ao 100.00G                                       /dev/cciss/c0d1p1(827392)
+  oracle          vgraid  -wi-ao  40.00G                                       /dev/cciss/c0d1p1(0)     
+  redo            vgraid  -wi-a-  20.00G                                       /dev/cciss/c0d1p1(796672)
+  swap            vgraid  -wi-ao  32.00G                                       /dev/cciss/c0d1p1(852992)
+  root            vgroot  -wi-ao   4.00G                                       /dev/cciss/c0d0p2(0)     
+  swap            vgroot  -wi-ao   8.00G                                       /dev/cciss/c0d0p2(640)   
+  usr             vgroot  -wi-ao   8.00G                                       /dev/cciss/c0d0p2(384)   
+  var             vgroot  -wi-ao   8.00G                                       /dev/cciss/c0d0p2(128)   
+[root@s-malt log]# cd /dev/cciss/
+[root@s-malt cciss]# ll
+total 0
+brw-r----- 1 root disk 104,  0 Jan 16 12:47 c0d0
+brw-r----- 1 root disk 104,  1 Jan 16 12:47 c0d0p1
+brw-r----- 1 root disk 104,  2 Jan 16 12:47 c0d0p2
+brw-r----- 1 root disk 104,  3 Jan 16 12:47 c0d0p3
+brw-r----- 1 root disk 104, 16 Jan 16 12:47 c0d1
+brw-r----- 1 root disk 104, 17 Jan 16 12:47 c0d1p1
+
+
+ for i in `seq 0 5`; do     smartctl -d cciss,$i -a /dev/cciss/c0d0; done
+
+[root@s-malt cciss]# 
+[root@s-malt cciss]#  smartctl -d cciss,5 -a /dev/cciss/c0d0
+smartctl 5.42 2011-10-20 r3458 [x86_64-linux-2.6.18-422.el5] (local build)
+Copyright (C) 2002-11 by Bruce Allen, http://smartmontools.sourceforge.net
+
+Vendor:               HP      
+Product:              MM0500FAMYT     
+Revision:             HPD4
+User Capacity:        500,107,862,016 bytes [500 GB]
+Logical block size:   512 bytes
+Logical Unit id:      0x5000c5002151fdbf
+Serial number:        9SP1Z27D0000C110FCZX
+Device type:          disk
+Transport protocol:   SAS
+Local Time is:        Thu Jan 25 10:18:13 2018 CET
+Device supports SMART and is Enabled
+Temperature Warning Enabled
+SMART Health Status: OK
+
+Current Drive Temperature:     23 C
+Drive Trip Temperature:        65 C
+Manufactured in week 39 of year 2010
+Specified cycle count over device lifetime:  10000
+Accumulated start-stop cycles:  5
+Specified load-unload count over device lifetime:  300000
+Accumulated load-unload cycles:  5
+Elements in grown defect list: 0
+Vendor (Seagate) cache information
+  Blocks sent to initiator = 2179617214
+  Blocks received from initiator = 3583249684
+  Blocks read from cache and sent to initiator = 2044571052
+  Number of read and write commands whose size <= segment size = 778683803
+  Number of read and write commands whose size > segment size = 26
+Vendor (Seagate/Hitachi) factory information
+  number of hours powered up = 20015.60
+  number of minutes until next internal SMART test = 30
+
+Error counter log:
+           Errors Corrected by           Total   Correction     Gigabytes    Total
+               ECC          rereads/    errors   algorithm      processed    uncorrected
+           fast | delayed   rewrites  corrected  invocations   [10^9 bytes]  errors
+read:          0        9         0  1689887917          0      75882.755           0
+write:         0        0         0         0          0       8480.749           0
+
+Non-medium error count:        0
+No self-tests have been logged
+Long (extended) Self Test duration: 6420 seconds [107.0 minutes]
+[root@s-malt cciss]# 
+
+
+
+HP Array Diagnostics and SmartSSD Wear Gauge Utility CLI 9.40.12.0
+Usage: hpaducli -f OutputFileName | [ -h|-help ] | [ -v ] | [ -q ] [ -ssdrpt|-txt ]
+
+hpaducli -f textreport.txt -txt
+
+
+
+

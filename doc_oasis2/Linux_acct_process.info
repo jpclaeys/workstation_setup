@@ -1,0 +1,213 @@
+
+ http://mewbies.com/how_to_use_acct_process_system_accouting_tutorial.htm
+
+   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+   ██                                                                       ██
+  █▌                 -   PROCESS SYSTEM ACCOUNTING - ACCT   -                █▌
+ █▌                                                                           █▌
+ █                                                                            ▐▌
+ █ ACCT PROCESS:                                                              ▐▌
+ █ `````````````                                                              ▐▌
+ █ "When activating accounting, all the information on processes and users is ▐▌
+ █ kept under /var/account/, more specifically in the pacct. The accounting   ▐▌
+ █ package includes some tools (sa, ac and lastcomm) to analyse this data."   ▐▌
+ █ Downfall - it doesn't log the variables in the cmds -as it keep tracks     ▐▌
+ █ of running processes, by whom, system usage, etc.                          ▐▌
+ █                                                                            ▐▌
+ █ The man page for lastcomm is HERE, the acct is HERE & HERE, the accton is  ▐▌
+ █ HERE, and sa is HERE. The manual is HERE. For other acct links view HERE.  ▐▌
+ █                                                                            ▐▌
+ █ INSTALL:                                                                   ▐▌
+ █ ````````                                                                   ▐▌
+ █ su                                                                         ▐▌
+ █ aptitude update                                                            ▐▌
+ █ aptitude install acct                                                      ▐▌
+ █                                                                            ▐▌
+ █ Output on Debian will be similar to:                                       ▐▌
+ █ [snip]                                                                     ▐▌
+ █ Starting process accounting: Turning on process accounting, file set to    ▐▌
+ █ '/var/log/account/pacct'.                                                  ▐▌
+ █ acct                                                                       ▐▌
+ █                                                                            ▐▌
+ █ If yours did not start then:                                               ▐▌
+ █ /etc/init.d/acct start                                                     ▐▌
+ █                                                                            ▐▌
+ █ COMMANDS:                                                                  ▐▌
+ █ `````````                                                                  ▐▌
+ █ man acct                                                                   ▐▌
+ █ man ac                                                                     ▐▌
+ █ ac --help                                                                  ▐▌
+ █ cat /usr/share/doc/acct/README                                             ▐▌
+ █ ac:         summarize login accounting - how long users have been logged   ▐▌
+ █ in (reads from /var/log/wtmp)                                              ▐▌
+ █ accton:     turn process accounting on or off                              ▐▌
+ █ last:       show the people who have logged in                             ▐▌
+ █ lastcomm:   show which commands have been used (reads from                 ▐▌
+ █             /var/log/account/pacct)                                        ▐▌
+ █ sa:         print system accounting statistics - summary of cmds executed  ▐▌
+ █ dump-utmp:  print a utmp file in a human-readable format  (from wtmp or    ▐▌
+ █             utmp)                                                          ▐▌
+ █ dump-acct:  same as above for acct/pacct files                             ▐▌
+ █                                                                            ▐▌
+ █ To clear acct information:                                                 ▐▌
+ █ rm /var/account/pacct -f                                                   ▐▌
+ █ Then you'll need to recreate the pacct file:                               ▐▌
+ █ /etc/init.d/acct restart                                                   ▐▌
+ █                                                                            ▐▌
+ █ Examples:                                                                  ▐▌
+ █ ac total time users: ac                                                    ▐▌
+ █ ac daily totals (d) with year (y): ac -dy                                  ▐▌
+ █ ac individual totals: ac -p                                                ▐▌
+ █ ac individual daily totals: ac -dp                                         ▐▌
+ █ lastcomm per user cmds: lastcomm user                                      ▐▌
+ █ lastcomm list a command, for example rm: lastcomm rm                       ▐▌
+ █ sa per user: sa -m                                                         ▐▌
+ █ sa user usage: sa -u                                                       ▐▌
+ █ dump-acct /var/log/account/pacct                                           ▐▌
+ █                                                                            ▐▌
+ █ NOTE ON UNIX TIME:                                                         ▐▌
+ █ For example if your ac reply is total 147.05 that would be 147 hours and   ▐▌
+ █ 05/100th of an hour.                                                       ▐▌
+ █ So that would be 147 hours and 3 minutes: 5 divided by 100 x 60 = 3        ▐▌
+ █                                                                            ▐▌
+ █ REMOVE USERS ACCESS TO AC:                                                 ▐▌
+ █ ``````````````````````````                                                 ▐▌
+ █ If you do not want your users to be able to use the ac cmd, find where it  ▐▌
+ █ is installed:                                                              ▐▌
+ █ which ac                                                                   ▐▌
+ █ Then change the permissions on it (installs as 755) :                      ▐▌
+ █ chmod 750 /usr/bin/ac                                                      ▐▌
+ █ The other cmds are already for root only.                                  ▐▌
+ █                                                                            ▐▌
+ █ PSACCT LOGS:                                                               ▐▌
+ █ ````````````                                                               ▐▌
+ █ These are kept here:                                                       ▐▌
+ █ ls -al /var/log/account                                                    ▐▌
+ █ They are not in human-readable format. I've read that the logs are         ▐▌
+ █ appended to, thus grow daily. Mine are not, they are created new daily.    ▐▌
+ █ These logs are restarted and backed up daily, 30, by this file:            ▐▌
+ █ cat /etc/cron.daily/acct                                                   ▐▌
+ █                                                                            ▐▌
+ █ WTMP.REPORT:                                                               ▐▌
+ █ ````````````                                                               ▐▌
+ █ The wtmp.report is the monthly report from psacct, including last. It is   ▐▌
+ █ created from this file:                                                    ▐▌
+ █ cat /etc/cron.monthly/acct                                                 ▐▌
+ █ From the look of the code it will be appended '>>' each month.             ▐▌
+ █                                                                            ▐▌
+ █ TROUBLE SHOOTING:                                                          ▐▌
+ █ `````````````````                                                          ▐▌
+ █ 1. NO PSACCT ACCOUNTING INFO IN WTMP.REPORT:                               ▐▌
+ █ I noticed that the monthly report that psacct creates;                     ▐▌
+ █ /var/log/wtmp.report, only ever stated:                                    ▐▌
+ █ 'Login accounting for the month ended Thu Jul  1 06:52:01 EDT 2010:'       ▐▌
+ █ And there were no daily totals, only present login. To find reason:        ▐▌
+ █ ac --complain                                                              ▐▌
+ █ ac --debug                                                                 ▐▌
+ █ /var/log/wtmp:1: problem: time warp (Wed Dec 31 19:00:00 1969 -> Tue Jul   ▐▌
+ █ /var/log/wtmp:1: problem: missing login record for `pts/2'                 ▐▌
+ █ ac --timewarps                                                             ▐▌
+ █         total        2.17                                                  ▐▌
+ █ I found this is because it will read the information from 'wtmp.1' file of ▐▌
+ █ which I do not have:                                                       ▐▌
+ █ ls -al /var/log/wtmp*                                                      ▐▌
+ █ (cat /etc/cron.monthly/acct & cat /etc/cron.monthly/acct)                  ▐▌
+ █ Find which file is handling your wtmp log rotation:                        ▐▌
+ █ grep -r wtmp /etc/*                                                        ▐▌
+ █ Mine is:                                                                   ▐▌
+ █ pico /etc/logrotate.conf                                                   ▐▌
+ █ Add settings for wtmp & btmp to leave a backup copy before compressing     ▐▌
+ █ 'delaycompress', and to 'compress'. I also add directives to e-mail me the ▐▌
+ █ log before removing it. These are my settings:                             ▐▌
+ █ [snip]                                                                     ▐▌
+ █ # no packages own wtmp, or btmp -- we'll rotate them here                  ▐▌
+ █ /var/log/wtmp {                                                            ▐▌
+ █     missingok                                                              ▐▌
+ █     monthly                                                                ▐▌
+ █     compress                                                               ▐▌
+ █     delaycompress                                                          ▐▌
+ █     create 0664 root utmp                                                  ▐▌
+ █     rotate 3                                                               ▐▌
+ █     mailfirst                                                              ▐▌
+ █     mail mewbies@whatever.com                                              ▐▌
+ █ }                                                                          ▐▌
+ █                                                                            ▐▌
+ █ /var/log/btmp {                                                            ▐▌
+ █     missingok                                                              ▐▌
+ █     monthly                                                                ▐▌
+ █     compress                                                               ▐▌
+ █     delaycompress                                                          ▐▌
+ █     create 0660 root utmp                                                  ▐▌
+ █     rotate 3                                                               ▐▌
+ █     mailfirst                                                              ▐▌
+ █     mail mewbies@whatever.com                                              ▐▌
+ █ }                                                                          ▐▌
+ █ [snip]                                                                     ▐▌
+ █                                                                            ▐▌
+ █ To test it, without actually rotating the log:                             ▐▌
+ █ logrotate --debug --force /etc/logrotate.conf                              ▐▌
+ █                                                                            ▐▌
+ █ To rotate the log manually and have your wtmp1 & btmp1 created:            ▐▌
+ █ logrotate --force -v /etc/logrotate.conf                                   ▐▌
+ █ ls -al /var/log/wtmp*                                                      ▐▌
+ █                                                                            ▐▌
+ █ 2. MISSING FILES ON DEBIAN? -  actually another name:                      ▐▌
+ █ Very frustrating - according to all man pages, docs, etc it states there   ▐▌
+ █ should be these three files created by psacct:                             ▐▌
+ █ /var/account/acct     raw accounting data file                             ▐▌
+ █ /var/account/savacct  per-command accounting summary database              ▐▌
+ █ /var/account/usracct  per-user accounting summary database                 ▐▌
+ █                                                                            ▐▌
+ █ Not only is there not a path /var/account there are no files by the names  ▐▌
+ █ of savacct & usracct on the entire system.                                 ▐▌
+ █ find / -type d -name account                                               ▐▌
+ █ find / -name savacct                                                       ▐▌
+ █ find / -name usracct                                                       ▐▌
+ █                                                                            ▐▌
+ █ The configuration files for 'acct' is here /etc/init.d/acct &              ▐▌
+ █ /etc/default/acct                                                          ▐▌
+ █ find / -name acct                                                          ▐▌
+ █ /etc/cron.monthly/acct {create wtmp.report configuration file              ▐▌
+ █ /etc/cron.daily/acct {creates daily new pacct file                         ▐▌
+ █ /usr/share/doc/acct {document dir                                          ▐▌
+ █ /usr/share/doc-base/acct {general program title                            ▐▌
+ █ /proc/sys/kernel/acct {binary file                                         ▐▌
+ █                                                                            ▐▌
+ █ README states:                                                             ▐▌
+ █ "To find the actual locations and names of these files on your system,     ▐▌
+ █ specify the `--help' flag to any of the programs in this package and the   ▐▌
+ █ information will dumped to standard output.                                ▐▌
+ █ Regardless of the names and locations of files on your system, this manual ▐▌
+ █ will refer to the login accounting file as `wtmp' and the process          ▐▌
+ █ accounting files as `acct', `savacct', and `usracct'.                      ▐▌
+ █ "                                                                          ▐▌
+ █ Even the sa --help cmd states the same false location:                     ▐▌
+ █ sa --help                                                                  ▐▌
+ █                                                                            ▐▌
+ █ I still do not know the file names or location of 'savacct & usracct'      ▐▌
+ █ though everything seems to be working correctly. I'm then presuming the    ▐▌
+ █ info meant for those files is stored in /var/log/account/pacct files(?) -  ▐▌
+ █ just doesn't feel correct based on the fact that pacct files are restarted ▐▌
+ █ and backed up daily.                                                       ▐▌
+ █ ls -al /var/log/account                                                    ▐▌
+ █                                                                            ▐▌
+ █ I installed mine June 2010, v 6.4~pre1-6. According to these bug reports   ▐▌
+ █ HERE & HERE, this should have been fixed.                                  ▐▌
+ █                                                                            ▐▌
+ █ According to the bug report the paths are stated in the file 'files.h'. I  ▐▌
+ █ don't have this file either, probably due to the fact that I used aptitude ▐▌
+ █ to install it and didn't compile it myself(?).                             ▐▌
+ █ find / -name files.h                                                       ▐▌
+ █ cat /usr/share/doc/acct/README                                             ▐▌
+ █ [snip]                                                                     ▐▌
+ █ "check the file configure.in script (files.h is now automatically          ▐▌
+ █ generated from the results of that script)."                               ▐▌
+ █                                                                            ▐▌
+ █ The manual HERE has a notation 'A Note on File Names and Locations'.       ▐▌
+ █                                                                            ▐▌
+ █ //----------------------------------------------------------------------   ▐▌
+ █                                                                            ▐▌
+ █ If you find mistakes, have suggestions, and or questions please post at    ▐▌
+ █ mewbies forum HERE - thank you.                                            ▐▌
+ █                                                                            ▐▌
+ █ Last update on 24 Aug '10  

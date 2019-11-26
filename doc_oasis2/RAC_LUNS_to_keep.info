@@ -1,0 +1,43 @@
+claeyje@muscadet ~]$ un_cluster olrprod2
+rutilicus;RACcluster002;olrprod2
+sadalsud;RACcluster002;olrprod2
+[claeyje@muscadet ~]$ sr rutilicus
+
+Oracle RAC
+1 root@rutilicus:->ecdc-disk-list -qd | grep DEFAULT | egrep -v 'ASM|free'
+     BETZ8C50DFE   dm-277       55 GB    linux_raid_member         DEFAULT sdanp,sdanv
+     BETZ8C50DFF   dm-276       55 GB    linux_raid_member         DEFAULT sdanw,sdanq
+     BETZ8C51D18   dm-279      220 GB    linux_raid_member         DEFAULT sdanx,sdanr
+     WIND8C50DFE   dm-278       55 GB    linux_raid_member         DEFAULT sdany,sdans
+     WIND8C50DFF   dm-281       55 GB    linux_raid_member         DEFAULT sdant,sdanz
+     WIND8C51D18   dm-280      220 GB    linux_raid_member         DEFAULT sdaoa,sdanu
+
+
+[claeyje@muscadet ~]$ sr sadalsud
+
+Oracle RAC
+1 root@sadalsud:->ecdc-disk-list -qd | grep DEFAULT | egrep -v 'ASM|free'
+     BETZ8C40DC4   dm-276       55 GB    linux_raid_member         DEFAULT sdanp,sdanv
+     BETZ8C40DC5   dm-278       55 GB    linux_raid_member         DEFAULT sdanw,sdanq
+     BETZ8C40DCA   dm-277      220 GB    linux_raid_member         DEFAULT sdanx,sdanr
+     WIND8C40DC4   dm-281       55 GB    linux_raid_member         DEFAULT sdany,sdans
+     WIND8C40DC5   dm-280       55 GB    linux_raid_member         DEFAULT sdant,sdanz
+     WIND8C40DCA   dm-279      220 GB    linux_raid_member         DEFAULT sdaoa,sdanu
+2 root@sadalsud:->
+
+
+RACCLUSTER=olrprod2
+RACHOSTS=(`un_cluster $RACCLUSTER | cut -d";" -f1`); echo ${RACHOSTS[@]}
+ALLLUNS=()
+for H in ${RACHOSTS[@]}; do
+   echo "LUNs for $H"; sr $H ecdc-disk-list -qd | grep DEFAULT | egrep -v 'ASM|free'
+   LUNS=(`sr $H ecdc-disk-list -qd | grep DEFAULT | egrep -v 'ASM|free'|awk '{print $1}'`)
+   A=LUN_$H; AA=`echo "$A[@]"`
+   eval ${A}=\(\${LUNS[@]}\)
+   # echo ${!AA}
+   ALLLUNS=(${ALLLUNS[@]} ${!AA})
+done; echo "LUNs list:= ${ALLLUNS[@]}"
+
+echo ${ALLLUNS[@]}
+
+

@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<!-- saved from url=(0072)http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html -->
+<html lang="en-US" prefix="og: http://ogp.me/ns#" class=" js no-touch csstransforms csstransforms3d csstransitions svg"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<link rel="profile" href="http://gmpg.org/xfn/11">
+<link rel="pingback" href="http://www.unixarena.com/xmlrpc.php">
+<title>Solaris Local zone wise Memory &amp; CPU usage details using script - UnixArena</title>
+<meta property="og:title" content="Solaris Local zone wise Memory &amp; CPU usage details using script - UnixArena">
+<meta property="og:type" content="article">
+<meta property="og:description" content="I am sure many of the Solaris administrator will break their head in a order to find Solaris local z">
+<meta property="og:url" content="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html">
+<meta property="og:site_name" content="UnixArena">
+<meta property="og:image" content="http://www.unixarena.com/wp-content/uploads/2013/05/cpu-usage-on-solaris-local-zone.jpg">
+
+<!-- This site is optimized with the Yoast SEO plugin v4.4 - https://yoast.com/wordpress/plugins/seo/ -->
+<link rel="canonical" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Solaris Local zone wise Memory &amp; CPU usage details using script - UnixArena">
+<meta property="og:description" content="I am sure many of the Solaris administrator will break their head in a order to find Solaris local zones wise resource utilization details. Because there is no simple to tool to find these details in Solaris 10. I just come across  Jeff Victor’s Blog and found this script which will be very useful in our daily Unix administration,This script will help you to find resource consumption of each Solaris local …">
+<meta property="og:url" content="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html">
+<meta property="og:site_name" content="UnixArena">
+<meta property="article:section" content="Solaris 10">
+<meta property="article:published_time" content="2013-05-05T11:33:00+00:00">
+<meta property="article:modified_time" content="2015-11-03T00:12:03+00:00">
+<meta property="og:updated_time" content="2015-11-03T00:12:03+00:00">
+<meta property="og:image" content="http://www.unixarena.com/wp-content/uploads/2013/05/cpu-usage-on-solaris-local-zone.jpg">
+<meta property="og:image:width" content="279">
+<meta property="og:image:height" content="228">
+<!-- / Yoast SEO plugin. -->
+
+<link rel="dns-prefetch" href="http://fonts.googleapis.com/">
+<link rel="dns-prefetch" href="http://s.w.org/">
+<link rel="alternate" type="application/rss+xml" title="UnixArena » Feed" href="http://www.unixarena.com/feed">
+<link rel="alternate" type="application/rss+xml" title="UnixArena » Comments Feed" href="http://www.unixarena.com/comments/feed">
+<link rel="alternate" type="application/rss+xml" title="UnixArena » Solaris Local zone wise Memory &amp; CPU usage details using script Comments Feed" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html/feed">
+		<script src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/ca-pub-2066265678987787.js"></script><script async="" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/analytics.js"></script><script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/2.2.1\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/2.2.1\/svg\/","svgExt":".svg","source":{"concatemoji":"http:\/\/www.unixarena.com\/wp-includes\/js\/wp-emoji-release.min.js"}};
+			!function(a,b,c){function d(a){var b,c,d,e,f=String.fromCharCode;if(!k||!k.fillText)return!1;switch(k.clearRect(0,0,j.width,j.height),k.textBaseline="top",k.font="600 32px Arial",a){case"flag":return k.fillText(f(55356,56826,55356,56819),0,0),!(j.toDataURL().length<3e3)&&(k.clearRect(0,0,j.width,j.height),k.fillText(f(55356,57331,65039,8205,55356,57096),0,0),b=j.toDataURL(),k.clearRect(0,0,j.width,j.height),k.fillText(f(55356,57331,55356,57096),0,0),c=j.toDataURL(),b!==c);case"emoji4":return k.fillText(f(55357,56425,55356,57341,8205,55357,56507),0,0),d=j.toDataURL(),k.clearRect(0,0,j.width,j.height),k.fillText(f(55357,56425,55356,57341,55357,56507),0,0),e=j.toDataURL(),d!==e}return!1}function e(a){var c=b.createElement("script");c.src=a,c.defer=c.type="text/javascript",b.getElementsByTagName("head")[0].appendChild(c)}var f,g,h,i,j=b.createElement("canvas"),k=j.getContext&&j.getContext("2d");for(i=Array("flag","emoji4"),c.supports={everything:!0,everythingExceptFlag:!0},h=0;h<i.length;h++)c.supports[i[h]]=d(i[h]),c.supports.everything=c.supports.everything&&c.supports[i[h]],"flag"!==i[h]&&(c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&c.supports[i[h]]);c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&!c.supports.flag,c.DOMReady=!1,c.readyCallback=function(){c.DOMReady=!0},c.supports.everything||(g=function(){c.readyCallback()},b.addEventListener?(b.addEventListener("DOMContentLoaded",g,!1),a.addEventListener("load",g,!1)):(a.attachEvent("onload",g),b.attachEvent("onreadystatechange",function(){"complete"===b.readyState&&c.readyCallback()})),f=c.source||{},f.concatemoji?e(f.concatemoji):f.wpemoji&&f.twemoji&&(e(f.twemoji),e(f.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script><script src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/wp-emoji-release.min.js" type="text/javascript" defer=""></script>
+		<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+<link rel="stylesheet" id="udefault-css" href="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/default.css" type="text/css" media="all">
+<link rel="stylesheet" id="scfp-form-repeater-css-css" href="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/style.css" type="text/css" media="all">
+<link rel="stylesheet" id="scfp-css-css" href="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/style(1).css" type="text/css" media="all">
+<link rel="stylesheet" id="tie-style-css" href="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/style(2).css" type="text/css" media="all">
+<link rel="stylesheet" id="tie-ilightbox-skin-css" href="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/skin.css" type="text/css" media="all">
+<link rel="stylesheet" id="Open+Sans-css" href="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/css" type="text/css" media="all">
+<link rel="stylesheet" id="Droid+Sans-css" href="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/css(1)" type="text/css" media="all">
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/jquery.js"></script>
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/jquery-migrate.min.js"></script>
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/main.js"></script>
+<link rel="https://api.w.org/" href="http://www.unixarena.com/wp-json/">
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://www.unixarena.com/xmlrpc.php?rsd">
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://www.unixarena.com/wp-includes/wlwmanifest.xml"> 
+<meta name="generator" content="WordPress 4.7.3">
+<link rel="shortlink" href="http://www.unixarena.com/?p=122">
+<link rel="alternate" type="application/json+oembed" href="http://www.unixarena.com/wp-json/oembed/1.0/embed?url=http%3A%2F%2Fwww.unixarena.com%2F2013%2F05%2Fsolaris-local-zone-wise-memory-cpu.html">
+<link rel="alternate" type="text/xml+oembed" href="http://www.unixarena.com/wp-json/oembed/1.0/embed?url=http%3A%2F%2Fwww.unixarena.com%2F2013%2F05%2Fsolaris-local-zone-wise-memory-cpu.html&amp;format=xml">
+
+        <!-- BuySellAds.com Ad Code -->
+        <script type="text/javascript">
+        (function(){
+          var bsa = document.createElement('script');
+              bsa.type= 'text/javascript';
+              bsa.async = true;
+              bsa.src='//s3.buysellads.com/ac/bsa.js';
+          (document.getElementsByTagName('head')[0]||document.getElementsByTagName('body')[0]).appendChild(bsa);
+        })();
+        </script><script type="text/javascript" async="" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/bsa.js"></script>
+        <!-- END BuySellAds.com Ad Code --> 
+      <link rel="shortcut icon" href="http://www.unixarena.com/wp-content/uploads/2016/02/Unixarena-Favicon.jpg" title="Favicon">
+<!--[if IE]>
+<script type="text/javascript">jQuery(document).ready(function (){ jQuery(".menu-item").has("ul").children("a").attr("aria-haspopup", "true");});</script>
+<![endif]-->
+<!--[if lt IE 9]>
+<script src="http://www.unixarena.com/wp-content/themes/sahifa/js/html5.js"></script>
+<script src="http://www.unixarena.com/wp-content/themes/sahifa/js/selectivizr-min.js"></script>
+<![endif]-->
+<!--[if IE 9]>
+<link rel="stylesheet" type="text/css" media="all" href="http://www.unixarena.com/wp-content/themes/sahifa/css/ie9.css" />
+<![endif]-->
+<!--[if IE 8]>
+<link rel="stylesheet" type="text/css" media="all" href="http://www.unixarena.com/wp-content/themes/sahifa/css/ie8.css" />
+<![endif]-->
+<!--[if IE 7]>
+<link rel="stylesheet" type="text/css" media="all" href="http://www.unixarena.com/wp-content/themes/sahifa/css/ie7.css" />
+<![endif]-->
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-33171075-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+<style type="text/css" media="screen">
+
+.top-nav, .top-nav ul li a {
+	font-size : 13px;
+}
+
+#main-nav, #main-nav ul li a{
+	font-family: Verdana, Geneva, sans-serif;
+	font-size : 15px;
+	font-style: normal;
+}
+
+.post-title{
+	font-family: Verdana, Geneva, sans-serif;
+	font-size : 24px;
+}
+
+h2.post-box-title, h2.post-box-title a{
+	font-size : 24px;
+}
+
+p.post-meta, p.post-meta a{
+	font-size : 12px;
+}
+
+body.single .entry, body.page .entry{
+	font-family: 'Open Sans';
+	font-size : 15px;
+}
+
+.widget-top h4, .widget-top h4 a{
+	font-family: 'Open Sans';
+	font-size : 16px;
+	font-weight: bold;
+	font-style: oblique;
+}
+
+.footer-widget-top h4, .footer-widget-top h4 a{
+	font-family: 'Open Sans';
+	font-size : 16px;
+	font-weight: bold;
+	font-style: oblique;
+}
+
+.cat-box-title h2, .cat-box-title h2 a, .block-head h3, #respond h3, #comments-title, h2.review-box-header, .woocommerce-tabs .entry-content h2, .woocommerce .related.products h2, .entry .woocommerce h2, .woocommerce-billing-fields h3, .woocommerce-shipping-fields h3, #order_review_heading, #bbpress-forums fieldset.bbp-form legend, #buddypress .item-body h4, #buddypress #item-body h4{
+	font-family: 'Open Sans';
+	font-size : 16px;
+	font-weight: bold;
+	font-style: oblique;
+}
+
+#main-nav,
+.cat-box-content,
+#sidebar .widget-container,
+.post-listing,
+#commentform {
+	border-bottom-color: #046385;
+}
+
+.search-block .search-button,
+#topcontrol,
+#main-nav ul li.current-menu-item a,
+#main-nav ul li.current-menu-item a:hover,
+#main-nav ul li.current_page_parent a,
+#main-nav ul li.current_page_parent a:hover,
+#main-nav ul li.current-menu-parent a,
+#main-nav ul li.current-menu-parent a:hover,
+#main-nav ul li.current-page-ancestor a,
+#main-nav ul li.current-page-ancestor a:hover,
+.pagination span.current,
+.share-post span.share-text,
+.flex-control-paging li a.flex-active,
+.ei-slider-thumbs li.ei-slider-element,
+.review-percentage .review-item span span,
+.review-final-score,
+.button,
+a.button,
+a.more-link,
+#main-content input[type="submit"],
+.form-submit #submit,
+#login-form .login-button,
+.widget-feedburner .feedburner-subscribe,
+input[type="submit"],
+#buddypress button,
+#buddypress a.button,
+#buddypress input[type=submit],
+#buddypress input[type=reset],
+#buddypress ul.button-nav li a,
+#buddypress div.generic-button a,
+#buddypress .comment-reply-link,
+#buddypress div.item-list-tabs ul li a span,
+#buddypress div.item-list-tabs ul li.selected a,
+#buddypress div.item-list-tabs ul li.current a,
+#buddypress #members-directory-form div.item-list-tabs ul li.selected span,
+#members-list-options a.selected,
+#groups-list-options a.selected,
+body.dark-skin #buddypress div.item-list-tabs ul li a span,
+body.dark-skin #buddypress div.item-list-tabs ul li.selected a,
+body.dark-skin #buddypress div.item-list-tabs ul li.current a,
+body.dark-skin #members-list-options a.selected,
+body.dark-skin #groups-list-options a.selected,
+.search-block-large .search-button,
+#featured-posts .flex-next:hover,
+#featured-posts .flex-prev:hover,
+a.tie-cart span.shooping-count,
+.woocommerce span.onsale,
+.woocommerce-page span.onsale ,
+.woocommerce .widget_price_filter .ui-slider .ui-slider-handle,
+.woocommerce-page .widget_price_filter .ui-slider .ui-slider-handle,
+#check-also-close,
+a.post-slideshow-next,
+a.post-slideshow-prev,
+.widget_price_filter .ui-slider .ui-slider-handle,
+.quantity .minus:hover,
+.quantity .plus:hover,
+.mejs-container .mejs-controls .mejs-time-rail .mejs-time-current,
+#reading-position-indicator  {
+	background-color:#046385;
+}
+
+::-webkit-scrollbar-thumb{
+	background-color:#046385 !important;
+}
+
+#theme-footer,
+#theme-header,
+.top-nav ul li.current-menu-item:before,
+#main-nav .menu-sub-content ,
+#main-nav ul ul,
+#check-also-box {
+	border-top-color: #046385;
+}
+
+.search-block:after {
+	border-right-color:#046385;
+}
+
+body.rtl .search-block:after {
+	border-left-color:#046385;
+}
+
+#main-nav ul > li.menu-item-has-children:hover > a:after,
+#main-nav ul > li.mega-menu:hover > a:after {
+	border-color:transparent transparent #046385;
+}
+
+.widget.timeline-posts li a:hover,
+.widget.timeline-posts li a:hover span.tie-date {
+	color: #046385;
+}
+
+.widget.timeline-posts li a:hover span.tie-date:before {
+	background: #046385;
+	border-color: #046385;
+}
+
+#order_review,
+#order_review_heading {
+	border-color: #046385;
+}
+
+
+body {
+	background-color: #020807 !important;
+	background-image : url(http://www.unixarena.com/wp-content/themes/sahifa/images/patterns/body-bg6.png);
+	background-position: top center;
+}
+
+body.single .post .entry a, body.page .post .entry a {
+	color: #0b64d1;
+}
+		
+body.single .post .entry a:hover, body.page .post .entry a:hover {
+	color: #fa1960;
+}
+		
+#main-nav ul li {
+	border-color: #1e414d;
+}
+
+#main-nav ul ul li, #main-nav ul ul li:first-child {
+	border-top-color: #1e414d;
+}
+
+#main-nav ul li .mega-menu-block ul.sub-menu {
+	border-bottom-color: #1e414d;
+}
+
+
+.breaking-news span.breaking-news-title {background: #133dd4;}
+
+</style>
+
+
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/jscripts.php"></script> 
+<style id="fit-vids-style">.fluid-width-video-wrapper{width:100%;position:relative;padding:0;}.fluid-width-video-wrapper iframe,.fluid-width-video-wrapper object,.fluid-width-video-wrapper embed {position:absolute;top:0;left:0;width:100%;height:100%;}</style><script type="text/javascript" id="_bsap_js_47ebde463cc61dbade201d7bc6e026ad" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/s_47ebde463cc61dbade201d7bc6e026ad.js" async="async"></script><script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/pro.js" id="_bsap_premium_pro"></script><script type="text/javascript" id="_bsaPRO_js" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/saved_resource" async="async"></script></head>
+<body id="top" class="post-template-default single single-post postid-122 single-format-standard lazy-enabled">
+
+<div class="wrapper-outer">
+
+	<div class="background-cover"></div>
+
+	<aside id="slide-out">
+
+			<div class="search-mobile">
+			<form method="get" id="searchform-mobile" action="http://www.unixarena.com/">
+				<button class="search-button" type="submit" value="Search"><i class="fa fa-search"></i></button>
+				<input type="text" id="s-mobile" name="s" title="Search" value="Search" onfocus="if (this.value == &#39;Search&#39;) {this.value = &#39;&#39;;}" onblur="if (this.value == &#39;&#39;) {this.value = &#39;Search&#39;;}">
+			</form>
+		</div><!-- .search-mobile /-->
+	
+			<div class="social-icons">
+		<a class="ttip-none" title="Google+" href="https://plus.google.com/108070431128644935649" target="_blank"><i class="fa fa-google-plus"></i></a><a class="ttip-none" title="Facebook" href="https://www.facebook.com/pages/Unixarena/396499610457515" target="_blank"><i class="fa fa-facebook"></i></a><a class="ttip-none" title="Twitter" href="https://twitter.com/UnixArena" target="_blank"><i class="fa fa-twitter"></i></a><a class="ttip-none" title="LinkedIn" href="https://www.linkedin.com/grp/home?gid=8134297" target="_blank"><i class="fa fa-linkedin"></i></a><a class="ttip-none" title="Google Play" href="https://play.google.com/store/apps/details?id=com.stuxnet.admin.unixarena" target="_blank"><i class="fa fa-play"></i></a>
+			</div>
+
+	
+		<div id="mobile-menu"><div class="main-menu"><ul id="menu-main-menu-new" class="menu"><li id="menu-item-3049" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-3049"><a href="http://www.unixarena.com/">Home</a></li>
+<li id="menu-item-3098" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3098"><a href="http://www.unixarena.com/category/openstack-2">Openstack</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3693" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3693"><a href="http://www.unixarena.com/2015/09/openstack-beginners-guide.html">Openstack Beginner’s Guide</a></li>
+	<li id="menu-item-3694" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3694"><a href="http://www.unixarena.com/category/openstack-tutorial">Openstack Tutorial</a></li>
+</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+<li id="menu-item-3050" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3050"><a href="http://www.unixarena.com/category/vmware">VMware</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3051" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3051"><a href="http://www.unixarena.com/category/vmware/vmware-free-tools">VMware Free Tools</a></li>
+	<li id="menu-item-3086" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3086"><a href="http://www.unixarena.com/category/vcloud-director">vCloud Director</a></li>
+	<li id="menu-item-3052" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3052"><a href="http://www.unixarena.com/category/vmware/vmware-guests">VMware-Guests</a></li>
+	<li id="menu-item-3085" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3085"><a href="http://www.unixarena.com/category/vcenter-appliance-5-5">Vcenter Appliance 5.5</a></li>
+	<li id="menu-item-3084" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3084"><a href="http://www.unixarena.com/category/vc-ops">vC OPS</a></li>
+	<li id="menu-item-3055" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3055"><a href="http://www.unixarena.com/category/vmware-sddc">VMware SDDC</a></li>
+	<li id="menu-item-3056" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3056"><a href="http://www.unixarena.com/category/vmware-vsphere">VMware vSphere 5.x</a>
+	<ul class="sub-menu menu-sub-content">
+		<li id="menu-item-3060" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3060"><a href="http://www.unixarena.com/category/vsphere-network">vSphere Network</a></li>
+		<li id="menu-item-3053" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3053"><a href="http://www.unixarena.com/category/vmware/vsphere-distributed-switch">vSphere DS</a></li>
+		<li id="menu-item-3059" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3059"><a href="http://www.unixarena.com/category/vshield-suite">vShield Suite</a></li>
+	</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+	<li id="menu-item-3057" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3057"><a href="http://www.unixarena.com/category/vmware-vsphere-6-0">VMware vSphere 6.0</a></li>
+	<li id="menu-item-3058" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3058"><a href="http://www.unixarena.com/category/vsan">VSAN</a></li>
+</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+<li id="menu-item-3063" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3063"><a href="http://www.unixarena.com/category/tutorials-2">Tutorials</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3061" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3061"><a href="http://www.unixarena.com/category/tutorials-2/vxvm-training">VXVM-Training</a></li>
+	<li id="menu-item-3062" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3062"><a href="http://www.unixarena.com/category/tutorials-2/zfs-tutorials">ZFS-Tutorials</a></li>
+	<li id="menu-item-4352" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4352"><a href="http://www.unixarena.com/2015/12/netapp-clustered-data-ontap-tutorial.html">NetApp cDot</a></li>
+	<li id="menu-item-3064" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3064"><a href="http://www.unixarena.com/2013/08/linux-lvm-free-training-tutorial.html">LVM</a></li>
+	<li id="menu-item-3454" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3454"><a href="http://www.unixarena.com/2015/08/cisco-ucs-manager-master-sheet.html">Cisco UCS</a></li>
+	<li id="menu-item-3065" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3065"><a href="http://www.unixarena.com/2014/02/ldom-oracle-vm-sparc-tutorial-1.html">LDOM</a></li>
+	<li id="menu-item-3066" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3066"><a href="http://www.unixarena.com/2014/08/oracle-vm-x86-tutorial.html">Oracle VM for x86</a></li>
+	<li id="menu-item-3079" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3079"><a href="http://www.unixarena.com/vxvm-commands-examples">VXVM Man Page</a></li>
+</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+<li id="menu-item-3067" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3067"><a href="http://www.unixarena.com/category/oracle-solaris">Oracle Solaris</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3071" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3071"><a href="http://www.unixarena.com/category/oracle-supercluster">Oracle SuperCluster</a>
+	<ul class="sub-menu menu-sub-content">
+		<li id="menu-item-3068" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3068"><a href="http://www.unixarena.com/category/exadata">Exadata</a></li>
+	</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+	<li id="menu-item-3072" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-has-children menu-item-3072"><a href="http://www.unixarena.com/category/solaris-10">Solaris 10</a>
+	<ul class="sub-menu menu-sub-content">
+		<li id="menu-item-3070" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3070"><a href="http://www.unixarena.com/category/live-upgrade">Live upgrade</a></li>
+		<li id="menu-item-3076" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3076"><a href="http://www.unixarena.com/category/solaris-migrations">Solaris Migrations</a></li>
+		<li id="menu-item-3080" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-3080"><a href="http://www.unixarena.com/category/zones">Zones</a></li>
+		<li id="menu-item-3081" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3081"><a href="http://www.unixarena.com/category/zfs">ZFS</a></li>
+		<li id="menu-item-3082" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3082"><a href="http://www.unixarena.com/category/veritas/vxvm">VXVM</a></li>
+		<li id="menu-item-3083" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3083"><a href="http://www.unixarena.com/category/veritas/vcs">VCS</a></li>
+	</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+	<li id="menu-item-3078" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3078"><a href="http://www.unixarena.com/category/solaris11">Solaris11</a>
+	<ul class="sub-menu menu-sub-content">
+		<li id="menu-item-3073" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3073"><a href="http://www.unixarena.com/category/solaris-11-2">Solaris 11.2</a>
+		<ul class="sub-menu menu-sub-content">
+			<li id="menu-item-3069" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3069"><a href="http://www.unixarena.com/category/ips-solaris11">IPS-Solaris11</a></li>
+			<li id="menu-item-3074" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3074"><a href="http://www.unixarena.com/category/solaris-cluster">Solaris Cluster</a></li>
+			<li id="menu-item-3075" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3075"><a href="http://www.unixarena.com/category/solaris-kernel-zones">Solaris kernel zones</a></li>
+		</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+	</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+	<li id="menu-item-3077" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3077"><a href="http://www.unixarena.com/category/solaris-networking">Solaris Networking</a></li>
+</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+<li id="menu-item-4356" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-4356"><a href="http://www.unixarena.com/category/redhat-linux">Redhat-Linux</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-4353" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4353"><a href="http://www.unixarena.com/category/how-to-articles-linux">How to Articles</a></li>
+	<li id="menu-item-4354" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4354"><a href="http://www.unixarena.com/category/linux-interview-questions">Q&amp;A</a></li>
+	<li id="menu-item-4355" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4355"><a href="http://www.unixarena.com/category/linux-networking">Networking</a></li>
+	<li id="menu-item-4357" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4357"><a href="http://www.unixarena.com/category/rhel7">RHEL7</a></li>
+</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+<li id="menu-item-3047" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-3047"><a href="http://www.unixarena.com/download-free-e-books">Download E-Books</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3481" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3481"><a href="http://unixarena.tradepub.com/category/information-technology-servers-and-server-os-virtualization/804/">Virtualization Trend</a></li>
+	<li id="menu-item-3487" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3487"><a href="http://unixarena.tradepub.com/category/information-technology-data-tools/1085/">Hadoop &amp; Big data</a></li>
+	<li id="menu-item-3485" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3485"><a href="http://unixarena.tradepub.com/category/information-technology-networking-and-communications/1090/">Cloud Networking</a></li>
+	<li id="menu-item-3486" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3486"><a href="http://unixarena.tradepub.com/category/information-technology-desktops-laptops-and-os/1086/">Tips &amp; Tricks</a></li>
+</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+<li id="menu-item-3696" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3696"><a href="http://www.unixarena.com/advertise-us">Advertise</a></li>
+<li id="menu-item-3697" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3697"><a href="http://www.unixarena.com/contact-me_8431">Contact Me</a></li>
+<li id="menu-item-4957" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4957"><a href="http://www.unixarena.com/advertise-us">Partner</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-4955" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4955"><a href="http://www.unixarena.com/vembu">Vembu</a></li>
+</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+<li id="menu-item-5140" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5140"><a href="http://www.unixarena.com/">Shopping</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-5142" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5142"><a target="_blank" href="https://www.amazon.in/b/ref=as_li_qf_br_sr_tl?ie=UTF8&amp;node=3561110031&amp;tag=unix-21&amp;camp=3638&amp;creative=24630&amp;linkCode=ur2&amp;linkId=5530bac0f987fdbf9b9cdf82a1325597">Amazon</a></li>
+</ul>
+<i class="mobile-arrows fa fa-chevron-down"></i></li>
+</ul></div><ul id="menu-header-menu" class="menu"><li id="menu-item-260" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-260"><a href="http://www.unixarena.com/var-googfixurllang-en-var">About</a></li>
+<li id="menu-item-261" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-261"><a href="http://www.unixarena.com/contact-me_8431">Contact Us</a></li>
+<li id="menu-item-262" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-262"><a href="http://www.unixarena.com/privacy-policy">Privacy Policy</a></li>
+<li id="menu-item-4759" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4759"><a href="http://www.unixarena.com/advertise-us">Advertise with us</a></li>
+</ul></div>
+	</aside><!-- #slide-out /-->
+
+		<div id="wrapper" class="boxed">
+		<div class="inner-wrapper">
+
+		<header id="theme-header" class="theme-header">
+						<div id="top-nav" class="top-nav">
+				<div class="container">
+
+			
+				<div class="top-menu"><ul id="menu-header-menu" class="menu"><li id="menu-item-260" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-260"><a href="http://www.unixarena.com/var-googfixurllang-en-var">About</a></li>
+<li id="menu-item-261" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-261"><a href="http://www.unixarena.com/contact-me_8431">Contact Us</a></li>
+<li id="menu-item-262" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-262"><a href="http://www.unixarena.com/privacy-policy">Privacy Policy</a></li>
+<li id="menu-item-4759" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4759"><a href="http://www.unixarena.com/advertise-us">Advertise with us</a></li>
+</ul></div>
+						<div class="search-block">
+						<form method="get" id="searchform-header" action="http://www.unixarena.com/">
+							<button class="search-button" type="submit" value="Search"><i class="fa fa-search"></i></button>
+							<input class="search-live" type="text" id="s-header" name="s" title="Search" value="Search" onfocus="if (this.value == &#39;Search&#39;) {this.value = &#39;&#39;;}" onblur="if (this.value == &#39;&#39;) {this.value = &#39;Search&#39;;}">
+						</form>
+					</div><!-- .search-block /-->
+	
+	
+				</div><!-- .container /-->
+			</div><!-- .top-menu /-->
+			
+		<div class="header-content">
+
+					<a id="slide-out-open" class="slide-out-open" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html#"><span></span></a>
+		
+			<div class="logo" style=" margin-top:8px;">
+			<h2>								<a title="UnixArena" href="http://www.unixarena.com/">
+					<img src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/UnixArena-Logo-12016.jpg" alt="UnixArena"><strong>UnixArena Interactive Unix &amp; Cloudy Virtualization</strong>
+				</a>
+			</h2>			</div><!-- .logo /-->
+						<div class="clear"></div>
+
+		</div>
+													<nav id="main-nav">
+				<div class="container">
+
+				
+					<div class="main-menu"><ul id="menu-main-menu-new" class="menu"><li id="menu-item-3049" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-3049"><a href="http://www.unixarena.com/">Home</a></li>
+<li id="menu-item-3098" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3098"><a href="http://www.unixarena.com/category/openstack-2">Openstack</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3693" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3693"><a href="http://www.unixarena.com/2015/09/openstack-beginners-guide.html">Openstack Beginner’s Guide</a></li>
+	<li id="menu-item-3694" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3694"><a href="http://www.unixarena.com/category/openstack-tutorial">Openstack Tutorial</a></li>
+</ul>
+</li>
+<li id="menu-item-3050" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3050"><a href="http://www.unixarena.com/category/vmware">VMware</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3051" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3051"><a href="http://www.unixarena.com/category/vmware/vmware-free-tools">VMware Free Tools</a></li>
+	<li id="menu-item-3086" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3086"><a href="http://www.unixarena.com/category/vcloud-director">vCloud Director</a></li>
+	<li id="menu-item-3052" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3052"><a href="http://www.unixarena.com/category/vmware/vmware-guests">VMware-Guests</a></li>
+	<li id="menu-item-3085" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3085"><a href="http://www.unixarena.com/category/vcenter-appliance-5-5">Vcenter Appliance 5.5</a></li>
+	<li id="menu-item-3084" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3084"><a href="http://www.unixarena.com/category/vc-ops">vC OPS</a></li>
+	<li id="menu-item-3055" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3055"><a href="http://www.unixarena.com/category/vmware-sddc">VMware SDDC</a></li>
+	<li id="menu-item-3056" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3056"><a href="http://www.unixarena.com/category/vmware-vsphere">VMware vSphere 5.x</a>
+	<ul class="sub-menu menu-sub-content">
+		<li id="menu-item-3060" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3060"><a href="http://www.unixarena.com/category/vsphere-network">vSphere Network</a></li>
+		<li id="menu-item-3053" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3053"><a href="http://www.unixarena.com/category/vmware/vsphere-distributed-switch">vSphere DS</a></li>
+		<li id="menu-item-3059" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3059"><a href="http://www.unixarena.com/category/vshield-suite">vShield Suite</a></li>
+	</ul>
+</li>
+	<li id="menu-item-3057" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3057"><a href="http://www.unixarena.com/category/vmware-vsphere-6-0">VMware vSphere 6.0</a></li>
+	<li id="menu-item-3058" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3058"><a href="http://www.unixarena.com/category/vsan">VSAN</a></li>
+</ul>
+</li>
+<li id="menu-item-3063" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3063"><a href="http://www.unixarena.com/category/tutorials-2">Tutorials</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3061" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3061"><a href="http://www.unixarena.com/category/tutorials-2/vxvm-training">VXVM-Training</a></li>
+	<li id="menu-item-3062" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3062"><a href="http://www.unixarena.com/category/tutorials-2/zfs-tutorials">ZFS-Tutorials</a></li>
+	<li id="menu-item-4352" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4352"><a href="http://www.unixarena.com/2015/12/netapp-clustered-data-ontap-tutorial.html">NetApp cDot</a></li>
+	<li id="menu-item-3064" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3064"><a href="http://www.unixarena.com/2013/08/linux-lvm-free-training-tutorial.html">LVM</a></li>
+	<li id="menu-item-3454" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3454"><a href="http://www.unixarena.com/2015/08/cisco-ucs-manager-master-sheet.html">Cisco UCS</a></li>
+	<li id="menu-item-3065" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3065"><a href="http://www.unixarena.com/2014/02/ldom-oracle-vm-sparc-tutorial-1.html">LDOM</a></li>
+	<li id="menu-item-3066" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3066"><a href="http://www.unixarena.com/2014/08/oracle-vm-x86-tutorial.html">Oracle VM for x86</a></li>
+	<li id="menu-item-3079" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3079"><a href="http://www.unixarena.com/vxvm-commands-examples">VXVM Man Page</a></li>
+</ul>
+</li>
+<li id="menu-item-3067" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3067"><a href="http://www.unixarena.com/category/oracle-solaris">Oracle Solaris</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3071" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3071"><a href="http://www.unixarena.com/category/oracle-supercluster">Oracle SuperCluster</a>
+	<ul class="sub-menu menu-sub-content">
+		<li id="menu-item-3068" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3068"><a href="http://www.unixarena.com/category/exadata">Exadata</a></li>
+	</ul>
+</li>
+	<li id="menu-item-3072" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-has-children menu-item-3072"><a href="http://www.unixarena.com/category/solaris-10">Solaris 10</a>
+	<ul class="sub-menu menu-sub-content">
+		<li id="menu-item-3070" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3070"><a href="http://www.unixarena.com/category/live-upgrade">Live upgrade</a></li>
+		<li id="menu-item-3076" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3076"><a href="http://www.unixarena.com/category/solaris-migrations">Solaris Migrations</a></li>
+		<li id="menu-item-3080" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-3080"><a href="http://www.unixarena.com/category/zones">Zones</a></li>
+		<li id="menu-item-3081" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3081"><a href="http://www.unixarena.com/category/zfs">ZFS</a></li>
+		<li id="menu-item-3082" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3082"><a href="http://www.unixarena.com/category/veritas/vxvm">VXVM</a></li>
+		<li id="menu-item-3083" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3083"><a href="http://www.unixarena.com/category/veritas/vcs">VCS</a></li>
+	</ul>
+</li>
+	<li id="menu-item-3078" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3078"><a href="http://www.unixarena.com/category/solaris11">Solaris11</a>
+	<ul class="sub-menu menu-sub-content">
+		<li id="menu-item-3073" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-3073"><a href="http://www.unixarena.com/category/solaris-11-2">Solaris 11.2</a>
+		<ul class="sub-menu menu-sub-content">
+			<li id="menu-item-3069" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3069"><a href="http://www.unixarena.com/category/ips-solaris11">IPS-Solaris11</a></li>
+			<li id="menu-item-3074" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3074"><a href="http://www.unixarena.com/category/solaris-cluster">Solaris Cluster</a></li>
+			<li id="menu-item-3075" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3075"><a href="http://www.unixarena.com/category/solaris-kernel-zones">Solaris kernel zones</a></li>
+		</ul>
+</li>
+	</ul>
+</li>
+	<li id="menu-item-3077" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-3077"><a href="http://www.unixarena.com/category/solaris-networking">Solaris Networking</a></li>
+</ul>
+</li>
+<li id="menu-item-4356" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-4356"><a href="http://www.unixarena.com/category/redhat-linux">Redhat-Linux</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-4353" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4353"><a href="http://www.unixarena.com/category/how-to-articles-linux">How to Articles</a></li>
+	<li id="menu-item-4354" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4354"><a href="http://www.unixarena.com/category/linux-interview-questions">Q&amp;A</a></li>
+	<li id="menu-item-4355" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4355"><a href="http://www.unixarena.com/category/linux-networking">Networking</a></li>
+	<li id="menu-item-4357" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4357"><a href="http://www.unixarena.com/category/rhel7">RHEL7</a></li>
+</ul>
+</li>
+<li id="menu-item-3047" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-3047"><a href="http://www.unixarena.com/download-free-e-books">Download E-Books</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-3481" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3481"><a href="http://unixarena.tradepub.com/category/information-technology-servers-and-server-os-virtualization/804/">Virtualization Trend</a></li>
+	<li id="menu-item-3487" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3487"><a href="http://unixarena.tradepub.com/category/information-technology-data-tools/1085/">Hadoop &amp; Big data</a></li>
+	<li id="menu-item-3485" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3485"><a href="http://unixarena.tradepub.com/category/information-technology-networking-and-communications/1090/">Cloud Networking</a></li>
+	<li id="menu-item-3486" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3486"><a href="http://unixarena.tradepub.com/category/information-technology-desktops-laptops-and-os/1086/">Tips &amp; Tricks</a></li>
+</ul>
+</li>
+<li id="menu-item-3696" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3696"><a href="http://www.unixarena.com/advertise-us">Advertise</a></li>
+<li id="menu-item-3697" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3697"><a href="http://www.unixarena.com/contact-me_8431">Contact Me</a></li>
+<li id="menu-item-4957" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4957"><a href="http://www.unixarena.com/advertise-us">Partner</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-4955" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4955"><a href="http://www.unixarena.com/vembu">Vembu</a></li>
+</ul>
+</li>
+<li id="menu-item-5140" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5140"><a href="http://www.unixarena.com/">Shopping</a>
+<ul class="sub-menu menu-sub-content">
+	<li id="menu-item-5142" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5142"><a target="_blank" href="https://www.amazon.in/b/ref=as_li_qf_br_sr_tl?ie=UTF8&amp;node=3561110031&amp;tag=unix-21&amp;camp=3638&amp;creative=24630&amp;linkCode=ur2&amp;linkId=5530bac0f987fdbf9b9cdf82a1325597">Amazon</a></li>
+</ul>
+</li>
+</ul></div>					
+					
+				</div>
+			</nav><!-- .main-nav /-->
+					</header><!-- #header /-->
+
+	
+	
+	<div id="main-content" class="container">
+	
+	
+	
+	
+	
+	<div class="content">
+
+		
+		<div xmlns:v="http://rdf.data-vocabulary.org/#" id="crumbs"><span typeof="v:Breadcrumb"><a rel="v:url" property="v:title" class="crumbs-home" href="http://www.unixarena.com/">Home</a></span> <span class="delimiter">/</span> <span typeof="v:Breadcrumb"><a rel="v:url" property="v:title" href="http://www.unixarena.com/category/solaris-10">Solaris 10</a></span> <span class="delimiter">/</span> <span class="current">Solaris Local zone wise Memory &amp; CPU usage details using script</span></div>
+		
+
+		
+		<article class="post-listing post-122 post type-post status-publish format-standard has-post-thumbnail  category-solaris-10 category-unix-admin-scripts category-unix-monitoring-tools category-zones" id="the-post">
+			
+			<div class="post-inner">
+
+							<h1 class="name post-title entry-title"><span itemprop="name">Solaris Local zone wise Memory &amp; CPU usage details using script</span></h1>
+
+						
+<p class="post-meta">
+	
+	
+	<span class="post-cats"><i class="fa fa-folder"></i><a href="http://www.unixarena.com/category/solaris-10" rel="category tag">Solaris 10</a>, <a href="http://www.unixarena.com/category/unix-admin-scripts" rel="category tag">Unix admin scripts</a>, <a href="http://www.unixarena.com/category/unix-monitoring-tools" rel="category tag">Unix Monitoring tools</a>, <a href="http://www.unixarena.com/category/zones" rel="category tag">Zones</a></span>
+	
+</p>
+<div class="clear"></div>
+			
+				<div class="entry">
+					
+					
+					<div dir="ltr" style="text-align: left;"><span style="font-family: Trebuchet MS, sans-serif;">I am sure many of the Solaris&nbsp;administrator&nbsp;will break their head in a order to find&nbsp;Solaris&nbsp;local zones wise resource&nbsp;utilization&nbsp;details.&nbsp;Because&nbsp;there is no simple to tool to find these details in&nbsp;Solaris&nbsp;10. I just come across <span style="text-decoration: underline;"><span style="color: blue;">&nbsp;</span></span></span><span style="font-family: Trebuchet MS, sans-serif;"><a style="color: blue; line-height: 26px;" href="https://blogs.oracle.com/JeffV/">Jeff Victor’s Blog</a><span style="line-height: 26px;"><span style="color: blue;">&nbsp;</span>and found this script which will be very useful in our daily&nbsp;Unix&nbsp;administration,This script will help you to find&nbsp;</span></span><span style="background-color: white;"><span style="font-family: Trebuchet MS, sans-serif;"><span style="line-height: 18px;">resource consumption of each&nbsp;Solaris&nbsp;local zone from global zone level.</span></span></span><span style="font-family: Trebuchet MS, sans-serif;"><b><span style="text-decoration: underline;">This script will give following&nbsp;information:</span></b></span><br>
+<span style="font-family: Trebuchet MS, sans-serif;">1.CPU Pool size</span><br>
+<span style="font-family: Trebuchet MS, sans-serif;">2.</span><span style="font-family: &#39;Trebuchet MS&#39;, sans-serif;">Capped Physical Memory&nbsp;</span><span style="font-family: &#39;Trebuchet MS&#39;, sans-serif;">&nbsp;</span><span style="font-family: &#39;Trebuchet MS&#39;, sans-serif;">(aka RAM)</span><br>
+<span style="font-family: Trebuchet MS, sans-serif;">3.Used Physical Memory</span><br>
+<span style="font-family: Trebuchet MS, sans-serif;">4.Capped Swap space (Virtual Memory aka VM)</span><br>
+<span style="font-family: &#39;Trebuchet MS&#39;, sans-serif;">3.Used shared memory&nbsp;</span><br>
+<span style="font-family: Trebuchet MS, sans-serif;">4.Locked Memory&nbsp;</span><br>
+<span style="font-family: Trebuchet MS, sans-serif;">5.Used Swap space (aka virtual memory)</span><span style="font-family: Trebuchet MS, sans-serif;">Here i will&nbsp;demonstrate&nbsp;how to use this script and explanation about each&nbsp;fields in zonestat script output.&nbsp;</span><br>
+<span style="font-family: Trebuchet MS, sans-serif;"><br>
+</span><span style="font-family: Trebuchet MS, sans-serif;"><a href="https://docs.google.com/file/d/0B9NZQd8R4lgNMFJiVVdGUVRZZms/edit?usp=sharing" target="_blank">Download the zonestat.pl script </a>and make it executable.&nbsp;</span><span style="font-family: Trebuchet MS, sans-serif;"><b><span style="text-decoration: underline;">Here is the sample output of the script.&nbsp;</span></b></span><br>
+<span style="font-family: Trebuchet MS, sans-serif;">I just&nbsp;demonstrated&nbsp;that in what are the ways we can &nbsp;use this script .</span><p></p>
+<pre>bash-3.00# ./zonestat.pl
+        |--Pool--|Pset|-------Memory-----|
+Zonename| IT|Size|Used| RAM| Shm| Lkd| VM|
+------------------------------------------
+  global  0D    2  0.0 103M 256K 258K 431M
+    sol1  0D    2  0.0  82M  0.0  0.0 169M
+==TOTAL= ---    2  0.1 185M 256K 258K 1.2G
+
+bash-3.00# ./zonestat.pl -l
+        |----Pool-----|---CPU-----|----------------Memory----------------|
+        |---|--Size---|Pset-------|---RAM---|---Shm---|---Lkd---|---VM---|
+Zonename| IT| Max| Cur|Used|Shr|S%| Cap|Used| Cap|Used| Cap|Used| Cap|Used
+--------------------------------------------------------------------------
+  global  0D    2    2  0.1   1 50       91M  18E 256K  18E 258K  18E 423M
+    sol1  0D    2    2  0.0   1 50       77M  18E  0.0  18E  0.0  18E 169M
+==TOTAL= --- ----    2  0.1 --- -- 789M 168M 789M 256K 755M 258K 1.3G 1.2G
+
+bash-3.00# ./zonestat.pl interval 4
+        |--Pool--|Pset|-------Memory-----|
+Zonename| IT|Size|Used| RAM| Shm| Lkd| VM|
+------------------------------------------
+  global  0D    2  0.0  92M 256K 258K 423M
+    sol1  0D    2  0.0  76M  0.0  0.0 169M
+==TOTAL= ---    2  0.0 168M 256K 258K 1.2G
+--------
+  global  0D    2  0.0  91M 256K 258K 423M
+    sol1  0D    2  0.0  75M  0.0  0.0 169M
+==TOTAL= ---    2  0.0 166M 256K 258K 1.2G
+--------
+  global  0D    2  0.0  91M 256K 258K 423M
+    sol1  0D    2  0.0  75M  0.0  0.0 169M
+==TOTAL= ---    2  0.0 166M 256K 258K 1.2G
+--------
+  global  0D    2  0.0  91M 256K 258K 423M
+    sol1  0D    2  0.0  75M  0.0  0.0 169M
+==TOTAL= ---    2  0.0 166M 256K 258K 1.2G</pre>
+<p><span style="font-family: Trebuchet MS, sans-serif;">You have the help option to know the each&nbsp;fields&nbsp;in zonestat command output.</span></p>
+<pre>bash-3.00# ./zonestat.pl -help
+
+ Usage: zonestat [-h] | [-l] [interval [count]]
+        -h: usage information
+        -l: display columns showing the configured limits
+
+Output with -l option:
+        |----Pool-----|------CPU-------|----------------Memory----------------|
+        |---|--Size---|-----Pset-------|---RAM---|---Shm---|---Lkd---|---VM---|
+Zonename| IT| Max| Cur| Cap|Used|Shr|S%| Cap|Used| Cap|Used| Cap|Used| Cap|Used
+
+Pool: information about the Solaris Resource Pool to which the zone is assigned.
+   I: Pool identification number for this zone's pool
+   T: Type of pool: D=Default, P=Private (temporary), S=Shared
+ Max: Maximum number of CPUs configured for this zone's pool
+ Cur: Current number of CPUs configured for this zone's pool
+
+CPU: information about CPU controls and usage
+  Cap: CPU-cap for the zone
+ Used: Amount of CPU power consumed by the zone recently
+  Shr: Number of FSS shares assigned to this zone
+   S%: Percentage of this pool's CPU cycles for this zone ('HH' = 100%)
+
+Memory: information about memory controls and usage
+ RAM: Physical memory information
+   Cap: Maximum amount of RAM this zone can use
+  Used: Amount of RAM this zone is using
+ Shm: Shared memory information
+   Cap: Maximum amount of shared memory this zone can use
+  Used: Amount of shared memory this zone is using
+ Lkd: Locked memory information
+   Cap: Maximum amount of locked memory this zone can use
+  Used: Amount of locked memory this zone is using
+ VM: Virtual memory information
+   Cap: Maximum amount of virtual memory this zone can use
+  Used: Amount of virtual memory this zone is using</pre>
+<p><span style="font-family: Trebuchet MS, sans-serif;">Thank you for reading this. Please leave a comment if you have any doubt on this.I will get back to you .</span></p>
+</div>
+					
+									</div><!-- .entry /-->
+
+
+				<div class="share-post">
+	<span class="share-text">Share</span>
+	
+		<ul class="flat-social">	
+			<li><a href="http://www.facebook.com/sharer.php?u=http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html" class="social-facebook" rel="external" target="_blank"><i class="fa fa-facebook"></i> <span>Facebook</span></a></li>
+		
+				<li><a href="https://plusone.google.com/_/+1/confirm?hl=en&amp;url=http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html&amp;name=Solaris+Local+zone+wise+Memory+%26+CPU+usage+details+using+script" class="social-google-plus" rel="external" target="_blank"><i class="fa fa-google-plus"></i> <span>Google +</span></a></li>
+					<li><a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html&amp;title=Solaris+Local+zone+wise+Memory+%26+CPU+usage+details+using+script" class="social-linkedin" rel="external" target="_blank"><i class="fa fa-linkedin"></i> <span>LinkedIn</span></a></li>
+			</ul>
+		<div class="clear"></div>
+</div> <!-- .share-post -->				<div class="clear"></div>
+			</div><!-- .post-inner -->
+
+			<script type="application/ld+json">{"@context":"http:\/\/schema.org","@type":"NewsArticle","dateCreated":"2013-05-05T11:33:00+00:00","datePublished":"2013-05-05T11:33:00+00:00","dateModified":"2015-11-03T00:12:03+00:00","headline":"Solaris Local zone wise Memory &amp; CPU usage details using script","name":"Solaris Local zone wise Memory &amp; CPU usage details using script","keywords":[],"url":"http:\/\/www.unixarena.com\/2013\/05\/solaris-local-zone-wise-memory-cpu.html","description":"I am sure many of the Solaris\u00a0administrator\u00a0will break their head in a order to find\u00a0Solaris\u00a0local zones wise resource\u00a0utilization\u00a0details.\u00a0Because\u00a0there is no simple to tool to find these details in\u00a0","copyrightYear":"2013","publisher":{"@id":"#Publisher","@type":"Organization","name":"UnixArena","logo":{"@type":"ImageObject","url":"http:\/\/www.unixarena.com\/wp-content\/uploads\/2016\/02\/UnixArena-Logo-12016.jpg"},"sameAs":["https:\/\/www.facebook.com\/pages\/Unixarena\/396499610457515","https:\/\/twitter.com\/UnixArena","https:\/\/plus.google.com\/108070431128644935649","https:\/\/www.linkedin.com\/grp\/home?gid=8134297","https:\/\/play.google.com\/store\/apps\/details?id=com.stuxnet.admin.unixarena"]},"sourceOrganization":{"@id":"#Publisher"},"copyrightHolder":{"@id":"#Publisher"},"mainEntityOfPage":{"@type":"WebPage","@id":"http:\/\/www.unixarena.com\/2013\/05\/solaris-local-zone-wise-memory-cpu.html"},"author":{"@type":"Person","name":"Lingeswaran R","url":"http:\/\/www.unixarena.com\/author\/lingeswaran-r"},"articleSection":"Solaris 10,Unix admin scripts,Unix Monitoring tools,Zones","articleBody":"I am sure many of the Solaris\u00a0administrator\u00a0will break their head in a order to find\u00a0Solaris\u00a0local zones wise resource\u00a0utilization\u00a0details.\u00a0Because\u00a0there is no simple to tool to find these details in\u00a0Solaris\u00a010. I just come across \u00a0Jeff Victor's Blog\u00a0and found this script which will be very useful in our daily\u00a0Unix\u00a0administration,This script will help you to find\u00a0resource consumption of each\u00a0Solaris\u00a0local zone from global zone level.This script will give following\u00a0information:\r\n1.CPU Pool size\r\n2.Capped Physical Memory\u00a0\u00a0(aka RAM)\r\n3.Used Physical Memory\r\n4.Capped Swap space (Virtual Memory aka VM)\r\n3.Used shared memory\u00a0\r\n4.Locked Memory\u00a0\r\n5.Used Swap space (aka virtual memory)Here i will\u00a0demonstrate\u00a0how to use this script and explanation about each\u00a0fields in zonestat script output.\u00a0\r\n\r\nDownload the zonestat.pl script and make it executable.\u00a0Here is the sample output of the script.\u00a0\r\nI just\u00a0demonstrated\u00a0that in what are the ways we can \u00a0use this script .\r\nbash-3.00# .\/zonestat.pl\r\n        |--Pool--|Pset|-------Memory-----|\r\nZonename| IT|Size|Used| RAM| Shm| Lkd| VM|\r\n------------------------------------------\r\n  global  0D    2  0.0 103M 256K 258K 431M\r\n    sol1  0D    2  0.0  82M  0.0  0.0 169M\r\n==TOTAL= ---    2  0.1 185M 256K 258K 1.2G\r\n\r\nbash-3.00# .\/zonestat.pl -l\r\n        |----Pool-----|---CPU-----|----------------Memory----------------|\r\n        |---|--Size---|Pset-------|---RAM---|---Shm---|---Lkd---|---VM---|\r\nZonename| IT| Max| Cur|Used|Shr|S%| Cap|Used| Cap|Used| Cap|Used| Cap|Used\r\n--------------------------------------------------------------------------\r\n  global  0D    2    2  0.1   1 50       91M  18E 256K  18E 258K  18E 423M\r\n    sol1  0D    2    2  0.0   1 50       77M  18E  0.0  18E  0.0  18E 169M\r\n==TOTAL= --- ----    2  0.1 --- -- 789M 168M 789M 256K 755M 258K 1.3G 1.2G\r\n\r\nbash-3.00# .\/zonestat.pl interval 4\r\n        |--Pool--|Pset|-------Memory-----|\r\nZonename| IT|Size|Used| RAM| Shm| Lkd| VM|\r\n------------------------------------------\r\n  global  0D    2  0.0  92M 256K 258K 423M\r\n    sol1  0D    2  0.0  76M  0.0  0.0 169M\r\n==TOTAL= ---    2  0.0 168M 256K 258K 1.2G\r\n--------\r\n  global  0D    2  0.0  91M 256K 258K 423M\r\n    sol1  0D    2  0.0  75M  0.0  0.0 169M\r\n==TOTAL= ---    2  0.0 166M 256K 258K 1.2G\r\n--------\r\n  global  0D    2  0.0  91M 256K 258K 423M\r\n    sol1  0D    2  0.0  75M  0.0  0.0 169M\r\n==TOTAL= ---    2  0.0 166M 256K 258K 1.2G\r\n--------\r\n  global  0D    2  0.0  91M 256K 258K 423M\r\n    sol1  0D    2  0.0  75M  0.0  0.0 169M\r\n==TOTAL= ---    2  0.0 166M 256K 258K 1.2G\r\nYou have the help option to know the each\u00a0fields\u00a0in zonestat command output.\r\nbash-3.00# .\/zonestat.pl -help\r\n\r\n Usage: zonestat [-h] | [-l] [interval [count]]\r\n        -h: usage information\r\n        -l: display columns showing the configured limits\r\n\r\nOutput with -l option:\r\n        |----Pool-----|------CPU-------|----------------Memory----------------|\r\n        |---|--Size---|-----Pset-------|---RAM---|---Shm---|---Lkd---|---VM---|\r\nZonename| IT| Max| Cur| Cap|Used|Shr|S%| Cap|Used| Cap|Used| Cap|Used| Cap|Used\r\n\r\nPool: information about the Solaris Resource Pool to which the zone is assigned.\r\n   I: Pool identification number for this zone's pool\r\n   T: Type of pool: D=Default, P=Private (temporary), S=Shared\r\n Max: Maximum number of CPUs configured for this zone's pool\r\n Cur: Current number of CPUs configured for this zone's pool\r\n\r\nCPU: information about CPU controls and usage\r\n  Cap: CPU-cap for the zone\r\n Used: Amount of CPU power consumed by the zone recently\r\n  Shr: Number of FSS shares assigned to this zone\r\n   S%: Percentage of this pool's CPU cycles for this zone ('HH' = 100%)\r\n\r\nMemory: information about memory controls and usage\r\n RAM: Physical memory information\r\n   Cap: Maximum amount of RAM this zone can use\r\n  Used: Amount of RAM this zone is using\r\n Shm: Shared memory information\r\n   Cap: Maximum amount of shared memory this zone can use\r\n  Used: Amount of shared memory this zone is using\r\n Lkd: Locked memory information\r\n   Cap: Maximum amount of locked memory this zone can use\r\n  Used: Amount of locked memory this zone is using\r\n VM: Virtual memory information\r\n   Cap: Maximum amount of virtual memory this zone can use\r\n  Used: Amount of virtual memory this zone is using\r\nThank you for reading this. Please leave a comment if you have any doubt on this.I will get back to you .\r\n\r\n","image":{"@type":"ImageObject","url":"http:\/\/www.unixarena.com\/wp-content\/uploads\/2013\/05\/cpu-usage-on-solaris-local-zone.jpg","width":696,"height":228}}</script>
+		</article><!-- .post-listing -->
+		
+
+		<div class="e3lan e3lan-post">			<a href="http://vmturbo.com/successfully-managing-performance-capacity-cloud-environments/?utm_source=unixarena&amp;utm_medium=cpmdisplay&amp;utm_campaign=manage-cloud-wp&amp;utm_content=728x90" target="_blank">
+<img src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/vhm-fiber-optic728x90.jpg" border="0" style="border:none;max-width:100%;" alt="VMTURBO-CLOUD-CAPACITY" class="tie-appear">
+</a>				</div>
+		
+
+				<div class="post-navigation">
+			<div class="post-previous"><a href="http://www.unixarena.com/2013/05/solaris-memory-swap-usage-script-with.html" rel="prev"><span>Previous</span> Solaris Memory swap Usage script with Percentage</a></div>
+			<div class="post-next"><a href="http://www.unixarena.com/2013/05/solaris-processes-monitoring-prstat.html" rel="next"><span>Next</span> Solaris Processes Monitoring – prstat</a></div>
+		</div><!-- .post-navigation -->
+		
+			<section id="related_posts">
+		<div class="block-head">
+			<h3>Related Articles</h3><div class="stripe-line"></div>
+		</div>
+		<div class="post-listing">
+						<div class="related-item">
+							
+				<div class="post-thumbnail">
+					<a href="http://www.unixarena.com/2016/04/managing-zone-cluster-oracle-solaris.html">
+						<img width="272" height="125" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/solaris-cluster-unixarena-272x125.jpg" class="attachment-tie-medium size-tie-medium wp-post-image" alt="solaris cluster">						<span class="fa overlay-icon"></span>
+					</a>
+				</div><!-- post-thumbnail /-->
+							
+				<h3><a href="http://www.unixarena.com/2016/04/managing-zone-cluster-oracle-solaris.html" rel="bookmark">Managing  Zone Cluster – Oracle Solaris</a></h3>
+				<p class="post-meta"><span class="tie-date"><i class="fa fa-clock-o"></i>April 13, 2016</span></p>
+			</div>
+						<div class="related-item">
+							
+				<div class="post-thumbnail">
+					<a href="http://www.unixarena.com/2016/04/sun-cluster-configuring-resource-group-zone-cluster.html">
+						<img width="310" height="165" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/Multiple-tier-consolidation-Sun-cluster-310x165.jpg" class="attachment-tie-medium size-tie-medium wp-post-image" alt="Multiple-tier consolidation - Sun cluster">						<span class="fa overlay-icon"></span>
+					</a>
+				</div><!-- post-thumbnail /-->
+							
+				<h3><a href="http://www.unixarena.com/2016/04/sun-cluster-configuring-resource-group-zone-cluster.html" rel="bookmark">Sun Cluster – Configuring Resource Group in Zone Cluster</a></h3>
+				<p class="post-meta"><span class="tie-date"><i class="fa fa-clock-o"></i>April 11, 2016</span></p>
+			</div>
+						<div class="related-item">
+							
+				<div class="post-thumbnail">
+					<a href="http://www.unixarena.com/2016/04/sun-cluster-configure-zone-cluster-solaris.html">
+						<img width="310" height="165" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/Zone-uses-the-global-zone-physical-resoruces-310x165.jpg" class="attachment-tie-medium size-tie-medium wp-post-image" alt="Zone uses the global zone physical resoruces">						<span class="fa overlay-icon"></span>
+					</a>
+				</div><!-- post-thumbnail /-->
+							
+				<h3><a href="http://www.unixarena.com/2016/04/sun-cluster-configure-zone-cluster-solaris.html" rel="bookmark">Sun Cluster – How to Configure Zone Cluster on Solaris ?</a></h3>
+				<p class="post-meta"><span class="tie-date"><i class="fa fa-clock-o"></i>April 11, 2016</span></p>
+			</div>
+						<div class="clear"></div>
+		</div>
+	</section>
+	
+		
+		
+				
+<div id="comments">
+
+	
+	<div id="comments-box">
+		<div class="block-head">
+			<h3 id="comments-title">5 comments </h3><div class="stripe-line"></div>
+		</div>
+		<div class="post-listing">
+
+			
+					
+				
+			<ol class="commentlist">	<li id="comment-336">
+		<div class="comment even thread-even depth-1 comment-wrap">
+			<div class="comment-avatar"><img alt="" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/13e8111f8c06b2a7316ca3b33740c7d5" srcset="http://1.gravatar.com/avatar/13e8111f8c06b2a7316ca3b33740c7d5?s=130&amp;d=mm&amp;r=g 2x" class="avatar avatar-65 photo" height="65" width="65"></div>
+
+			<div class="comment-content">
+				<div class="author-comment">
+					<cite class="fn">Paul</cite> 					<div class="comment-meta commentmetadata"><a href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html#comment-336">	September 18, 2014 at 12:59 am</a></div><!-- .comment-meta .commentmetadata -->
+					<div class="clear"></div>
+				</div>
+
+				
+				<p>Hello,<br>
+thank you for writing this script first off.<br>
+my question is, I would love to run this script you have written, but I am finding it hard finding the zonestat pkg to install….   Can you point me in the right direction to find zonestat and install that first?</p>
+<p>thank you</p>
+<p>Paul….</p>
+			</div>
+			<div class="reply"><a rel="nofollow" class="comment-reply-link" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html?replytocom=336#respond" onclick="return addComment.moveForm( &quot;comment-336&quot;, &quot;336&quot;, &quot;respond&quot;, &quot;122&quot; )" aria-label="Reply to Paul">Reply</a></div><!-- .reply -->
+		</div><!-- #comment-##  -->
+
+	<ul class="children">
+	<li id="comment-337">
+		<div class="comment byuser comment-author-lingeswaran-r bypostauthor odd alt depth-2 comment-wrap">
+			<div class="comment-avatar"><img alt="" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/46e5178c79128bf293ecbdec9190053b" srcset="http://1.gravatar.com/avatar/46e5178c79128bf293ecbdec9190053b?s=130&amp;d=mm&amp;r=g 2x" class="avatar avatar-65 photo" height="65" width="65"></div>
+
+			<div class="comment-content">
+				<div class="author-comment">
+					<cite class="fn">Lingeswaran R</cite> 					<div class="comment-meta commentmetadata"><a href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html#comment-337">	September 18, 2014 at 3:10 pm</a></div><!-- .comment-meta .commentmetadata -->
+					<div class="clear"></div>
+				</div>
+
+				
+				<p>As per my knowledge,zonestat package available from Solaris 11. For Solaris 10 , you need to use the script what i have attached </p>
+<p>Regards<br>
+Lingeswaran</p>
+			</div>
+			<div class="reply"><a rel="nofollow" class="comment-reply-link" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html?replytocom=337#respond" onclick="return addComment.moveForm( &quot;comment-337&quot;, &quot;337&quot;, &quot;respond&quot;, &quot;122&quot; )" aria-label="Reply to Lingeswaran R">Reply</a></div><!-- .reply -->
+		</div><!-- #comment-##  -->
+
+	</li><!-- #comment-## -->
+</ul><!-- .children -->
+</li><!-- #comment-## -->
+	<li id="comment-376">
+		<div class="comment even thread-odd thread-alt depth-1 comment-wrap">
+			<div class="comment-avatar"><img alt="" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/ffa37510704a6741244dee94b03736d0" srcset="http://0.gravatar.com/avatar/ffa37510704a6741244dee94b03736d0?s=130&amp;d=mm&amp;r=g 2x" class="avatar avatar-65 photo" height="65" width="65"></div>
+
+			<div class="comment-content">
+				<div class="author-comment">
+					<cite class="fn">Surendran</cite> 					<div class="comment-meta commentmetadata"><a href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html#comment-376">	October 31, 2014 at 12:00 pm</a></div><!-- .comment-meta .commentmetadata -->
+					<div class="clear"></div>
+				</div>
+
+				
+				<p>Hi…</p>
+<p>Thanks for sharing the alternative method to execute zonestat command in Solaris 10.</p>
+<p>I am unable to download the perl script, getting “Server Not Found” error. Can u share the file via mail..</p>
+			</div>
+			<div class="reply"><a rel="nofollow" class="comment-reply-link" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html?replytocom=376#respond" onclick="return addComment.moveForm( &quot;comment-376&quot;, &quot;376&quot;, &quot;respond&quot;, &quot;122&quot; )" aria-label="Reply to Surendran">Reply</a></div><!-- .reply -->
+		</div><!-- #comment-##  -->
+
+	<ul class="children">
+	<li id="comment-378">
+		<div class="comment byuser comment-author-lingeswaran-r bypostauthor odd alt depth-2 comment-wrap">
+			<div class="comment-avatar"><img alt="" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/46e5178c79128bf293ecbdec9190053b" srcset="http://1.gravatar.com/avatar/46e5178c79128bf293ecbdec9190053b?s=130&amp;d=mm&amp;r=g 2x" class="avatar avatar-65 photo" height="65" width="65"></div>
+
+			<div class="comment-content">
+				<div class="author-comment">
+					<cite class="fn">Lingeswaran R</cite> 					<div class="comment-meta commentmetadata"><a href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html#comment-378">	October 31, 2014 at 3:21 pm</a></div><!-- .comment-meta .commentmetadata -->
+					<div class="clear"></div>
+				</div>
+
+				
+				<p>Sent via email. Please try to download using the google account. </p>
+<p>Regards<br>
+Lingeswaran</p>
+			</div>
+			<div class="reply"><a rel="nofollow" class="comment-reply-link" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html?replytocom=378#respond" onclick="return addComment.moveForm( &quot;comment-378&quot;, &quot;378&quot;, &quot;respond&quot;, &quot;122&quot; )" aria-label="Reply to Lingeswaran R">Reply</a></div><!-- .reply -->
+		</div><!-- #comment-##  -->
+
+	</li><!-- #comment-## -->
+</ul><!-- .children -->
+</li><!-- #comment-## -->
+	<li id="comment-1012">
+		<div class="comment even thread-even depth-1 comment-wrap">
+			<div class="comment-avatar"><img alt="" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/049556de2dfff60a4984d7a63ce05132" srcset="http://0.gravatar.com/avatar/049556de2dfff60a4984d7a63ce05132?s=130&amp;d=mm&amp;r=g 2x" class="avatar avatar-65 photo" height="65" width="65"></div>
+
+			<div class="comment-content">
+				<div class="author-comment">
+					<cite class="fn">Bhaskar</cite> 					<div class="comment-meta commentmetadata"><a href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html#comment-1012">	December 16, 2016 at 3:01 pm</a></div><!-- .comment-meta .commentmetadata -->
+					<div class="clear"></div>
+				</div>
+
+				
+				<p>Hi Lingeswaran,</p>
+<p>I am happy to subscribe hear, because your  articles are very useful for every one, even senior engineers also,</p>
+<p>i need your suggestion </p>
+<p> i am a unix and linux administration on last 8 years</p>
+<p>Planing to improve my technologies to AWS </p>
+<p>Please suggest the correct technology to improve my self .</p>
+			</div>
+			<div class="reply"><a rel="nofollow" class="comment-reply-link" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html?replytocom=1012#respond" onclick="return addComment.moveForm( &quot;comment-1012&quot;, &quot;1012&quot;, &quot;respond&quot;, &quot;122&quot; )" aria-label="Reply to Bhaskar">Reply</a></div><!-- .reply -->
+		</div><!-- #comment-##  -->
+
+	</li><!-- #comment-## -->
+</ol>
+				
+		 
+
+			
+					
+			
+		</div>
+	</div><!-- #comments-box -->
+			
+
+<div class="clear"></div>
+	<div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="http://www.unixarena.com/2013/05/solaris-local-zone-wise-memory-cpu.html#respond" style="display:none;">Cancel reply</a></small></h3><div class="stripe-line"></div>			<form action="http://www.unixarena.com/wp-comments-post.php" method="post" id="commentform" class="comment-form">
+				<p class="comment-notes"><span id="email-notes">Your email address will not be published.</span> Required fields are marked <span class="required">*</span></p><p class="comment-form-comment"><label for="comment">Comment</label> <textarea id="comment" name="comment" cols="45" rows="8" maxlength="15360" aria-required="true" required="required" minlength="15"></textarea></p><p class="comment-form-author"><label for="author">Name <span class="required">*</span></label> <input id="author" name="author" type="text" value="" size="30" maxlength="245" aria-required="true" required="required"></p>
+<p class="comment-form-email"><label for="email">Email <span class="required">*</span></label> <input id="email" name="email" type="email" value="" size="30" maxlength="100" aria-describedby="email-notes" aria-required="true" required="required"></p>
+<p class="comment-form-url"><label for="url">Website</label> <input id="url" name="url" type="url" value="" size="30" maxlength="200"></p>
+<p class="form-submit"><input name="submit" type="submit" id="submit" class="submit" value="Post Comment"> <input type="hidden" name="comment_post_ID" value="122" id="comment_post_ID">
+<input type="hidden" name="comment_parent" id="comment_parent" value="0">
+</p>
+<noscript>&lt;input type="hidden" name="JS04X7" value="NS1" /&gt;</noscript>
+<noscript>&lt;p&gt;&lt;strong&gt;Currently you have JavaScript disabled. In order to post comments, please make sure JavaScript and Cookies are enabled, and reload the page.&lt;/strong&gt; &lt;a href="http://enable-javascript.com/" rel="nofollow external" &gt;Click here for instructions on how to enable JavaScript in your browser.&lt;/a&gt;&lt;/p&gt;</noscript>
+			</form>
+			</div><!-- #respond -->
+	
+
+</div><!-- #comments -->
+
+	</div><!-- .content -->
+<aside id="sidebar" style="position: relative; overflow: visible; box-sizing: border-box; min-height: 1px;">
+	<div class="theiaStickySidebar" style="padding-top: 0px; padding-bottom: 1px; position: static; top: 0px; left: 1227.5px;">
+<div id="ads250_250-widget-2" class="widget e3lan e3lan250_250-widget"><div class="widget-top"><h4>Autonomic Platform</h4><div class="stripe-line"></div></div>
+						<div class="widget-container">		<div class="e3lan-widget-content e3lan250-250">
+								<div class="e3lan-cell">
+				<a href="http://turbonomic.com/free-tool-vhm-fiber-optic/?utm_source=unixarena&amp;utm_medium=banner-ad&amp;utm_campaign=vhm-fiber-optic&amp;utm_content=250x250" target="_blank">					<img src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/vhm-fiber-optic250x250.jpg" alt="" class="tie-appear">
+				</a>			</div>
+				</div>
+	</div></div><!-- .widget /--><div id="text-html-widget-2" class="widget text-html"><div class="widget-top"><h4> </h4><div class="stripe-line"></div></div>
+						<div class="widget-container"><div style="text-align:center;"><!-- BuySellAds Zone Code -->
+<div align="center" style="
+    padding-left: 15px;
+">
+
+<div id="bsap_1290044" class="bsap bsap_1290044" data-serve="CAYIKKT">
+<style type="text/css">
+div.bsap_1290044{width:100%;display:block;}div.bsap_1290044 a{width:125px;}div.bsap_1290044 a img{padding:0;}div.bsap_1290044 a em{font-style:normal;}div.bsap_1290044 a{display:block;font-size:11px;color:#888;font-family:verdana,sans-serif;margin:0 10px 10px 0;text-align:center;text-decoration:none;overflow:hidden;float:left;}
+div.bsap_1290044 img{border:0;clear:right;}
+div.bsap_1290044 a.adhere{color:#666;font-weight:bold;font-size:12px;border:1px solid #ccc;background:#e7e7e7;text-align:center;}
+div.bsap_1290044 a.adhere:hover{border:1px solid #999;background:#ddd;color:#333;}
+div.bsap_1290044 iframe{display:block;font-size:11px;color:#888;font-family:verdana,sans-serif;margin:0 10px 10px 0;text-align:center;text-decoration:none;overflow:hidden;float:left;}div.bsap_1290044 a{line-height:100%;}div.bsap_1290044 a.adhere{width:125px;height:125px;line-height:1000%;}html>body div.bsap_1290044 a.adhere{width:123px;height:123px;}div.bsap_1290044 img.s{height:0;width:0;}
+</style>
+<a href="http://srv.buysellads.com/ads/click/x/GTND4237C6AILK3ICAS4YKQWF6YILKJEF6YD5Z3JCEAI6KQEFTBIT27KC6BDLKQ7FTSIKK3EHJNCLSIZ" class="ad0 odd " title="STOR2RRD - free performance monitoring for storages and SAN" id="bsa_7362800" target="_blank" rel="nofollow">
+<img src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/7036434-1477302023.png" width="125" height="125" alt="" class="tie-appear"></a><a href="http://srv.buysellads.com/ads/click/x/GTND4237C6AILK3ICAS4YKQWF6YILK7JFT7DCZ3JCEAI6KQLC6YI4KJKC6BDLKQ7FTSIKK3EHJNCLSIZ" class="ad1  even" title="Tintri&#39;s enterprise cloud platform uses a web services architecture similar to Amazon and Azure. We bring public cloud agility to your data center." id="bsa_7233278" target="_blank" rel="nofollow">
+<img src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/7233246-1486575019.png" width="125" height="125" alt="" class="tie-appear"></a><a href="http://srv.buysellads.com/ads/click/x/GTND4237C6AILK3ICAS4YKQWF6YILKJLCWSIKZ3JCEAI6KQJCTADK23KC6BDLKQ7FTSIKK3EHJNCLSIZ" class="ad2 odd " title="Unitrends Backup Free Trial" id="bsa_7315481" target="_blank" rel="nofollow">
+<img src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/7315450-1488551643.jpg" width="125" height="125" alt="" class="tie-appear"></a><!-- no ad -->
+
+<a href="http://www.buysellads.com/buy/detail/210587/zone/1290044?utm_source=site_210587&amp;utm_medium=website&amp;utm_campaign=imagetext&amp;utm_content=zone_1290044" class="adhere">Advertise Here</a>
+
+
+<script type="text/javascript" id="auto_1" class="ignoreme"> if (typeof(BSACallback) !== 'undefined') BSACallback(); </script></div>
+</div>
+<!-- End BuySellAds Zone Code -->
+				</div><div class="clear"></div></div></div><!-- .widget /--><div id="social-2" class="widget social-icons-widget"><div class="widget-top"><h4>Follow UnixArena</h4><div class="stripe-line"></div></div>
+						<div class="widget-container">		<div class="social-icons social-colored">
+		<a class="ttip-none" title="Google+" href="https://plus.google.com/108070431128644935649" target="_blank"><i class="fa fa-google-plus"></i></a><a class="ttip-none" title="Facebook" href="https://www.facebook.com/pages/Unixarena/396499610457515" target="_blank"><i class="fa fa-facebook"></i></a><a class="ttip-none" title="Twitter" href="https://twitter.com/UnixArena" target="_blank"><i class="fa fa-twitter"></i></a><a class="ttip-none" title="LinkedIn" href="https://www.linkedin.com/grp/home?gid=8134297" target="_blank"><i class="fa fa-linkedin"></i></a><a class="ttip-none" title="Google Play" href="https://play.google.com/store/apps/details?id=com.stuxnet.admin.unixarena" target="_blank"><i class="fa fa-play"></i></a>
+			</div>
+
+</div></div><!-- .widget /--><div id="ads300_250-widget-6" class="widget e3lan e3lan300_250-widget"><div class="widget-top"><h4> Advertisement</h4><div class="stripe-line"></div></div>
+						<div class="widget-container">		<div class="e3lan-widget-content e3lan300-250">
+								<div class="e3lan-cell">
+				<script async="" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/adsbygoogle.js"></script>
+<!-- UA-RIGHT-UP -->
+<ins class="adsbygoogle" style="display: inline-block; width: 300px; height: 250px;" data-ad-client="ca-pub-2066265678987787" data-ad-slot="8671295356" data-adsbygoogle-status="done"><ins id="aswift_0_expand" style="display:inline-table;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent"><ins id="aswift_0_anchor" style="display:block;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent"><iframe width="300" height="250" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_0" name="aswift_0" style="left:0;position:absolute;top:0;" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/saved_resource.html"></iframe></ins></ins></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+			</div>
+				</div>
+	</div></div><!-- .widget /--><div id="widget-feedburner-2" class="widget widget-feedburner"><div class="widget-top"><h4>RSS Feed</h4><div class="stripe-line"></div></div>
+						<div class="widget-container"><div class="widget-feedburner-counter">
+		<p>Subscribe to our email newsletter.</p>		<form action="https://feedburner.google.com/fb/a/mailverify" method="post" target="popupwindow" onsubmit="window.open(&#39;http://feedburner.google.com/fb/a/mailverify?uri=Unix-arena&#39;, &#39;popupwindow&#39;, &#39;scrollbars=yes,width=550,height=520&#39;);return true">
+			<input class="feedburner-email" type="text" name="email" value="Enter your e-mail address" onfocus="if (this.value == &#39;Enter your e-mail address&#39;) {this.value = &#39;&#39;;}" onblur="if (this.value == &#39;&#39;) {this.value = &#39;Enter your e-mail address&#39;;}">
+			<input type="hidden" value="Unix-arena" name="uri">
+			<input type="hidden" name="loc" value="en_US">
+			<input class="feedburner-subscribe" type="submit" name="submit" value="Subscribe">
+		</form>
+		</div>
+		</div></div><!-- .widget /--><div id="posts-list-widget-2" class="widget posts-list"><div class="widget-top"><h4>WHAT’S HOT ?		</h4><div class="stripe-line"></div></div>
+						<div class="widget-container">				<ul>
+							<li>
+						<h3><a href="http://www.unixarena.com/2016/11/aws-iam-users-group-policies-management.html">AWS IAM – Users – Group – Policies- Management  – Part 5</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>November 29, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/11/amazon-aws-dashboard-and-setup-iam.html">Amazon AWS Dashboard and Setup IAM – Part 4</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>November 28, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/11/vembu-bdr-backup-server-on-premises-deployment.html">Vembu BDR Backup Server – On-Premises Deployment – Part 2</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>November 13, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/11/vembu-bdr-suite-backup-solution-overview.html">Vembu BDR suite – Backup Solution – Overview (Part 1)</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>November 7, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/10/vmware-cloud-on-amazon-aws-the-hybrid-cloud.html">VMware Cloud on Amazon AWS  – The Hybrid Cloud</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>October 17, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/10/setup-amazon-aws-free-tier-account.html">Setup Amazon AWS – Free Tier Account  – Part 3</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>October 17, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/10/start-amazon-aws-with-iam.html">Start Amazon AWS with IAM – Part 2</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>October 16, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/09/what-is-amazon-aws-why-should-learn.html">What is Amazon AWS ? Why Should learn  ?  – Part 1</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>September 26, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/08/configuring-nfs-ha-using-redhat-cluster-pacemaker-rhel-7.html">Configuring NFS HA using Redhat Cluster – Pacemaker  on RHEL 7</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>August 24, 2016</span>		</li>
+				<li>
+						<h3><a href="http://www.unixarena.com/2016/07/pandora-fms-opensource-enterprise-monitoring-system.html">Pandora FMS – Opensource Enterprise Monitoring System</a></h3>
+			 <span class="tie-date"><i class="fa fa-clock-o"></i>July 17, 2016</span>		</li>
+						</ul>
+		<div class="clear"></div>
+	</div></div><!-- .widget /-->	</div><!-- .theiaStickySidebar /-->
+</aside><!-- #sidebar /-->	<div class="clear"></div>
+</div><!-- .container /-->
+
+<footer id="theme-footer">
+	<div id="footer-widget-area" class="footer-1c">
+
+	
+			<div id="footer-second" class="footer-widgets-box">
+					</div><!-- #second .widget-area -->
+	
+
+			<div id="footer-third" class="footer-widgets-box">
+					</div><!-- #third .widget-area -->
+	
+		
+	</div><!-- #footer-widget-area -->
+	<div class="clear"></div>
+</footer><!-- .Footer /-->
+				
+<div class="clear"></div>
+<div class="footer-bottom">
+	<div class="container">
+		<div class="alignright">
+			Powered by WordPress		</div>
+				<div class="social-icons">
+		<a class="ttip-none" title="Google+" href="https://plus.google.com/108070431128644935649" target="_blank"><i class="fa fa-google-plus"></i></a><a class="ttip-none" title="Facebook" href="https://www.facebook.com/pages/Unixarena/396499610457515" target="_blank"><i class="fa fa-facebook"></i></a><a class="ttip-none" title="Twitter" href="https://twitter.com/UnixArena" target="_blank"><i class="fa fa-twitter"></i></a><a class="ttip-none" title="LinkedIn" href="https://www.linkedin.com/grp/home?gid=8134297" target="_blank"><i class="fa fa-linkedin"></i></a><a class="ttip-none" title="Google Play" href="https://play.google.com/store/apps/details?id=com.stuxnet.admin.unixarena" target="_blank"><i class="fa fa-play"></i></a>
+			</div>
+
+		
+		<div class="alignleft">
+			<span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">    UnixArena</span> by <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">Lingeswaran R</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
+		</div>
+		<div class="clear"></div>
+	</div><!-- .Container -->
+</div><!-- .Footer bottom -->
+
+</div><!-- .inner-Wrapper -->
+</div><!-- #Wrapper -->
+</div><!-- .Wrapper-outer -->
+	<div id="topcontrol" class="fa fa-angle-up" title="Scroll To Top" style="bottom: 10px;"></div>
+<div id="fb-root"></div>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+r3f5x9JS=escape(document['referrer']);
+hf4N='2f42acfabbcb66c9df03105abd0d92dc';
+hf4V='7a67a3634738e6b2dbb8ffdb459b570b';
+cm4S="form[action='http://www.unixarena.com/wp-comments-post.php']";
+jQuery(document).ready(function($){var e="#commentform, .comment-respond form, .comment-form, "+cm4S+", #lostpasswordform, #registerform, #loginform, #login_form, #wpss_contact_form";$(e).submit(function(){$("<input>").attr("type","hidden").attr("name","r3f5x9JS").attr("value",r3f5x9JS).appendTo(e);$("<input>").attr("type","hidden").attr("name",hf4N).attr("value",hf4V).appendTo(e);return true;});$("#comment").attr({minlength:"15",maxlength:"15360"})});
+/* ]]> */
+</script> 
+<script type="text/javascript">
+/* <![CDATA[ */
+var ajax = {"url":"http:\/\/www.unixarena.com\/wp-admin\/admin-ajax.php"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/uwpqsfscript.js"></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+var tie = {"mobile_menu_active":"true","mobile_menu_top":"true","lightbox_all":"","lightbox_gallery":"","woocommerce_lightbox":"","lightbox_skin":"dark","lightbox_thumb":"vertical","lightbox_arrows":"","sticky_sidebar":"1","is_singular":"1","SmothScroll":"","reading_indicator":"","lang_no_results":"No Results","lang_results_found":"Results Found"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/tie-scripts.js"></script>
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/ilightbox.packed.js"></script>
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/jscripts-ftr-min.js"></script>
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/comment-reply.min.js"></script>
+<script type="text/javascript" src="./SolarisLocalzonewiseMemoryCPUusagedetailsusingscript-UnixArena_files/wp-embed.min.js"></script>
+
+
+<!-- Dynamic page generated in 1.235 seconds. -->
+<!-- Cached page generated by WP-Super-Cache on 2017-04-12 15:17:50 -->
+
+<!-- Compression = gzip --></body></html>

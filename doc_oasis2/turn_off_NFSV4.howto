@@ -1,0 +1,33 @@
+-------------------------------------------------------------------
+--> turn off nfs v4 support
+-------------------------------------------------------------------
+# Turn off v4 protocol support
+#RPCNFSDARGS="-N 4"
+
+4 root@estat-nalnfssmb:->vi nfs
+
+12 root@estat-nalnfssmb:->diff nfs.bak_17072017 nfs
+29c29
+< #RPCNFSDARGS="-N 4"
+---
+> RPCNFSDARGS="-N 4"
+-------------------------------------------------------------------
+sr <hostname>
+cd /etc/sysconfig
+BACKUPNFS=nfs.bak_`date "+%d%m%Y%H%M%S"`
+cp nfs $BACKUPNFS
+grep RPCNFSDARGS nfs
+
+# Turn off v4 protocol support
+#RPCNFSDARGS="-N 4"   # --> uncomment this line
+
+perl -pe 's/^#RPCNFSDARGS="-N 4"/RPCNFSDARGS="-N 4"/'  -i nfs
+
+diff $BACKUPNFS nfs
+# Check the current NFS versions
+nfsstat -s
+# Perform a full restart of nfs
+service nfs --full-restart
+# Check that there is no NFS4 anymore
+nfsstat -s
+-------------------------------------------------------------------

@@ -1,0 +1,39 @@
+[claeyje@muscadet log]$ sr ovambo
+
+2 root@ovambo:->/usr/nagios/plugins/check_eeprom 
+check_eeprom CRITICAL (2 critical errors): boot-device, 1 (of 2) boot-devices configured
+
+3 root@ovambo:->eepromadm.pl 
+/usr/sbin/eeprom input-device=virtual-console
+/usr/sbin/eeprom output-device=virtual-console
+WARNING: missing a boot device: c0t5000cca03c437648d0s0
+/usr/sbin/eeprom boot-device="c0t5000cca03c41af5cd0s0 c0t5000cca03c437648d0s0"
+
+4 root@ovambo:->/usr/sbin/eeprom boot-device="c0t5000cca03c41af5cd0s0 c0t5000cca03c437648d0s0"
+
+5 root@ovambo:->/usr/nagios/plugins/check_eeprom 
+check_eeprom OK 
+
+
+nvramrc <hostname>
+
+eeprom boot-device
+
+eeprom nvramrc|perl -pe 's/[ =](devalias)/\n\1/g'
+
+---------------------------------------------------------------------------------------------------
+
+1 root@fulmar:->/usr/nagios/plugins/check_eeprom
+check_eeprom CRITICAL (1 critical error): auto-boot?
+3 root@fulmar:->eeprom auto-boot?
+auto-boot?=false
+
+4 root@fulmar:->eepromadm.pl 
+/usr/sbin/eeprom auto-boot?=true
+
+5 root@fulmar:->/usr/sbin/eeprom auto-boot?=true
+6 root@fulmar:->eeprom auto-boot?
+auto-boot?=true
+8 root@fulmar:->/usr/nagios/plugins/check_eeprom
+check_eeprom OK 
+---------------------------------------------------------------------------------------------------

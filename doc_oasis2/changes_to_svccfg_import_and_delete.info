@@ -1,0 +1,68 @@
+
+Changes to svccfg import and delete
+By Tom Whitten-Oracle on Feb 03, 2012
+
+The behavior of svccfg import and svccfg delete fmri has changed in S11 if the manifests are in SMF's standard locations. The standard locations are /lib/svc/manifest and /var/svc/manifest with /lib/svc/manifest being the preferred location. If your manifest is stored under one of these two directories, you shouldn't be using svccfg import at all. You should only use svccfg delete fmri when you are prohibited from removing the manifest for some reason and still want to remove the service from the system. Instead, the preferred action is:
+
+        # svcadm restart manifest-import
+ 
+
+The reason is that in S11, SMF keeps the repository in sync with the files in the standard locations, and the manifest-import service is the mechanism for maintaining this synchronization. So instead of using svccfg import copy your manifest to a standard location and type:
+
+        # svcadm restart manifest-import
+Instead of using svccfg delete remove your manifest from its location and restart manifest-import.
+ 
+
+In each case manifest-import will detect any changes in the standard directories and update the repository accordingly. Note that the manifest-import service runs asynchronously from the svcadm command, so it may take a short amount of time for the changes to take effect.
+
+Also the manifest-import service not only detects file additions and removals. It also detects changes to manifests and profiles. If you are a service provider, this gives you an upgrade path if your manifest changes. Simply deposit your new manifest over the old one and make sure that manifest-import is restarted. Restarting of manifest-import is usually handled by the packaging service.
+
+Let's look at some examples. First, let's get the manifest for our new service imported.
+
+# cp mysvc.xml /lib/svc/manifest/site
+# svcadm restart manifest-import
+# svcs mysvc
+STATE          STIME    FMRI
+online         15:19:41 svc:/mysvc:default
+Now delete the service:
+# rm /lib/svc/manifest/site/mysvc.xml 
+# svcadm restart manifest-import
+# svcs mysvc
+svcs: Pattern 'mysvc' doesn't match any instances
+STATE          STIME    FMRI
+ 
+
+Now let's look at what happens if you stray from this advice and use svccfg delete. First, reinstall the manifest just as we did before.
+
+# cp mysvc.xml /lib/svc/manifest/site
+# svcadm restart manifest-import
+# svcs mysvc
+STATE          STIME    FMRI
+online         15:34:41 svc:/mysvc:default
+Now the fun begins.
+# svccfg delete -f svc:/mysvc
+# svcs mysvc
+svcs: Pattern 'mysvc' doesn't match any instances
+STATE          STIME    FMRI
+It looks as if the service has been removed from the repository, but it really hasn't been. Since the manifest file is still on the file system, the service is merely masked in the repository. This can lead to confusion. Even if you modify the manifest and restart manifest-import, svcs will not find the service. This is because the masking is done at the administrative layer (see Sean Wilcox's discussion of layers). The masking is not removed by changing the manifest, although manifest-import will record the changes in the repository.
+ 
+
+How can we find a masked service.
+
+# svccfg listcust -M | grep svc:/mysvc
+svc:/mysvc manifest MASKED
+svc:/mysvc:default manifest MASKED
+The first line of output shows that the service is masked. Masking a service also masks it instances which is why we see the second line.
+ 
+
+So if you accidentally mask a service, how can you unmask it? We enter svccfg interactive mode, select the service and then use the delcust command.
+
+# svccfg
+svc:> select mysvc
+svc:/mysvc> delcust
+ Deleting customizations for service: mysvc
+svc:/mysvc> quit
+# svcs mysvc
+STATE          STIME    FMRI
+online         15:50:46 svc:/mysvc:default
+The svcs command shows that the service is unmasked.

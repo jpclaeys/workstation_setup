@@ -1,0 +1,188 @@
+-----------------------------------------------------------------------------------------------------------------------------------
+
+boto/potto patranca/takapu wlasg01 Jean P. 17 May - 20:00 	LUN remap 	
+
+
+Notification type: Normal Maintenance
+
+Subject: Zone wlasg01 will be moved from cluster boto/potto to cluster patranca/takapu.
+
+Reference NB: IM0015621921 
+
+Additional Information: ​The zone wlasg01 ​will be offline  during the intervention.
+
+From: 17/05/2017 20:00
+
+To:   17/05/2017 23:00
+
+Contact: Jean-Pierre Claeys
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+IM0015758431	 	kouprey	falconet	cedtest2	Jean P.	 	14 July - 20.00	LUN remap	 	 
+
+Notification type: Normal Maintenance
+
+Subject: Zone cedtest2 will be moved from kouprey (M5000) to falconet (T4-2).
+
+Reference NB: IM0015758431 
+
+Justification:: Infrastructure consolidation
+
+Impact Analysis
+  Impacted Element: zone cedtest2
+  Impact:           zone will be offline during the intervention
+
+Additional Information: ​The zone cedtest2 ​will be offline during the intervention.
+
+From: 14/07/2017 20:00
+
+To:   14/07/2017 23:00
+
+Contact: Jean-Pierre Claeys
+
+Link: http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-06-22%20-%2016-04%20-%20Zone%20cedtest2%20will%20be%20moved%20from%20kouprey%20(M5000)%20to%20falconet%20(T4-2)_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1
+
+
+http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-06-22%20-%2016-04%20-%20Zone%20cedtest2%20will%20be%20moved%20from%20kouprey%20(M5000)%20to%20falconet%20(T4-2)_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+===> CUs for kukula                                                         <===
+Total: 96 CUs, Consumed: 73 CUs, Free: 23 CUs
+===> CUs for patranka                                                       <===
+
+
+Cancel CAT
+New CAT request
+
+
+Initial date was 17/05/2017 conflicts with a Stoage intervention (switch fabric)
+
+                                        <===
+[claeyje@muscadet log]$ un_cluster 246
+kukula;cluster246;
+moho;cluster246;
+
+
+16/05/17 10:01:59 
+
+
+Notification type: Normal Maintenance
+
+Subject: Zone wlasg01 will be moved from cluster boto/potto to cluster kukula/moho.
+
+Reference NB: IM0015621921 
+
+Justification: Infrastructure consolidation
+
+Additional Information: ​The zone wlasg01 ​will be offline  during the intervention.
+
+From: 29/05/2017 20:00
+
+To:   29/05/2017 23:00
+
+Contact: Jean-Pierre Claeys
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Zone move
+SMT Ticket 	Source Cluster nodes 	Destination Cluster nodes 	Zones 			Unix Engineer 	Zone migration date 	Migration Way
+IM0016085362	cocoi/stinkpot 		redpoll/tawaki 		ntplux4, dnssrv1, ntplux1 	Miguel Pina 	15/11 - 20:00 		LUN remap
+IM0016085362	umbrette/mollymawk 	patranca/takapu 	ntplux2, dnssrv2, ntplux3 	Jean P.  	16/11 - 20:00 		LUN remap
+
+
+
+Notification type: Normal Maintenance
+
+Subject: Zones ntplux2, dnssrv2, ntplux3 will be moved from cluster umbrette/mollymawk to patranca/takapu .
+
+Reference NB: IM0016085362 
+
+Justification: Infrastructure consolidation
+
+Impact Analysis:
+	Impacted Element: ntplux2, dnssrv2, ntplux3
+	Impact:	zone offline
+
+Additional Information: ​The zones ntplux2, dnssrv2, ntplux3 ​will be offline during the intervention.
+
+From: 16/11/2017 20:00
+
+To:   16/11/2017 23:00
+
+Contact: Jean-Pierre Claeys
+
+http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-10-25%20-%2010-34%20-%20Zones%20ntplux2_%20dnssrv2_%20ntplux3%20will%20be%20moved%20from%20cluster%20umbrette_mollymawk%20to%20patranca_takapu_.xml&Source=http%3A%2F%2Fs%2Dmsp%2Dsp%2Dprd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1&ClientInstalled=false&Source=http%3A%2F%2Fs%2Dmsp%2Dsp%2Dprd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultItemOpen=1
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Zone move
+
+SMT Ticket 	Source Cluster nodes 	Destination Cluster nodes 	Zones		Unix Engineer 	Zone migration date 	Migration Way
+
+IM0016127248	botaurus/euphonia	zokor/dormouse			cf8estc2	Jean P.	 	23/11 - 20:00		LUN remap
+
+
+Notification type: Normal Maintenance
+
+Subject: Zone cf8estc2 will be moved from cluster botaurus/euphonia to zokor/dormouse.
+
+Reference NB:  IM0016127248
+
+Justification: Infrastructure consolidation
+
+Impact Analysis:
+	Impacted Element: cf8estc2
+	Impact:	zone offline
+
+Additional Information: ​The zone cf8estc2 ​will be offline during the intervention.
+
+From:  23/11/2017 20:00
+
+To:    23/11/2017 23:59
+
+Contact: Jean-Pierre Claeys
+
+CAT:
+[[http://s-msp-sp-prd1/_layouts/FormServer.aspx?XmlLocation=/CAT/2017-11-10 - 11-05 - Zone cf8estc2 will be moved from cluster botaurus_euphonia to zokor_dormouse_.xml&ClientInstalled=false&Source=http%3A%2F%2Fs-msp-sp-prd1%2FCAT%2FForms%2FAllItems%2Easpx&DefaultView=Main Page&DefaultItemOpen=1][CAT]]
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Zone move
+
+SMT Ticket 	Source Cluster nodes 	Destination Cluster nodes 	Zones		Unix Engineer 	Zone migration date 	Migration Way
+
+IM0016127248	botaurus/euphonia	zokor/dormouse			cf8estc2	Jean P.	 	23/11 - 20:00		LUN remap
+
+
+Notification type: Normal Maintenance
+
+Subject: Zone  will be moved from cluster  to  .
+
+Reference NB:  
+
+Justification: Infrastructure consolidation
+
+Impact Analysis:
+	Impacted Element: 
+	Impact:	zone offline
+
+Additional Information: ​The zone(s)  ​will be offline during the intervention.
+
+From:  20:00
+
+To:    23:59
+
+Contact: Jean-Pierre Claeys
+
+CAT:
+[[][CAT]]
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+

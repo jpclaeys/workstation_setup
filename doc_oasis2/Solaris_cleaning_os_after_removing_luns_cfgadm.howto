@@ -1,0 +1,106 @@
+SOLARIS: Cleaning OS after removing LUNs - 'cfgadm'
+# Tested on Solaris 10
+
+# Depending on the Solaris version, commands may vary. In this example we work on Solaris 10
+# connected to a XP disk array.
+
+# Disks are shown as "<drive not available>" or "<drive type unknown>" in the output of
+# 'format' command
+
+
+# After unmapping disks, they are shown as "unusable", in the output of 'cfgadm' commands:
+
+# First the controller indicating that it sees some (one or more) "unusable" devices 
+
+cfgadm -al
+[...]
+   c2                             fc-fabric    connected    configured   unknown
+   c2::50050763040396e7           disk         connected    configured   unusable
+   c2::5006048c52a61e97           disk         connected    configured   unknown
+   c3                             fc-fabric    connected    configured   unknown
+   c3::50050763043856e7           disk         connected    configured   unusable
+   c3::5006048c52a61e98           disk         connected    configured   unknown
+[...]
+
+
+# and here below the "unusable" devices
+
+cfgadm -al -o show_FCP_dev
+[...]
+   c2::50050763040396e7,24        disk         connected    configured   unusable
+   c2::50050763040396e7,25        disk         connected    configured   unusable
+   c2::50050763040396e7,26        disk         connected    configured   unusable
+   c2::50050763040396e7,27        disk         connected    configured   unusable
+   c2::50050763040396e7,28        disk         connected    configured   unusable
+   c2::50050763040396e7,29        disk         connected    configured   unusable
+   c2::50050763040396e7,30        disk         connected    configured   unusable
+   c2::50050763040396e7,31        disk         connected    configured   unusable
+   c2::50050763040396e7,32        disk         connected    configured   unusable
+[...]
+   c3::50050763043856e7,24        disk         connected    configured   unusable
+   c3::50050763043856e7,25        disk         connected    configured   unusable
+   c3::50050763043856e7,26        disk         connected    configured   unusable
+   c3::50050763043856e7,27        disk         connected    configured   unusable
+   c3::50050763043856e7,28        disk         connected    configured   unusable
+   c3::50050763043856e7,29        disk         connected    configured   unusable
+   c3::50050763043856e7,30        disk         connected    configured   unusable
+   c3::50050763043856e7,31        disk         connected    configured   unusable
+   c3::50050763043856e7,32        disk         connected    configured   unusable
+[...]
+
+
+# If the removed LUNs show up as "failing", we need to force a LIP on the HBAs. This
+# operation probes the targets again, so that the device shows up as unusable. Unless the
+# device shows up as unusable, it can't be removed from the device tree.
+
+luxadm -e port
+   /devices/pci@400/pci@0/pci@c/SUNW,qlc@0/fp@0,0:devctl              CONNECTED
+   /devices/pci@500/pci@0/pci@9/SUNW,qlc@0/fp@0,0:devctl              CONNECTED
+
+luxadm -e forcelip /devices/pci@400/pci@0/pci@c/SUNW,qlc@0/fp@0,0
+luxadm -e forcelip /devices/pci@400/pci@0/pci@c/SUNW,qlc@0/fp@0,0
+
+
+# Sometimes LUNs may remain in "failing" state instead of changing to "unusable" state. In
+# that case, following command may be tried:
+#
+# luxadm -e offline /dev/dsk/<c4t50060e8006d15803d3s2> # LUN in "failing" in 'cfgadm' output
+#
+# Run again 'cfgadm' command to verify that LUNs have changed to "unusable"
+
+
+# Remove the device from the cfgadm database:
+# (on Solaris 9 use unusable_FCP_dev option instead of unusable_SCSI_LUN)
+
+cfgadm -c unconfigure -o unusable_SCSI_LUN c2::50050763040396e7
+cfgadm -c unconfigure -o unusable_SCSI_LUN c3::50050763043856e7
+
+
+# Should an error similar to following one appear, re-run these commands with '-f' option:
+
+# cfgadm: Library error: failed to offline: /devices/pci@400/pci@0/pci@c/SUNW,qlc@0/fp@0,0/ssd@w50050763040396e7,15
+#              Resource                      Information
+# ----------------------------------  -------------------------
+# /dev/dsk/c4t50060e8006d15803d3s2   Device being used by VxVM
+
+
+# Clean up the device tree:
+
+devfsadm -Cv
+[...]
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d12s6
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d12s7
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d11s0
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d11s1
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d11s2
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d11s3
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d11s4
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d11s5
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d11s6
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15800d11s7
+   devfsadm[27666]: verbose: removing file: /dev/dsk/c4t50060E8006D15801d13s0
+[...]
+
+
+# Nevertheless, there are times where the only way of cleaning cfgadm database is by doing a
+# reconfiguration reboot of the server

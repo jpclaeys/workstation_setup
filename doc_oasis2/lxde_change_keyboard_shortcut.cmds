@@ -1,0 +1,29 @@
+lxde_change_keyboard_shortcut.cmds
+
+http://xahlee.info/linux/linux_lxde_add_key_shortcuts.html
+
+This page shows you how to add or remove keyboard shortcuts for linux LXDE/Openbox.
+
+Edit the file at
+
+~/.config/openbox/lxde-rc.xml
+
+Key Syntax
+
+Modifier key syntax
+
+S → Shift key
+C → Ctrl key
+A → Alt key
+W → Super key (the Microsoft Windows logo key)
+M → Meta key
+H → Hyper key
+
+
+Reload Config File
+
+After you changed the config, reload it, by
+
+# reload openbox key config
+openbox-lxde --reconfigure
+

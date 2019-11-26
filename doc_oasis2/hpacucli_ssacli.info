@@ -1,0 +1,5 @@
+All HP servers where RHEL7 has been installed show the same check error:
+
+bkpsnd3a;disks_health;2;check_disks_health CRITICAL (1 critical error)(checked: R: 0/0/0: S: 2/2): missing /usr/sbin/hpacucli
+
+The tool has been deprecated in RHEL7 and substituted with ssacli. 

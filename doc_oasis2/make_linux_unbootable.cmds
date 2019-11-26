@@ -1,0 +1,18 @@
+This'll nuke you're MBR as well as your EFI partition. (Assuming the EFI partition isn't bigger than 64MB)
+
+sudo dd if=/dev/urandom of=/dev/sda bs=1M count=64
+This'll ruin your permissions, and render the system unbootable:
+
+
+Use lsblk to find the partition Ubuntu is installed to. It should be mounted to /.
+Replacing /dev/sda1 with the actual partition (found in step 1), run this command:
+
+sudo dd if=/dev/urandom of=/dev/sda1 bs=1M count=64
+Enjoy.
+
+You can run wipefs on each partition of your intallation. wipefs returns immedialty so it is very quick. So for example,
+
+wipefs -a /dev/sda1
+will wipe trace of a filesystem (any of them) in /dev/sda1 partition. It could be recoverable but the goal was to render it unbootable not irrecoverable.
+
+If you use LUKS you can delete the header with dd, as already mentionned.

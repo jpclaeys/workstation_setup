@@ -1,0 +1,36 @@
+
+##############################################################################################
+
+# Cleanup cfengine
+
+echo $HOST
+echo $TICKET
+cfmain
+git pull
+
+clearcfenginehostentries $HOST
+findhostoccurrences $HOST
+
+FILENONROOT="${CFDATA}/services/sudo/sudoers.d/40_nonroot"
+FILEALIAS="${CFDATA}/services/sudo/sudoers.d/10_aliases"
+
+removelinesmatchingpattern $HOST $FILENONROOT
+vi $FILEALIAS
+
+grep -c $HOST $FILENONROOT
+grep -c $HOST $FILEALIAS
+
+git commit -am "$TICKET JPC"
+
+git pull && git push
+
+#-------------------------------------------------------------------------------
+#Output:
+
+
+#-------------------------------------------------------------------------------
+
+
+##############################################################################################
+
+

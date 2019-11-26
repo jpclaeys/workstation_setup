@@ -1,0 +1,65 @@
+NB: cdp:= Cisco Discovery Protocol
+
+print-cdp -a
+
+print-cdp -a | nawk '/^VLAN/,0' # print VLANS
+ifinfo
+ifconfig -a -s   #  -s (stats)
+
+ip a s
+ip link show eth0
+ethtool eth0 
+
+ifup eth0
+ifdown eth0
+lspci | grep -i eth
+netstat -i
+ip link
+ip link show eth6
+ethtool -t eth0 online | grep result
+
+lspci | egrep -i --color 'network|ethernet'
+lspci -v -s deviceID (ex. 55:00.1)
+
+for x in `/sbin/ifconfig | grep Link | awk '{print $1}' | sort | egrep -v "inet6|lo|bond0"`; do echo $x; done
+
+cat /proc/net/dev
+
+ecdc-lsslots
+
+cat /sys/class/net/eth0/operstate 
+cat /sys/class/net/eth0/carrier
+grep "" /sys/class/net/eth0/*
+
+---------------------------------------------------------------------------------------------------
+How to check Fibre Channel HBAs in Linux
+
+Determine the Manufacturer and Model of the HBAs.
+Run the lspci command to list all PCI cards detected on the system.
+# lspci | grep "Fibre Channel"
+# lspci -nn | grep "Fibre Channel"
+
+Getting detailed information
+You can find detailed information about the fibre channel adapters in the location /sys/class/fc_host/
+# ll /sys/class/fc_host/
+An easier way to get this information is to use the systool command.
+# systool -c fc_host
+The -v option gives you detailed output
+# systool -c fc_host -v host3
+---------------------------------------------------------------------------------------------------
+Solaris:
+--------
+netstat -i
+netstat -in
+
+ifconfig -a
+
+dladm show-link
+dladm show-dev
+
+dladm show-link -s
+dladm show-dev -s
+
+dladm show-link -s -p igb281002
+
+---------------------------------------------------------------------------------------------------

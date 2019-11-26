@@ -1,0 +1,115 @@
+CONSOLELOG=/var/tmp/check_consoles.log
+date && /usr/nagios/plugins/check_consoles -v | sort | tee $CONSOLELOG
+---------------------------------------------------------------------------------------------------
+
+conserver: console issues
+------------------------
+if iMM error (serial redirection exists) for console shenzi; then reset the IMM
+
+ssh root@<server>-sc
+system> resetsp
+# check that we get the longin prompt
+console <server>
+^Eco
+<sever>.cc.cec.eu.int login: 
+^Ec.
+------------------------
+
+No login prompt: restart the console services:
+
+Got iLO prompt for console bkpsnd3a but no login prompt	
+
+--> restart and enable the service: systemctl status, start, and enable for service serial-getty@ttyS0.service
+
+[claeyje@muscadet log]$ console_serial_cmds
+KREUZINGER Andreas (DIGIT-EXT) 12:45: 
+systemctl status serial-getty@ttyS0.service
+systemctl restart serial-getty@ttyS0.service
+systemctl enable serial-getty@ttyS0.service
+KREUZINGER Andreas (DIGIT-EXT) 13:06: 
+start serial DEV=ttyS0 SPEED=115200
+start serial DEV=ttyS1 SPEED=115200
+status serial DEV=ttyS0
+status serial DEV=ttyS1
+
+------------------------
+
+If one get following prompt, hit the enter key, then the login prompt should show up
+system>console 1 
+
+------------------------
+
+ssh connection to hyadum timed out
+for IMM (IBM/Lenovo)
+ssh root@<server>-sc
+--> resetsp
+# if one cannot connect to the sp, then try asu tool from within the guest OS
+/opt/ibm/toolscenter/asu/asu64 rebootimm --kcs
+
+for HP
+web GUI
+System Status
+Diagnostics
+Reset Integrated Lights-Out
+Click on the "reset"button.
++
+If we got the following message:
+Starting virtual serial port.
+Press 'ESC (' to return to the CLI Session.
+
+restart the service
+systemctl status serial-getty@ttyS0.service
+systemctl restart serial-getty@ttyS0.service
+systemctl enable serial-getty@ttyS0.service
+
+
+------------------------
+
+Clean all inventories:
+
+1. remove console from console server
+    1. connect to conserver
+    2. delete server from conserver config: rvi  /ec/prod/server/conserver/etc/conserver.cf
+       Comment: Removed <hostname> - <ticketnumber> - JPC
+    3. reload conserver config: svcadm refresh svc:/ec/apps/conserver:default
+    4. move conserver log file
+
+cd /ec/prod/server/conserver/log/host
+mydate=`date '+%Yate '+%Y'`; test -d $mydate || mkdir $mydate
+gzip <hostname>
+TIMESTAMP=`date "+%Y%m%d-%H%M%S"`
+mv <hostname>.gz ${mydate}/<hostname>-${TIMESTAMP}.gz
+
+    5. remove host entries (name and IP) from console ssh key file /ec/prod/server/conserver/.ssh/known_hosts.
+	    Check that you didn't miss any occurrence:
+
+FILE=/ec/prod/server/conserver/.ssh/known_hosts
+perl -ne "print unless /^<hostname>-sc/i" -i.bak $FILE; diff ${FILE}.bak ${FILE}
+rm ${FILE}.bak
+
+    6. Check that the console config is clean: /usr/nagios/plugins/check_consoles -v 
+
+2. Solaris server: remove server from jumpstart repository on jumpstartx:
+    1. remove server from versions.list
+	rvi /ec/prod/server/jumpstart/ECSI/Versions/versions.list
+        Comment: Removed <hostname> - <ticketnumber> - JPC
+    2. Generate the jumpstart config files:
+       /ec/prod/server/jumpstart/ECSI/Tools/genAllFiles.sh
+
+
+
+
+------------------------
+
+CONSOLELOG=/var/tmp/check_consoles.log
+HL=`awk '/Logs for inactive host/ {print $NF}'  $CONSOLELOG | awk -F"-2" '{print $1}' | tr '\012' ' '| sort -u`; echo "HL=\"$HL\""
+
+HL="fayvoon spk-idxcl1-n3-p spk-idxcl1-n7-p spk-shcl1-n3-p "
+
+[claeyje@muscadet log]$ 
+hosts_statusH $HL
+fayvoon     :status: ignored
+spk-idxcl1-n3-p:status: production
+spk-idxcl1-n7-p:status: production
+spk-shcl1-n3-p:status: production
+

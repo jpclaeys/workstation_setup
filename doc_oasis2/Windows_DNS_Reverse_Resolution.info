@@ -1,0 +1,14 @@
+Hello mates
+
+
+I just read the following in one of the tickets that were raised because the BACKUP team could not get reverse DNS resolution for their systems:
+
+22/02/2018 12:16:25 - FLOREKE (DATACENTER WINDOWS) - Analysis / Research Required:
+Indeed this is an issue that has been occurring forever as Microsoft decided to implement DNS Reverse Resolution differently than the published RFC Standard (which BIND followed (and that is used by Unix & SNET for DNS resolution).
+The fix is for the Officials to delete the existing (and incorrect) 10.133.12/24 reverse lookup zone in DNS and to re-create (using the command line) multiple (and correct) reverse lookup zones, namely for 10.133.12.0 , 10.133.12.64 & 10.133.12.128 (with the appropriate masks). Please forward the ticket to them for implementation.
+
+Best regards!
+
+---
+Miguel A. PINA LANUZA
+

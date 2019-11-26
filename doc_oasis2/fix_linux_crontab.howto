@@ -1,0 +1,14 @@
+service crond status
+chkconfig --list | grep cron
+service crond start
+service crond status
+cd /var/log
+grep -B3 -i shutting cron
+last | grep "Aug  7"
+ls -lhrt mess*
+less messages
+ls /ec/test/server/weblogic/u010/home/digecasd/data/ECAS1213_DEV
+ls -l /ec/test/server/weblogic/u010/home/digecasd/data/ECAS1213_DEV
+ls -Ll /ec/test/server/weblogic/u010/home/digecasd/data/ECAS1213_DEV
+crontab -l -u digecasd
+

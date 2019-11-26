@@ -1,0 +1,52 @@
+
+What is cache in "free -m" output and why is memory utilization high for cache?
+
+
+What happens if there is no free RAM left and a new process needs free RAM?
+When a new process requires free pages on RAM, at that time the kernel will check if there are any pages in the cache and accordingly the kernel will reclaim free pages by pushing back (syncing) the files from cache to the local disk and free up memory for new processes.
+
+Detailed explanation about the "free -m" command output :-
+
+Raw
+# free -m
+             total       used       free     shared    buffers     cached
+Mem:          3753       3455        298          0        144        664
+-/+ buffers/cache:       2645       1107 <<--  Actual Free RAM
+Swap:         4095         75       4020
+
+In the above example, the total memory is 3753 MB, out of which 3455 MB is in use and 298 MB is free.
+cache and buffers is considered as used memory, but they can be dropped in favour of applications.
+Out of 3455 MB of used RAM, some amount of RAM is used for cache and buffers. 
+As discussed earlier memory from cache and buffers can be reclaimed whenever there is no free RAM available for new processes. 
+So cache and buffer can be considered as free RAM. 
+Therefore the actual size of free RAM can be calculated by the below formula:
+
+Raw
+Actual Free RAM = "free" + "buffers" + "cached"
+                =   298  +    144    +  664
+                =   1106  which is approximately equal to the 1107 in second row under "free" column in "free -m" output.
+
+
+
+⁠5.1. Checking the Memory Usage
+To determine the size and usage of memory, you can enter the following command:
+grep MemTotal /proc/meminfo
+You can find a detailed description of the entries in /proc/meminfo at http://www.redhat.com/advice/tips/meminfo.html.
+Alternatively, you can use the free(1) command to check the memory:
+$ free
+              total       used        free    shared    buffers    cached
+Mem:        4040360    4012200       28160         0     176628   3571348
+-/+ buffers/cache:      264224     3776136
+Swap:       4200956      12184     4188772
+$
+In this example the total amount of available memory is 4040360 KB. 
+264224 KB are used by processes and 3776136 KB are free for other applications. 
+Do not get confused by the first line which shows that 28160KB are free! 
+If you look at the usage figures you can see that most of the memory use is for buffers and cache. 
+Linux always tries to use RAM to speed up disk operations by using available memory for buffers (file system metadata) and cache (pages with actual contents of files or block devices). 
+This helps the system to run faster because disk information is already in memory which saves I/O operations. 
+If space is needed by programs or applications like Oracle, then Linux will free up the buffers and cache to yield memory for the applications. 
+If your system runs for a while you will usually see a small number under the field "free" on the first line.
+
+
+

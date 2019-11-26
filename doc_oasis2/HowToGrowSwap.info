@@ -1,0 +1,65 @@
+# How to grow swap
+
+swapoff /dev/vgroot/swap
+lvextend -L XGB /dev/vgroot/swap
+mkswap /dev/vgroot/swap
+swapon /dev/vgroot/swap
+
+
+
+22 root@sappixizd1dev:->lvdisplay /dev/vgroot/swap
+  --- Logical volume ---
+  LV Path                /dev/vgroot/swap
+  LV Name                swap
+  VG Name                vgroot
+  LV UUID                BtgZ9J-91I3-lW2S-5JkY-F7Nd-DJtW-pSRqGT
+  LV Write Access        read/write
+  LV Creation host, time sappixizd1dev, 2017-02-22 09:41:29 +0100
+  LV Status              available
+  # open                 1
+  LV Size                8.00 GiB
+  Current LE             2048
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:1
+   
+23 root@sappixizd1dev:->lvs
+  LV         VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  oracle     vgdata -wi-ao----  3.00g                                                    
+  sap_D19    vgdata -wi-ao---- 50.00g                                                    
+  usr_sap    vgdata -wi-ao---- 10.00g                                                    
+  ec         vgroot -wi-ao----  2.00g                                                    
+  ec_sw      vgroot -wi-ao----  4.00g                                                    
+  local_home vgroot -wi-ao----  1.00g                                                    
+  patrol     vgroot -wi-ao----  2.00g                                                    
+  root       vgroot -wi-ao----  6.00g                                                    
+  swap       vgroot -wi-ao----  8.00g                                                    
+  tmp        vgroot -wi-ao----  1.00g                                                    
+  var        vgroot -wi-ao----  4.00g                                                    
+24 root@sappixizd1dev:->pvs
+  PV         VG     Fmt  Attr PSize  PFree 
+  /dev/sda2  vgroot lvm2 a--u 99.80g 71.80g
+  /dev/sdb   vgdata lvm2 a--u 55.00g 42.00g
+  /dev/sdc   vgdata lvm2 a--u 55.00g  5.00g
+25 root@sappixizd1dev:->vgs
+  VG     #PV #LV #SN Attr   VSize   VFree 
+  vgdata   2   3   0 wz--n- 109.99g 46.99g
+  vgroot   1   8   0 wz--n-  99.80g 71.80g
+
+
+
+
+Logicos November 1, 2012, 7:52 pm
+Disable swap (Take care if the swap memory is in use: information goes from swap to RAM)
+
+# swapoff -a
+
+With lvm partition, you can resize it like this:
+Suppose swap partition in /dev/vg0/swap
+# lvresize -L +1G /dev/vg0/swap
+next, (re)setup swap memory :
+# mkswap /dev/vg0/swap
+Now, You can re-enable swap like this:
+# swapon -a

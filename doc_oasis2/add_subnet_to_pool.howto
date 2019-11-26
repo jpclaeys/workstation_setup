@@ -1,0 +1,6 @@
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/PrepareForNewSubnet
+
+Prepare for new subnet 
+ Note (1) the request might arrive in the UNIX queue as Add Subnet to pool (SR).http://www.dcim.cc.cec.eu.int/wiki/view/DCTSC/UnixInfrastructure#Add_subnet_to_a_pool_40SR_41
+ Note (2) Unix team: Don't resolve the ticket. Just proceed with all Unix actions and send the ticket to the CT to finish the job.
+

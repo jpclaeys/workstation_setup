@@ -1,0 +1,121 @@
+
+!!! Always reboot the server after each lab
+
+install man pages: 
+man man-pages 
+rebuild: mandb
+
+
+install the bash-autocompletion paskage
+
+
+man firewalld --> see also --> firewalld.richlanguage
+man firewalld.richlanguage --> get examples
+
+
+fstab update:
+mount the fs
+grep the line from /etc/mtab and insert it to /etc/fstab
+
+Important: know the syntax for the local repo config in /etc/yum.repo.d
+
+---------------------------------------------------------------------------------------------------
+Config network static IP
+------------------------
+Know the syntax to create the network config (ipv4)
+
+vi  /etc/sysconfig/network-script/ifcfg-ens33
+
+NAME="ens33"
+ONBOOT="yes"
+BOOTPROTO="static"
+TYPE="Ethernet"
+GATEWAY=10.200.16.97
+IPADDR=10.200.16.126
+PREFIX=27
+
+systemctl restart network
+---------------------------------------------------------------------------------------------------
+
+bond config ? --> team
+
+Getuuid: 
+uuidgen ifcfg-eth0
+
+# Get ethernet device names
+nmcli d
+nmcli dev show ens33
+nmcli connection show ens33
+
+[root@ipa ~]# nmcli d
+DEVICE      TYPE      STATE      CONNECTION 
+ens33       ethernet  connected  ens33      
+
+
+Now Restart network service by typing below command.
+systemctl restart network
+or
+systemctl restart NetworkManager.service
+
+cat /etc/sysconfig/network
+NISDOMAIN=example.com
+
+
+Old way
+ifconfig ens33
+vi /etc/sysconfig/network-scripts/ifcfg-ens33
+After saving the configuration file, restart the network service.
+# systemctl restart network
+ 
+Alternatively, bounce the network interface.
+
+(ifdown ens33 && ifup ens33)
+ifconfig ens33
+
+
+
+nmcli con add con-name testing ifname ens33 type ethernet ip4 10.0.0.15/24
+nmcli conn show
+nmcli conn down ens33
+nmcli conn up testing
+ip  addr  show
+systemctl restart NetworkManager
+ip a
+
+Removing the testing connection:
+nmcli conn down testing
+Changing the default route
+vi ...ifcfg-ens33
+nmcli con down ens33 ; nmcli con up ens33
+
+Config dns:
+vi ...ifcfg-ens33
+add lines:
+DNS1=192.168.211.1
+DNS2=...
+
+reset the network config to the default (dhcp)
+use the text user interface: nmtui
+and restart the interface: nmcli con down ens33 ; nmcli con up ens33
+
+---------------------------------------------------------------------------------------------------
+Set up LDAP Authentication with nslcd on CentOS 7
+https://www.lisenet.com/2016/setup-ldap-authentication-on-centos-7/
+
+---------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+
+
+
+---------------------------------------------------------------------------------------------------
+
+
+
+
+
+

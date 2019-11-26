@@ -1,0 +1,47 @@
+# Check if the vmwaretools (vmtools) are running
+sr <hostname> initctl status vmware-tools
+
+# if the start failed. recompile vmtools
+sr <hostname> vmware-config-tools.pl -d
+
+HOSTSLIST=
+LOGFILE=
+mypssh $HOSTSLIST  '([ `uname -r | grep -c el7` -eq 1 ] && systemctl status vmtoolsd | grep Active || ps -ef | grep vmtoolsd | grep -v grep > /dev/null || [ $?  -eq "0" ] && echo "vmtoolsd is running")'  | tee $LOGFILE
+
+
+CMD='(if [ -x /bin/systemctl ];then /bin/systemctl status vmtoolsd | grep Active;elif [ -x /sbin/initctl ];then initctl status vmware-tools; else service vmware-tools status;fi)'
+
+mypssH "$HOSTS" $CMD 
+
+
+# Restart vmtools
+-----------------
+/etc/vmware-tools/services.sh restart
+
+# Recompile vmware-tools
+-------------------------
+/usr/bin/vmware-config-tools.pl -d
+
+
+To determine the vmware-tools version, run the command:
+-------------------------------------------------------
+
+vmware-toolbox-cmd -v
+
+
+Alternatives:
+-------------
+Option 1:
+# grep buildNr /usr/bin/vmware-config-tools.pl
+my $buildNr;
+$buildNr = '3.5.0 build-143128';
+return remove_whitespaces($buildNr);
+
+
+Option 2:
+# vmware-config-tools.pl -h 2>&1 | grep "VMware Tools" 
+VMware Tools 3.5.0 build-143128 for Linux
+
+Option 3:
+# rpm -qa|grep VM
+VMwareTools-7302-143128

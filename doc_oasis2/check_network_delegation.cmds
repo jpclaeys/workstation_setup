@@ -1,0 +1,38 @@
+#!/bin/bash
+
+DNS_SNET=ns22lux.europa.eu
+DNS_UNIX=dnsmaster.cc.cec.eu.int
+DNS_WIN=s-net1brudc72.net1.cec.eu.int
+
+IPCALC=/usr/bin/ipcalc
+
+if [ ! -x $IPCALC ]; then
+    echo "Can't execute $IPCALC: $!"
+    exit 1
+fi
+
+
+IP=$( [[ $1 =~ ([0-9]{1,}.[0-9]{1,}.[0-9]{1,}.[0-9]{1,})[/]*([0-9]*) ]] && echo ${BASH_REMATCH[1]} )
+NETMASK=$( [[ $1 =~ ([0-9]{1,}.[0-9]{1,}.[0-9]{1,}.[0-9]{1,})[/]*([0-9]*) ]] && echo ${BASH_REMATCH[2]} )
+
+echo " ====== $IP ======= " 
+(( ${NETMASK:-24} < 24 )) && NETMASK=24
+
+LAST_QUAD=$(cut -d '.' -f4 <(echo $IP))
+REVERSE=$(ipcalc ${IP}/${NETMASK:-24} --reverse-dns | cut -d '=' -f2)
+
+
+echo "######## SNET ########"
+echo "## dig ${LAST_QUAD}.${REVERSE} @${DNS_SNET} -t NS +auth  | egrep '^[0-9-]'"
+dig ${LAST_QUAD}.${REVERSE} @${DNS_SNET} -t NS +auth  | egrep '^[0-9-]'
+
+echo "######## MASTER ########"
+echo "## dig ${LAST_QUAD}.${REVERSE} @${DNS_UNIX} -t NS +auth  | egrep '^[0-9-]'"
+dig ${LAST_QUAD}.${REVERSE} @${DNS_UNIX} -t NS +auth  | egrep '^[0-9-]'
+
+echo "######## WINDOWS ########"
+echo "## dig ${LAST_QUAD}.${REVERSE} @${DNS_WIN} -t NS +auth  | egrep '^[0-9-]'"
+dig ${LAST_QUAD}.${REVERSE} @${DNS_WIN} -t NS +auth  | egrep '^[0-9-]'
+
+# for i in dnsmaster.cc.cec.eu.int ns22lux.europa.eu s-net1brudc72.net1.cec.eu.int ; do echo ${i}: ; dig 32-47.106.134.10.in-addr.arpa. @${i} -t NS +auth | egrep -A3 'ANSWER SECTION|ADDITIONAL SECTION|AUTHORITY SECTION' ; echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"; done
+#

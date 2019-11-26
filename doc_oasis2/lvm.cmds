@@ -1,0 +1,15 @@
+Create a new xfs FS:
+--------------------
+
+# Create LVM components : pvcreate, vgcreate and lvcreate.
+lvcreate --size 4G -n sw_oracle vgdata
+
+# Create XFS file system on lvm parition
+mkfs.xfs /dev/vgdata/sw_oracle
+
+# Extend the size of xfs file system
+vgs vgdata # check free space
+
+# So we will extend the file system by 3GB using lvextend command with “-r” option
+lvextend -L +3G /dev/vgdata/sw_oracle -r
+

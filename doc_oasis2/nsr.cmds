@@ -1,0 +1,14 @@
+networker
+---------
+
+logs: 
+cat /nsr/logs/daemon.raw 
+
+
+nsrreports
+
+
+netstat -an | wc -l
+
+lsof -i :2001
+--> kill the process using this port

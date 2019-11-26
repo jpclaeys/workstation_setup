@@ -1,0 +1,74 @@
+
+How to pipe ufsdump to ufsrestore?
+fsdump 0f - /dev/rdsk/c0t0d0s0 | (cd /t1_mountpoint; ufsrestore xf -)
+
+
+16 root@dormouse:->metaclear d220
+d220: Concat/Stripe is cleared
+
+
+19 root@dormouse:->cd /mnt
+20 root@dormouse:->ls
+d220
+21 root@dormouse:->rmdir d220
+22 root@dormouse:->mkdir c0t5000C50047821E0Fd0s0
+23 root@dormouse:->pwd
+/mnt
+
+26 root@dormouse:->newfs /dev/rdsk/c0t5000C50047821E0Fd0s0
+newfs: /dev/rdsk/c0t5000C50047821E0Fd0s0 last mounted as /
+newfs: construct a new file system /dev/rdsk/c0t5000C50047821E0Fd0s0: (y/n)? y
+Warning: 4992 sector(s) in last cylinder unallocated
+/dev/rdsk/c0t5000C50047821E0Fd0s0:      8400000 sectors in 1368 cylinders of 48 tracks, 128 sectors
+        4101.6MB in 86 cyl groups (16 c/g, 48.00MB/g, 5824 i/g)
+super-block backups (for fsck -F ufs -o b=#) at:
+ 32, 98464, 196896, 295328, 393760, 492192, 590624, 689056, 787488, 885920,
+ 7472672, 7571104, 7669536, 7767968, 7866400, 7964832, 8063264, 8161696,
+ 8260128, 8358560
+
+
+root@dormouse:->df -h /mnt/c0t5000C50047821E0Fd0s0
+Filesystem             size   used  avail capacity  Mounted on
+/dev/dsk/c0t5000C50047821E0Fd0s0
+                       3.9G   4.0M   3.9G     1%    /mnt/c0t5000C50047821E0Fd0s0
+
+45 root@dormouse:->date && time ufsrestore xf /var/core/rootfs.ufs
+Thursday, 11 January 2018 13:58:37 MET
+Warning: ./lost+found: File exists
+You have not read any volumes yet.
+Unless you know which volume your file(s) are on you should start
+with the last volume and work towards the first.
+Specify next volume #: 
+Specify next volume #: 1
+set owner/mode for '.'? [yn] y
+Directories already exist, set modes anyway? [yn] y
+
+real    8m11.806s
+user    0m2.639s
+sys     0m21.388s
+
+50 root@dormouse:->df -h .
+Filesystem             size   used  avail capacity  Mounted on
+/dev/dsk/c0t5000C50047821E0Fd0s0
+                       3.9G   2.2G   1.7G    58%    /mnt/c0t5000C50047821E0Fd0s0
+
+53 root@dormouse:->cd
+54 root@dormouse:->umount /mnt/c0t5000C50047821E0Fd0s0
+
+55 root@dormouse:->date && time fsck -n  /dev/rdsk/c0t5000C50047821E0Fd0s0
+Thursday, 11 January 2018 15:17:12 MET
+** /dev/rdsk/c0t5000C50047821E0Fd0s0 (NO WRITE)
+** Last Mounted on /mnt/c0t5000C50047821E0Fd0s0
+** Phase 1 - Check Blocks and Sizes
+** Phase 2 - Check Pathnames
+** Phase 3a - Check Connectivity
+** Phase 3b - Verify Shadows/ACLs
+** Phase 4 - Check Reference Counts
+** Phase 5 - Check Cylinder Groups
+55191 files, 2343041 used, 1788845 free (1109 frags, 223467 blocks, 0.0% fragmentation)
+
+real    0m7.906s
+user    0m0.350s
+sys     0m0.297s
+
+

@@ -1,0 +1,42 @@
+Find the RAC cluster quorum disk:
+---------------------------------
+disk-list -qd | egrep -v 'WIND|BETZ'
+
+Example:
+             LUN       DM        Size                Usage           Class Devices
+             sda        -      278 GB    linux_raid_member      NOLUNMATCH -
+             sdb        -      278 GB    linux_raid_member      NOLUNMATCH -
+     HB100C06D08    dm-43       55 GB            oracleasm DEFAULT_NOTMIRRORED sdci,sdch
+
+# Check the ownership:
+
+ls -alL /dev/san/<LUN id>
+
+# Check the oracle asm rules
+
+grep <LUN id> /etc/udev/rules.d/99-oracle-asm.rules
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+Example:
+
+4 root@moon:->disk-list -qd | egrep -v 'WIND|BETZ'
+             LUN       DM        Size                Usage           Class Devices
+             sda        -      278 GB    linux_raid_member      NOLUNMATCH -
+             sdb        -      278 GB    linux_raid_member      NOLUNMATCH -
+     HB100C06D08    dm-43       55 GB            oracleasm DEFAULT_NOTMIRRORED sdci,sdch
+
+
+5 root@moon:->ls -al /dev/san/HB100C06D08
+lrwxrwxrwx 1 root root 8 Dec 21 11:40 /dev/san/HB100C06D08 -> ../dm-43
+6 root@moon:->ls -alL /dev/san/HB100C06D08
+brw-rw---- 1 oracle dc_dba 253, 43 Dec 21 11:40 /dev/san/HB100C06D08
+7 root@moon:->ls -l /dev/dm-45
+brw-rw---- 1 root disk 253, 45 Dec 21 11:40 /dev/dm-45
+
+# Verify that we are on Red Hat 6
+8 root@moon:->cat /etc/redhat-release
+Red Hat Enterprise Linux Server release 6.7 (Santiago)
+9 root@moon:->grep HB /etc/udev/rules.d/99-oracle-asm.rules
+KERNEL=="dm-*" PROGRAM=="/sbin/dmsetup ls --target multipath --exec /bin/basename -j %M -m %m", RESULT=="HB100C06D08", OWNER="oracle", GROUP="dc_dba", MODE="0660"
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------

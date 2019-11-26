@@ -1,0 +1,29 @@
+restart PatrolAgent
+
+7 root@wlll0001a:->ll /etc/init.d/patrol-local
+lrwxrwxrwx. 1 root root 21 Sep 30  2015 /etc/init.d/patrol-local -> /etc/init.d/supervise
+
+ps -ef | grep PatrolAgent
+kill process
+--> supervisor will restart it automatically
+
+
+13 root@wlll0001a:->ps -ef | grep PatrolAgent
+root     20438 34081 96 11:38 ?        00:31:33 ./PatrolAgent -id wlll0001a.cc.cec.eu.int
+root     26958 25638  0 12:11 pts/1    00:00:00 grep PatrolAgent
+14 root@wlll0001a:->kill -9 20438
+15 root@wlll0001a:->ps -ef | grep PatrolAgent
+bmcptrl  26959 34081 15 12:11 ?        00:00:00 ./PatrolAgent -id wlll0001a.cc.cec.eu.int
+root     27005 25638  0 12:11 pts/1    00:00:00 grep PatrolAgent
+
+
+
+On Solaris, it's a service
+
+
+svcs patrol-agent
+svcadm clear patrol-agent
+ or
+svcadm disable patrol-agent && svcadm enable patrol-agent
+
+

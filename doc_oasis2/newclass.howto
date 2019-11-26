@@ -1,0 +1,127 @@
+TICKET: <ticketnumber>
+-----------------------------------------------------------------------------------------------------------------------------------
+
+1. cfmain
+cfmain
+git pull
+
+
+# Add a new class just for instance before the ## Specific type of hardware section 
+
+# Patrol limits
+PatrolServers = more-tspsct1 more-tspsdt1
+
+git diff
+git commit -am "<ticketnumber> - JPC"
+git pull && git push
+
+-----------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
+
+2. Create a new "limits.conf.patrol" file based on   /home/claeyje/git/cfengine_main/data/system/linux/limits/limits.conf.rh5
+
+cd $CFDATA/system/linux/limits/
+tmp
+cp limits.conf.rh5 limits.conf.patrol
+
+Add following to /etc/security/limits.conf file:
+
+# <ticketnumber> - only for hosts: more-tspsct1 more-tspsdt1
+bmcptrl soft nofile 65536
+bmcptrl hard nofile 65536
+bmcptrl soft nproc 2048
+bmcptrl hard nproc 2048
+bmcptrl soft memlock unlimited
+bmcptrl hard memlock unlimited
+bmcptrl soft as unlimited
+bmcptrl hard as unlimited
+
+# Check differences:
+
+diff $CFDATA/system/linux/limits/limits.conf.rh5 $TMPDIR/limits.conf.patrol
+
+cfmain
+git pull
+
+cp $TMPDIR/limits.conf.patrol $CFDATA/system/linux/limits/
+ll $CFDATA/system/linux/limits/
+git status
+
+git add limits.conf.patrol
+git commit -am "<ticketnumber> - JPC"
+git pull && git push
+
+-----------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
+
+3. masterfiles
+
+Dir: /home/claeyje/git/masterfiles/ec/tasks/system
+
+cfmaster
+cd ec/tasks/system
+git pull
+
+File: limits.cf
+
+Add Hook:
+
+    (redhat_s_5|redhat_s_6|redhat_s_7).PatrolServers::
+      "/etc/security/limits.conf"
+        copy_from => ec_remote_cp("$(def.master_cfdata)/system/linux/limits/limits.conf.patrol", "digest"),
+        perms => mog("644", "root", "root");
+
+
+git diff
+git commit -am "<ticketnumber> - JPC"
+git pull && git push
+
+-----------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
+Add following to /etc/sysctl.conf file:
+vm.max_map_count=262144
+
+locate sysctl | egrep "more-tspsct1|more-tspsdt1"
+
+
+cfmain
+git pull
+
+echo "vm.max_map_count=262144" >> $CFDATA/system/sysctl/more-tspsct1
+echo "vm.max_map_count=262144" >> $CFDATA/system/sysctl/more-tspsdt1
+
+git diff
+git commit -am "<ticketnumber> - JPC"
+git pull && git push
+
+mypssH "more-tspsct1 more-tspsdt1" ecdc-cfengine run
+mypssH "more-tspsct1 more-tspsdt1" '(sysctl -p)'   #  Load in sysctl settings from /etc/sysctl.conf 
+mypssH "more-tspsct1 more-tspsdt1" '(tail -12 /etc/security/limits.conf)'
+mypssH "more-tspsct1 more-tspsdt1" '(sysctl vm.max_map_count )'
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Note:
+Changing sap services:
+-----------------------
+[claeyje@muscadet data]$ grep -Rl  sapms system
+system/services.taxuddmz
+system/services.jls.sap
+system/linux/services.budgabac2.linux
+system/linux/services.budg.sap.linux
+system/services.budg.sap.v17
+system/services
+
+Changing limits:
+----------------
+[claeyje@muscadet data]$ find . -name "*limits*"
+./system/linux/limits
+./system/linux/limits/limits.conf.patrol
+./system/linux/limits/limits.conf.truesight_11_2
+./system/linux/limits/limits.conf.rac_final
+./system/linux/limits/limits.conf.rh5
+./system/linux/limits/limits.conf.rac_exp
+./system/linux/limits/limits.conf.truesight_11
+./system/linux/SAPHANA/limits
+
+

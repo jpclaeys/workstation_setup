@@ -1,0 +1,136 @@
+Cfengine
+
+Add the new subnet in the authorized list of the cfengine server: edit $CFINPUTS/acl.conf
+Restart the Cfengine servers:
+cfe3-1 & cfe3-2: service cfengine3 restart
+
+
+
+
+
+[claeyje@muscadet cfengine_main]$ cfmain
+[claeyje@muscadet cfengine_main]$ git pull
+remote: Counting objects: 65832, done
+remote: Finding sources: 100% (30/30)
+remote: Total 30 (delta 23), reused 30 (delta 23)
+Unpacking objects: 100% (30/30), done.
+From ssh://gerrit/cfengine/main
+   00bb4a5..7ac2b9b  master     -> origin/master
+First, rewinding head to replay your work on top of it...
+Fast-forwarded master to 7ac2b9b94784a516c27a1cb006b3519f283801f0.
+[claeyje@muscadet cfengine_main]$ vi CFINPUTS/acl.conf
+[claeyje@muscadet cfengine_main]$ vi $CFINPUTS/acl.conf
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   inputs/acl.conf
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[claeyje@muscadet cfengine_main]$ git commit -am "IM0015437437 JPC"
+[master 09f73f0] IM0015437437 JPC
+ 1 file changed, 1 insertion(+)
+[claeyje@muscadet cfengine_main]$ git pull & git push
+[1] 17848
+Counting objects: 4, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 384 bytes | 0 bytes/s, done.
+Total 4 (delta 3), reused 0 (delta 0)
+remote: Resolving deltas: 100% (3/3)
+Current branch master is up to date.
+remote: ===[output from gerrit hook: ref-update]===
+remote: [I] [cfengine/main|ref-update] Running inputs/t/check_acl.t in /ec/prod/app/git/hooks_workdir/1487940884_cfengine_main_ref_update_09f73f08/inputs
+remote: ok 1 - '10.57.84.0/24' looks like a valid subnet
+remote: ok 2 - '10.57.110.32/27' looks like a valid subnet
+...
+<snip>
+...
+remote: ok 47 - '10.200.14.32/27' looks like a valid subnet
+remote: ok 48 - '10.200.14.64/27' looks like a valid subnet
+remote: ok 49 - '10.218.129.0/24' looks like a valid subnet
+remote: ok 50 - '10.218.134.0/27' looks like a valid subnet
+remote: ok 51 - '10.218.144.0/20' looks like a valid subnet
+remote: ok 52 - '10.226.6.0/25' looks like a valid subnet
+remote: ok 53 - '10.226.15.32/27' looks like a valid subnet
+remote: ok 54 - '10.226.15.64/26' looks like a valid subnet
+remote: ok 55 - '10.226.24.0/28' looks like a valid subnet
+remote: ok 56 - '10.226.133.0/25' looks like a valid subnet
+remote: ok 57 - '147.67.0.0/16' looks like a valid subnet
+remote: ok 58 - '147.67.6.104/29' looks like a valid subnet
+remote: ok 59 - '147.67.242.32/27' looks like a valid subnet
+remote: ok 60 - '147.67.243.0/26' looks like a valid subnet
+remote: ok 61 - '147.67.246.104/29' looks like a valid subnet
+remote: ok 62 - '158.166.5.0/24' looks like a valid subnet
+remote: ok 63 - '158.166.5.21/32' looks like a valid subnet
+remote: ok 64 - '158.166.5.23/32' looks like a valid subnet
+remote: ok 65 - '158.166.5.250/32' looks like a valid subnet
+remote: ok 66 - '158.166.5.31/32' looks like a valid subnet
+remote: ok 67 - '158.166.5.36/32' looks like a valid subnet
+remote: ok 68 - '158.166.5.91/32' looks like a valid subnet
+remote: ok 69 - '158.166.5.92/32' looks like a valid subnet
+remote: ok 70 - '158.166.66.31/32' looks like a valid subnet
+remote: ok 71 - '158.167.0.0/16' looks like a valid subnet
+remote: ok 72 - '158.167.37.128/25' looks like a valid subnet
+remote: ok 73 - '158.167.125.0/25' looks like a valid subnet
+remote: ok 74 - '158.167.144.0/24' looks like a valid subnet
+remote: ok 75 - '158.167.201.65/32' looks like a valid subnet
+remote: ok 76 - '158.167.208.0/20' looks like a valid subnet
+remote: ok 77 - '158.167.214.50' looks like a valid subnet
+remote: ok 78 - '158.167.228.0/22' looks like a valid subnet
+remote: ok 79 - '158.168.0.0/22' looks like a valid subnet
+remote: ok 80 - '158.168.4.0/22' looks like a valid subnet
+remote: ok 81 - '158.168.8.0/24' looks like a valid subnet
+remote: ok 82 - '158.168.9.0/24' looks like a valid subnet
+remote: ok 83 - '158.168.19.0/25' looks like a valid subnet
+remote: ok 84 - '158.168.31.0/24' looks like a valid subnet
+remote: ok 85 - '158.168.144.10/32' looks like a valid subnet
+remote: 1..85
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine/main
+   7ac2b9b..09f73f0  master -> master
+[1]+  Done                    git pull
+[claeyje@muscadet cfengine_main]$ sudo updatedb
+[claeyje@muscadet cfengine_main]$ grep 10.200.14 $CFINPUTS/acl.conf
+10.200.14.0/27
+10.200.14.32/27
+10.200.14.64/27
+
+
+
+Cfengine
+
+Add the new subnet in the authorized list of the cfengine server: edit $CFINPUTS/acl.conf
+Restart the Cfengine servers:
+cfe3-1 & cfe3-2: service cfengine3 restart
+
+[claeyje@muscadet log]$ host cfe3-1
+cfe3-1.cc.cec.eu.int has address 158.167.209.151
+[claeyje@muscadet log]$ host cfe3-2
+cfe3-2.cc.cec.eu.int has address 158.167.209.152
+[claeyje@muscadet log]$ sr cfe3-1 service cfengine3  restart
+Shutting down cf-execd: [  OK  ]
+Shutting down cf-serverd: [  OK  ]
+Updating git repo: {"last_commit":{"repository":"cfengine3/masterfiles","branch":"master","commit_hash":"87f27c86e2a4da3518c6fc1f2d064f62513da8f5","commit_subject":"one-mustache","committer_date_iso":"2017-02-13 16:15:42 +0100","committer_date_unix":"1486998942","committer_email":"gregory.gabriel@ext.ec.europa.eu"},"update":{"duration":1.094183,"time":"2017-02-24 13:59:01 +0100"}}
+{"last_commit":{"repository":"cfengine/main","branch":"master","commit_hash":"09f73f0883911f24ae3b8cc5598ddbafeaf40a0a","commit_subject":"IM0015437437-JPC","committer_date_iso":"2017-02-24 13:54:33 +0100","committer_date_unix":"1487940873","committer_email":"jean-pierre.claeys@ext.ec.europa.eu"},"update":{"duration":1.775989,"time":"2017-02-24 13:59:03 +0100"}}
+{"last_commit":{"repository":"cfengine/data-static","branch":"master","commit_hash":"9098d2504f4ab0965a2133e0446c1862c3e96710","commit_subject":"IM0015386693-fw-updates-for-x3950-fs","committer_date_iso":"2017-02-08 16:11:18 +0100","committer_date_unix":"1486566678","committer_email":"frank.segner@ext.ec.europa.eu"},"update":{"duration":0.595897,"time":"2017-02-24 13:59:04 +0100"}}
+{"last_commit":{"repository":"united/serverdb","branch":"master","commit_hash":"a72abd234e6864d66cb2e6d0ef94dbeb2b67f9a2","commit_subject":"removed-printf-crcm-output","committer_date_iso":"2017-02-22 17:41:30 +0100","committer_date_unix":"1487781690","committer_email":"christophe.rolland@ext.ec.europa.eu"},"update":{"duration":0.22764,"time":"2017-02-24 13:59:05 +0100"}}
+{"last_commit":{"repository":"backup-repository","branch":"master","commit_hash":"74f965c3105bd349deb9e7e5b4799cd504c25df2","commit_subject":"IM0015424138","committer_date_iso":"2017-02-20 09:42:41 +0000","committer_date_unix":"1487583761","committer_email":"netwrkr@1e3a50f7-6a81-c288-d307-efaa9e38c8e5"},"update":{"duration":0.223388,"time":"2017-02-24 13:59:05 +0100"}}
+[  OK  ]
+Starting cf-execd: [  OK  ]
+Starting cf-serverd: [  OK  ]
+[claeyje@muscadet log]$ sr cfe3-2 service cfengine3  restart
+Shutting down cf-execd: [  OK  ]
+Shutting down cf-serverd: [  OK  ]
+Updating git repo: {"last_commit":{"repository":"cfengine3/masterfiles","branch":"master","commit_hash":"87f27c86e2a4da3518c6fc1f2d064f62513da8f5","commit_subject":"one-mustache","committer_date_iso":"2017-02-13 16:15:42 +0100","committer_date_unix":"1486998942","committer_email":"gregory.gabriel@ext.ec.europa.eu"},"update":{"duration":1.166169,"time":"2017-02-24 13:59:15 +0100"}}
+{"last_commit":{"repository":"cfengine/main","branch":"master","commit_hash":"09f73f0883911f24ae3b8cc5598ddbafeaf40a0a","commit_subject":"IM0015437437-JPC","committer_date_iso":"2017-02-24 13:54:33 +0100","committer_date_unix":"1487940873","committer_email":"jean-pierre.claeys@ext.ec.europa.eu"},"update":{"duration":1.771953,"time":"2017-02-24 13:59:17 +0100"}}
+{"last_commit":{"repository":"cfengine/data-static","branch":"master","commit_hash":"9098d2504f4ab0965a2133e0446c1862c3e96710","commit_subject":"IM0015386693-fw-updates-for-x3950-fs","committer_date_iso":"2017-02-08 16:11:18 +0100","committer_date_unix":"1486566678","committer_email":"frank.segner@ext.ec.europa.eu"},"update":{"duration":0.580464,"time":"2017-02-24 13:59:18 +0100"}}
+{"last_commit":{"repository":"united/serverdb","branch":"master","commit_hash":"a72abd234e6864d66cb2e6d0ef94dbeb2b67f9a2","commit_subject":"removed-printf-crcm-output","committer_date_iso":"2017-02-22 17:41:30 +0100","committer_date_unix":"1487781690","committer_email":"christophe.rolland@ext.ec.europa.eu"},"update":{"duration":0.227507,"time":"2017-02-24 13:59:19 +0100"}}
+{"last_commit":{"repository":"backup-repository","branch":"master","commit_hash":"74f965c3105bd349deb9e7e5b4799cd504c25df2","commit_subject":"IM0015424138","committer_date_iso":"2017-02-20 09:42:41 +0000","committer_date_unix":"1487583761","committer_email":"netwrkr@1e3a50f7-6a81-c288-d307-efaa9e38c8e5"},"update":{"duration":0.227786,"time":"2017-02-24 13:59:19 +0100"}}
+[  OK  ]
+Starting cf-execd: [  OK  ]
+Starting cf-serverd: [  OK  ]
+

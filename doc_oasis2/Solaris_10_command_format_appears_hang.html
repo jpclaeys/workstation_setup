@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<!-- saved from url=(0058)https://support.symantec.com/en_US/article.TECH225180.html -->
+<html class="respond js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths has-js js-ready js-advanced" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script type="text/javascript" async="async" src="./Solaris 10 command _format_ appears hang_files/id"></script><script type="text/javascript" async="async" src="./Solaris 10 command _format_ appears hang_files/id(1)"></script><script type="text/javascript" async="async" src="./Solaris 10 command _format_ appears hang_files/id(2)"></script><script src="./Solaris 10 command _format_ appears hang_files/serverComponent.php" style="color: rgb(0, 0, 0);"></script>
+        
+	
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	<meta name="description">
+	<meta name="keywords">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="mobile-web-app-status-bar-style" content="black">
+	<meta name="msapplication-TileColor" content="#2d89ef">
+	<meta name="msapplication-TileImage" content="/etc/designs/unifiedweb/clientlib/img/favicon/mstile-144x144.png">
+	<link rel="apple-touch-icon" sizes="57x57" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/apple-touch-icon-180x180.png">
+	<link rel="icon" type="image/png" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/favicon-192x192.png" sizes="192x192">
+	<link rel="icon" type="image/png" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/favicon-160x160.png" sizes="160x160">
+	<link rel="icon" type="image/png" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/png" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="https://support.symantec.com/etc/designs/unifiedweb/clientlib/img/favicon/favicon-32x32.png" sizes="32x32">
+	 </head><body class="page page-article not-embedded voyager not-edit-mode js"><div id="browsermsg" style="display: none" class="col-lg-12 col-offset-3 centered">
+    <div id="browserchk" style="display: none;float:left;">Your browser is not supported. For the best online support experience please upgrade to Internet Explorer 10 or above.</div> 
+    <div id="browserchk2" onclick="CloseMsgBrowserSupport()" style="display: none;float:left;">&nbsp;&nbsp;✖</div> 
+    </div>
+	<title>Solaris 10 command "format" appears hang</title>
+
+        
+	<link rel="stylesheet" href="./Solaris 10 command _format_ appears hang_files/css" type="text/css">
+	<link rel="stylesheet" href="./Solaris 10 command _format_ appears hang_files/css(1)" type="text/css">
+	
+    
+<link rel="stylesheet" href="./Solaris 10 command _format_ appears hang_files/clientlib.css" type="text/css">
+
+
+
+	<link rel="stylesheet" href="./Solaris 10 command _format_ appears hang_files/devkit.css" type="text/css">
+	<script async="" src="./Solaris 10 command _format_ appears hang_files/analytics.js"></script><script src="./Solaris 10 command _format_ appears hang_files/modernizr.min.js"></script>
+	<script src="./Solaris 10 command _format_ appears hang_files/jquery.min.js"></script>
+	<script src="./Solaris 10 command _format_ appears hang_files/browser_OS.js"></script>
+	<script src="./Solaris 10 command _format_ appears hang_files/Bootstrap.js"></script>
+	<script type="text/javascript">
+		var args = args || {};
+		args.locale = "en_US";
+		args.pagePath = "/content/unifiedweb/en_US/article";
+		args.mySymantecAuthenticatedUrl = "https://mysymantec.force.com/customer/s/";
+		args.embedded = "false";
+	</script>
+	
+	<script type="text/javascript">
+	  
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create','UA-63698327-1', 'auto');
+  ga('send', 'pageview');
+
+	</script>
+
+	
+
+
+    
+    
+        
+	<div class="symantec-header">
+		<div> 
+</div> 
+<div class="parbase headercontainer"> 
+ <!--  <div data-accountLoginURL="&#x2f;bin&#x2f;symantec&#x2f;userauthsignin&#x3f;returnUrl&#x3d;&#x2f;content&#x2f;symantec&#x2f;english&#x2f;en&#x2f;partner-landing.html"></div> --> 
+ <script type="text/javascript">var headContainer = { openInModal : function(a, isOpen) { if (isOpen == true) { $(a).click(function() { if (window != undefined) { var mediaQuery = window.matchMedia('@media all and (max-width: 768px)'); if(mediaQuery.matches) { this.target = "_blank"; } else { this.target = "_self"; } } }); } } } </script> 
+ <!-- Header --> 
+ <div class="utility-row hideOnTablet hideOnDesktop" style="display: none;"> 
+  <div class="content"> 
+   <!-- Customer service phone --> 
+   <!-- /Customer service phone --> 
+   <!-- Report a Breach --> 
+   <!-- /Report a Breach --> 
+   <div class="user-config"> 
+    <!-- Cart --> 
+    <!-- /Cart --> 
+   </div> 
+  </div> 
+ </div> 
+ <header role="banner"> 
+  <div class="top-bar" id="gbar"></div> 
+  <div class="content"> 
+   <div class="navigation-search-row"> 
+    <!-- Logo --> 
+    <!-- Logo --> 
+    <div class="logo"> 
+     <a href="https://www.symantec.com/"> <img src="./Solaris 10 command _format_ appears hang_files/symantec-logo-top.png" alt="Symantec"></a> 
+    </div> 
+    <!-- /Logo --> 
+    <!-- /Logo --> 
+    <!-- Main navigation --> 
+    <div class="menu-wrapper"> 
+     <a href="https://support.symantec.com/en_US/article.TECH225180.html#menu" class="menu-link"> 
+      <div class="menu-icon"> 
+       <div class="center-bar"></div> 
+      </div> </a> 
+     <nav role="navigation" id="menu" class="main-navigation"> 
+      <!--Navigation Component container start--> 
+      <ul class="main-nav"> 
+       <li class="nav-item mega-4-col  "> <a href="https://www.symantec.com/content/symantec/english/en/products">Products</a> 
+        <!--  Use  style="max-height: 1000px;"in Edit mode for fly out
+		 --> 
+        <div class="menu"> 
+         <h2><a href="https://www.symantec.com/content/symantec/english/en/products">Products Home</a> 
+          <!--    Overview  --> </h2> 
+         <section> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group "> <a href="https://www.symantec.com/content/symantec/english/en/products/endpoint-hybrid-cloud-security">Endpoint &amp; Hybrid Cloud Security</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/endpoint-hybrid-cloud-security/endpoint/endpoint-protection">Endpoint Protection</a> </li> 
+            <li> <a href="https://www.symantec.com/products/threat-protection/endpoint-family/endpoint-protection-cloud?inid=globalnav_scflyout_endpoint-protection-cloud">Endpoint Protection Cloud</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/endpoint-hybrid-cloud-security/endpoint/endpoint-detection-and-response">Endpoint Detection &amp; Response&nbsp;</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/endpoint-hybrid-cloud-security/endpoint-management/it-management-suite">IT Management Suite </a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/endpoint-hybrid-cloud-security/hybrid-cloud-security">Hybrid Cloud Security</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/endpoint-hybrid-cloud-security/hybrid-cloud-security/cloud-workload-protection">Cloud Workload Protection</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/endpoint-hybrid-cloud-security/hybrid-cloud-security/control-compliance-suite">Control Compliance Suite</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group "> <a href="https://www.symantec.com/content/symantec/english/en/products/information-protection">Information Protection</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/information-protection/dlp/data-loss-prevention">Data Loss Prevention</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/information-protection/dlp/data-loss-prevention-casb">Data Loss Prevention and CloudSOC</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/information-protection/encryption">Encryption</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/information-protection/identity/validation-id-protection">VIP</a> </li> 
+            <li class="group "> <a href="https://www.symantec.com/content/symantec/english/en/products/messaging-security">Messaging Security</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/messaging-security/email-security-cloud">Email Security.cloud&nbsp;</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/messaging-security/messaging-gateway">Messaging Gateway&nbsp;</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group "> <a href="https://www.symantec.com/content/symantec/english/en/products/web-and-cloud-security">Web &amp; Cloud Security</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/web-and-cloud-security/secure-web-gateway-proxy-sg-and-asg">Secure Web Gateway</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/web-and-cloud-security/web-application-firewall-reverse-proxy">Web Application Firewall &amp; Reverse Proxy</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/web-and-cloud-security/atp-content-malware-analysis">ATP: Content &amp; Malware Analysis</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/web-and-cloud-security/network-performance-optimization">Network Performance Optimization</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/web-and-cloud-security/cloud-application-security-cloudsoc">Cloud Application Security </a> </li> 
+            <li class="group "> <a href="https://www.symantec.com/website-security/">Website Security</a> </li> 
+            <li> <a href="https://www.symantec.com/ssl-certificates/">SSL</a> </li> 
+            <li> <a href="https://www.symantec.com/complete-website-security/">Complete Website Securtiy&nbsp;</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group "> <a href="https://www.symantec.com/content/symantec/english/en/small-business">SMB</a> </li> 
+            <li> <a href="https://www.symantec.com/products/threat-protection/endpoint-family/endpoint-protection-cloud?inid=globalnav_scflyout_endpoint-protection-cloud">Endpoint Protection Cloud</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/products/information-protection/encryption">Encryption</a> </li> 
+            <li class="group "> <a href="http://buy.symantec.com/estore/clp/home?inid=biz_prd_flyout_shoponline">Shop Online</a> </li> 
+            <li class="group "> <a href="https://us.norton.com/?inid=biz_prd_flyout_nortonhome" target="_blank">Norton Products</a> </li> 
+            <li class="group "> <a href="https://www.symantec.com/content/symantec/english/en/products/products-az">Products A-Z</a> </li> 
+           </ul> 
+          </div> 
+         </section> 
+        </div></li> 
+       <li class="nav-item mega-1-col  "> <a href="https://www.symantec.com/content/symantec/english/en/services">Services</a> 
+        <!--  Use  style="max-height: 1000px;"in Edit mode for fly out
+		 --> 
+        <div class="menu"> 
+         <h2><a href="https://www.symantec.com/content/symantec/english/en/services">Services Home</a> 
+          <!--    Overview  --> </h2> 
+         <section> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/services/consulting-services">Consulting Services</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/services/customer-success-services">Customer Success Services</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/services/cyber-security-services">Cyber Security Services</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/services/education-services">Education Services</a> </li> 
+           </ul> 
+          </div> 
+         </section> 
+        </div></li> 
+       <li class="nav-item mega-3-col  "> <a href="https://www.symantec.com/content/symantec/english/en/solutions">Solutions</a> 
+        <!--  Use  style="max-height: 1000px;"in Edit mode for fly out
+		 --> 
+        <div class="menu"> 
+         <h2><a href="https://www.symantec.com/content/symantec/english/en/solutions">Solutions Home</a> 
+          <!--    Overview  --> </h2> 
+         <section> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group ">Topics </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/theme/symantec-cloud-security">Cloud Security</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/theme/encryption-everywhere">Encryption Everywhere</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/internet-of-things">Internet of Things</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/office365">Office 365 Security</a> </li> 
+            <li class="group "> <a href="https://www.bluecoat.com/the-blue-coat-security-platform-network-security-cloud" target="_blank">Blue Coat Solutions</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group ">Industries </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/automotive">Automotive</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/insurance">Cyber Insurance</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/education">Education</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/financial-services">Financial Services</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/global-service">Global Service Providers</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/industrial-control">Industrial Control Systems</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/healthcare">Healthcare</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/retail">Retail</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group ">Government </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/federal-gov">Federal Government</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions/state-local-gov">State &amp; Local</a> </li> 
+           </ul> 
+          </div> 
+         </section> 
+        </div></li> 
+       <li class="nav-item mega-4-col  "> <a href="https://support.symantec.com/en_US.html">Support Center</a> 
+        <!--  Use  style="max-height: 1000px;"in Edit mode for fly out
+		 --> 
+        <div class="menu"> 
+         <section> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group "> <a href="https://support.symantec.com/en_US.html" target="_blank">Technical Support</a> </li> 
+            <li> <a href="https://support.symantec.com/en_US/product-a-z.html" target="_blank">Product A-Z</a> </li> 
+            <li> <a href="https://mysymantec.force.com/customer/s/" target="_blank">My Symantec</a> </li> 
+            <li> <a href="https://symaccount.symantec.com/SymAccount/index.jsp?returnURL=https://licensing.symantec.com/acctmgmt/LicensePortal.jsp" target="_blank">Licensing Portal</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/support-center/essential-services" target="_self">Essential Support</a> </li> 
+            <li> <a href="https://www.bluecoat.com/support-services" target="_blank">Blue Coat Support</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group "> <a href="https://www.symantec.com/connect/" target="_blank">Symantec Connect</a> </li> 
+            <li> <a href="http://www.symantec.com/connect/forums/community-forums" target="_blank">Forums</a> </li> 
+            <li> <a href="http://www.symantec.com/connect/blogs" target="_blank">Blogs</a> </li> 
+            <li> <a href="http://www.symantec.com/connect/user-groups" target="_blank">User Groups</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group ">Manage Your Product </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/support-center/renewals/maintenance-overview" target="_self">Maintenance</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/support-center/renewals" target="_self">Renewals</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/support-center/upgrading-products" target="_self">Upgrading Products</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/support-center/getting-started" target="_self">Getting Started</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/support-center/policies" target="_self">Policies</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group "> <a href="https://www.symantec.com/content/symantec/english/en/services/education-services" target="_self">Training</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/services/education-services/instructor-led-training" target="_self">Instructor-led Training</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/services/education-services/training-courses" target="_self">Training Courses</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/services/education-services/certification" target="_self">Certification</a> </li> 
+            <li> <a href="https://www.symantec.com/content/elibrary/selibrary.html" target="_blank">E-Library</a> </li> 
+           </ul> 
+          </div> 
+         </section> 
+        </div></li> 
+       <li class="nav-item mega-3-col  "> <a href="https://www.symantec.com/security_response/">Security Center</a> 
+        <!--  Use  style="max-height: 1000px;"in Edit mode for fly out
+		 --> 
+        <div class="menu"> 
+         <h2><a href="https://www.symantec.com/security_response/">Security Center Home</a> 
+          <!--    Overview  --> </h2> 
+         <section> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group ">Updates </li> 
+            <li> <a href="https://www.symantec.com/security_response/definitions.jsp?inid=globalnav_scflyout_virusdef">Virus Definitions &amp; Updates</a> </li> 
+            <li> <a href="https://www.symantec.com/security_response/landing/threats.jsp?inid=globalnav_scflyout_threats">Threats, Risks &amp; Vulnerabilities</a> </li> 
+            <li> <a href="https://www.symantec.com/security_response/securityupdates/list.jsp?fid=security_advisory&amp;inid=globalnav_scflyout_secadvis">Security Advisories</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group ">Publications </li> 
+            <li> <a href="https://www.symantec.com/security-center/threat-report?inid=globalnav_scflyout_istr" target="_self">ISTR</a> </li> 
+            <li> <a href="http://www.symantec.com/connect/symantec-blogs/symantec-security-response?inid=globalnav_scflyout_blogs" target="_self">Blogs</a> </li> 
+            <li> <a href="https://www.symantec.com/security_response/publications/whitepapers.jsp?inid=globalnav_scflyout_whitepapers" target="_self">Security White Papers</a> </li> 
+           </ul> 
+          </div> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li class="group ">Tools </li> 
+            <li> <a href="https://www.symantec.com/security_response/removaltools.jsp?inid=globalnav_scflyout_removaltools" target="_self">Removal Tools</a> </li> 
+            <li> <a href="http://us.norton.com/nortonlive/spyware-virus-removal.jsp?inid=globalnav_scflyout_spywareremoval" target="_self">Spyware Removal</a> </li> 
+           </ul> 
+          </div> 
+         </section> 
+        </div></li> 
+       <li class="nav-item mega-1-col language-selector"><a href="javascript:void(0)"><i class="fa fa-globe"></i><span class="language-text">English</span></a> 
+        <div class="menu"> 
+         <h2><a href="javascript:void(0)"></a></h2> 
+         <section> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li><a href="javascript:void(0)" id="zh_CN">中文(简体)</a></li> 
+            <li><a href="javascript:void(0)" id="zh_TW">中文(繁體)</a></li> 
+            <li><a href="javascript:void(0)" id="cs_CZ">Česká</a></li> 
+            <li><a href="javascript:void(0)" id="en_US">English</a></li> 
+            <li><a href="javascript:void(0)" id="fr_FR">Français</a></li> 
+            <li><a href="javascript:void(0)" id="de_DE">Deutsch</a></li> 
+            <li><a href="javascript:void(0)" id="hu_HU">Magyar</a></li> 
+            <li><a href="javascript:void(0)" id="it_IT">Italiano</a></li> 
+            <li><a href="javascript:void(0)" id="ja_JP">日本語</a></li> 
+            <li><a href="javascript:void(0)" id="ko_KR">한국어</a></li> 
+            <li><a href="javascript:void(0)" id="pl_PL">Polski</a></li> 
+            <li><a href="javascript:void(0)" id="pt_BR">Português</a></li> 
+            <li><a href="javascript:void(0)" id="ru_RU">Pусский</a></li> 
+            <li><a href="javascript:void(0)" id="es_ES">Español</a></li> 
+           </ul> 
+          </div> 
+         </section> 
+        </div></li> 
+       <li class="nav-item mega-1-col  "> <a href="https://www.symantec.com/content/symantec/english/en/partner">Partner</a> 
+        <!--  Use  style="max-height: 1000px;"in Edit mode for fly out
+		 --> 
+        <div class="menu"> 
+         <section> 
+          <div class="sub-section"> 
+           <ul class="sub-list"> 
+            <li> <a href="http://partnerlocator.symantec.com/">Find a Partner</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/partners/programs/enroll-partner-program">Enroll in a Partner Program</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/partners/programs">Partner Programs</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/partners/products">Product Resources for Partners</a> </li> 
+            <li> <a href="https://www.bluecoat.com/partners" target="_blank">Blue Coat Partners</a> </li> 
+            <li class="group ">Login Required </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/partners/products/products-az">Partner Resources Products A-Z</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/partner/dashboard/financial-benefits">Financial Benefits</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/partner/licensing">Partner Licensing</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/partner/renewals">Partner Renewals</a> </li> 
+            <li> <a href="https://www.symantec.com/content/symantec/english/en/partner/training">Partner Training</a> </li> 
+           </ul> 
+          </div> 
+         </section> 
+        </div></li> 
+       <!--<div data-sly-include="siteselector.html" data-sly-unwrap></div> --> 
+      </ul> 
+      <!--Navigation Component container end--> 
+      <div class="top-bar-container"> 
+       <!-- Country/Language selector --> 
+       <div class="vs-custom-select country-language-selector"> 
+        <a class="country-identifier" href="https://www.symantec.com/content/symantec/english/en/global"> <i class="fa fa-globe"></i> <span>United States / English</span> </a> 
+       </div> 
+       <!-- /Country/Language selector --> 
+       <!-- Login Flyout --> 
+       <!-- Customer log in --> 
+       <div> 
+        <!-- Login --> 
+       </div> 
+      </div> 
+      <!-- End Login Flyout --> 
+      <!-- Search --> 
+      <div class="site-search"> 
+       <div class="search-box content search-menu"> 
+        <div class="field-container"> 
+         <form action="https://www.symantec.com:80/content/symantec/english/en/search.html"> 
+          <input type="submit" class="btn-submit btn-search" value="Go"> 
+          <div class="form-group"> 
+           <label for="search-field" class="sr-only">Search</label> 
+           <input type="search" class="autocomplete" id="search-field" name="search-field" placeholder="Search Symantec"> 
+          </div> 
+         </form> 
+        </div> 
+       </div> 
+      </div> 
+      <!-- /Search --> 
+     </nav> 
+    </div> 
+    <!-- /Main navigation --> 
+   </div> 
+  </div> 
+ </header> 
+ <!-- /Header --> 
+ <script type="text/javascript">
+
+	var reportOpen = false;
+	var loginOpen = false;
+	$(function() {
+		headContainer.openInModal(".report-breach>a",reportOpen);
+		headContainer.openInModal(".user-identifier>a",loginOpen);
+	});
+
+</script> 
+</div> 
+<div class="iparys_inherited"></div>
+	</div>
+	<div class="alert-bar" style="display: none">
+		
+	</div>
+	<div class="voyager">
+		<div class="my-symantec-header">
+    <header class="header">
+        <div id="menuButton" class="header-currentItem">
+            <i class="header-icon  iconColor fa-lg fa-fw"></i>Technical Support<i class="header-currentItem-cue fa-lg fa-fw fa-1x"></i>
+        </div>
+        <div class="header-menuBackground">
+            <div class="header-content">
+                <nav id="navMenu" class="header-content-box">
+                    <ul class="header-menu-items">
+                        <li class="header-menu-item">
+                            <a href="https://support.symantec.com/en_US.html"><i class="header-icon fa fa-home iconColor fa-lg fa-fw"></i>Support</a>
+                            
+                        </li>
+                    
+                        <li class="header-menu-item">
+                            <a class="my-symantec-url" href="https://mysymantec.force.com/customer/s"><i class="header-icon fa fa-user iconColor fa-lg fa-fw"></i>MySymantec</a>
+                            
+                        </li>
+                    
+                        <li class="header-menu-item">
+                            <a href="https://licensing.symantec.com/acctmgmt/LicensePortal.jsp"><i class="header-icon fa fa-toggle-on iconColor fa-lg fa-fw"></i>Licensing</a>
+                            
+                        </li>
+                    
+                        <li class="header-menu-item">
+                            <a href="https://support.symantec.com/en_US/product-a-z.html"><i class="header-icon fa fa-search-plus iconColor fa-lg fa-fw"></i>Products A-Z</a>
+                            
+                        </li>
+                    
+                        <li class="header-menu-item">
+                            <a href="https://support.symantec.com/en_US/quick-links.html"><i class="header-icon fa fa-magic iconColor fa-lg fa-fw"></i>Quick Links</a>
+                            
+                        </li>
+                    </ul>
+                    <ul class="header-menu-items isRight">
+                        <li class="header-menu-item login">
+                            <a href="javascript:void(0);">Login</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <div id="popUp" class="sfdcPopup">
+            <ul class="sfdcPopup-items">
+                <li class="sfdcPopup-item">
+                    <a href="https://login.symantec.com/sso/embedded/update" class="header-menu-item-link" target="_blank"> <i class="header-icon fa fa-user fa-lg fa-fw"></i>Profile</a>
+                </li>
+                <li class="sfdcPopup-item">
+                    <a href="https://support.symantec.com/content/unifiedweb/en_US/manage-subscriptions.html" class="header-menu-item-link"> <i class="header-icon fa fa-cog fa-lg fa-fw"></i>Subscriptions</a>
+                </li>
+                <li class="sfdcPopup-item">
+                    <a href="https://support.symantec.com/content/unifiedweb/en_US.html" class="header-menu-item-link logout"> <i class="header-icon fa fa-sign-out fa-lg fa-fw"></i>Logout</a>
+                </li>
+            </ul>
+        </div>
+    </header>
+    <div class="modal fade login-modal" role="dialog">
+        <div class="modal-dialog">
+            <div class="login-modal-content modal-content">
+                <div class="modal-header">
+                    Login
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="clearfix" role="login" method="post" action="https://support.symantec.com/SymAccount/processLogin.do" autocomplete="off" novalidate="novalidate">
+                        <input type="text" name="uid" id="uid" placeholder="Email Address" class="required email form-control uiInput uiInputText tt-input">
+                            <input type="password" name="userPassword" id="userPassword" placeholder="Password" class="required form-control uiInput uiInputText tt-input">
+                                <input type="button" name="btn-login" id="btn-login" class="pull-right sfdcStandardButton isAction" value="Login">
+                                    <span class="pull-left forgot-password"><a href="https://support.symantec.com/sso/embedded/update" target="_blank">Forgot Password?</a></span>
+                                    <input type="hidden" value="http://support.symantec.com/content/unifiedweb/en_US/article.TECH225180.html" name="returnURL" id="returnURL">
+                                        <input type="hidden" value="" name="logoutURL">
+                                            </form>
+                    <div class="login-help">
+                        Don't have a SymAccount?
+                        <a href="https://support.symantec.com/sso/embedded/update?returnURL=http%3A%2F%2Fsupport.symantec.com%2Fcontent%2Funifiedweb%2Fen_US%2Farticle.TECH225180.html" target="_blank">Create a SymAccount now!'</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="text/javascript">
+        pValidSession = typeof (validSession) === 'undefined' ? 'NO' : validSession;
+        pFirstName = typeof (firstName) === 'undefined' ? '' : firstName;
+        pLastName = typeof (lastName) === 'undefined' ? '' : lastName;
+        pUserId = typeof (userId) === 'undefined' ? '' : userId;
+        var isSamlEnabled = "true";
+        var loginText = "Login";
+        var profileText = "Profile";
+        var profileHyperLink = "https://login.symantec.com/sso/embedded/update";
+        var logoutText = "Logout";
+        var logoutHyperLink = "https://support.symantec.com/content/unifiedweb/en_US.html";
+        var manageSubscriptionsLinkText = "Subscriptions";
+        var manageSubscriptionsLink = "/content/unifiedweb/en_US/manage-subscriptions.html";
+        args.login = {
+            pValidSession : pValidSession,
+            pFirstName : pFirstName,
+            pLastName : pLastName,
+            pUserId : pUserId,
+            isSamlEnabled : isSamlEnabled,
+            loginText : loginText,
+            profileText : profileText,
+            profileHyperLink : profileHyperLink,
+            logoutText : logoutText,
+            logoutHyperLink : logoutHyperLink,
+            manageSubscriptionsLinkText : manageSubscriptionsLinkText,
+            manageSubscriptionsLink : manageSubscriptionsLink
+        };
+    </script>
+</div>
+		
+     <div class="voyager-masthead"><div class="masthead darkestGradient" style="background-image: none">
+	<div class="masthead-content clearfix">
+		<div class="feature center">
+			<h1 class="headingstyleArticle">Solaris 10 command "format" appears hang</h1>
+			
+			
+			<div class="article-meta clearfix" style="padding-bottom: 0px;">
+				<span><i class="fa fa-file-text-o"></i>TECH225180</span>
+				<span><i class="fa fa-calendar"></i>October 2nd, 2014</span>
+				<span><i class="fa fa-globe"></i><a href="http://www.symantec.com/docs/TECH225180">http://www.symantec.com/docs/TECH225180</a></span>
+			</div>
+			
+		</div>
+		
+	</div>
+</div></div>
+     <div class="voyager-breadcrumbs"><div class="breadcrumb-navigation sfdcStandardRowComponent-content">
+	<div class="sfdcStandardRowComponent-box">
+		<a href="https://www.symantec.com/"><i class="fa fa-home"></i></a>
+		
+	
+		
+		<span>  <a href="https://support.symantec.com/en_US.html">Support</a> </span>
+	
+		
+		<span> / <a href="https://support.symantec.com/en_US/article.TECH225180.html">Solaris 10 command "format" appears hang</a> </span>
+	</div>
+</div></div>
+     <div class="voyager-content"><div class="sfdcStandardRowComponent article" style="padding-top:0;">
+	<div class="sfdcStandardRowComponent-content clearfix">
+		<div class="sfdcStandardRowComponent-box col-sm-12 col-md-3 pull-right">
+			<div class="article-admin">
+				<form name="rateThisArticleForm" id="rateThisArticleForm" method="post" class="rateThisArticleFormNew" novalidate="novalidate">
+				<input type="hidden" name="documentId" value="TECH225180">
+				<input type="hidden" name="locale" value="en_US">
+				<div class="article-admin-element articleRating">
+					<div class="article-admin-element-icon">
+						<i class="fa fa-star"></i>
+					</div>
+					<div class="article-admin-element-title" id="rateArticleMessage">
+						Did this article resolve your issue?
+					</div>
+				</div>
+				
+				<div class="article-admin-element articleFeedback">
+					<div class="article-admin-element-icon"></div>
+                <div class="rateThisArticle" id="rateThisArticle" style="width:100%">
+				
+				    	<div class="article-admin-element-title article-admin-element-title-feedbackarticle" id="article-admin-element-title-feedbackarticle">
+						<input type="submit" name="surveyresponse_Q1::A2" id="articleFeedbackNo" class="questionsection sfdcStandardButton isAction articleFeedbackButton feedback-articlebutton-left" value="No">
+						<!-- <input type="submit" name="articleFeedbackNo" id="articleFeedbackNo" class="questionsection sfdcStandardButton isAction articleFeedbackButton" value="No"/> -->
+                       	 
+                        
+						<input type="submit" name="surveyresponse_Q1::A1" id="articleFeedbackYes" class="questionsection sfdcStandardButton isAction articleFeedbackButton feedback-articlebutton-left" value="Yes" style="display: none;">
+						<!-- <input type="submit" name="articleFeedbackNo" id="articleFeedbackNo" class="questionsection sfdcStandardButton isAction articleFeedbackButton" value="No"/> -->
+                       	 <div id="feedbackThanksMessageNew" class="feedbackMessageDiv article-admin-element-title"><h4 class="feedbackMessageheading">Thank you for your feedback!</h4></div>
+                        </div>
+                       	
+               
+				    	
+                       	
+               
+				    	
+                       	<div class="provideFeedback article-admin-element-title" id="provideFeedback"><h4 class="provideFeedbackHeading">Provide feedback on this article</h4></div>
+               
+				    	
+                       	
+               
+               </div>
+               </div>
+             	<div class="feedbackThanksMsg"></div>
+             	
+               <div>
+               <div>
+               <a href="https://mysymantec.force.com/customer/s/createcase" class="requiredAssistance-a">
+				<div class="article-admin-element requiredAssistance" id="requiredAssistance">
+					<div class="article-admin-element-icon "></div>
+					<div class="provideFeedback article-admin-element-title" id="requiredAssistance"><h4 class="provideFeedbackHeading requestAssitanceheading">Request Assistance</h4></div>
+				</div>
+				</a>
+				</div>
+				<div name="rateThisArticleForm" id="rateThisArticleForm" class="rateThisArticleForm">
+				<div class="rateThisArticle" id="rateThisArticle">
+				
+				
+				
+				
+				
+				
+				
+				<div class="feedbackinputbox">
+					<textarea placeholder="Please provide feedback." id="feedbackinput" name="surveyresponse_Q3::A1" class="feedback_input required surveyresponse_Q3 form-control uiInput uiInputText tt-input" aria-required="true"></textarea>
+				</div>
+				
+				
+				
+				<div class="feedbackinputbox">
+						<input type="text" placeholder="email@email.com (optional)" name="surveyresponse_Q4::A1" id="emailbox" value="" class="emailbox email surveyresponse_Q4 form-control uiInput uiInputText tt-input">
+				</div>
+				
+				</div>
+					 <div class="article-admin-element feedbackSubmitClear">
+				    	<div class="article-admin-element-title feedback-Button">
+						 	<input type="reset" name="feedbackClear" id="feedbackClear" class="feedbackSubmitButton-borderRight questionsection  feedbackSubmitButton isAction" value="Clear" style="display: none;">
+							<input type="submit" name="feedbackSubmit" id="feedbackSubmit" class="questionsection  feedbackbutton feedbackSubmitButton isAction" value="Submit" style="display: none;">
+	              		</div>
+				</div>
+				</div>
+				  
+				</div></form>
+				
+				
+				<div class="article-admin-element articlePrint">
+					<div class="article-admin-element-icon">
+						<i class="fa fa-print"></i>
+					</div>
+					<div class="article-admin-element-title">
+						Print Article
+					</div>
+				</div>
+				
+				
+				
+				<div class="article-admin-element subscribeToArticle">
+					<div class="article-admin-element-icon">
+						<i class="fa fa-envelope-o"></i>
+					</div>
+					<div class="article-admin-element-title">
+						Subscribe to this Article
+					</div>
+				</div>
+				<div class="article-admin-element-reveal"></div>
+				<div class="article-admin-element manageSubscriptions">
+					<div class="article-admin-element-icon">
+						<i class="fa fa-cog"></i>
+					</div>
+					<div class="article-admin-element-title">
+						Manage your Subscriptions
+					</div>
+				</div>
+				<div class="article-admin-element searchAgain">
+					<div class="article-admin-element-icon">
+						<i class="fa fa-search"></i>
+					</div>
+					<div class="article-admin-element-title provideFeedbackClick">
+						Search Again
+					</div>
+				</div>
+				<div class="article-admin-element-reveal searchAgainReveal" style="display: block;">
+					<form name="searchAgain" id="searchAgain" method="get" action="https://support.symantec.com/en_US/search.html">
+						<input type="hidden" id="product" name="product" value="">
+						<div class="searchSection">
+							<div class="form-group clearfix">
+								<input type="text" name="keyword" placeholder="Search Articles" class="input search-searchbox-searchentry required uiInput uiInputText tt-input">
+								<button id="doSearch" class="uiButton sfdcStandardButton isAction isSearch" accesskey="" type="button">
+									<i class="fa fa-search fa-lg"></i>
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="article-parsys">
+</div>
+		</div>
+	 	 
+        <div class="sfdcStandardRowComponent-box col-sm-12 col-md-9 pull-left">
+     		<div class="article-content">
+				
+				
+				
+				
+				
+				
+					
+						<div class="section-title">
+							<h3>Situation</h3>
+						</div>
+						<div class="article-authored">
+							<p>"format" command appears hang.</p>
+<p>Unable to do anything with format, for example, printing the partition  table, modifying the partition table of the device, la belling the disk,  etc.</p>
+						</div>
+											
+						
+						
+					
+						<div class="section-title">
+							<h3>Error</h3>
+						</div>
+						<div class="article-authored">
+							<p>No errors produced, as it hangs.</p>
+<p>&nbsp;</p>
+						</div>
+					
+					
+						<div class="section-title">
+							<h3>Cause</h3>
+						</div>
+						<div class="article-authored">
+							<p>The 'format' utility has a new feature beginning in Solaris 10 6/06 Operating System called 'in use checking'.</p>
+<p>This feature is enabled by default.</p>
+						</div>
+					
+					
+						<div class="section-title">
+							<h3>Solution</h3>
+						</div>
+						<div class="article-authored">
+							<p>Any time the 'format' utility is run on the disk, it performs many verification/checks on the disk itself (does it contain a slice that is mounted, is it part of SVM metadevice, is it being used by ZFS filesystem, is it being used by swap etc...)</p>
+<p><br>
+So, if there are lots of devices, or if there were some kind of issue on the device itself (for example, differences on what the label says and what the actual device stated), 'format' command may appears hang as it does all sort of checking in the background.</p>
+<p>So, to avoid this kind of situation, there is an environment variable 'NOINUSE_CHECK' which can be set / turned on, prior of running the 'format' command:</p>
+<p><span style="font-family: &#39;courier new&#39;, courier;"># NOINUSE_CHECK=1</span><br>
+<span style="font-family: &#39;courier new&#39;, courier;"># export NOINUSE_CHECK</span><br>
+<span style="font-family: &#39;courier new&#39;, courier;"># format</span></p>
+<p>Once that is set, the 'format' command will proceed with no time by passing all of the verifications and checking.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p><br><p><b>Applies To</b><br></p><p>Solaris 10 6/06 and above or if patch ID: 118833-36 (or higher) has been applied</p>
+						</div>
+					
+			
+				
+				
+				
+				
+				
+
+				<br>
+				<div class="article-authored">
+					<p>
+						<strong> </strong></p><p><strong>Terms of use for this information are found in Legal Notices.</strong></p><strong>
+
+
+</strong>
+					<p></p>
+				</div>
+			</div>
+		</div>
+		<div id="article-translated-modal" class="modal fade">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<i class="fa fa-times"></i>
+						</button>
+						<h4 class="modal-title">Translated Content</h4>
+						<h4 class="modal-title">This is machine translated content</h4>
+					</div>
+					<div class="modal-body" id="article-translated-container"></div>
+				</div>
+			</div>
+		</div>
+		<div id="subscribe-modal" class="modal fade">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<img src="./Solaris 10 command _format_ appears hang_files/symantec.gif" class="modal-title">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<i class="fa fa-times"></i>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p>
+							<strong>Login to Subscribe</strong>
+						</p>
+						<p>
+							Please login to set up your subscription.
+						</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="pull-right sfdcStandardButton isAction" data-dismiss="modal">
+							Close
+						</button>
+						<button type="button" class="pull-right sfdcStandardButton isAction" id="btnModalLogin">
+							Login
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var locale = "en_US";
+		var sourceLanguage = "en";
+		if (locale.indexOf("_") > -1) {
+			var localeArray = locale.split("_");
+			sourceLanguage = localeArray[0];
+		}
+		var articlePageUrl = "https://support.symantec.com/en_US/article";
+		var productReferenceListServlet = "/bin/unifiedweb/productReferenceListServlet";
+		var relatedArticlesServlet = "/bin/unifiedweb/relatedArticlesServlet";
+		var availableLanguagesServlet = "/bin/unifiedweb/availableLanguagesServlet";
+		var articleTranslationServlet = "/bin/unifiedweb/articleTranslationServlet";
+		var products = "";
+		var relatedArticles = "";
+		var noProductsError = "No Products Found";
+		var noRelatedArticlesError = "No Articles Found";
+
+		args.articleContent = {
+			locale : locale,
+			articlePageUrl : articlePageUrl,
+			productReferenceListServlet : productReferenceListServlet,
+			relatedArticlesServlet : relatedArticlesServlet,
+			availableLanguagesServlet : availableLanguagesServlet,
+			articleTranslationServlet : articleTranslationServlet,
+			products : products,
+			relatedArticles : relatedArticles,
+			sourceLanguage : sourceLanguage,
+			noProductsError : noProductsError,
+			noRelatedArticlesError : noRelatedArticlesError
+		};
+
+		var subscribedText = "You are already subscribed to this Article.";
+		var manageSubscriptionsLink = "/content/unifiedweb/en_US/manage-subscriptions.html";
+		var subscriptionSuccessMessage = "You have been successfully subscribed.";
+		var subscriptionErrorMessage = "An error occurred subscribing you to this Article.";
+		var articleId = "TECH225180";
+		var subscriptionServlet = "/bin/unifiedweb/subscriptionservlet";
+		args.subscribeToArticle = {
+			subscribedText : subscribedText,
+			manageSubscriptionsLink : manageSubscriptionsLink,
+			subscriptionSuccessMessage : subscriptionSuccessMessage,
+			subscriptionErrorMessage : subscriptionErrorMessage,
+			articleId : articleId,
+			subscriptionServlet : subscriptionServlet
+		};
+	</script>
+	<script type="text/javascript">
+		var rateThisArticleServlet = "/bin/unifiedweb/rateThisArticleServlet";
+		var feedbackMessage = "<div class=article-admin-element requiredAssistance id=feedbackThanksMessage><div class=article-admin-element-icon></div><div class=article-admin-element-title style=background-color:#DCDCDC!important; id=feedbackThanksMsg><h4 class=thankYouFeedbackMessage>Thank you for your feedback!</h4></div></div>";
+		args.rateThisArticle = {
+			rateThisArticleServlet : rateThisArticleServlet,
+			feedbackMessage : feedbackMessage
+		};
+	</script>
+</div></div>
+
+		<div class="my-symantec-footer"><div class="parbase responsiveColumnControl section">
+<div class="sfdcStandardRowComponent ">
+	<div class="sfdcStandardRowComponent-content">
+		
+		
+               <div class="sfdcStandardRowComponent-box col-xs-12">
+                    <div class="rte section">
+
+	<h2 style="text-align: center;">Didn't find the article you were looking for? Try these resources.</h2>
+
+
+
+
+</div>
+
+
+               </div>
+          
+		
+		
+		
+		
+		
+	</div>
+</div></div>
+<div class="parbase responsiveColumnControl section">
+<div class="sfdcStandardRowComponent ">
+	<div class="sfdcStandardRowComponent-content">
+		
+		
+		
+		
+		
+		
+		
+			<div class="sfdcStandardRowComponent-box col-xs-12 col-md-3">
+				<div class="textAndFontAwesome parbase section"><div class="sfdcStandardBox isLight">
+	<a href="https://support.symantec.com/en_US/product-a-z.html" target="_self">
+	
+	<div class="text-and-fontawesome-icon circle">
+		<i class="sfdcStandardBox-icon fa fa-desktop fa-2x"></i>
+	</div>
+	<div class="sfdcStandardBox-title">
+		Supported Products A-Z
+	</div> </a>
+	<div class="sfdcStandardBox-rteContent">
+		<p style="text-align: center;">Get support for your product, with downloads, knowledge base articles, documentation, and more.</p>
+
+	</div>
+</div></div>
+
+
+			</div>
+			<div class="sfdcStandardRowComponent-box col-xs-12 col-md-3">
+				<div class="textAndFontAwesome parbase section"><div class="sfdcStandardBox isLight">
+	<a href="https://www.symantec.com/services/education-services" target="_self">
+	
+	<div class="text-and-fontawesome-icon circle">
+		<i class="sfdcStandardBox-icon fa fa-graduation-cap fa-2x"></i>
+	</div>
+	<div class="sfdcStandardBox-title">
+		Education Services
+	</div> </a>
+	<div class="sfdcStandardBox-rteContent">
+		<p style="text-align: center;">Maximize your product competency and validate technical knowledge to gain the most benefit from your IT investments.</p>
+
+	</div>
+</div></div>
+
+
+			</div>
+			<div class="sfdcStandardRowComponent-box col-xs-12 col-md-3">
+				<div class="textAndFontAwesome parbase section"><div class="sfdcStandardBox isLight">
+	<a href="https://submit.symantec.com/websubmit/basic.cgi" target="_self">
+	
+	<div class="text-and-fontawesome-icon circle">
+		<i class="sfdcStandardBox-icon fa fa-medkit fa-2x"></i>
+	</div>
+	<div class="sfdcStandardBox-title">
+		Submit a Threat
+	</div> </a>
+	<div class="sfdcStandardBox-rteContent">
+		<p style="text-align: center;">Submit a suspected infected file&nbsp;to Symantec.</p>
+
+	</div>
+</div></div>
+
+
+			</div>
+			<div class="sfdcStandardRowComponent-box col-xs-12 col-md-3">
+				<div class="textAndFontAwesome parbase section"><div class="sfdcStandardBox isLight">
+	<a href="https://submit.symantec.com/false_positive/" target="_self">
+	
+	<div class="text-and-fontawesome-icon circle">
+		<i class="sfdcStandardBox-icon fa fa-minus-square fa-2x"></i>
+	</div>
+	<div class="sfdcStandardBox-title">
+		Submit a False Positive
+	</div> </a>
+	<div class="sfdcStandardBox-rteContent">
+		<p style="text-align: center;">Report a suspected erroneous detection (false positive).</p>
+
+	</div>
+</div></div>
+
+
+			</div>
+		
+	</div>
+</div></div>
+<div class="section"><div class="new"></div>
+</div><div class="iparys_inherited"><div class="parsys my-symantec-footer iparsys"></div>
+</div>
+</div>
+	</div>
+	<div class="symantec-footer">
+		<div> 
+ <div class="parbase footercontainer"> 
+  <!-- Footer Container Start --> 
+  <!-- Footer --> 
+  <footer class="supplemental"> 
+   <div class="content"> 
+    <!-- Footer Logo --> 
+    <!-- Logo --> 
+    <div class="logo"> 
+     <a href="https://www.symantec.com/content/symantec/english/en"> <img src="./Solaris 10 command _format_ appears hang_files/symantec-logo-footer.png" alt="Symantec"></a> 
+    </div> 
+    <!-- /Logo --> 
+    <!-- Footer Logo --> 
+    <div class="footer-assets"> 
+     <!-- Site Selector --> 
+     <!-- /Site Selector --> 
+     <div class="footer-links"> 
+      <div class="footer-links"> 
+       <div class="link-column"> 
+        <ul> 
+         <sly> 
+          <sly> 
+           <li><h6> Information for:</h6></li> 
+          </sly> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en" target="_self"> Enterprise</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/small-business" target="_self"> Small Business</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="http://www.norton.com/" target="_blank"> Consumer (Norton)</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.lifelock.com/" target="_blank"> Consumer (LifeLock)</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/partners" target="_self"> Partners</a> </li> 
+         </sly> 
+        </ul> 
+       </div> 
+       <div class="link-column"> 
+        <ul> 
+         <sly> 
+          <sly> 
+           <li><h6> Our Offerings:</h6></li> 
+          </sly> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/products" target="_self"> Products</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/products/products-az" target="_self"> Products A-Z</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/services" target="_self"> Services</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/solutions" target="_self"> Solutions</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/support-center/buying-programs" target="_self"> Buying Programs</a> </li> 
+         </sly> 
+        </ul> 
+       </div> 
+       <div class="link-column"> 
+        <ul> 
+         <sly> 
+          <sly> 
+           <li><h6> Connect with us:</h6></li> 
+          </sly> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://support.symantec.com/" target="_self"> Support</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/connect/" target="_self"> Connect Communities</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/security-center" target="_self"> Security Center</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="http://partnerlocator.symantec.com/" target="_self"> Find a Partner</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/about/events" target="_self"> Events</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/about/webcasts" target="_self"> Webcasts</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/contact-us" target="_self"> Contact Us</a> </li> 
+         </sly> 
+        </ul> 
+       </div> 
+       <div class="link-column"> 
+        <ul> 
+         <sly> 
+          <sly> 
+           <li> <a href="https://www.symantec.com/content/symantec/english/en/about" target="_self"><h6> About Symantec</h6></a> </li> 
+          </sly> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/about/customerone" target="_self"> CustomerOne</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/products/performance-center" target="_self"> Performance Center</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/about/newsroom" target="_self"> Newsroom</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/about/careers" target="_self"> Careers</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="http://investor.symantec.com/About/Investors/default.aspx" target="_self"> Investor Relations</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/about/corporate-responsibility" target="_self"> Corporate Responsibility</a> </li> 
+         </sly> 
+         <sly> 
+          <li> <a href="https://www.symantec.com/content/symantec/english/en/theme/blue-coat-acquisition" target="_self"> Blue Coat Acquisition</a> </li> 
+         </sly> 
+        </ul> 
+       </div> 
+      </div> 
+     </div> 
+     <div class="footer-extra"> 
+      <!-- Social Links --> 
+      <div class="social-media-links follow-us "> 
+       <ul> 
+        <li> 
+         <sly> 
+          <a href="https://twitter.com/symantec" class="twitter" target="_blank"> <span class="fa-stack fa-lg"> <i class="fa fa-twitter fa-stack-1x fa-inverse"></i> </span> </a> 
+         </sly> </li> 
+        <li> 
+         <sly> 
+          <a href="https://www.facebook.com/Symantec" class="facebook" target="_blank"> <span class="fa-stack fa-lg"> <i class="fa fa-facebook fa-stack-1x fa-inverse"></i> </span> </a> 
+         </sly> </li> 
+        <li> 
+         <sly> 
+          <a href="https://www.linkedin.com/company/1231" class="linkedin" target="_blank"> <span class="fa-stack fa-lg"> <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i> </span> </a> 
+         </sly> </li> 
+        <li> 
+         <sly> 
+          <a href="https://plus.google.com/+symantec/posts" class="google" target="_blank"> <span class="fa-stack fa-lg"> <i class="fa fa-google fa-stack-1x fa-inverse"></i> </span> </a> 
+         </sly> </li> 
+        <li> 
+         <sly> 
+          <a href="https://www.youtube.com/user/symantec/home" class="youtube" target="_blank"> <span class="fa-stack fa-lg"> <i class="fa fa-youtube fa-stack-1x fa-inverse"></i> </span> </a> 
+         </sly> </li> 
+       </ul> 
+      </div> 
+      <!-- /Social Links --> 
+      <!-- Norton Seal - not showing up in the browser --> 
+      <div class="norton-seal"> 
+       <script type="text/javascript" src="./Solaris 10 command _format_ appears hang_files/getseal"></script> 
+      </div> 
+      <!-- /Norton Seal --> 
+     </div> 
+    </div> 
+   </div> 
+  </footer> 
+  <footer class="additional"> 
+   <div class="content"> 
+    <p class="copyright">© 1995–2017 Symantec Corporation</p> 
+    <ul> 
+     <li><a href="https://www.symantec.com/content/symantec/english/en/about">About Symantec</a></li> 
+     <li><a href="https://www.symantec.com/content/symantec/english/en/about/careers">Careers</a></li> 
+     <li><a href="https://www.symantec.com/content/symantec/english/en/about/newsroom">News</a></li> 
+     <li><a href="https://www.symantec.com/content/symantec/english/en/site-map">Sitemap</a></li> 
+     <li><a href="https://www.symantec.com/content/symantec/english/en/about/legal">Legal</a></li> 
+     <li><a href="https://www.symantec.com/content/symantec/english/en/about/legal/privacy-policy">Privacy</a></li> 
+     <li><a href="https://www.symantec.com/content/symantec/english/en/about/legal/privacy-policy">Cookies</a></li> 
+     <li><a href="https://www.symantec.com/content/symantec/english/en/contact-us">Contact Us</a></li> 
+    </ul> 
+   </div> 
+  </footer> 
+  <!-- /Footer --> 
+  <!-- Footer Container End --> 
+  <!-- this is site wrapper closing tag --> 
+ </div> 
+ <div class="new section"> 
+ </div> 
+ <div class="iparys_inherited"> 
+ </div> 
+</div>
+	</div>
+	<div>
+		
+
+
+<!-- <a href="#" onClick="OOo.oo_launch(event, 'oo_inline_feedback')"><img src="/etc/designs/unifiedweb/clientlib/onlineopinionV5/oo_icon.gif" border="0" title="Feedback" /> Feedback</a> -->
+
+
+<link rel="stylesheet" type="text/css" href="./Solaris 10 command _format_ appears hang_files/oo_style.css">
+
+
+<script language="javascript" type="text/javascript" charset="windows-1252" src="./Solaris 10 command _format_ appears hang_files/oo_engine.min.js"></script>
+
+
+<script language="javascript" type="text/javascript" charset="windows-1252" src="./Solaris 10 command _format_ appears hang_files/oo_conf_inline_tab.js"></script>
+
+	</div>
+	<span id="symantecheader" style="display: none"></span>
+	<span id="symantecfooter" style="display: none"></span>
+	<span id="symantecalerts" style="display: none" class="alert-bar"></span>
+	<div class="modal modal-static fade" id="salesforceLoadingModal" role="dialog" style="display: none;">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="loadingCon global siteforceLoadingBalls">
+						<span class="loadingBall first"></span>
+						<span class="loadingBall second"></span>
+						<span class="loadingBall third"></span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade page-language-modal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<img src="./Solaris 10 command _format_ appears hang_files/symantec.gif" class="modal-title">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<i class="fa fa-times"></i>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>
+						<strong>Set default language</strong>
+					</p>
+					<p>
+						Do you wish to save this as your future site?
+					</p>
+				</div>
+				<div class="modal-footer clearfix">
+					<button type="button" class="pull-right sfdcStandardButton isAction">
+						No
+					</button>
+					<button type="button" class="pull-right sfdcStandardButton isAction">
+						Yes
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+        
+	<script type="text/javascript">
+		var tajs = "https://www.symantec.com/etc/designs/symantec/clientlib/js/vendor/jquery.autocomplete.js";
+		var symantecjs = "https://www.symantec.com/etc/designs/symantec/clientlib/js/symantec-devkit.js";
+		var symanteccss = "https://www.symantec.com/etc/designs/symantec/clientlib/css/devkit.css";
+		var facss = "//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css";
+		args.devKit = {
+			tajs : tajs,
+			symantecjs : symantecjs,
+			symanteccss : symanteccss,
+			facss : facss
+		};
+		window.symcDataLayer = {};
+		window.symcDataLayer.om = {
+			"account" : "veritasnonconsumer,symantecenterprisesupport",
+			"content_title" : "Solaris 10 command \"format\" appears hang",
+			"site_sub_section" : "articles",
+			"site_sub_sub_section" : "tech",
+			"site_country" : "us",
+			"site_language" : "en",
+			"content_format" : "html",
+			"content_type" : "page",
+			"signed_in" : "signed out",
+			"site_section" : "support",
+			"page_name" : "225180"
+		};
+	</script>
+	
+    
+<script type="text/javascript" src="./Solaris 10 command _format_ appears hang_files/jquery.js"></script>
+<script type="text/javascript" src="./Solaris 10 command _format_ appears hang_files/utils.js"></script>
+<script type="text/javascript" src="./Solaris 10 command _format_ appears hang_files/granite.js"></script>
+<script type="text/javascript" src="./Solaris 10 command _format_ appears hang_files/jquery(1).js"></script>
+<script type="text/javascript" src="./Solaris 10 command _format_ appears hang_files/shared.js"></script>
+
+
+
+	
+    
+<script type="text/javascript" src="./Solaris 10 command _format_ appears hang_files/clientlib.js"></script>
+
+
+
+	
+	<script src="./Solaris 10 command _format_ appears hang_files/s_code_sym.js"></script>
+	<script type="text/javascript">
+
+		var isSupportedBrowser=detectbrowser();
+		
+		var IsOSupported=detectOS();
+		
+		var isMobile= detectmob();
+		
+		if (isSupportedBrowser == false)
+		{
+
+		    var isMsgDisplay =checkCookie();
+
+		}
+
+
+</script>
+
+    
+<div id="oo_tab" class="oo_tab_right" tabindex="0"><div><a></a><span></span></div><div class="screen_reader">Activate to launch comment card</div></div></body></html>

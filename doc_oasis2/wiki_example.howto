@@ -1,0 +1,12 @@
+%TWISTY{
+mode="div"
+showlink="Example"
+hidelink="Hide information"
+showimgleft="%ICONURLPATH{toggleopen-small}%"
+hideimgleft="%ICONURLPATH{toggleclose-small}%"
+class="twikiHelp"
+}%
+<verbatim>
+</verbatim>
+%ENDTWISTY%
+

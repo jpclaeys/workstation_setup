@@ -1,0 +1,58 @@
+How do I open and manage a support case on the Customer Portal?
+
+Support Cases
+-------------
+There are three ways to navigate to the Open Support Case screen.
+
+1. Click on Support Cases located on white bar located at the top of the page then click Open a New Support Case
+2. Click on Open a Support Case located on the Red Hat Customer Portal
+3. Click on Get Support in the Products & Services drop down menu. It will navigate you to Red Hat Customer Experience & Engagement - Red Hat Customer Portal. Then, click on Open Support Case.
+
+
+Creating a New Case
+--------------------
+Login with your Red Hat Login when prompted (for help with your Red Hat Login, see: The importance of the Red Hat (RHN) login)
+Select the product you are filing the case about.
+Then, select the appropriate version from the list.
+Choose a descriptive sentence for the Case Name field to identify the primary question or problem you are trying to address.
+Use the Case Description field to enter as much information as possible about the problem in order to enable Red Hat support engineers to resolve your issue as quickly as possible.
+It's advised to attach logs or other diagnostic files to help support engineers resolve your issues quickly. You can do so by clicking on the Attach Files button located under case description.
+Choose a Support Level. See Production Support Service Level Agreement - Red Hat Customer Portal for more information.
+Choose an appropriate severity for the issue. See Red Hat Support Severity Level Definitions - Red Hat Customer Portal for more information.
+You may specify users to receive e-mail notifications about this support case (optional).
+Choose a Case Group to file your case into (optional).
+Click Submit on the bottom left. Please note, all required fields must be completed before you can hit submit. If the submit button is disabled, check that all required fields are complete.
+Once you have submitted the form, your case is filed and you are presented with the Case Details page.
+
+---------------------------------------------------------------------------------------------------
+RedHat site: 
+
+https://access.redhat.com/support
+
+Products & Services
+
+In the support  section, select "Get Support"
+
+Open a Case
+
+---------------------------------------------------------------------------------------------------
+
+Product:
+Red Hat Enterprise Linux
+
+Product Version:
+6.7
+
+Case Type:
+Other
+
+Hostname:
+sykes
+
+Support level
+Standard
+
+NB: 
+attach the output of the sosreport
+
+

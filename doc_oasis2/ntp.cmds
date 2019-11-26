@@ -1,0 +1,102 @@
+22.13. CHECKING THE STATUS OF NTP
+
+To check if ntpd is configured to run at system start, issue the following command:
+~]$ chkconfig --list ntpd
+ntpd           	0:off	1:off	2:on	3:on	4:on	5:on	6:off
+
+By default, when ntpd is installed, it is configured to start at every system start.
+
+To check if ntpd is running, issue the following command:
+~]$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++clock.util.phx2 .CDMA.           1 u  111  128  377  175.495    3.076   2.250
+*clock02.util.ph .CDMA.           1 u   69  128  377  175.357    7.641   3.671
+ ms21.snowflakeh .STEP.          16 u    - 1024    0    0.000    0.000   0.000
+ rs11.lvs.iif.hu .STEP.          16 u    - 1024    0    0.000    0.000   0.000
+ 2001:470:28:bde .STEP.          16 u    - 1024    0    0.000    0.000   0.000
+
+The command lists connected time servers and displays information indicating when they were last polled and the stability of the replies. The column headings are as follows:
+
+. remote and refid: remote NTP server, and its NTP server
+. st: stratum of server
+. t: type of server (local, unicast, multicast, or broadcast)
+. poll: how frequently to query server (in seconds)
+. when: how long since last poll (in seconds)
+. reach: octal bitmask of success or failure of last 8 queries (left-shifted); 377 = 11111111 = all     recent queries were successful; 257 = 10101111 = 4 most recent were successful, 5 and 7 failed
+. delay: network round trip time (in milliseconds)
+. offset: difference between local clock and remote clock (in milliseconds)
+. jitter: difference of successive time values from server (high jitter could be due to an unstable clock or, more likely, poor network performance)
+
+To obtain a brief status report from ntpd, issue the following command:
+
+~]$ ntpstat
+unsynchronised
+  time server re-starting
+   polling server every 64 s
+
+~]$ ntpstat
+synchronised to NTP server (10.5.26.10) at stratum 2
+   time correct to within 52 ms
+   polling server every 1024 s
+
+---------------------------------------------------------------------------------------------------
+ntp setup on fedora
+---------------------------------------------------------------------------------------------------
+
+systemctl list-unit-files | grep enabled
+
+
+[claeyje@muscadet log]$ systemctl status ntpd
+● ntpd.service - Network Time Service
+   Loaded: loaded (/usr/lib/systemd/system/ntpd.service; disabled; vendor preset: disabled)
+   Active: inactive (dead)
+
+[claeyje@muscadet log]$ sudo systemctl enable ntpd
+[claeyje@muscadet log]$ sudo systemctl start ntpd
+[claeyje@muscadet log]$ systemctl status ntpd
+● ntpd.service - Network Time Service
+   Loaded: loaded (/usr/lib/systemd/system/ntpd.service; enabled; vendor preset: disabled)
+   Active: active (running) since Mon 2018-02-12 09:16:12 CET; 5s ago
+  Process: 12986 ExecStart=/usr/sbin/ntpd -u ntp:ntp $OPTIONS (code=exited, status=0/SUCCESS)
+ Main PID: 12988 (ntpd)
+    Tasks: 2 (limit: 4915)
+   CGroup: /system.slice/ntpd.service
+           └─12988 /usr/sbin/ntpd -u ntp:ntp -g
+
+Feb 12 09:16:12 muscadet ntpd[12986]: Command line: /usr/sbin/ntpd -u ntp:ntp -g
+Feb 12 09:16:12 muscadet systemd[1]: Started Network Time Service.
+Feb 12 09:16:12 muscadet ntpd[12988]: proto: precision = 0.073 usec (-24)
+Feb 12 09:16:12 muscadet ntpd[12988]: Listen and drop on 0 v6wildcard [::]:123
+Feb 12 09:16:12 muscadet ntpd[12988]: Listen and drop on 1 v4wildcard 0.0.0.0:123
+Feb 12 09:16:12 muscadet ntpd[12988]: Listen normally on 2 lo 127.0.0.1:123
+Feb 12 09:16:12 muscadet ntpd[12988]: Listen normally on 3 enp0s25 158.167.53.45:123
+Feb 12 09:16:12 muscadet ntpd[12988]: Listen normally on 4 lo [::1]:123
+Feb 12 09:16:12 muscadet ntpd[12988]: Listen normally on 5 enp0s25 [fe80::d6be:d9ff:fe98:c15c%2]:123
+
+Feb 12 09:16:12 muscadet ntpd[12988]: Listening on routing socket on fd #22 for interface updates
+
+[claeyje@muscadet log]$ systemctl list-unit-files | grep enabled| grep ntp
+ntpd.service                                enabled   
+
+[claeyje@muscadet doc]$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+ LOCAL(0)        .LOCL.          12 l    5   64    7    0.000    0.000   0.000
+ 85.93.216.115   .INIT.          16 u    -   64    0    0.000    0.000   0.000
+ ns1.eu.org      .INIT.          16 u    -   64    0    0.000    0.000   0.000
+ main.hosting-sk .INIT.          16 u    -   64    0    0.000    0.000   0.000
+ ntplux2.cc.cec. 10.218.147.202   2 u   64   64    3    1.212  -203604   0.234
+ ntplux3.cc.cec. 10.218.147.201   2 u    -   64    7    1.255  -203604   0.361
+
+---------------------------------------------------------------------------------------------------
+
+
+# Check ntp servers:
+ntpdate -q ntplux1.cc.cec.eu.int
+
+
+[claeyje@muscadet doc]$ ntpdate -q ntplux1.cc.cec.eu.int
+server 158.167.211.103, stratum 3, offset -0.000653, delay 0.02689
+ 5 Apr 11:07:48 ntpdate[4954]: adjust time server 158.167.211.103 offset -0.000653 sec
+

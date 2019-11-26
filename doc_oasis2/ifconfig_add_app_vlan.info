@@ -1,0 +1,37 @@
+    1  2017-04-04 12:53:53 : ifconfig -a
+    2  2017-04-04 12:54:05 : getent hosts 10.218.144.12 10.218.144.11
+    3  2017-04-04 13:03:35 : /usr/nagios/plugins/check_all 
+    4  2017-04-05 07:08:48 : ifconfig -a
+    5  2017-04-05 07:08:53 : print-cdp -a
+    6  2017-04-05 07:09:18 : /usr/nagios/plugins/check_if 
+    7  2017-04-05 07:10:04 : cat /etc/hostname.bge458000 
+    9  2017-04-05 07:10:29 : ifconfig bge458002 plumb
+   10  2017-04-05 07:10:34 : ifconfig bge458000 plumb
+   11  2017-04-05 07:10:39 : cat /etc/hostname.bge458000 
+   12  2017-04-05 07:10:43 : ifconfig bge458000 158.14.208.14 netmask + broadcast + group ipmp458 deprecated -failover up
+   13  2017-04-05 07:10:46 : cat /etc/hostname.bge458002 
+   14  2017-04-05 07:10:54 : ifconfig bge458002 158.15.208.15 netmask + broadcast + group ipmp458 deprecated -failover up
+   15  2017-04-05 07:10:57 : ifconfig -a
+   16  2017-04-05 07:11:02 : ifinfo 
+   17  2017-04-05 07:11:10 : ecdc-get_cdp 
+   18  2017-04-05 07:12:17 : print-cdp -a
+
+
+2 root@amarkhor:->print-cdp -a
+
+Interface        Ethernet address  Slot       Switch         Port                 VLAN 
+bge0             0:14:4f:ea:d6:72  IOU0/ETH0  betz-dc_lf173  Ethernet1/96         3596 
+bge2             0:14:4f:ea:c9:3e  IOU1/ETH0  betz-dc_lf174  Ethernet1/96         3596 
+VLAN interface   Ethernet address  Slot       Switch         Port                 VLAN  Base interface   IPMP group
+bge458000        0:14:4f:ea:d6:72  IOU0/ETH0  betz-dc_lf173  Ethernet1/96         458   bge0             ipmp458
+bge458002        0:14:4f:ea:c9:3e  IOU1/ETH0  betz-dc_lf174  Ethernet1/96         458   bge2             ipmp458
+
+3 root@amarkhor:->ifinfo
+
+        Link  Autoneg   Status   Speed    Mode   Ethernet-Address Real-nic
+--------------------------------------------------------------------------
+        bge0  ON       UP     1GB     FDX   0:14:4f:ea:d6:72        -
+        bge2  ON       UP     1GB     FDX   0:14:4f:ea:c9:3e        -
+   bge458000  ON       UP     1GB     FDX   0:14:4f:ea:d6:72     bge0
+   bge458002  ON       UP     1GB     FDX   0:14:4f:ea:c9:3e     bge2
+

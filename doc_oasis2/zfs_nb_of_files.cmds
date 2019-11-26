@@ -1,0 +1,24 @@
+# Get nb of file in ZFS filesystem 
+
+df -g <filesys>
+
+Then subtract <available> from <total files>:
+
+FS=...
+LC_ALL=C df -g $FS | awk '/total files/ {print $9-$7}'
+
+Results depend of how stable the output of "df -g" is. Parameter columns
+might shift around.
+
+example:
+--------
+
+root@conserver:->
+
+FS=/ec/prod/server/conserver
+df -g $FS | awk '/total files/ {print "Used files: " $9-$7}'
+Used files: 551137
+
+Alternative:
+------------
+df -g $FS |awk '/total files/ { t=$9 } /free files/ {f=$1} END { print "Used files: " t-f }'

@@ -1,0 +1,27 @@
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	nogitpull
+	nopull
+
+nothing added to commit but untracked files present (use "git add" to track)
+[claeyje@muscadet cfengine_main]$ git reset head nopull
+fatal: ambiguous argument 'head': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+[claeyje@muscadet cfengine_main]$ git clean -n
+Would remove nogitpull
+Would remove nopull
+
+[claeyje@muscadet cfengine_main]$ git clean -f
+Removing nogitpull
+Removing nopull
+
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working tree clean
+

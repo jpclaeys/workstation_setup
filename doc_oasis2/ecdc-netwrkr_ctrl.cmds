@@ -1,0 +1,48 @@
+ecdc-netwrkr_ctrl 
+[?] Usage: /usr/sbin/ecdc-netwrkr_ctrl option
+[?] 
+[?] Options are:
+[?] 
+[?] STATUS
+[?] * stop		  -- stops networker
+[?] * start		  -- starts networker
+[?] * restart		  -- restarts networker
+[?] * status		  -- check wether networker is running or not
+[?] * isup		  -- returns an error if networker is down
+[?] * isdown		  -- returns an error if networker is still running
+[?] 
+[?] NSR CLIENT
+[?] * downloadnsr	  -- download the latest networker package
+[?] * checknsrdl	  -- check if nsr package download was successful
+[?] * installnsr	  -- installs the latest version of networker
+[?] * upgradensr	  -- upgrades to the latest version of networker
+[?] * shownsrversion	  -- check running/installed version of nsr
+[?] * installallnsr	  -- do automatically all the needed steps to download/install/check nsr
+[?] 
+[?] NSR PLUGINS
+[?] * downloadnmda	  -- download the latest oracle plugin package
+[?] * checknmdadl	  -- check if nmda package download was successful
+[?] * installnmda	  -- installs the latest version of oracle plugins
+[?] * upgradenmda	  -- upgrades to the latest version of oracle plugins
+[?] * showpluginversion  -- check running/installed version of nmo/nmda
+[?] 
+[?] MISC
+[?] * checkconfig	  -- check if proper settings are applied to networker
+[?] * applyconfig	  -- apply configuration to networker
+[?] * binarycheck	  -- returns an error if binaries are missing
+[?] * showunitedvalues   -- display values for UNITED collectors
+[?] * fixoptzones        -- fixes zones where /opt/nsr is missing
+[?] 
+[?] (BETATEST)
+[?] !! for test purposes only. you should never use this on production machines
+[?] unless stated otherwise by Backup Team. !!
+[?] * dlnsrbeta          -- downloads the latest+1 version of NSR
+[?] * chknsrdlbeta  	   -- check if nsr package download was successful
+[?] * instnsrbeta        -- installs the latest+1 version of NSR
+[?] * upgrnsrbeta        -- upgrades an existing NSR to latest+1
+[?] 
+[?] * dlnmdabeta         -- downloads the latest+1 version of NMDA
+[?] * chknmdadlbeta        -- check if NMDA package download was successful
+[?] * instnmdabeta        -- installs the latest+1 version of NMDA
+[?] * upgrnmdabeta        -- upgrades an existing NMDA to latest+1
+

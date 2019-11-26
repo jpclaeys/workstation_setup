@@ -1,0 +1,17 @@
+Hello
+
+
+I added a new section MYSQL to the wiki page http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/NetworkerClient to explain how to proceed with tickets of the following kind in a quick, easy way:
+
+To be able to back up MY-SQL db, could you please :
+- on Containter/MySQL server : myl0001.cc.cec.eu.int
+- install following package:
+Name/version : lgtonmda.x86_64      8.2.4.2-1
+- configure the MySQL server in the proper cFengine group
+mysqlDB
+
+Thank you. Best regards
+
+---
+Miguel A. PINA LANUZA
+

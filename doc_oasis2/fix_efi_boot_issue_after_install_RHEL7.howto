@@ -1,0 +1,72 @@
+1 root@flubber:->efibootmgr 
+BootCurrent: 0003
+Timeout: 10 seconds
+BootOrder: 0003,0004
+Boot0000* CD/DVD Rom
+Boot0001* Hard Disk 0
+Boot0002* PXE Network
+Boot0003* Red Hat Enterprise Linux
+Boot0004* Red Hat Enterprise Linux Backup
+
+
+
+
+fixing efi boot
+
+
+F1
+
+Boot Manager
+Delete Boot Option 
+Select "Red Hat Enterprise Linux" ( press space bar)
+Then go down to Commit Changes and Exit \ Enter
+
+esc
+
+Add Boot Option
+UEFI Full Path Option (in the Advanced Boot Options)
+Select the first disk (NO VULUME LABEL) \ enter
+<EFI> \ enter
+<redhat> \ enter
+shimx64.efi \ enter
+Input the Description \ enter
+Please type you data
+Red Hat Enterprise Linux Backup
+Go down to "Commit changes and exit" \ enter
+esc \ esc \ esc
+
+select first disk
+
+Add name: 
+Red Hat Enterprise Linux
+commit
+
+esc
+
+delete the second entry 
+...
+select the second disk
+Add name: 
+Red Hat Enterprise Linux Backup
+
+commit
+
+...
+
+
+Boot Manager
+Add Boot Option
+Generic Boot Option
+select CD/DVD Rom
+select Hard Disk 0
+select PXE Network
+commit
+
+Then change boot order
+select entry, the move it up/down with the +/- key
+Commit changes and Exit
+
+
+start Options
+then boot
+

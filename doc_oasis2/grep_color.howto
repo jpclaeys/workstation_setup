@@ -1,0 +1,38 @@
+Coloring Grep to easier research
+--------------------------------
+
+GREP_COLOR='0;31'
+The value “31” stands for red font as defined by the color table of the shell:
+
+Color	Foreground	Background
+Black	    30	               40
+Red	    31	               41
+Green	    32	               42
+Yellow	    33	               43
+Blue	    34	               44
+Magenta	    35	               45
+Cyan	    36	               46
+White	    37	               47
+If we would like to see the text color in green, the value that we should use will be “32”.
+Let’s see an example with the green color as background:
+
+Exporting this variable:
+
+export GREP_COLOR='0;30;42'
+where “30” is used to define the color of the foreground, in this case black, and “42” is the background, the color green.
+
+---------------------------------------------------------------------------------------------------
+function example:
+function greptst () 
+{
+local GREP_COLOR
+export GREP_COLOR='0;30;42'
+ll | grep tst
+unset GREP_COLOR
+}
+---------------------------------------------------------------------------------------------------
+export GREP_COLOR='1;37;41'
+egrep --color=auto -i '(error|fatal|warn|drop)' /var/log/messages
+---------------------------------------------------------------------------------------------------
+
+

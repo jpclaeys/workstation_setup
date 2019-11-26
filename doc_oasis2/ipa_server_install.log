@@ -1,0 +1,593 @@
+Setting Up Identity Management
+==============================
+To prepare for the RHCSA and RHCE exams, you need to use a server that
+provides Lightweight Directory Access Protocol (LDAP) and Kerberos services.
+The configuration of these services, by itself, is not an exam topic; however, it
+isn’t hard to do either using the Red Hat Identity Management (IdM) solution,
+which implements the free IPA server. This appendix describes how to set up a
+free IPA server that can be used to provide services that are described in Chap-
+ter 6 , “User and Group Management;” Chapter 24 , “Configuring Time Ser-
+vices;” and Chapter 35 , “Configuring a MariaDB Database,” of this book.
+FreeIPA conflicts with many other services. For that reason, make
+sure to use a clean (virtual) machine where nothing has been installed yet.
+WARNING
+Performing the Base Installation
+To create the IPA server that is needed for several exercises throughout this
+book, install a (virtual) machine that matches the following criteria:
+■ Ensure your server has 2 GB RAM and 10 GB available disk space.
+■ Use Red Hat Enterprise Linux 7 or CentOS 7.
+■ Name set to ipa.example.com.
+■ IP address set to 192.168.122.200, default gateway to 192.168.122.1, and
+DNS temporarily to 8.8.8.8. (You need to change that later.)
+■ Choose the server with graphical interface installation pattern.
+■ Use default partitioning on the servers hard disk.
+■ Switch off SELinux.
+■ Make sure that you have access to installation repositories.
+■ Add an entry to /etc/hosts to enable hostname resolution for the host-
+name. The line should read as follows:
+192.168.122.200 ipa.example.com ipa
+
+
+
+Installing FreeIPA (Cfr Appendix D)
+------------------------------------
+To install FreeIPA, follow these steps:
+1. Open a root shell and type:
+
+ yum -y install ipa-server bind-dyndb-ldap  ipa-server-dns
+
+2. Start the installation program for the IPA server by running ipa-server-install
+--setup-dns . (Type ipa-server --help for a complete list of all options.)
+If the hostname is not yet defined, then execute: 
+hostnamectl set-hostname ipa.example
+
+  104  yum -y install ipa-server bind-dyndb-ldap
+  109  yum -y install ipa-server-dns
+
+[root@ipa ~]# ipa-server-install
+
+(If nok; the uninstall: ipa-server-install --uninstall)
+
+[root@ipa ~]# ipa-server-install
+
+The log file for this installation can be found in /var/log/ipaserver-install.log
+=================================================================================
+This program will set up the IPA Server.
+
+This includes:
+  * Configure a stand-alone CA (dogtag) for certificate management
+  * Configure the Network Time Daemon (ntpd)
+  * Create and configure an instance of Directory Server
+  * Create and configure a Kerberos Key Distribution Center (KDC)
+  * Configure Apache (httpd)
+  * Configure the KDC to enable PKINIT
+
+To accept the default shown in brackets, press the Enter key.
+
+Do you want to configure integrated DNS (BIND)? [no]: yes
+
+Enter the fully qualified domain name of the computer
+on which you're setting up server software. Using the form
+<hostname>.<domainname>
+Example: master.example.com.
+
+
+Server host name [ipa.example.com]: 
+
+Warning: skipping DNS resolution of host ipa.example.com
+The domain name has been determined based on the host name.
+
+Please confirm the domain name [example.com]: 
+
+The kerberos protocol requires a Realm name to be defined.
+This is typically the domain name converted to uppercase.
+
+Please provide a realm name [EXAMPLE.COM]: 
+Certain directory server operations require an administrative user.
+This user is referred to as the Directory Manager and has full access
+to the Directory for system management tasks and will be added to the
+instance of directory server created for IPA.
+The password must be at least 8 characters long.
+
+Directory Manager password: 
+Password (confirm): 
+
+The IPA server requires an administrative user, named 'admin'.
+This user is a regular system account used for IPA server administration.
+
+IPA admin password: 
+Password (confirm): 
+
+Checking DNS domain example.com., please wait ...
+Do you want to configure DNS forwarders? [yes]: no
+No DNS forwarders configured
+Do you want to search for missing reverse zones? [yes]: 
+
+The IPA Master Server will be configured with:
+Hostname:       ipa.example.com
+IP address(es): 192.168.36.200
+Domain name:    example.com
+Realm name:     EXAMPLE.COM
+
+BIND DNS server will be configured to serve IPA domain with:
+Forwarders:       No forwarders
+Forward policy:   only
+Reverse zone(s):  No reverse zone
+
+Continue to configure the system with these values? [no]: yes
+
+The following operations may take some minutes to complete.
+Please wait until the prompt is returned.
+
+Configuring NTP daemon (ntpd)
+  [1/4]: stopping ntpd
+  [2/4]: writing configuration
+  [3/4]: configuring ntpd to start on boot
+  [4/4]: starting ntpd
+Done configuring NTP daemon (ntpd).
+Configuring directory server (dirsrv). Estimated time: 30 seconds
+  [1/45]: creating directory server instance
+  [2/45]: enabling ldapi
+  [3/45]: configure autobind for root
+  [4/45]: stopping directory server
+  [5/45]: updating configuration in dse.ldif
+  [6/45]: starting directory server
+  [7/45]: adding default schema
+  [8/45]: enabling memberof plugin
+  [9/45]: enabling winsync plugin
+  [10/45]: configuring replication version plugin
+  [11/45]: enabling IPA enrollment plugin
+  [12/45]: configuring uniqueness plugin
+  [13/45]: configuring uuid plugin
+  [14/45]: configuring modrdn plugin
+  [15/45]: configuring DNS plugin
+  [16/45]: enabling entryUSN plugin
+  [17/45]: configuring lockout plugin
+  [18/45]: configuring topology plugin
+  [19/45]: creating indices
+  [20/45]: enabling referential integrity plugin
+  [21/45]: configuring certmap.conf
+  [22/45]: configure new location for managed entries
+  [23/45]: configure dirsrv ccache
+  [24/45]: enabling SASL mapping fallback
+  [25/45]: restarting directory server
+  [26/45]: adding sasl mappings to the directory
+  [27/45]: adding default layout
+  [28/45]: adding delegation layout
+  [29/45]: creating container for managed entries
+  [30/45]: configuring user private groups
+  [31/45]: configuring netgroups from hostgroups
+  [32/45]: creating default Sudo bind user
+  [33/45]: creating default Auto Member layout
+  [34/45]: adding range check plugin
+  [35/45]: creating default HBAC rule allow_all
+  [36/45]: adding entries for topology management
+  [37/45]: initializing group membership
+  [38/45]: adding master entry
+  [39/45]: initializing domain level
+  [40/45]: configuring Posix uid/gid generation
+  [41/45]: adding replication acis
+  [42/45]: activating sidgen plugin
+  [43/45]: activating extdom plugin
+  [44/45]: tuning directory server
+  [45/45]: configuring directory to start on boot
+Done configuring directory server (dirsrv).
+Configuring Kerberos KDC (krb5kdc)
+  [1/10]: adding kerberos container to the directory
+  [2/10]: configuring KDC
+  [3/10]: initialize kerberos container
+  [4/10]: adding default ACIs
+  [5/10]: creating a keytab for the directory
+  [6/10]: creating a keytab for the machine
+  [7/10]: adding the password extension to the directory
+  [8/10]: creating anonymous principal
+  [9/10]: starting the KDC
+  [10/10]: configuring KDC to start on boot
+Done configuring Kerberos KDC (krb5kdc).
+Configuring kadmin
+  [1/2]: starting kadmin 
+  [2/2]: configuring kadmin to start on boot
+Done configuring kadmin.
+Configuring certificate server (pki-tomcatd). Estimated time: 3 minutes
+  [1/29]: configuring certificate server instance
+  [2/29]: exporting Dogtag certificate store pin
+  [3/29]: stopping certificate server instance to update CS.cfg
+  [4/29]: backing up CS.cfg
+  [5/29]: disabling nonces
+  [6/29]: set up CRL publishing
+  [7/29]: enable PKIX certificate path discovery and validation
+  [8/29]: starting certificate server instance
+  [9/29]: configure certmonger for renewals
+  [10/29]: requesting RA certificate from CA
+  [11/29]: setting up signing cert profile
+  [12/29]: setting audit signing renewal to 2 years
+  [13/29]: restarting certificate server
+  [14/29]: publishing the CA certificate
+  [15/29]: adding RA agent as a trusted user
+  [16/29]: authorizing RA to modify profiles
+  [17/29]: authorizing RA to manage lightweight CAs
+  [18/29]: Ensure lightweight CAs container exists
+  [19/29]: configure certificate renewals
+  [20/29]: configure Server-Cert certificate renewal
+  [21/29]: Configure HTTP to proxy connections
+  [22/29]: restarting certificate server
+  [23/29]: updating IPA configuration
+  [24/29]: enabling CA instance
+  [25/29]: migrating certificate profiles to LDAP
+  [26/29]: importing IPA certificate profiles
+  [27/29]: adding default CA ACL
+  [28/29]: adding 'ipa' CA entry
+  [29/29]: configuring certmonger renewal for lightweight CAs
+Done configuring certificate server (pki-tomcatd).
+Configuring directory server (dirsrv)
+  [1/3]: configuring TLS for DS instance
+  [2/3]: adding CA certificate entry
+  [3/3]: restarting directory server
+Done configuring directory server (dirsrv).
+Configuring ipa-otpd
+  [1/2]: starting ipa-otpd 
+  [2/2]: configuring ipa-otpd to start on boot
+Done configuring ipa-otpd.
+Configuring ipa-custodia
+  [1/5]: Generating ipa-custodia config file
+  [2/5]: Making sure custodia container exists
+  [3/5]: Generating ipa-custodia keys
+  [4/5]: starting ipa-custodia 
+  [5/5]: configuring ipa-custodia to start on boot
+Done configuring ipa-custodia.
+Configuring the web interface (httpd)
+  [1/22]: stopping httpd
+  [2/22]: setting mod_nss port to 443
+  [3/22]: setting mod_nss cipher suite
+  [4/22]: setting mod_nss protocol list to TLSv1.0 - TLSv1.2
+  [5/22]: setting mod_nss password file
+  [6/22]: enabling mod_nss renegotiate
+  [7/22]: disabling mod_nss OCSP
+  [8/22]: adding URL rewriting rules
+  [9/22]: configuring httpd
+  [10/22]: setting up httpd keytab
+  [11/22]: configuring Gssproxy
+  [12/22]: setting up ssl
+  [13/22]: configure certmonger for renewals
+  [14/22]: importing CA certificates from LDAP
+  [15/22]: publish CA cert
+  [16/22]: clean up any existing httpd ccaches
+  [17/22]: configuring SELinux for httpd
+  [18/22]: create KDC proxy config
+  [19/22]: enable KDC proxy
+  [20/22]: starting httpd
+  [21/22]: configuring httpd to start on boot
+  [22/22]: enabling oddjobd
+Done configuring the web interface (httpd).
+Configuring Kerberos KDC (krb5kdc)
+  [1/1]: installing X509 Certificate for PKINIT
+Done configuring Kerberos KDC (krb5kdc).
+Applying LDAP updates
+Upgrading IPA:. Estimated time: 1 minute 30 seconds
+  [1/9]: stopping directory server
+  [2/9]: saving configuration
+  [3/9]: disabling listeners
+  [4/9]: enabling DS global lock
+  [5/9]: starting directory server
+  [6/9]: upgrading server
+  [7/9]: stopping directory server
+  [8/9]: restoring configuration
+  [9/9]: starting directory server
+Done.
+Restarting the KDC
+Configuring DNS (named)
+  [1/11]: generating rndc key file
+  [2/11]: adding DNS container
+  [3/11]: setting up our zone
+  [4/11]: setting up our own record
+  [5/11]: setting up records for other masters
+  [6/11]: adding NS record to the zones
+  [7/11]: setting up kerberos principal
+  [8/11]: setting up named.conf
+  [9/11]: setting up server configuration
+  [10/11]: configuring named to start on boot
+  [11/11]: changing resolv.conf to point to ourselves
+Done configuring DNS (named).
+Restarting the web server to pick up resolv.conf changes
+Configuring DNS key synchronization service (ipa-dnskeysyncd)
+  [1/7]: checking status
+  [2/7]: setting up bind-dyndb-ldap working directory
+  [3/7]: setting up kerberos principal
+  [4/7]: setting up SoftHSM
+  [5/7]: adding DNSSEC containers
+  [6/7]: creating replica keys
+  [7/7]: configuring ipa-dnskeysyncd to start on boot
+Done configuring DNS key synchronization service (ipa-dnskeysyncd).
+Restarting ipa-dnskeysyncd
+Restarting named
+Updating DNS system records
+Configuring client side components
+Using existing certificate '/etc/ipa/ca.crt'.
+Client hostname: ipa.example.com
+Realm: EXAMPLE.COM
+DNS Domain: example.com
+IPA Server: ipa.example.com
+BaseDN: dc=example,dc=com
+
+Skipping synchronizing time with NTP server.
+New SSSD config will be created
+Configured sudoers in /etc/nsswitch.conf
+Configured /etc/sssd/sssd.conf
+trying https://ipa.example.com/ipa/json
+[try 1]: Forwarding 'schema' to json server 'https://ipa.example.com/ipa/json'
+trying https://ipa.example.com/ipa/session/json
+[try 1]: Forwarding 'ping' to json server 'https://ipa.example.com/ipa/session/json'
+[try 1]: Forwarding 'ca_is_enabled' to json server 'https://ipa.example.com/ipa/session/json'
+Systemwide CA database updated.
+Adding SSH public key from /etc/ssh/ssh_host_rsa_key.pub
+Adding SSH public key from /etc/ssh/ssh_host_ecdsa_key.pub
+Adding SSH public key from /etc/ssh/ssh_host_ed25519_key.pub
+[try 1]: Forwarding 'host_mod' to json server 'https://ipa.example.com/ipa/session/json'
+SSSD enabled
+Configured /etc/openldap/ldap.conf
+Configured /etc/ssh/ssh_config
+Configured /etc/ssh/sshd_config
+Configuring example.com as NIS domain.
+Client configuration complete.
+The ipa-client-install command was successful
+
+==============================================================================
+Setup complete
+
+Next steps:
+	1. You must make sure these network ports are open:
+		TCP Ports:
+		  * 80, 443: HTTP/HTTPS
+		  * 389, 636: LDAP/LDAPS
+		  * 88, 464: kerberos
+		  * 53: bind
+		UDP Ports:
+		  * 88, 464: kerberos
+		  * 53: bind
+		  * 123: ntp
+User firewall-config 
+OR
+example: firewall-cmd --zone=public --add-port=80/tcp --permanent
+...
+for P in 80 443 389 636 88 464 53; do firewall-cmd --zone=public --add-port=${P}/tcp ;done
+for P in 88 464 53 123; do firewall-cmd --zone=public --add-port=${P}/udp ;done
+
+firewall-cmd --runtime-to-permanent
+firewall-cmd --list-all
+
+	2. You can now obtain a kerberos ticket using the command: 'kinit admin'
+	   This ticket will allow you to use the IPA tools (e.g., ipa user-add)
+	   and the web user interface.
+
+Be sure to back up the CA certificates stored in /root/cacert.p12
+These files are required to create replicas. The password for these
+files is the Directory Manager password
+
+use: firewall-config
+add ports to Runtime configuration
+Then make Runtime to Permanent (in the options menu)
+
+check: 
+firewall-cmd --list-all
+
+[root@ipa ~]# firewall-cmd --list-all
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33
+  sources: 
+  services: ssh dhcpv6-client
+  ports: 80/tcp 389/tcp 636/tcp 88/tcp 464/tcp 53/tcp 88/udp 464/udp 53/udp 123/udp 443/tcp
+  protocols: 
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+
+[root@ipa ~]# kinit admin
+Password for admin@EXAMPLE.COM: 
+[root@ipa ~]# ll /root/cacert.p12 
+-rw-r--r-- 1 pkiuser pkiuser 11253 Jul 30 07:48 /root/cacert.p12
+
+15. At this point, you need to finalize the installation. First, you need to open the firewall to allow all services that FreeIPA is offering to be accessed. 
+Do this by typing:
+for i in http https ldap ldaps kerberos kpasswd dns ntp; do firewall-cmd --permanent --add-service $i; done
+Next type:
+firewall-cmd --reload  # to reload the configuration.
+
+[root@ipa ~]# for i in http https ldap ldaps kerberos kpasswd dns ntp; do firewall-cmd --permanent --add-service $i; done
+success
+success
+success
+success
+success
+success
+success
+success
+[root@ipa ~]# firewall-cmd --reload  # to reload the configuration.
+success
+
+16. Now you can obtain a Kerberos ticket for the Kerberos admin user by using kinit admin . Enter the password password that you’ve set for this user previ-ously and you’ll have a Kerberized session that is established.
+
+17. Type klist to verify the contents of the Kerberos ticket. You’ll see that your session is valid for 24 hours. This completes the primary part of the setup.
+
+
+You now have a working IPA service that provides LDAP, Kerberos, DNS, and time services. Notice that the time services are offered by using the ntp service, and not the chronyd service that you will learn about in this book. From a functionality perspective, that does not really matter.
+
+[root@ipa ~]# kinit admin
+Password for admin@EXAMPLE.COM: 
+
+[root@ipa ~]# klist
+Ticket cache: KEYRING:persistent:0:0
+Default principal: admin@EXAMPLE.COM
+
+Valid starting     Expires            Service principal
+30/07/18 08:11:06  31/07/18 08:11:00  krbtgt/EXAMPLE.COM@EXAMPLE.COM
+
+
+Preparing Your IPA Server for User Authentication
+Now that you have a functional IPA server, it is time to prepare it for the labs where
+you need to authenticate on the IPA server using LDAP or Kerberos credentials.
+This includes the creation of an FTP server to make the certificate and keytab files
+available:
+1. Install the vsftpd FTP server by using yum install -y vsftpd .
+
+[root@ipa ~]# mount /dev/cdrom /cdrom
+[root@ipa ~]# df -h /cdrom
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sr0        8.8G  8.8G     0 100% /cdrom
+
+[root@ipa ~]# rpm -qa | grep vsftpd
+vsftpd-3.0.2-22.el7.x86_64
+--> ok
+
+2. Type systemctl enable vsftpd; systemctl start vsftpd to enable and start the
+FTP service.
+
+[root@ipa ~]# systemctl enable vsftpd; systemctl start vsftpd
+Created symlink from /etc/systemd/system/multi-user.target.wants/vsftpd.service to /usr/lib/systemd/system/vsftpd.service.
+[root@ipa ~]# systemctl status vsftpd
+● vsftpd.service - Vsftpd ftp daemon
+   Loaded: loaded (/usr/lib/systemd/system/vsftpd.service; enabled; vendor preset: disabled)
+   Active: active (running) since Mon 2018-07-30 08:23:56 CEST; 16s ago
+  Process: 7160 ExecStart=/usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf (code=exited, status=0/SUCCESS)
+ Main PID: 7162 (vsftpd)
+    Tasks: 1
+   CGroup: /system.slice/vsftpd.service
+           └─7162 /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf
+
+Jul 30 08:23:56 ipa.example.com systemd[1]: Starting Vsftpd ftp daemon...
+Jul 30 08:23:56 ipa.example.com systemd[1]: Started Vsftpd ftp daemon.
+
+3. From a root shell, type cp ~/cacert.p12 /var/ftp/pub to copy the CA certifi-cate of the IPA server to the FTP site. This ensures that the certificate is avail-able for the exercises where users need to authenticate.
+
+[root@ipa ~]# cp ~/cacert.p12 /var/ftp/pub
+[root@ipa ~]# ll /var/ftp/pub/cacert.p12 
+-rw-r--r-- 1 root root 11253 Jul 30 08:24 /var/ftp/pub/cacert.p12
+
+4. Type firewall-cmd --permanent --add-service ftp; firewall-cmd --reload .
+[root@ipa ~]# firewall-cmd --permanent --add-service ftp; firewall-cmd --reload
+success
+success
+
+5. Type klist to see whether you are still in a Kerberized session. If not, type
+kinit admin .
+
+[root@ipa ~]# klist
+Ticket cache: KEYRING:persistent:0:0
+Default principal: admin@EXAMPLE.COM
+
+Valid starting     Expires            Service principal
+30/07/18 08:11:06  31/07/18 08:11:00  krbtgt/EXAMPLE.COM@EXAMPLE.COM
+
+6. Now that you are authenticated on the IPA server, type ipa user-add lisa . Enter lisa as the first name and jones as the last name. You’ll see that the user lisa is added to the IPA server. Repeat this procedure to create a user linda thomsen .
+
+[root@ipa ~]# ipa user-add lisa
+First name: lisa
+Last name: jones
+-----------------
+Added user "lisa"
+-----------------
+  User login: lisa
+  First name: lisa
+  Last name: jones
+  Full name: lisa jones
+  Display name: lisa jones
+  Initials: lj
+  Home directory: /home/lisa
+  GECOS: lisa jones
+  Login shell: /bin/sh
+  Principal name: lisa@EXAMPLE.COM
+  Principal alias: lisa@EXAMPLE.COM
+  Email address: lisa@example.com
+  UID: 860800001
+  GID: 860800001
+  Password: False
+  Member of groups: ipausers
+  Kerberos keys available: False
+[root@ipa ~]# ipa user-add linda
+First name: linda
+Last name: thomsen
+------------------
+Added user "linda"
+------------------
+  User login: linda
+  First name: linda
+  Last name: thomsen
+  Full name: linda thomsen
+  Display name: linda thomsen
+  Initials: lt
+  Home directory: /home/linda
+  GECOS: linda thomsen
+  Login shell: /bin/sh
+  Principal name: linda@EXAMPLE.COM
+  Principal alias: linda@EXAMPLE.COM
+  Email address: linda@example.com
+  UID: 860800003
+  GID: 860800003
+  Password: False
+  Member of groups: ipausers
+  Kerberos keys available: False
+
+7. For both users, set the IPA password. Use ipa passwd lisa ; ipa passwd linda
+to do this. Enter the password password for both users.
+
+[root@ipa ~]# ipa passwd lisa ; ipa passwd linda
+New Password: 
+Enter New Password again to verify: 
+---------------------------------------
+Changed password for "lisa@EXAMPLE.COM"
+---------------------------------------
+New Password: 
+Enter New Password again to verify: 
+----------------------------------------
+Changed password for "linda@EXAMPLE.COM"
+----------------------------------------
+
+Your IPA server is now ready for all exercises in Chapters 6 and 24 of this book.
+
+
+Preparing Your IPA Server for Kerberized NFS
+============================================
+To prepare for the labs in Chapter 36 , “Configuring NFS,” you need to create Kerberos principals for the NFS server you are going to create on server1. After creating the Kerberos credentials for the NFS server, you need to make them available on the NFS server also. To do this, in this procedure you need access to server1 and server2 (which are going to be used in Chapter 36 ).
+
+1. To start, you need to create DNS entries on the IPA server. From ipa.example.com, start Firefox and enter 
+httpd://labipa.example.com . 
+
+--> http://ipa.example.com
+
+On the certificate warning, click I Understand the Risks and Add Exception . Next, click Confirm Security Exception . You’ll now see the IPA login window. From this window, enter the username admin and the password password to authenticate.
+
+2. Before continuing, you need DNS records for the hosts. Possibly you do not have to do this, but in case you do not have DNS resource records, this is how you can create them. Click the Hosts link, and from there, click Add . Enter the hostname server1 , verify that the DNS zone is set to example.com, and enter the IP address 192.168.122.210 . Repeat this procedure for server2. example.com with IP address 192.168.122.220. You now have DNS records and reverse DNS records for all of your hosts in the test environment.
+
+3. You now need to join the NFS server server1.example.com to the IPA Kerberos realm. Open a root shell on the NFS server and type yum install -y ipa-client . All the following steps need to be executed on server1 also.
+
+4. Use nmtui to set the IP address of the DNS server to 192.168.122.200. Type systemctl restart NetworkManager . This sets the nameserver to be used to 192.168.122.200, which is essential for the success of the following steps.
+
+5. Type ipa-client-install --mkhomedir --enable-dns-updates --force-ntpd .
+When asked which user is authorized to enroll computers, type admin , and when prompted for a password for admin@EXAMPLE.COM, type password .
+The procedure should complete telling you that the client configuration is complete.
+
+6. Still on ipa.example.com, create the service principals for the NFS server that you are going to install on server1. Type ipa service-add , and when asked for the principal, enter nfs/server1.example.com . This returns the following information.
+
+
+[root@ipa ~]# ipa service-add
+Principal: nfs/server1.example.com
+---------------------------------------------------
+Added service "nfs/server1.example.com@EXAMPLE.COM"
+---------------------------------------------------
+Principal: nfs/server1.example.com@EXAMPLE.COM
+Managed by: server1.example.com
+
+
+7. Type klist -k on server1. You will see that you have a host principal, which is needed for single sign-on and host authentication for Kerberos.
+
+8. On server1, type ipa-getkeytab -s ipa.example.com -p nfs/server1.example.com -k /etc/krb5.keytab .
+
+9. Verify that you now have the NFS principal on server1 by using kinit -k nfs/server1.example.com , followed by klist .
+
+10. On server2, repeat Step 6 of this procedure to enter the client into the IPA domain. 
+Next, from the client, type ipa-getkeytab -s ipa.example.com -k /etc/krb5.keytab -p host/server2.example.com@EXAMPLE.COM .
+Copy the keytab from server2 to the IPA server by using scp /etc/krb5.keytab ipa.example.com:/var/ftp/pub/server2.keytab .
+

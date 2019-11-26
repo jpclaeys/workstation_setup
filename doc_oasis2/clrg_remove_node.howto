@@ -1,0 +1,9 @@
+# ==> cf8estc2 <==
+
+clrg status cf8estc2
+# clrg switch -n zokor.cc.cec.eu.int cf8estc2; clrg status cf8estc2
+clrg switch -n dormouse.cc.cec.eu.int cf8estc2; clrg status cf8estc2
+clrg remove-node -n zokor.cc.cec.eu.int cf8estc2; clrg status cf8estc2
+clrg show -p Nodelist cf8estc2
+
+

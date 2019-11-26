@@ -1,0 +1,13 @@
+For everyone else, in case this happens again, here?s a quick way you can fix it from the SC by deleting and recreating all users
+
+Assuming our users are in positions 1-3 (check first by running command ?users? without any args)
+
+ssh RECOVERY_ID@${HOST}-sc
+users -1 -clear
+users -2 -clear
+users -3 -clear
+users -1 -n root -p ${ROOT_PASS} -a super
+users -2 -n console -p ${CONSOLE_PASS} -a custom:rca|pr
+users -3 -n nagios -a custom:rca
+users -3 -pk -add "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAy0SPAV6qDefZQqge16eo/wUKCDukihgU4dGfCOONLC0QfEgubjHr9dyx5hR9+9fJ8oWaEUf9zYc9ejVnhO5M8/QoXwt74mGnWp3lmuyQiZq+Fw6fpPLs12nO5oQkBFA74fEihCohuqaD457TLn8GAv3HLwtbYo8VoUH1OztcnMix9/HuhsAcyMo6vrQ1JxGBNmV66O2aOCYAaLJ53p3m71r3FTihNKQF/LpCTL4gHO2PSf1s7M65HxbUw1oNJjYTG4HPBUBuQldimJGU/buzc7D41efCoGa4gyWEnJXCRdPiVgQu6G/Fkp6cUZJGO3hoB77ZPdV7N9MB0yxoCThFHQ== Nagios user ssh keys"
+

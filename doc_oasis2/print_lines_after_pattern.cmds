@@ -1,0 +1,5 @@
+How to print 5 lines after a pattern in file using awk
+
+awk '/PATTERN/ {for(i=1; i<=5; i++) {getline; print}}' inputfile
+
+

@@ -1,0 +1,34 @@
+
+ 1212  git status
+ 1213  git lg 
+ 1214  git lg4
+ 1215  git lg --stat
+ 1216  man git revert
+ 1217  git lg --stat | head -20
+ 1218  git lg | head -30
+ 1219  git revert f8026e0
+ 1220  git revert -h
+ 1221  git lg | head -30
+ 1222  git revert HEAD..ffb7c6a
+ 1223  git revert HEAD...ffb7c6a
+ 1224  git status
+ 1225  git reset HEAD
+ 1226  git reset --hard HEAD
+ 1227  git revert HEAD...ffb7c6a
+ 1228  git status
+ 1229  mv data/system/zones/cluster116/priamc1p.desc /var/tmp
+ 1230  git status
+ 1231  git revert HEAD...ffb7c6a
+ 1232  man git revert
+ 1233  git revert ffb7c6a..HEAD
+ 1234  git cherry-pick --abort
+ 1235  git revert ffb7c6a..HEAD
+ 1236  git lg
+ 1237  git revert ffb7c6a
+ 1238  git lg
+ 1239  git diff origin/master
+ 1240  ll /data/system/zones/cluster116/priama1p.desc b/data/system/zones/cluster116/
+ 1241  ll data/system/zones/cluster116
+ 1242  git diff --name-only origin/master
+ 1243  git push
+ 1244  sudo updatedb

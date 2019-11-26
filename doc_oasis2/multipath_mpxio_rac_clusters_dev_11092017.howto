@@ -1,0 +1,293 @@
+IM0015954789
+
+1. create a new multipath.conf
+   cd $CFDATA/system/linux/RAC/files
+   cp multipath.conf multipath.conf.new
+Edit the new file: change the parameters:
+-----------------------------------------------------------------------------------------------------------------------------------
+[claeyje@muscadet system]$ cat /home/claeyje/git/cfengine_main/data/system/linux/RAC/files/multipath.conf
+######################################################################
+#
+# WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!
+#
+# this file is managed with cfengine. do NOT change this file on the servers,
+# change it in the repository on the master server. local changes _will_ be
+# overwritten!
+#
+######################################################################
+#
+defaults {
+        user_friendly_names no
+        polling_interval        10
+}
+
+devices {
+                device {
+                vendor                  "HITACHI"
+		product                 "OPEN-.*"
+		getuid_callout          "/sbin/scsi_id_san --whitelisted --device=/dev/%n"
+		hardware_handler        "0"
+		features                "1 queue_if_no_path"
+		path_selector           "queue-length 0"
+		path_grouping_policy    multibus
+		no_path_retry           "3"
+		path_checker            tur
+		failback                immediate
+		rr_min_io_rq            1
+		dev_loss_tmo            infinity
+		fast_io_fail_tmo        60
+		}
+}
+
+blacklist {
+#       devnode ".*"
+        wwid "*"
+}
+
+blacklist_exceptions {
+        wwid "WIN*"
+        wwid "HTC*"
+        wwid "JMO*"
+        wwid "HOST*"
+        wwid "BETZ*"
+        wwid "HW*"
+        wwid "HB*"
+}
+-----------------------------------------------------------------------------------------------------------------------------------
+
+New parameters:
+devices {
+                device {
+                vendor                  "HITACHI"
+                                product                 "OPEN-.*"
+                                getuid_callout          "/sbin/scsi_id_san --whitelisted --device=/dev/%n"
+                                hardware_handler        "0"
+                                features                "1 queue_if_no_path"
+                                path_selector           "queue-length 0"
+                                path_grouping_policy    multibus
+                                no_path_retry           "3"
+                                path_checker            tur
+                                failback                immediate
+                                rr_min_io_rq            1
+                                dev_loss_tmo            10   <==== modify
+                                polling_interval        5   <=== added
+                                fast_io_fail_tmo        5   <===  modify
+                                checker_timeout         15  <==== added
+ 
+-----------------------------------------------------------------------------------------------------------------------------------
+[claeyje@muscadet files]$ diff multipath.conf multipath.conf.new
+29,30c29,32
+< 		dev_loss_tmo            infinity
+< 		fast_io_fail_tmo        60
+---
+> 		dev_loss_tmo            10
+> 		polling_interval        5
+> 		fast_io_fail_tmo        5
+> 		checker_timeout         15
+
+
+Check on servers:
+
+PATTERN="'dev_loss_tmo|polling_interval|fast_io_fail_tmo|checker_timeout'"
+CMD="egrep $PATTERN"
+eval $CMD  $CFDATA/system/linux/RAC/files/multipath.conf.new
+mypssH mufride '(egrep "dev_loss_tmo|polling_interval|fast_io_fail_tmo|checker_timeout" /etc/multipath.conf)'
+mypssh rac_hosts_dev.list '(egrep "dev_loss_tmo|polling_interval|fast_io_fail_tmo|checker_timeout" /etc/multipath.conf)' | tee multipath_conf_before.log
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+2. classes.conf
+vi $CFCLASS
+[claeyje@muscadet system]$ grep -i racnew  $CFCLASS
+# RACNewMultipath = abismal achmed aconcagua acrux adara adhil alameda albali aldrin alisterkrei amosslade atlas brombones ceratosaur chernabog collins difda edasich elacrab elgebar hayabusa hinotori kakuda kalpana kerimov merak meropa molniya mufride muscida nedelin nozomi proton ratcliffe redstone rocket rutilicus sadalsud seliger semyorka sirrakh skylab sulafat taygeta tegmine tejat tincan tuban zond venera odyssey curiosity hubble houston phobos canaveral atlantis mercury copernicus reentry paperclip enterprise sputnik ariane orion shepard pioneer vanguard discovery betria regor merez menkib baikonur majortom jaxa japetus sadatoni aladfar albireo clarke groundct vega malindi nasa galileo shuttle belka voyager zanssen korolev cassini salyut strelka andromeda kamchatka orbit viking sirius tyuratam kosmos asterion sykes stromboli
+
+remove all entries, and add the new ones instead:
+
+
+RACNewMultipath = mufride adara molniya proton kakuda kerimov elacrab elgebar kennedy columbia stromboli sykes sirrakh sulafat atlas semyorka amosslade alisterkrei rocket skylab difda edasich taygeta tegmine tuban tejat hayabusa kalpana hinotori nozomi brombones ceratosaur chernabog ratcliffe abismal achmed aconcagua alameda seliger redstone
+
+vi $CFCLASS
+[claeyje@muscadet cfengine_main]$ grep -i racnew  $CFCLASS
+RACNewMultipath = mufride adara molniya proton kakuda kerimov elacrab elgebar kennedy columbia stromboli sykes sirrakh sulafat atlas semyorka amosslade alisterkrei rocket skylab difda edasich taygeta tegmine tuban tejat hayabusa kalpana hinotori nozomi brombones ceratosaur chernabog ratcliffe abismal achmed aconcagua alameda seliger redstone
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+[claeyje@muscadet system]$ cfmain
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   inputs/classes.conf
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	data/system/linux/RAC/files/multipath.conf.new
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[claeyje@muscadet cfengine_main]$ git commit -am 'IM0015954789 - JPC'
+[master e71c82427c] IM0015954789 - JPC
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+[claeyje@muscadet cfengine_main]$ git push && git pull
+Counting objects: 4, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 614 bytes | 614.00 KiB/s, done.
+Total 4 (delta 3), reused 0 (delta 0)
+remote: Resolving deltas: 100% (3/3)
+remote: Processing changes: (\)===[output from gerrit hook: ref-update]===
+remote: [I] [cfengine/main|ref-update] Running inputs/t/check_classes.t in /ec/prod/app/git/hooks_workdir/1505151314_cfengine_main_ref_update_e71c8242/inputs
+remote: ok 1 - ./bin/cfe_classes.pl -c classes.conf --validate
+remote: 1..1
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine/main
+   f5eb7dc32f..e71c82427c  master -> master
+Already up-to-date.
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	data/system/linux/RAC/files/multipath.conf.new
+
+nothing added to commit but untracked files present (use "git add" to track)
+[claeyje@muscadet cfengine_main]$ git add data/system/linux/RAC/files/multipath.conf.new
+[claeyje@muscadet cfengine_main]$ git commit -am 'IM0015954789 - JPC'
+[master a217a0805b] IM0015954789 - JPC
+ 1 file changed, 50 insertions(+)
+ create mode 100644 data/system/linux/RAC/files/multipath.conf.new
+[claeyje@muscadet cfengine_main]$ git push && git pull
+Counting objects: 8, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (8/8), 1.13 KiB | 1.13 MiB/s, done.
+Total 8 (delta 5), reused 0 (delta 0)
+remote: Resolving deltas: 100% (5/5)
+remote: 
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine/main
+   e71c82427c..a217a0805b  master -> master
+Already up-to-date.
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working tree clean
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+3. masterfiles:
+
+/home/claeyje/git/masterfiles/ec/tasks/system/RAC.cf
+
+vi RAC.cf
+
+
+Add entry::
+
+    (redhat_s_6|redhat_s_7).RACNewMultipath::
+      # Multipath configuration
+      "/etc/multipath.conf"
+        copy_from => ec_remote_cp("$(def.master_cfdata)/system/linux/RAC/files/multipath.conf.new", "digest"),
+        perms => mog("644", "root", "root");
+
+
+4. commit the changes
+
+[claeyje@muscadet system]$ git commit -am 'IM0015954789 - JPC'
+[master 832f34c] IM0015954789 - JPC
+ 1 file changed, 6 insertions(+)
+[claeyje@muscadet system]$ git pp
+git: 'pp' is not a git command. See 'git --help'.
+
+The most similar command is
+	apply
+[claeyje@muscadet system]$ git push && git pull
+Counting objects: 6, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (6/6), 545 bytes | 545.00 KiB/s, done.
+Total 6 (delta 5), reused 0 (delta 0)
+remote: Resolving deltas: 100% (5/5)
+remote: ===[output from gerrit hook: ref-update]===
+remote: [I] [cfengine3/masterfiles|ref-update] Running /usr/bin/make test in /ec/prod/app/git/hooks_workdir/1505151264_cfengine3_masterfiles_ref_update_832f34ca
+remote: ./t/test_promises.pl
+remote: ok 1 - update.cf 
+remote: ok 2 - promises.cf 
+remote: ok 3 - failsafe.cf 
+remote: ok 4 - def.cf 
+remote: ok 5 - ec/ 
+remote: 1..5
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine3/masterfiles
+   fb96f7d..832f34c  master -> master
+Already up-to-date.
+[claeyje@muscadet system]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working tree clean
+
+
+Recap:
+
+
+[claeyje@muscadet files]$ pwd
+/home/claeyje/git/cfengine_main/data/system/linux/RAC/files
+[claeyje@muscadet files]$ echo $CFCLASS
+/home/claeyje/git/cfengine_main/inputs/classes.conf
+[claeyje@muscadet files]$ grep RACNewMultipath $CFCLASS
+RACNewMultipath = mufride adara molniya proton kakuda kerimov elacrab elgebar kennedy columbia stromboli sykes sirrakh sulafat atlas semyorka amosslade alisterkrei rocket skylab difda edasich taygeta tegmine tuban tejat hayabusa kalpana hinotori nozomi brombones ceratosaur chernabog ratcliffe abismal achmed aconcagua alameda seliger redstone
+[claeyje@muscadet files]$ grep RACNewMultipath /home/claeyje/git/masterfiles/ec/tasks/system/RAC.cf
+    (redhat_s_6|redhat_s_7).RACNewMultipath::
+
+
+[claeyje@muscadet files]$ pwd
+/home/claeyje/git/cfengine_main/data/system/linux/RAC/files
+[claeyje@muscadet files]$ diff multipath.conf.new multipath.conf
+29,32c29,30
+< 		dev_loss_tmo            10
+< 		polling_interval        5
+< 		fast_io_fail_tmo        5
+< 		checker_timeout         15
+---
+> 		dev_loss_tmo            infinity
+> 		fast_io_fail_tmo        60
+
+
+5. run cfengine on the hosts (mypssh)
+
+6. check that we have the new settings in the multipath.conf file
+
+7. run multipath -r on one server , and check if it's ok
+
+[claeyje@muscadet IM0015954789_mpxio_RAC_dev]$ sr proton
+
+Oracle RAC non Production
+1 root@proton:->/usr/nagios/plugins/check_mpxio
+check_mpxio CRITICAL (1 critical error)(48 disks checked, channels 4/4/2/2, md 1, dm 2, vgs 2, pvs 2): Skipped 2 unparsed lines
+2 root@proton:->multipath -r
+Sep 11 20:36:14 | /etc/multipath.conf line 30, invalid keyword: polling_interval
+Sep 11 20:36:14 | /etc/multipath.conf line 32, invalid keyword: checker_timeout
+....
+
+
+
+
+7.1 run on all servers
+
+8. nagios checks .. will complain
+
+9. close the ticket and send mail to all dist lists (Cfr mail).
+
+IM0015954789
+
+Deploy New mpxio setting on Oracle Rac Dev Clusters
+
+Intervention completed successfully.
+The new multipath settings have been deployed on the Oracle Rac Dev clusters.
+
+
+

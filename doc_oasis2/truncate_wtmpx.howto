@@ -1,0 +1,23 @@
+[Solaris Tip] Trim wtmpx file UNIX Note
+
+Solaris Tip] Trim wtmpx file
+by andy under Filesystem, Tips, UNIX
+
+Our root (/) partition is nearing 100% utilization and upon further investigation the wtmpx file is the main culprit. We need to trim or flush this file but we need to have a backup of this file for audit purposes.
+
+Well from the wtmpx(1) man pages:
+
+The utmpx and wtmpx files are extended database files that have superseded
+the obsolete utmp and wtmp database files.
+
+The utmpx database contains user access and accounting information for commands
+such as who(1), write(1), and login(1). The wtmpx database contains the history
+of user access and accounting information for the utmpx database.
+If you really need this for your accounting, here are the steps to safely convert it to human readable and truncate it.
+
+
+root@solaris# /usr/lib/acct/fwtmp < /var/adm/wtmpx > /tmp/wtmpx.`date +%Y%m%d`
+root@solaris# cat /dev/null > /var/adm/wtmpx
+root@solaris# gzip /tmp/wtmpx.`date +%Y%m%d`
+root@solaris# mv  /tmp/wtmpx.`date +%Y%m%d`.gz /var/adm/
+

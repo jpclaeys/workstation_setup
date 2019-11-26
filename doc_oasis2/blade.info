@@ -1,0 +1,29 @@
+blade info
+
+<blade>-sc
+BL c-Class
+    Active Onboard Administrator
+      --> shows the Enclosure name 
+ex. misam
+
+Enclosure access:
+http://misam-sc
+User: Administrator
+Pwd:  <root password>
+
+# Get blade chassis info 
+un_blade <blade or blade chassis>
+ex.
+[claeyje@muscadet doc]$ un_blade misam
+Enclosure    : misam
+Rack_id      : 13880
+Rack Pos.    : 33
+Blades       : bkpsnd1c,bkpsnd3c,bkpsnd4c,bkpsnd6c,bkpsnd7c,bkpsnd9c,bkpsndac,bkpsndcc
+
+# From nagios
+run check_hardware -v
+sr <blade>  /usr/nagios/plugins/check_hardware -v | grep Enclosure
+ex.
+[claeyje@muscadet doc]$ sr bkpsnd1c /usr/nagios/plugins/check_hardware -v | grep Enclosure
+Enclosure name: misam
+

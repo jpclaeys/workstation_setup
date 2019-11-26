@@ -1,0 +1,26 @@
+United version mismatch:
+
+You can diff the file indicating zone version in the zone and in the globale :
+
+In the zone :
+pmonap1d:->cat /etc/ecsi_zone_version 
+100217-171807
+5.0
+                
+pmonap1d:->zone-where
+sharpie
+
+1 root@sharpie:->cat /etc/dcim/zones/pmonap1d.desc
+export ZVERSION=5.0
+
+The DESC file is distributed via CFengine, the one in the zone is set at installation.
+During migration, zone description can be modified (new RS for clusters , for eample) and the file in the zone has then to be updated by sysadmin.
+
+
+
+sr pmonap1d cat /etc/ecsi_zone_version
+[claeyje@muscadet log]$ host_info pmonap1d
+pmonap1d;Zone;sharpie;none;solaris-10-default-11.5.0;SunOS;10;1/13;production
+sr sharpie grep -i zversion /etc/dcim/zones/pmonap1d.desc
+
+

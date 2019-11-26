@@ -1,0 +1,58 @@
+
+Please mount the following existing DCFS share:
+
+Container Name: devora11
+Sharename: nas-dclux-xprd.cc.cec.eu.int:/estat_ora_migration_test/files
+Mountpoint: /ec/prod/server/oracle/estatmig
+Ownership:  oracle:dc_dba
+
+##############################################################################################
+
+# cfengine: update vfstab
+
+HOST=devora11
+TICKET=IM0015427226
+
+echo $HOST
+echo $TICKET
+cfmain
+git pull
+
+locate $HOST | grep vfstab
+
+git commit -am "$TICKET JPC"
+
+git pull && git push
+
+#-------------------------------------------------------------------------------
+#Output:
+
+[claeyje@muscadet ~]$ HOST=devora11
+[claeyje@muscadet ~]$ TICKET=IM0015427226
+[claeyje@muscadet ~]$ echo $HOST
+devora11
+[claeyje@muscadet ~]$ echo $TICKET
+IM0015427226
+[claeyje@muscadet ~]$ locate $HOST | grep vfstab
+/home/claeyje/git/cfengine_main/data/system/vfstab/devora11
+[claeyje@muscadet ~]$ cat /home/claeyje/git/cfengine_main/data/system/vfstab/devora11
+
+nas-dclux-xprd.cc.cec.eu.int:/env_clima_files_dev/files   - /ec/dev/server/oracle/env-clima-files nfs - yes hard,bg,intr,suid,rsize=32768,wsize=32768 
+nas-dclux-xprd.cc.cec.eu.int:/ias_logs_mechanism_test/files  - /ec/test/app/ias nfs - yes soft,bg,intr,nosuid
+nas-dclux-xprd.cc.cec.eu.int:/ora_migration/files  - /ec/dev/server/oracle/oramig nfs - yes hard,bg,intr,suid,rsize=32768,wsize=32768
+nas-dclux-xprd.cc.cec.eu.int:/orauserd/files  - /ec/dev/server/oracle/user-files  nfs - yes hard,bg,intr,suid,rsize=32768,wsize=32768
+nas-dclux-xprd.cc.cec.eu.int:/orawork/files  -     /ec/dev/server/oracle/orawork        nfs     -       yes     hard,bg,intr,nosuid,rsize=32768,wsize=32768
+nas-dclux-xprd.cc.cec.eu.int:/portal_test_pt10estp/files        -       /ec/test/server/ias/user_shared_data/pt10estt         nfs     -       yes soft,bg,intr,nosuid
+nas-dclux-xprd.cc.cec.eu.int:/tmp_ora_arch/files   -	/ec/dev/server/oracle/tmporaarch	nfs	-	yes	hard,bg,intr,nosuid,rsize=32768,wsize=32768
+nasic211-v43.cc.cec.eu.int:/legacy_ora_sol - /ec/dev/server/oracle/backup nfs - yes bg,intr,hard,rsize=32768,wsize=32768,suid
+
+
+#-------------------------------------------------------------------------------
+# Adding following line:
+nas-dclux-xprd.cc.cec.eu.int:/estat_ora_migration_test/files - /ec/prod/server/oracle/estatmig nfs - yes hard,bg,intr,suid,rsize=32768,wsize=32768
+
+##############################################################################################
+
+
+Sharename: nas-dclux-xprd.cc.cec.eu.int:/estat_ora_migration_test/files
+Mountpoint: /ec/prod/server/oracle/estatmig

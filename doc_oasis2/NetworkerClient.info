@@ -1,0 +1,321 @@
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/NetworkerClient
+
+5 root@mysqlpoc03:->uptime
+ 11:02:54 up 104 days, 14:21,  2 users,  load average: 0.00, 0.00, 0.00
+6 root@mysqlpoc03:->ecdc-netwrkr_ctrl status
+[v] networker running
+7 root@mysqlpoc03:->ecdc-netwrkr_ctrl downloadnsr
+[*] downloading package...
+######################################################################## 100.0%
+[v] download completed
+8 root@mysqlpoc03:->ecdc-netwrkr_ctrl checknsrdl
+[*] downloading checksum...
+######################################################################## 100.0%
+[v] download completed
+[*] generating checksum...
+[*] comparing checksum...
+[v] Checksum ok (2db5fc4950a7c374ea6f5307fd3c2d7d)
+
+9 root@mysqlpoc03:->ecdc-netwrkr_ctrl stop
+[*] stopping networker
+[v] networker stopped
+
+10 root@mysqlpoc03:->ecdc-netwrkr_ctrl upgradensr
+[v] networker stopped
+[*] removing old installation...
+[v] done
+[*] deploying new version...
+[v] done
+
+11 root@mysqlpoc03:->ecdc-netwrkr_ctrl start
+[*] starting networker
+[v] networker started
+
+12 root@mysqlpoc03:->echo y|ecdc-netwrkr_ctrl applyconfig
+[-] This operation restarts the networker daemon. Are you sure you want to proceed (y/n) ? [v] networker running
+[*] RHEL 6: applying Networker_8-1
+Hidden display option turned on
+
+Display options:
+	Dynamic: Off; 
+	Hidden: On; 
+	Raw I18N: Off; 
+	Resource ID: Off; 
+	Regexp: Off; 
+Regexp display option turned on
+
+Display options:
+	Dynamic: Off; 
+	Hidden: On; 
+	Raw I18N: Off; 
+	Resource ID: Off; 
+	Regexp: On; 
+Current query set
+updated resource id 8.0.140.24.0.0.0.0.230.2.252.86.10.137.7.179(4)
+updated resource id 3.0.140.24.0.0.0.0.230.2.252.86.10.137.7.179(103)
+updated resource id 1.0.209.26.144.13.0.0.219.31.90.88.10.137.7.179(2)
+updated resource id 1.0.149.27.4.0.0.0.230.99.106.87.10.137.7.179(2)
+updated resource id 1.0.209.26.148.13.0.0.220.31.90.88.10.137.7.179(2)
+updated resource id 1.0.209.26.138.13.0.0.218.31.90.88.10.137.7.179(2)
+updated resource id 1.0.209.26.152.13.0.0.220.31.90.88.10.137.7.179(2)
+updated resource id 1.0.149.27.240.0.0.0.4.32.107.87.10.137.7.179(2)
+updated resource id 1.0.209.26.156.13.0.0.221.31.90.88.10.137.7.179(2)
+updated resource id 1.0.209.26.156.123.0.0.217.177.161.88.10.137.7.179(5)
+updated resource id 1.0.209.26.140.13.0.0.218.31.90.88.10.137.7.179(2)
+updated resource id 1.0.209.26.160.13.0.0.221.31.90.88.10.137.7.179(2)
+updated resource id 1.0.209.26.168.13.0.0.223.31.90.88.10.137.7.179(2)
+updated resource id 1.0.209.26.132.13.0.0.217.31.90.88.10.137.7.179(2)
+updated resource id 1.0.209.26.252.144.0.0.201.74.171.88.10.137.7.179(2)
+updated resource id 1.0.209.26.120.123.0.0.88.176.161.88.10.137.7.179(2)
+updated resource id 1.0.209.26.128.13.0.0.216.31.90.88.10.137.7.179(2)
+Current query set
+deleted resource id 1.0.149.27.4.0.0.0.230.99.106.87.10.137.7.179(1)
+deleted resource id 1.0.209.26.144.13.0.0.219.31.90.88.10.137.7.179(2)
+deleted resource id 1.0.209.26.148.13.0.0.220.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.138.13.0.0.218.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.152.13.0.0.220.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.149.27.240.0.0.0.4.32.107.87.10.137.7.179(1)
+deleted resource id 1.0.209.26.156.13.0.0.221.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.156.123.0.0.217.177.161.88.10.137.7.179(4)
+deleted resource id 1.0.209.26.140.13.0.0.218.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.120.123.0.0.88.176.161.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.160.13.0.0.221.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.168.13.0.0.223.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.132.13.0.0.217.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.128.13.0.0.216.31.90.88.10.137.7.179(1)
+deleted resource id 1.0.209.26.252.144.0.0.201.74.171.88.10.137.7.179(1)
+Current query set
+updated resource id 3.0.140.24.0.0.0.0.230.2.252.86.10.137.7.179(104)
+Current query set
+updated resource id 13.0.140.24.0.0.0.0.230.2.252.86.10.137.7.179(3)
+[*] stopping networker
+[v] networker stopped
+[*] starting networker
+[v] networker started
+[*] checking networker configuration
+[v] networker running proper config (maximum version: 60 - service ports: 7937-7950)
+
+
+13 root@mysqlpoc03:->ecdc-netwrkr_ctrl shownsrversion
+[v] NSR installed version: 8.2.4.0.Build.1313
+[v] NSR running version: 8.2.4.0.Build.1313
+[v] running version is the installed onecd 
+
+14 root@mysqlpoc03:->ecdc-netwrkr_ctrl checkconfig
+[*] checking networker configuration
+[v] networker running proper config (maximum version: 60 - service ports: 7937-7950)
+
+15 root@mysqlpoc03:->ecdc-netwrkr_ctrl status
+[v] networker running
+
+---------------------------
+NMDA plugin
+
+16 root@mysqlpoc03:->ecdc-netwrkr_ctrl status
+[v] networker running
+17 root@mysqlpoc03:->ecdc-netwrkr_ctrl downloadnmda
+[*] downloading package...
+######################################################################## 100.0%
+[v] download completed
+
+18 root@mysqlpoc03:->ecdc-netwrkr_ctrl checknmdadl
+[*] downloading checksum...
+######################################################################## 100.0%
+[v] download completed
+[*] generating checksum...
+[*] comparing checksum...
+[v] Checksum ok (81afb74931253de93b10020a268643aa)
+
+19 root@mysqlpoc03:->ecdc-netwrkr_ctrl upgradenmda
+[*] removing old installation...
+[!] error deleting old version - see /var/tmp/LGTOnmda-installation.log - EXIT 
+
+error: package lgtonmda is not installed
+30 root@mysqlpoc03:->ecdc-netwrkr_ctrl installnmda
+[*] installing nmda
+[v] done
+31 root@mysqlpoc03:->ecdc-netwrkr_ctrl upgradenmda
+[*] removing old installation...
+[v] done
+[*] deploying new version...
+[!] error deploying the new version - see /var/tmp/LGTOnmda-installation.log - EXIT 
+32 root@mysqlpoc03:->cat /var/tmp/LGTOnmda-installation.log
+Loaded plugins: product-id, rhnplugin, subscription-manager
+This system is receiving updates from RHN Classic or RHN Satellite.
+Setting up Install Process
+No package /var/tmp/nmda-current.rpm available.
+Error: Nothing to do
+
+
+35 root@mysqlpoc03:->ecdc-netwrkr_ctrl downloadnmda
+[*] downloading package...
+######################################################################## 100.0%
+[v] download completed
+36 root@mysqlpoc03:->ecdc-netwrkr_ctrl checknmdadl
+[*] downloading checksum...
+######################################################################## 100.0%
+[v] download completed
+[*] generating checksum...
+[*] comparing checksum...
+[v] Checksum ok (81afb74931253de93b10020a268643aa)
+37 root@mysqlpoc03:->ecdc-netwrkr_ctrl installnmda
+[*] installing nmda
+[v] done
+38 root@mysqlpoc03:->ecdc-netwrkr_ctrl checknmdadl
+[!] No package found. Please run ecdc-netwrkr_ctrl downloadnsr first! - EXIT 505
+39 root@mysqlpoc03:->ecdc-netwrkr_ctrl checknmdadl
+[!] No package found. Please run ecdc-netwrkr_ctrl downloadnsr first! - EXIT 505
+40 root@mysqlpoc03:->ecdc-netwrkr_ctrl showpluginversion
+[v] NMDA binary version: 8.2.4.0.Build.1313
+[v] NMDA library version: 8.2.4.0.Build.1313
+41 root@mysqlpoc03:->
+
+
+-------------------------------------------------------------------------------------
+
+44 root@mysqlpoc03:->ecdc-netwrkr_ctrl dlnsrbeta
+[*] downloading package...
+######################################################################## 100.0%
+[v] download completed
+45 root@mysqlpoc03:->ecdc-netwrkr_ctrl chknsrdlbeta
+[*] downloading checksum...
+######################################################################## 100.0%
+[v] download completed
+[*] generating checksum...
+[*] comparing checksum...
+[v] Checksum ok (44e92f423b65657b434360ff29444123)
+
+46 root@mysqlpoc03:->cdc-netwrkr_ctrl stop
+-bash: cdc-netwrkr_ctrl: command not found
+47 root@mysqlpoc03:->ecdc-netwrkr_ctrl stop
+[*] stopping networker
+ecdc-netwrkr_ctrl upgrnsrbeta
+[v] networker stopped
+48 root@mysqlpoc03:->ecdc-netwrkr_ctrl upgrnsrbeta
+[v] networker stopped
+[*] removing old installation...
+[v] done
+[*] deploying new version...
+[v] done
+49 root@mysqlpoc03:->ecdc-netwrkr_ctrl start
+[*] starting networker
+[v] networker started
+50 root@mysqlpoc03:->echo y|ecdc-netwrkr_ctrl applyconfig
+[-] This operation restarts the networker daemon. Are you sure you want to proceed (y/n) ? [v] networker running
+[*] RHEL 6: applying Networker_8-1
+Hidden display option turned on
+
+Display options:
+	Dynamic: Off; 
+	Hidden: On; 
+	Raw I18N: Off; 
+	Resource ID: Off; 
+	Regexp: Off; 
+Regexp display option turned on
+
+Display options:
+	Dynamic: Off; 
+	Hidden: On; 
+	Raw I18N: Off; 
+	Resource ID: Off; 
+	Regexp: On; 
+Current query set
+updated resource id 8.0.140.24.0.0.0.0.230.2.252.86.10.137.7.179(4)
+updated resource id 3.0.140.24.0.0.0.0.230.2.252.86.10.137.7.179(106)
+updated resource id 2.0.37.177.4.0.0.0.243.121.219.88.10.137.7.179(2)
+updated resource id 1.0.37.177.4.0.0.0.243.121.219.88.10.137.7.179(2)
+Current query set
+deleted resource id 1.0.37.177.4.0.0.0.243.121.219.88.10.137.7.179(1)
+deleted resource id 2.0.37.177.4.0.0.0.243.121.219.88.10.137.7.179(2)
+Current query set
+updated resource id 3.0.140.24.0.0.0.0.230.2.252.86.10.137.7.179(107)
+Current query set
+updated resource id 13.0.140.24.0.0.0.0.230.2.252.86.10.137.7.179(3)
+[*] stopping networker
+[v] networker stopped
+[*] starting networker
+[v] networker started
+[*] checking networker configuration
+[v] networker running proper config (maximum version: 60 - service ports: 7937-7950)
+
+51 root@mysqlpoc03:->ecdc-netwrkr_ctrl shownsrversion
+[v] NSR installed version: 8.2.4.2.Build.1340
+[v] NSR running version: 8.2.4.2.Build.1340
+[v] running version is the installed one
+52 root@mysqlpoc03:->ecdc-netwrkr_ctrl checkconfig
+[*] checking networker configuration
+[v] networker running proper config (maximum version: 60 - service ports: 7937-7950)
+53 root@mysqlpoc03:->ecdc-netwrkr_ctrl status
+[v] networker running
+
+---------------------------------------------------------------------------------------------------------------
+54 root@mysqlpoc03:->ecdc-netwrkr_ctrl 
+[?] Usage: /usr/sbin/ecdc-netwrkr_ctrl option
+[?] 
+[?] Options are:
+[?] 
+[?] STATUS
+[?] * stop		  -- stops networker
+[?] * start		  -- starts networker
+[?] * restart		  -- restarts networker
+[?] * status		  -- check wether networker is running or not
+[?] * isup		  -- returns an error if networker is down
+[?] * isdown		  -- returns an error if networker is still running
+[?] 
+[?] NSR CLIENT
+[?] * downloadnsr	  -- download the latest networker package
+[?] * checknsrdl	  -- check if nsr package download was successful
+[?] * installnsr	  -- installs the latest version of networker
+[?] * upgradensr	  -- upgrades to the latest version of networker
+[?] * shownsrversion	  -- check running/installed version of nsr
+[?] * installallnsr	  -- do automatically all the needed steps to download/install/check nsr
+[?] 
+[?] NSR PLUGINS
+[?] * downloadnmda	  -- download the latest oracle plugin package
+[?] * checknmdadl	  -- check if nmda package download was successful
+[?] * installnmda	  -- installs the latest version of oracle plugins
+[?] * upgradenmda	  -- upgrades to the latest version of oracle plugins
+[?] * showpluginversion  -- check running/installed version of nmo/nmda
+[?] 
+[?] MISC
+[?] * checkconfig	  -- check if proper settings are applied to networker
+[?] * applyconfig	  -- apply configuration to networker
+[?] * binarycheck	  -- returns an error if binaries are missing
+[?] * showunitedvalues   -- display values for UNITED collectors
+[?] * fixoptzones        -- fixes zones where /opt/nsr is missing
+[?] 
+[?] (BETATEST)
+[?] !! for test purposes only. you should never use this on production machines
+[?] unless stated otherwise by Backup Team. !!
+[?] * dlnsrbeta          -- downloads the latest+1 version of NSR
+[?] * chknsrdlbeta  	   -- check if nsr package download was successful
+[?] * instnsrbeta        -- installs the latest+1 version of NSR
+[?] * upgrnsrbeta        -- upgrades an existing NSR to latest+1
+[?] 
+[?] * dlnmdabeta         -- downloads the latest+1 version of NMDA
+[?] * chknmdadlbeta        -- check if NMDA package download was successful
+[?] * instnmdabeta        -- installs the latest+1 version of NMDA
+[?] * upgrnmdabeta        -- upgrades an existing NMDA to latest+1
+
+55 root@mysqlpoc03:->ecdc-netwrkr_ctrl dlnmdabeta
+[*] downloading package...
+######################################################################## 100.0%
+[v] download completed
+56 root@mysqlpoc03:->ecdc-netwrkr_ctrl chknmdadlbeta
+[*] downloading checksum...
+######################################################################## 100.0%
+[v] download completed
+[*] generating checksum...
+[*] comparing checksum...
+[v] Checksum ok (d5a330342373eb8aa017f22787309424)
+57 root@mysqlpoc03:->ecdc-netwrkr_ctrl upgrnmdabeta
+[*] removing old installation...
+[v] done
+[*] deploying new version...
+[v] done
+58 root@mysqlpoc03:->ecdc-netwrkr_ctrl showpluginversion
+[v] NMDA binary version: 8.2.4.2.Build.1341
+[v] NMDA library version: 8.2.4.2.Build.1341
+
+
+

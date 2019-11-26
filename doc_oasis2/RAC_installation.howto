@@ -1,0 +1,52 @@
+RAC installation - Different Flows/cases
+!!! First of all: put the United status to "Under installation" !!!
+
+Hello team,
+
+Due to the fact that RAC SOPs/flows are little "foggy" I will try with this email to help on the different case treatment so we have:
+
+1.	RAC recycle Case (normal & SHS RAC):
+
+SOP/useful wiki links:
+
+Put systems on "Under installation"
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/HWrecycle
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/OracleRacServer    ? Till Step 7 (no 7 step) - (normal & SHS RAC)
+
+Remark:
+Put systems on buffer after installtion
+
+
+2.	Ticket from customer/CCOR ? RAC installation from buffer logically
+
+SOP/useful wiki links:
+
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/OracleRacServer    ? From Step 7 till end - (normal & SHS RAC)
+
+*** Attention: if the customer has been requested a SHS and has define the SHS network?proceed with this step BEFORE resolving this ticket:
+
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/OracleRACMoveToSHS
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/OracleRACMoveToDMZ
+
+
+3.	Ticket for finalize RAC (normal & SHS RAC): You will receive another ticket from the customer/CCOR
+
+SOP/useful wiki links:
+
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/CompletetheOracleRacServer
+
+
+Wiki pages have been adjusted too:
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/OracleRacServer#A_13_Cluster_Subnet_Relocation
+
+
+So please follow these installation/delivery flow.
+
+If you see something "strange" or comes up in your attention ? based on some customer request - please share it. ALWAYS adjust/enhance wiki pages.
+
+Thanks
+
+---
+Konstantinos Politis
+
+

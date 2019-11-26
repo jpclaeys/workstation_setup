@@ -1,0 +1,6 @@
+msg "Cleanup mails in the lost mail queue" | tee -a $LOGFILE
+ZONELIST=
+mypssH "$ZONELIST" '(date && rm /var/spool/mqueue/* ; /usr/nagios/plugins/check_services)'
+
+
+

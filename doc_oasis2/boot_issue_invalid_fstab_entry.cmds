@@ -1,0 +1,18 @@
+Linux fails to boot if an error occurs during the mount FS dur to invalid entry
+
+# Enter the root password 
+
+# remount the root FS rw:
+
+mount -o remount rw /
+
+# comment the invalid fstab entry
+
+chmod a+w /etc/fstab
+
+#ex. sed 's@/dev/....@/dev/...' -i /etc/fstab
+
+reboot
+
+
+

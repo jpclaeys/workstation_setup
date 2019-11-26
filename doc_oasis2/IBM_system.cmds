@@ -1,0 +1,132 @@
+
+[claeyje@muscadet log]$ un_model orbit
+Model        : LENOVO / System x3950 X6
+Model        : System x3950 X6
+
+[claeyje@muscadet log]$ sr conserver
+# exec bash
+1 root@conserver:->console orbit
+[Enter `^Ec?' for help]
+
+----------------------------------------------------------------------------------------------
+# Monitor commands
+------------------
+url: http://systemx.lenovofiles.com/help/index.jsp?topic=%2Fcom.lenovo.sysx.imm2.doc%2Fdw1lm_c_ch7_commandlineinterface.html
+
+----------------------------------------------------------------------------------------------
+# readlog -sev severity displays event log entries for the specified severity level (E, W, I). 
+# It can be a pipe (|) separated list of severity levels.
+----------------------------------------------------------------------------------------------
+system> readlog -sev E -date 08/30/2017
+1	E	08/30/2017 20:53:38.755	Uncorrectable error detected for One of DIMMs on Subsystem System Memory.
+2	E	08/30/2017 20:52:37.75	An Uncorrectable Error has occurred on PCIs.
+3	E	08/30/2017 20:52:21.62	An Uncorrectable Error has occurred on PCIs.
+
+----------------------------------------------------------------------------------------------
+# Use the syshealth command to display a summary of the health or active events of the server. 
+----------------------------------------------------------------------------------------------
+Syntax:
+syshealth [argument]
+argument:
+  summary      -display the system health summary
+  activeevents -display active events
+----------------------------------------------------------------------------------------------
+
+system> syshealth summary
+Power     On
+State     Booting OS or in undetected OS
+Restarts  28
+Component Type     Status         
+==================================
+Cooling Devices    Normal          
+Power Modules      Normal          
+Local Storage      Normal          
+Processors         Normal          
+Memory             Critical        
+System             Critical        
+system> syshealth activeevents
+Severity     Source       Date                     Message
+--------     ------       ----                     -------
+Error        System       2017-08-28T14:23:39      A firmware or software incompatibility was detected on system SN# 06FF010   .
+Error        Memory       2017-08-30T20:53:38      Uncorrectable error detected for One of DIMMs on Subsystem System Memory.
+system> 
+
+----------------------------------------------------------------------------------------------
+system> help
+               ?  --  Display command list
+       accseccfg  --  Account security configuration
+         adapter  --  Display the information of the PCIe adapters.
+        alertcfg  --  Display or change the IMM global remote alert parameters.
+    alertentries  --  This command manages the recipients of alerts.
+             asu  --  Set UEFI settings
+         autoftp  --  View/Edit auto ftp/tftp/sftp setting
+       autopromo  --  Automated promotion of IMM backup.
+          backup  --  Creates a backup file containing the current system settings.
+           batch  --  Executes CLI commands in a file.
+        chconfig  --  View/edit Service Advisor Settings
+           chlog  --  Display Service Advisor Activity Log entires
+        chmanual  --  Manually generate call home request
+        clearcfg  --  Resets the IMM to its default settings
+        clearlog  --  Clear IMM event log
+           clock  --  Display/set date, time, GMT offset, and dst setting
+         console  --  Exit CLI, attach to serial console
+      cryptomode  --  Set crypto mode settings
+        dhcpinfo  --  View DHCP server assigned settings
+             dns  --  Displays the current DNS configuration of the IMM.
+          encaps  --  Let IMM quit encapsulation mode
+        ethtousb  --  Display and configure ethernet to ethernet over usb
+                      port mapping
+          events  --  View and edit event configuration
+            exit  --  Exit CLI (log off)
+            fans  --  Displays the fan speed for all system fans
+            ffdc  --  First Failure Data Capture (service data)
+           fuelg  --  Display or set power usage settings
+        gprofile  --  Group Profiles
+            help  --  Display command list
+         history  --  Display history of last 8 commands
+        identify  --  Control system locator LED
+        ifconfig  --  Ethernet and PPP configuration
+            info  --  Display and configure the information associated with the
+                      IMM
+          keycfg  --  Display, add or delete activation keys
+            ldap  --  LDAP configuration
+             led  --  Display LED states.
+             ntp  --  Displays and configures the Network Time Protocol
+     passwordcfg  --  Password configuration
+         portcfg  --  Serial port configuration.
+     portcontrol  --  Display and control the corresponding port of service
+           ports  --  Display and configure port numbers
+           power  --  Control server power
+         pxeboot  --  Enable or disable pxe next boot status
+         readlog  --  Displays the IMM event log, five entries at a time
+           reset  --  Reset server
+         resetsp  --  Reset IMM
+         restore  --  Restores the system settings using the input backup file.
+ restoredefaults  --  Reset all IMM settings to factory defaults
+           scale  --  Multinode configuration and control.
+         sdemail  --  Send service information using e-mail
+          sdraid  --  SDRAID configuration and control.
+        services  --  Display and configure services enablement
+             set  --  Display or set CLI environment variables
+            smtp  --  Display or set smtp server
+            snmp  --  Enable or disable the SNMP agent
+      snmpalerts  --  This command manages the recipients of snmp alerts
+         spreset  --  Reset IMM
+           srcfg  --  Serial redirection configuration
+          sshcfg  --  Display and configures SSH parameters
+             ssl  --  SSL configuration
+          sslcfg  --  Displays and configures the status of the SSL Server
+                      and SSL Client
+         storage  --  Display and configure the information of the storage.
+       syshealth  --  System Health
+       telnetcfg  --  Display and configures Telnet parameters
+           temps  --  Display system temperatures
+         thermal  --  Display and configures the thermal mode policy of the host
+                      system.
+        timeouts  --  Server timeouts configuration
+             tls  --  Set minimum TLS Level
+          usbeth  --  Enable or disable the inband (Ethernet over USB) interface
+           users  --  User profile configuration
+           volts  --  Displays all the voltages and voltage thresholds
+             vpd  --  Display VPD
+

@@ -1,0 +1,423 @@
+example:
+
+[claeyje@muscadet log]$ sipcalc 10.200.6.128/27| grep -i "network range"
+Network range		- 10.200.6.128 - 10.200.6.159
+
+[claeyje@muscadet dns]$ cat 128-159.6.200.10
+SOA(REV(10.200.6.128-159))
+
+include(cf/dnsservers_no_tc)
+
+REVERSE(10.200.6, 128, 159)
+
+
+[claeyje@muscadet dns]$ grep 10.200.6.128 domains 
+; SHS_ORACLE-Services (10.200.6.128/27)
+REVERSE(10.200.6.128-159, cc.cec.eu.int)
+
+------------------------------------------------------------------------------------
+
+[claeyje@muscadet log]$ ipcalc 10.200.5.96/28
+Network:	10.200.5.96/28
+Netmask:	255.255.255.240 = 28
+Broadcast:	10.200.5.111
+
+Address space:	Private Use
+Address class:	Class A
+HostMin:	10.200.5.97
+HostMax:	10.200.5.110
+Hosts/Net:	14
+
+claeyje@muscadet log]$ sipcalc 10.200.5.96/28| grep -i "network range"
+Network range		- 10.200.5.96 - 10.200.5.111
+
+
+
+1. Create file  96-111.5.200.10
+--------------------------------
+
+cat - > 96-111.5.200.10 <<EOF
+SOA(REV(10.200.5.96-111))
+
+include(cf/dnsservers_no_tc)
+
+REVERSE(10.200.5, 96, 111)
+EOF
+
+1.1. remove the bad file 
+rm 5.200.10
+
+2. Domains
+-----------
+2.1 cleanup:
+[claeyje@muscadet dns]$ grep -B1 -A1 200.5 domains 
+
+; SHS_LISO-HARDWARE (10.200.5.0/24)
+REVERSE(10.200.5, cc.cec.eu.int)
+
+--> to be removed
+
+2.2 Add new subnet entry
+; SHS_SANTE_EUCEG_MSREP_INTERNAL_ACC (10.200.5.96/28)
+REVERSE(10.200.5.96-111, cc.cec.eu.int)
+
+
+
+3. add in $CFDATA/services/named-slave/named.conf-bind9-slave
+
+zone "96-111.5.200.10.IN-ADDR.ARPA" in {
+    type slave;
+    file "db.10.200.5.96-111";
+    masters {158.167.212.100;};
+};
+
+3.2. remove 10.200.5 entry
+
+[claeyje@muscadet named-slave]$ grep -A5 -B1 "5.200.10" named.conf-bind9-slave
+
+zone "5.200.10.in-addr.arpa" in {
+    type slave;
+    file "db.10.200.5";
+    masters {158.167.212.100;};
+};
+
+
+
+4. Cfengine
+
+Add the new subnet in the authorized list of the cfengine server: edit $CFINPUTS/acl.conf
+Restart the Cfengine servers:
+cfe3-1 & cfe3-2: service cfengine3 restart
+
+
+$CFINPUTS/acl.conf
+
+[claeyje@muscadet cfengine_main]$ grep 10.200.5 $CFINPUTS/acl.conf
+10.200.5.0/24
+
+4.1 remove entry:
+10.200.5.0/24
+
+4.2 Add entry:
+10.200.5.96/28
+
+
+5. Reverse DNS delegation:
+
+
+SMT ticket details (replace $SUBNET with the subnet values, e.g. 10.226.15.32/27):
+
+Subject: "DIGIT-Delegate reverse DNS for 10.200.5.96/28 to the Unix team"
+Incident Type: REQUEST FOR SERVICE
+Configuration Item: DNS
+System: SERVICE
+Component: TC-DATA NETWORK SERVICES
+Item: DNS
+Description: "Please add a delegation pointing to Unix DNS for subnet 10.200.5.96/28. Thank you."
+
+DO FORGET To attach the request excel workbook !
+
+--> Ticket IM0015378025
+
+
+Also save the request form (xlsm) under U:\3\SIS\FO-Unix\Connections\rDNS\$YEAR\. (Make sure to put the ticket number in the document name.)
+After the ticket has been resolved, check again that the subnet size/name that SNET delegated matches our rDNS entry.
+
+OPS-RFC-DNS_Request_Form_-_for_rDNS_IM0015378025.xls
+-----------------------------------------------------------------------------------
+
+[claeyje@muscadet dns]$ svn up
+Updating '.':
+U    cc.cec.eu.int
+U    san.cec.eu.int
+Updated to revision 14656.
+[claeyje@muscadet dns]$ vi domains 
+[claeyje@muscadet dns]$ 
+[claeyje@muscadet dns]$ cat - > 96-111.5.200.10 <<EOF
+> SOA(REV(10.200.5.96-111))
+> 
+> include(cf/dnsservers_no_tc)
+> 
+> REVERSE(10.200.5, 96, 111)
+> EOF
+[claeyje@muscadet dns]$ cat 96-111.5.200.10
+SOA(REV(10.200.5.96-111))
+
+include(cf/dnsservers_no_tc)
+
+REVERSE(10.200.5, 96, 111)
+[claeyje@muscadet dns]$ pwd
+/home/claeyje/dns
+[claeyje@muscadet dns]$ svn add $DNSREPO/96-111.5.200.10
+A         96-111.5.200.10
+[claeyje@muscadet dns]$ svn ci -m "96-111.5.200.10 - JPC"
+Adding         96-111.5.200.10
+Sending        domains
+Transmitting file data ..done
+Committing transaction...
+Committed revision 14657.
+
+----------------------------------------------------------------------------------
+
+[claeyje@muscadet named-slave]$ TICKET=IM0015366513
+[claeyje@muscadet named-slave]$ cfmain
+[claeyje@muscadet cfengine_main]$ git pull
+remote: Counting objects: 64902, done
+remote: Finding sources: 100% (41/41)
+remote: Total 41 (delta 27), reused 41 (delta 27)
+Unpacking objects: 100% (41/41), done.
+From ssh://gerrit/cfengine/main
+   07df057..5b497b8  master     -> origin/master
+First, rewinding head to replay your work on top of it...
+Fast-forwarded master to 5b497b8bec8f9c8c4a42efe7796122b82e0ef484.
+[claeyje@muscadet cfengine_main]$ vi $CFDATA/services/named-slave/named.conf-bind9-slave
+[claeyje@muscadet cfengine_main]$ echo $TICKET
+IM0015366513
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   data/services/named-slave/named.conf-bind9-slave
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[claeyje@muscadet cfengine_main]$ git commit -am "$TICKET JPC"
+[master dd773e4] IM0015366513 JPC
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+[claeyje@muscadet cfengine_main]$ git pull && git push
+Current branch master is up to date.
+Counting objects: 6, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (6/6), 558 bytes | 0 bytes/s, done.
+Total 6 (delta 4), reused 0 (delta 0)
+remote: Resolving deltas: 100% (4/4)
+remote: 
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine/main
+   5b497b8..dd773e4  master -> master
+
+[claeyje@muscadet cfengine_main]$ grep -A5 -B1 5.200.10  $CFDATA/services/named-slave/named.conf-bind9-slave
+
+zone "96-111.5.200.10.IN-ADDR.ARPA" in {
+    type slave;
+    file "db.10.200.5.96-111";
+    masters {158.167.212.100;};
+};
+
+
+----------------------------------------------------------------------------------
+
+[claeyje@muscadet cfengine_main]$ cat  $CFINPUTS/acl.conf| grep 10.200.5
+10.200.5.0/24
+[claeyje@muscadet cfengine_main]$ echo $CFINPUTS
+/home/claeyje/git/cfengine_main/inputs
+[claeyje@muscadet cfengine_main]$ grep 10.200.5 $CFINPUTS/acl.conf
+10.200.5.0/24
+[claeyje@muscadet cfengine_main]$ 
+[claeyje@muscadet cfengine_main]$ git pull
+Current branch master is up to date.
+[claeyje@muscadet cfengine_main]$ vi $CFINPUTS/acl.conf
+[claeyje@muscadet cfengine_main]$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   inputs/acl.conf
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[claeyje@muscadet cfengine_main]$ git commit -am "$TICKET JPC"
+[master d0fd085] IM0015366513 JPC
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[claeyje@muscadet cfengine_main]$ git pull && git push
+Current branch master is up to date.
+Counting objects: 4, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 378 bytes | 0 bytes/s, done.
+Total 4 (delta 3), reused 0 (delta 0)
+remote: Resolving deltas: 100% (3/3)
+remote: Processing changes: (\)/bin/tar: inputs/acl.conf: time stamp 2017-02-03 09:32:04 is 188.245635285 s in the future
+remote: /bin/tar: inputs/t/check_acl.t: time stamp 2017-02-03 09:32:04 is 188.245143646 s in the future
+remote: /bin/tar: inputs/t: time stamp 2017-02-03 09:32:04 is 188.24503703 s in the future
+remote: /bin/tar: inputs: time stamp 2017-02-03 09:32:04 is 188.244944281 s in the future
+remote: ===[output from gerrit hook: ref-update]===
+remote: [I] [cfengine/main|ref-update] Running inputs/t/check_acl.t in /ec/prod/app/git/hooks_workdir/1486110535_cfengine_main_ref_update_d0fd085e/inputs
+remote: ok 1 - '10.57.84.0/24' looks like a valid subnet
+remote: ok 2 - '10.57.110.32/27' looks like a valid subnet
+remote: ok 3 - '10.65.20.0/24' looks like a valid subnet
+remote: ok 4 - '10.65.144.0/23' looks like a valid subnet
+remote: ok 5 - '10.134.1.0/26' looks like a valid subnet
+remote: ok 6 - '10.134.1.128/27' looks like a valid subnet
+remote: ok 7 - '10.134.1.64/28' looks like a valid subnet
+remote: ok 8 - '10.134.1.96/27' looks like a valid subnet
+remote: ok 9 - '10.134.2.112/28' looks like a valid subnet
+remote: ok 10 - '10.134.2.16/28' looks like a valid subnet
+remote: ok 11 - '10.134.2.32/28' looks like a valid subnet
+remote: ok 12 - '10.134.2.64/29' looks like a valid subnet
+remote: ok 13 - '10.134.2.72/29' looks like a valid subnet
+remote: ok 14 - '10.134.2.96/28' looks like a valid subnet
+remote: ok 15 - '10.134.5.0/24' looks like a valid subnet
+remote: ok 16 - '10.134.7.0/27' looks like a valid subnet
+remote: ok 17 - '10.134.7.32/27' looks like a valid subnet
+remote: ok 18 - '10.134.7.128/25' looks like a valid subnet
+remote: ok 19 - '10.134.7.64/27' looks like a valid subnet
+remote: ok 20 - '10.134.20.0/24' looks like a valid subnet
+remote: ok 21 - '10.134.21.0/24' looks like a valid subnet
+remote: ok 22 - '10.134.22.0/24' looks like a valid subnet
+remote: ok 23 - '10.134.23.0/24' looks like a valid subnet
+remote: ok 24 - '10.134.24.0/24' looks like a valid subnet
+remote: ok 25 - '10.134.51.0/24' looks like a valid subnet
+remote: ok 26 - '10.134.52.0/24' looks like a valid subnet
+remote: ok 27 - '10.137.4.0/22' looks like a valid subnet
+remote: ok 28 - '10.200.4.0/27' looks like a valid subnet
+remote: ok 29 - '10.200.4.128/28' looks like a valid subnet
+remote: ok 30 - '10.200.4.144/28' looks like a valid subnet
+remote: ok 31 - '10.200.4.160/28' looks like a valid subnet
+remote: ok 32 - '10.200.4.32/27' looks like a valid subnet
+remote: ok 33 - '10.200.4.64/27' looks like a valid subnet
+remote: ok 34 - '10.200.4.96/27' looks like a valid subnet
+remote: ok 35 - '10.200.5.96/28' looks like a valid subnet
+remote: ok 36 - '10.200.6.128/27' looks like a valid subnet
+remote: ok 37 - '10.200.7.0/27' looks like a valid subnet
+remote: ok 38 - '10.200.7.32/27' looks like a valid subnet
+remote: ok 39 - '10.200.7.64/27' looks like a valid subnet
+remote: ok 40 - '10.200.8.0/27' looks like a valid subnet
+remote: ok 41 - '10.218.13.0/26' looks like a valid subnet
+remote: ok 42 - '10.218.129.0/24' looks like a valid subnet
+remote: ok 43 - '10.218.134.0/27' looks like a valid subnet
+remote: ok 44 - '10.218.144.0/20' looks like a valid subnet
+remote: ok 45 - '10.226.6.0/25' looks like a valid subnet
+remote: ok 46 - '10.226.15.32/27' looks like a valid subnet
+remote: ok 47 - '10.226.15.64/26' looks like a valid subnet
+remote: ok 48 - '10.226.24.0/28' looks like a valid subnet
+remote: ok 49 - '10.226.133.0/25' looks like a valid subnet
+remote: ok 50 - '147.67.0.0/16' looks like a valid subnet
+remote: ok 51 - '147.67.6.104/29' looks like a valid subnet
+remote: ok 52 - '147.67.242.32/27' looks like a valid subnet
+remote: ok 53 - '147.67.243.0/26' looks like a valid subnet
+remote: ok 54 - '147.67.246.104/29' looks like a valid subnet
+remote: ok 55 - '158.166.5.0/24' looks like a valid subnet
+remote: ok 56 - '158.166.5.21/32' looks like a valid subnet
+remote: ok 57 - '158.166.5.23/32' looks like a valid subnet
+remote: ok 58 - '158.166.5.250/32' looks like a valid subnet
+remote: ok 59 - '158.166.5.31/32' looks like a valid subnet
+remote: ok 60 - '158.166.5.36/32' looks like a valid subnet
+remote: ok 61 - '158.166.5.91/32' looks like a valid subnet
+remote: ok 62 - '158.166.5.92/32' looks like a valid subnet
+remote: ok 63 - '158.166.66.31/32' looks like a valid subnet
+remote: ok 64 - '158.167.0.0/16' looks like a valid subnet
+remote: ok 65 - '158.167.37.128/25' looks like a valid subnet
+remote: ok 66 - '158.167.125.0/25' looks like a valid subnet
+remote: ok 67 - '158.167.144.0/24' looks like a valid subnet
+remote: ok 68 - '158.167.201.65/32' looks like a valid subnet
+remote: ok 69 - '158.167.208.0/20' looks like a valid subnet
+remote: ok 70 - '158.167.214.50' looks like a valid subnet
+remote: ok 71 - '158.167.228.0/22' looks like a valid subnet
+remote: ok 72 - '158.168.0.0/22' looks like a valid subnet
+remote: ok 73 - '158.168.4.0/22' looks like a valid subnet
+remote: ok 74 - '158.168.8.0/24' looks like a valid subnet
+remote: ok 75 - '158.168.9.0/24' looks like a valid subnet
+remote: ok 76 - '158.168.19.0/25' looks like a valid subnet
+remote: ok 77 - '158.168.31.0/24' looks like a valid subnet
+remote: ok 78 - '158.168.144.10/32' looks like a valid subnet
+remote: 1..78
+remote: Processing changes: refs: 1, done    
+To ssh://gerrit/cfengine/main
+   dd773e4..d0fd085  master -> master
+[claeyje@muscadet cfengine_main]$ git pull && git push
+Current branch master is up to date.
+Everything up-to-date
+[claeyje@muscadet cfengine_main]$ 
+
+----------------------------------------------------------------------------------
+
+cleanup bad ip addresses
+
+[claeyje@muscadet log]$ dns
+[claeyje@muscadet dns]$ svn
+Type 'svn help' for usage.
+[claeyje@muscadet dns]$ svn up
+Updating '.':
+U    cc.cec.eu.int
+Updated to revision 14659.
+[claeyje@muscadet dns]$ ll 5.200*
+-rw-rw-r--. 1 claeyje claeyje 68 Dec  8 11:17 5.200.10
+[claeyje@muscadet dns]$ cat 5.200.10
+SOA(REV(10.200.5))
+
+include(cf/dnsservers_no_tc)
+
+REVERSE(10.200.5)
+[claeyje@muscadet dns]$ rm 5.200.10
+[claeyje@muscadet dns]$ vi cc.cec.eu.int 
+[claeyje@muscadet dns]$ svn ci -m "IM0015366513 - JPC"
+Sending        cc.cec.eu.int
+Transmitting file data .done
+Committing transaction...
+Committed revision 14660.
+[claeyje@muscadet dns]$ grep 10.200.5 cc.cec.eu.int 
+
+----------------------------------------------------------------------------------
+
+
+
+5.bis Reverse DNS delegation: (6/2/17 14:55)
+
+
+SMT ticket details (replace $SUBNET with the subnet values, e.g. 10.226.15.32/27):
+
+Subject: "DIGIT-Delegate reverse DNS for 10.200.5.96/28 to the Unix team"
+Incident Type: REQUEST FOR SERVICE
+Configuration Item: DNS
+System: SERVICE
+Component: TC-DATA NETWORK SERVICES
+Item: DNS
+------------------------------------------------------------------------------------------------
+Description: 
+Dears,
+
+Please add a delegation pointing to Unix DNS for the following subnets:
+SUBNET                 CIDR
+---------------- ----------
+10.200.5.0              27
+10.200.5.32             27
+10.200.5.64             27
+10.200.5.112		28
+
+Thanks you
+
+------------------------------------------------------------------------------------------------
+
+DO FORGET To attach the request excel workbook !
+
+--> Ticket IM0015383934
+
+
+Also save the request form (xlsm) under U:\3\SIS\FO-Unix\Connections\rDNS\$YEAR\. (Make sure to put the ticket number in the document name.)
+After the ticket has been resolved, check again that the subnet size/name that SNET delegated matches our rDNS entry.
+
+OPS-RFC-DNS_Request_Form_-_for_rDNS_IM0015378025.xls
+----------------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------------
+
+

@@ -1,0 +1,35 @@
+	
+Hello Jean-Pierre, 
+
+To run the ILOM snapshot, please follow the instructions below: 
+
+1) Open a web browser 
+
+2) Enter the IP address for the ILOM's Net Mgmt port 
+
+3) Log into the ILOM's web GUI with the "root" account 
+(the default password from the factory is "changeme") 
+
+4) Note the ILOM version listed on the first web page of output 
+
+5) Click the "Maintenance" tab 
+
+6) for ILOM 2.x: Click on the "Data Collector" sub tab 
+for ILOM 3.x: Click on the "Snapshot" sub tab 
+
+7) Make sure that "Normal" is selected and that "Logs Only" is Disabled or unchecked before click on the button to run the ILOM snapshot 
+
+8) Save as .zip file (the ILOM snapshot output) to your local system from where you are running the web browser 
+
+9) Email me the snapshot once it is done saving it (the ILOM snapshot will be really small, only 150 KB on average) 
+
+--------------------------------- 
+
+Collect the ILOM Snapshot using the ILOM CLI: 
+
+http://docs.oracle.com/cd/E19860-01/E21449/E21449.pdf (Using the Oracle ILOM Snapshot Utility (CLI) page 56) 
+
+Please let me know if you encounter further issues with snapshot. 
+
+Best regards, 
+Andrei 

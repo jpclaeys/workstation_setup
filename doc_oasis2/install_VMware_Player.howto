@@ -1,0 +1,29 @@
+How-to Install VMware Workstation Player 12 on Fedora Linux 64bit Visual Guide
+
+http://tutorialforlinux.com/2015/10/07/how-to-install-vmware-workstation-player-12-on-fedora-linux-64bit-visual-guide/
+
+The Linux Tutorial shows Step-by-Step How-to Install the VMware Workstation Player 12 for Free on Linux Fedora 18/19/20/21/22/23/24/25 x8664 KDE/Mate/Lxde/Xfce Desktop.
+
+VMware Workstation 12 Player (formerly known as VMware Player Pro) is a streamlined offering of VMware Workstation Pro 12 that is ready for Windows 10, offers enhanced 3-D graphics support and improved virtual machine performance.
+
+1. Download VMware Workstation Player 12 for Linux
+
+Here VMware Player 12 Linux 64bit
+
+2. Installing Required Packages
+For Fedora 22+:
+
+sudo dnf install kernel-headers kernel-devel gcc glibc-headers
+
+
+3. Give Execution Permission
+Access the Target directory:
+
+cd ~/Downloads
+Give Execution Permissions:
+
+sudo chmod +x VMware-Player*.bundle
+Starting VMware Player Installer
+
+sudo ./VMware-Player*.bundle
+

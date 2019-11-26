@@ -1,0 +1,23 @@
+Example: ticket for removing backup (IM0015304581)
+CHILD - DCTSC BackUp to remove: wlareg01.cc.cec.eu.int
+
+
+Description:
+
+Please remove the following server from your backup list:
+
+Class:  SR
+Server Name (FQDN):  Fully_Qualified_Domain_Name_of_the_server.cc.cec.eu.int
+Comments: LT done
+
+http://www.dcim.cc.cec.eu.int/wiki/view/DCTSC/BackUp
+
+
+Solution:
+
+11/01/2017 14:23:38 (SURGEFL):
+2017-01-11 - 14h23m10s - bkpmgt1.cc.cec.eu.int:
+
+nw_removeClient_digit-prod -s bkpsrvb0 -c wlareg01.cc.cec.eu.int -L mullale -i IM0015304581 -y -M digit-oasis-ctrl-tower@ec.europa.eu
+
+

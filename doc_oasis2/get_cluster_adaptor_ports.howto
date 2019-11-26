@@ -1,0 +1,66 @@
+
+/usr/cluster/bin/clintr show| grep "Transport Adapter:" | awk '{print $NF}'|sort -u | tr '\012' ' ' ;echo
+
+echo -n "`hostname`  ";clintr show| grep "Transport Adapter:" | awk '{print $NF}'|sort -u | tr '\012' ' ' && echo
+
+mypssH landak /usr/cluster/bin/clintr show| grep "Transport Adapter:" | awk '{print $NF}'|sort -u | tr '\012' ' ' && echo
+CMD="(/usr/cluster/bin/clintr show| grep 'Transport Adapter:' | awk '{print \$NF}'|sort -u | tr '\012' ' ' && echo)"
+
+mypssH landak "$CMD"
+[1] 13:43:32 [SUCCESS] landak
+bge1 bge3 
+
+HL=`for CL in \`cat clusters.list\`; do clusterhosts $CL;done | tr '\012' ' '`; echo $HL
+
+[claeyje@muscadet log]$ HL=`for CL in \`cat clusters.list\`; do clusterhosts $CL;done | tr '\012' ' '`; echo $HL
+antechinus phalarope landak maleo mulgara junglefowl dorcopsis bufflehead tenkile fireback
+
+mypssH "$HL" "$CMD"
+
+[1] 13:54:29 [SUCCESS] junglefowl
+igb1 igb3 
+[2] 13:54:29 [SUCCESS] phalarope
+igb1 igb3 
+[3] 13:54:29 [SUCCESS] tenkile
+igb1 igb3 
+[4] 13:54:29 [SUCCESS] fireback
+igb1 igb3 
+[5] 13:54:29 [SUCCESS] antechinus
+igb1 igb3 
+[6] 13:54:29 [SUCCESS] maleo
+bge1 bge3 
+[7] 13:54:29 [SUCCESS] landak
+bge1 bge3 
+[8] 13:54:29 [SUCCESS] dorcopsis
+bge1 bge3 
+[9] 13:54:29 [SUCCESS] bufflehead
+bge1 bge3 
+[10] 13:54:29 [SUCCESS] mulgara
+igb1 igb3 
+
+# Get unique cluster Transport Adapters
+ 
+[claeyje@muscadet log]$ mypssH "$HL" "$CMD"| grep -v SUCC | sort -u | tr '\012' ' ';echo
+bge1 bge3  igb1 igb3  
+
+# Find switches
+
+[claeyje@muscadet log]$ mypssH "$HL" print-cdp -ap | egrep 'bge[13]|igb[13]'| awk -F";" '{print $4}'| sort -u
+betz-dc_lf103
+betz-dc_lf104
+betz-dc_lf113
+betz-dc_lf114
+betz-dc_lf153
+betz-dc_lf154
+betz-dc_lf173
+betz-dc_lf174
+windcc1s100
+
+# find switches on adaptor 1
+[claeyje@muscadet log]$ mypssH "$HL" print-cdp -ap | egrep 'bge1|igb1'| awk -F";" '{print $4}'| sort -u
+betz-dc_lf103
+betz-dc_lf113
+betz-dc_lf153
+betz-dc_lf173
+windcc1s100
+

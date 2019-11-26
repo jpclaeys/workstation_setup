@@ -1,0 +1,8 @@
+
+QV=`clq list | wc -l`; echo "#$QV#"
+#       3#
+12 root@dormouse:->a=`expr $QV + 0`;echo "#$a#"
+#3#
+13 root@dormouse:->a=`expr $QV + 0`;echo "#$QV#$a#"
+#       3#3#
+

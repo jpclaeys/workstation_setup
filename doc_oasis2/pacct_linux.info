@@ -1,0 +1,32 @@
+Accounting Linux
+-----------------
+Info: http://www.tecmint.com/how-to-monitor-user-activity-with-psacct-or-acct-tools/
+
+25 root@passiflore:->/etc/init.d/psacct status
+Process accounting is enabled.
+26 root@passiflore:->/etc/init.d/psacct help
+Usage: /etc/init.d/psacct {start|stop|status|restart|reload|force-reload}
+27 root@passiflore:->/etc/init.d/psacct restart
+Shutting down process accounting:  [  OK  ]
+Starting process accounting:  [  OK  ]
+
+ 31 root@passiflore:->
+31 root@passiflore:->ll
+<snip>
+-rw------- 1 root root  10880730 Mar 24 03:16 pacct-20170323.gz
+-rw------- 1 root root         0 Mar 24 07:42 pacct-20170324
+-rw------- 1 root root 201255367 Mar 24 07:43 pacct-20170324_.gz
+32 root@passiflore:->/etc/init.d/psacct help
+Usage: /etc/init.d/psacct {start|stop|status|restart|reload|force-reload}
+33 root@passiflore:->/etc/init.d/psacct stop
+Shutting down process accounting:  [  OK  ]
+34 root@passiflore:->rm pacct-20170324
+35 root@passiflore:->/etc/init.d/psacct start
+Starting process accounting:  [  OK  ]
+36 root@passiflore:->ll -lrt | tail -5
+-rw------- 1 root root 126091483 Mar 22 03:27 pacct-20170321.gz
+-rw------- 1 root root 101752278 Mar 23 03:36 pacct-20170322.gz
+-rw------- 1 root root  10880730 Mar 24 03:16 pacct-20170323.gz
+-rw------- 1 root root 201255367 Mar 24 07:43 pacct-20170324_.gz
+-rw------- 1 root root   4149952 Mar 24 07:58 pacct
+

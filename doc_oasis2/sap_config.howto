@@ -1,0 +1,37 @@
+http://www.dcim.cc.cec.eu.int/wiki/view/UNIX/Linux/PrepareCheckSAP
+
+Custom SAP config 
+	Add the Linux host to the BudgSAPLinux CFEngine class 
+	In case of physical RAC nodes dedicated for SAP, add them to RacForSAP class 
+	In case the host is for "Hana" add it to the BudgSAPHana class 
+	By default in all new SAP servers, the following package must be installed : compat-sap-c++-6-* ==> so please apply based on the below topic SAP compat-locales Packages 
+	Create a ticket to Control Tower to create the uuidd user and group on the system (Note: The yum installer creates the user and group uuidd if they don't exist in the host, but that causes problems in United, because the GID and UID are chosen randomly, so they don't match the United data). Wait for the completion of this ticket before moving into the next step: 
+
+SMT Template: 
+DC_DCTSC_UNIX HOUSING  /  SERVICE / DCTSC / UNIX HOUSING / ADD ACCOUNT 
+SMT Description: 
+Please add an account on the following UNIX Housing Container(s):
+
+Container Name: <name(s) of the container where the account will be created>
+Account Name: uuidd
+Override Home Directory: /var/lib/libuuid
+
+Notes: 
+Please create also the uuidd group with the GID and UID specified in United:
+http://www.dcim.cc.cec.eu.int/United/users
+http://www.dcim.cc.cec.eu.int/United/groups
+	run $CFINPUTS/bin/finalize_sap.sh $HOST 
+	run $CFINPUTS/bin/check_sap.sh $HOST and amend anything that it alerts about. You can disregards the following messages: 
+o	Debugging Tools group not installed; this is a known issue that although all packages in that group are installed, the group shows up as being not installed 
+o	the user daaadm missing; this is up to the CCOR to request the user
+
+SAP compat-locales Packages 
+When they ask to install compat-locales-sap-* or compat-sap-c++ 
+	Verify in Satellite ( https://iglica.cc.cec.eu.int/ ) if there is a channel called 'RHEL SAP RC${MAJOR.MINOR.REVISION} 64-bit ' 
+	On the host: rhn-channel -l to verify if the channel is added 
+	If not, rhn-channel -a -c ${CHANNEL_LABEL}; Usually this is 'rhel6-sap-rc${MAJOR}.${minor} ' 
+	If prompted, enter the Satellite credentials 
+	Install requested package 
+o	yum install compat-locales-sap.x86_64 compat-locales-sap-common.x86_64 
+o	yum install compat-sap-c++-5.x86_64 
+
