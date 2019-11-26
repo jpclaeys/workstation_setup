@@ -1,17 +1,9 @@
-Caching your GitHub password in Git
---------------------------------------------------------------------------------------------------
-In Terminal, enter the following:
-
-$ git config --global credential.helper cache
-# Set git to use the credential memory cache
-
---------------------------------------------------------------------------------------------------
-
 --------------------------------------------------------------------------------------------------
 # Change cfengine config
 --------------------------------------------------------------------------------------------------
 cfmain && git pull >/dev/null
 # update cfengine files
+git add *     | adding new files
 git rm <file>
 vi <file>
 git diff
