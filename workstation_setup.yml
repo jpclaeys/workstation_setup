@@ -107,7 +107,7 @@
       state: link
     tags: bash
 
-  - name: setup bin
+  - name: setup bin1
     file:
       src: ~/git/workstation_setup/bin
       dest: ~/bin
