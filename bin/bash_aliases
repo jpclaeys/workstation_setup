@@ -1,0 +1,160 @@
+# .bash_aliases
+
+# Default to human readable figures
+alias df='df -h'
+alias du='du -h'
+#
+# Misc :)
+# alias less='less -r'                           # raw control characters
+# alias whence='type -a'                         # where, of a sort
+#
+# User specific aliases and functions
+# Some shortcuts for different directory listings
+unalias ls 2>/dev/null
+alias lrt='ls -lhrt '
+alias lrta='ls -alhrt '
+alias lrt10='lrta | tail -10'
+alias lrt25='lrta | tail -25'
+alias ll='ls -lh '                  # long list
+alias lla='ls -alh '                # long list inc hidden files
+alias lld='ls -lh | grep ^d'        # long list for directories
+alias llad='ls -alh | grep ^d'      # long list for directories inc hidden files
+alias la='ls -A'                    # all but . and ..
+alias l='ls -CF'                    #
+alias l1='ls -ac1'
+
+[ "`uname -s`" == "Linux" ] && unalias grep egrep fgrep diff 2>/dev/null
+alias sharedhome='cd /home/`whoami`'
+
+#alias winvm='nohup /usr/bin/rdesktop -x 0x80 -g 1900x1040 -k fr-be -a 24 -u "publications\claeyje" opdt199 &'
+#alias winvm='nohup /usr/bin/rdesktop -x 0x80 -g 1268x944 -k fr-be -a 24 -u "publications\claeyje" opdt199 &'
+alias winvm='nohup /usr/bin/rdesktop -d publications -z -x m -P -B -b -a 16 -x 0x80 -g 1264x936 -k fr-be -u claeyje opdt199 &'
+alias winvm1920='nohup /usr/bin/rdesktop -d publications -z -x m -P -B -b -a 16 -x 0x80 -g 1920x1024 -k fr-be -u claeyje opdt199 &'
+if [ `uname -n` != "$ADMINWST" ]; then
+     alias s$ADMINWST="ssh $ADMINWST"
+     alias linvm="ssh $ADMINWST"
+     alias xpra='nohup xpra_launcher ~/bin/xpra/opvmwstsx11.xpra &'
+     alias linterminator='nohup ssh $ADMINWST terminator --geometry=1280x768 &'
+     alias linfirefox='nohup ssh $ADMINWST forefox &'
+     alias rsync_perso='rsync -aP opvmwstsx11:perso/ $HOME/perso'
+     [ `uname -s` == "SunOS" ] && alias awk=nawk
+fi
+
+# Define aliases for functions groups
+#alias f='typeset -f'  # typeset is obsolete, use "declare -f" instead
+#Note: view function:  "declare -f <function_name>" or "type <function_name>"
+#alias F='typeset -F | grep -v " _"'
+alias f='compgen -A function  | egrep -v "^_|quote|sush"'
+unset FALL
+LIST="check clu decom newlog sym powermt show powercut ldap"
+for I in $LIST; do alias f$I="f | grep -i ^$I"; FALL="$FALL f$I"; done
+LIST="dns lun status ticket zpool zone subnet hba asm uid size srdf mirrored eufo mer count primary secondary screen xpra running poolname pool kvm"
+for I in $LIST; do alias f$I="f | grep -i $I";FALL="$FALL f$I"; done
+alias fhost='f | grep "host"| grep -v ^t'  && FALL="$FALL fhost"
+alias fthost="f | grep '^t.*host'"  && FALL="$FALL fthost"
+alias faddhost='f| egrep "add[_]?host"'; FALL="$FALL faddhost"
+alias fa="echo \"`echo $FALL`\""
+
+alias linfo='cls;title "info files";ls -c1 $DOCDIR/*.info | sort | sed "s:.*/::g"'
+alias ltpl='cls;title "Templates";ls -c1 ~/tpl/*.tpl | sort | sed "s:.*/::g"'
+alias lhowto='cls;title "HowTo";ls -c1 $DOCDIR/*.howto | sort | sed "s:.*/::g"'
+alias lcmds='cls;title "cmds";ls -c1 $DOCDIR/*.cmds | sort | sed "s:.*/::g"'
+alias t='set_title $([ `uname -s` == "Linux" ] && hostname -s || uname -n)' #  set terminator title
+#[ "`uname -n`" == "iceman" ] && alias cmdb='linvm getcmdb.sh' || alias cmdb='getcmdb.sh'
+[ "`uname -n`" == "iceman" ] && alias cmdb='linvm /home/admin/bin/getcmdb.sh' || alias cmdb='/home/admin/bin/getcmdb.sh'
+alias viwiki='vi ~/wiki/wiki.txt'
+alias rootpwd='cat ~/wiki/rootpwd.txt'
+[ "`uname -s`" == "Linux" ] && alias ptree='ps --forest -eaf'
+# alias s='ssh -q '
+alias sshnoconfig='ssh -F /dev/null'
+alias srv='ssh -F /dev/null -l root'
+alias sshnokey='ssh  -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null  -o PreferredAuthentications=password -o PubkeyAuthentication=no'
+
+alias log='cd $LOGDIR'
+alias tpl='cd $TPLDIR'
+alias bin='cd ~/bin'
+alias doc='cd ~/doc'
+alias tmp='cd $MYTMPDIR'
+alias bak='cd $BAKDIR'
+alias documents='cd ~/Documents'
+alias wiki='cd ~/wiki'
+
+alias downloads='cd $DOWNLOADS'
+alias gedit='gedit --new-window '
+alias cls='clear'
+alias scr='$HOME/jpscreen.ksh'
+alias scrputty='$HOME/jpscreen_putty.ksh'
+alias scrmoba='$HOME/jpscreen_mobaxterm.ksh'
+alias scrl="screen -ls | grep JPC"
+alias scrkillall='for SESS in `scrl| cut -d. -f1`; do screen -X -S $SESS quit;done'
+alias scrkilldetached='for SESS in `scrl| grep -i detached| cut -d. -f1`; do screen -X -S $SESS quit;done'
+
+alias gitreset='git reset --hard origin/master'
+alias gitclean='git clean -f'
+alias gitpp='git pull && git push'
+alias setkbdbe='setxkbmap -layout be'
+alias setkbdfr='setxkbmap -layout fr'
+alias setkbdus='setxkbmap -layout us'
+alias remove_blank_lines='\grep .'
+alias permissive="sudo setenforce permissive; getenforce"
+#alias lsfcurrent='find . -maxdepth 1 -type f -printf "%f\n" | sort'
+alias lsfcurrent='find . -maxdepth 1 -type f -exec basename {} \; | sort'
+# ignore hidden files & directories
+alias find_empty="find . -maxdepth 2 \( ! -regex '.*/\..*' \) -type f -empty -ls"
+alias find_recent='find . -mtime -2 -type f -ls | egrep -v  "\./\."'
+# view cluster log files
+# /home/admin/bin/showev /var/cluster/logs/eventlog|tail -28
+#
+alias showclusterlogs='/home/admin/bin/showev /var/cluster/logs/eventlog'
+#
+alias tclusterdevicestatus='for H in `tclusters | cut -d" " -f1`; do msggreen `s $H cluster list`;s $H clq status -t quorum_server,shared_disk| \grep .;done'
+#
+alias xchange="cd $XCHANGE"
+alias tmp_folder="cd ${UNIXSYSTEMSTORE}/temp/"
+alias mypssh='pssh -i -t 300 -O "StrictHostKeyChecking=no" -O "UserKnownHostsFile=/dev/null" -p 50 -h '
+alias mypssH='pssh -i -t 300 -O "StrictHostKeyChecking=no" -O "UserKnownHostsFile=/dev/null" -p 50 -H '
+
+alias runningzonesnb='mypssH "`thosts`" "(source ~/.bashrc ; zoneadm list -v |egrep -v global | grep -c running;:)"'
+
+alias rs='set noglob; eval `resize`'
+alias rs1='source <(/usr/bin/resize -s)'
+
+alias primary_domains="cmdb host | awk -F\";\" '/Domain 0/ {print \$1}'| xargs"
+alias secondary_domains="cmdb host | awk -F\";\" '/Domain 1/ {print \$1}'| xargs"
+alias check_votes='mypssH  "`thosts`" /usr/cluster/bin/clq status -t shared_disk'
+alias clhosts='cmdb rg | sed 1d | cut -d";" -f1 | sort -u | sed "s/_/ /g" | xargs'
+alias clfirsthosts='cmdb rg | sed 1d | cut -d";" -f1 | sort -u | cut -d"_" -f1 | xargs'
+
+alias storage_ids='cat ~/wiki/storage_ids.info'
+alias storage_info_pl='/home/admin/bin/storage_info.pl -A > storage_info_`uname -n`.txt'
+alias alias_cmds='alias | grep \.cmds'
+alias alias_nocmds='alias | grep -v \.cmds'
+
+alias rm_nohup='find $HOME -type f -name nohup.out -exec rm {} \;'
+alias wksmer='echo spider valerian kenobi daria checkov baghera jarvis banta brutus xantia'
+alias wkshowald='echo iceman leech phoenix brother rogue'
+
+alias top_summary='top -n 1 -c -b | head -5'
+alias dfformat="awk '{printf \"%-60s %6s %5s %5s %5s %s\n\",\$1,\$2,\$3,\$4,\$5,\$6}'"
+alias dfh='df -h | dfformat'
+alias dfhl='df -hl | dfformat'
+#alias opdt_brutus='/usr/bin/rdesktop -d publications -z -x l -P -B -b -a 24 -g 1280x984 -k fr-be -u claeyje opdt199 &'
+alias myopdt='/usr/bin/xfreerdp -g 1280x984 -k fr-be -a 32 -x 0x80 --plugin cliprdr --ignore-certificate -d publications -u claeyje opdt199 +wallpaper'
+alias linvm_terminator='nohup ssh $ADMINWST myterminator &'
+alias yum_list_installed_all="yum history list all | sed '1,3d;\$d' | awk '{print \$1}' | xargs -n1 echo yum history list| sh | egrep -v 'history list|\-\-\-|plugins|Command line|Login'"
+alias yum_list_installed="yum history list | sed '1,3d;\$d' | awk '{print \$1}' | xargs -n1 echo yum history list| sh | egrep -v 'history list|\-\-\-|plugins|Command line|Login'"
+alias yum_list_installed_this_year='yum history list | grep `date "+%Y"` | awk '\''{print $1}'\'' | xargs -n1 echo yum history list| sh | egrep -v '\''history list|\-\-\-|plugins|Command line|Login'\'''
+alias image_viewer=eog # Eye of GNOME (eog) is the GNOME image viewer.
+alias kvm_clusters='cat ~/doc/kvm_clusters.txt'
+# Clusters KVM
+alias kvmcl='echo voyager tng noblegases'
+alias voyager='echo chakotay tuvok janeway torres'
+alias alogens='echo fluorine bromine iodine chlorine'
+alias tng='echo laforge worf picard riker'
+alias metals='echo titanium chromium vanadium palladium'
+alias noblegases='echo argon xenon neon krypton'
+alias kvmclandhosts='for i in `kvmcl`; do printf "%-12s: " $i ; eval $i;done'
+alias kvmhosts='for i in `kvmcl`; do eval $i;done|xargs'
+alias mytickets="(separator 132&& smt.sh -a claeyje | awk '/Description/,/IncidentID/'| egrep -v 'Contact|Authorised' && separator 132)"
+alias myticketsidlist="mytickets | awk '/IncidentID/ {print \$NF}'| sed 's/\"//g'"
+[ -f /usr/bin/bat ] && alias cat='bat -p'

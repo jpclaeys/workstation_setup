@@ -1,0 +1,113 @@
+# .bashrc
+
+alias bashrc='. ~/.bashrc'
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+# User specific environment and startup programs
+# Define additional dirs in the PATH
+
+function addpath () {
+  [ $# -eq 0 ] && return 1
+  case ":${PATH}:" in
+    *:"$1":*)
+        ;;
+    *)
+    if [ -d "$1" ]; then
+       if [ "$2" = "after" ] ; then
+           PATH=$PATH:$1
+       else
+           PATH=$1:$PATH
+       fi
+    fi
+  esac
+}
+
+addpath $HOME/.local/bin
+addpath $HOME/bin
+addpath $HOME/doc
+addpath $HOME/log
+addpath /usr/cluster/bin
+addpath /usr/bin
+addpath /sbin
+addpath /usr/sbin
+addpath /opt/emc/SYMCLI/bin after
+#addpath /usr/symcli/bin
+
+export PATH
+
+
+# If not running interactively, don't do anything
+# To understand the output of echo $- you need to look up the options in your shell's manual.
+# For example, in Bash, echo $- outputs himBHs for me, which means 
+# that the -h, -m, -B and -H options are enabled (see help set for details), 
+# that the shell is interactive (-i) and reading from standard input (-s).
+
+#[[ "$-" != *i* ]] && shopt -s expand_aliases && exit
+
+# Set the prompt
+PS1="[\u@\h \W]# "
+
+# Disable the bell on Solaris workstation
+if [ `uname -s` == "SunOS" ]; then
+  [ -f /usr/openwin/bin/xset ] && /usr/openwin/bin/xset b 0 2>/dev/null
+fi
+
+export email="jean-pierre.claeys@ext.publications.europa.eu"
+
+export ADMINWST=opvmwstsx11
+export LDAPSERVER=ldapa-pk
+#export SOLARISLOGINHOST=kenobi
+export SOLARISLOGINHOST=karadoc
+export OLDUNIXSYSTEMSTORE="/net/vdm-unix/systemstore"
+export UNIXSHARE="/net/nfs-infra.isilon/unix"
+export UNIXSYSTEMSTORE="${UNIXSHARE}/systemstore"
+export UNIXXCHANGE="${UNIXSHARE}/xchange"
+export XCHANGE="/net/nfs-infra.isilon.opoce.cec.eu.int/xchange"
+export GIT_REPOS=~/git
+
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+
+#
+export SSHOPTIONS="-o StrictHostKeyChecking=no"
+export BIN=$HOME/bin
+export LOGDIR=$HOME/log
+export DOCDIR=$HOME/doc
+export BAKDIR=$HOME/bak
+export TICKETSDIR=$HOME/log/tickets
+export MYTMPDIR=$HOME/tmp
+export DOWNLOADS=$HOME/Downloads
+
+FUNCTIONSFILES=(bin/bash_aliases bin/bash_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/basic_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/bash_colors.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/print_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/newlog_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/LUNs_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/git_prompt.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/prompt.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/sshroot_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/misc_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/check_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/ldap_functions.sh)
+
+for USERFUNCTIONS in ${FUNCTIONSFILES[@]}; do
+  [ -f ~/$USERFUNCTIONS ] && source ~/$USERFUNCTIONS
+done
+
+if [ `uname -n` == "iceman" ]; then
+ICEMANFUNCTIONSFILES=( bin/iceman_bash_functions.sh)
+
+for USERFUNCTIONS in ${ICEMANFUNCTIONSFILES[@]}; do
+  [ -f ~/$USERFUNCTIONS ] && source ~/$USERFUNCTIONS
+done
+fi
+
+# Set time stamps in history
+export HISTTIMEFORMAT="%d/%m/%y %T "
+
+[ "`uname -s`" == "SunOS" ] && TERM=xterm && unalias diff 2>/dev/null

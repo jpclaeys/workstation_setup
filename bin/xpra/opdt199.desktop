@@ -1,0 +1,14 @@
+
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=opdt199
+Type=Application
+Exec=/usr/bin/rdesktop -x 0x80 -g 1900x1040 -k fr-be -a 24 -u "publications\\claeyje" opdt199
+TryExec=
+Icon=/usr/share/pixmaps/blueprint-tsclient.png
+X-GNOME-DocPath=
+Terminal=false
+GenericName=
+Comment=
+Name[en_US]=opdt199  large

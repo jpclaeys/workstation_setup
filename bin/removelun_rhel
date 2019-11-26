@@ -1,0 +1,126 @@
+#!/usr/bin/perl -w
+#
+#   $Id: removelun,v 1.2 2014/10/15 08:48:50 cherrol Exp $
+#
+#   Written by Jeremy Bertozzi
+#
+####
+
+use strict;
+use warnings;
+use Switch;
+use Data::Dumper;
+use Getopt::Std;
+
+my %opts;
+my $o_verb = 0;
+my $o_execute = 0;
+my $o_device;
+
+if(@ARGV < 1){
+        print "Specify a multipath device\n";
+        usage();
+        exit 3;
+}
+else
+{
+        $o_device =  shift @ARGV;
+}
+
+our %conf;
+getopts( 'ehv', \%conf ) or usage();
+usage() if $conf{h};
+$o_verb = 1 if $conf{v};
+$o_execute = 1 if $conf{e};
+
+if (!defined($o_device)) {
+	print "Please specify a device\n";
+	usage();
+}
+
+my %data = get_mp_info($o_device);
+
+my $c = generate_commands(\%data);
+print $c;
+
+sub generate_commands
+{
+	my $d = shift;
+	my %data = %$d;
+	my @devices = keys(%data);
+	my $device = $devices[0];
+	my $s = "";
+	if (defined($data{$device}{'vg'})) {
+		$s .= "vgreduce ".$data{$device}{'vg'}." /dev/mpath/".$device."\n";
+		$s .= "pvremove /dev/mpath/$device\n";
+	}
+	$s .= "/sbin/multipath -f $device # ".$data{$device}{'wwn'}."\n";
+	foreach my $disk (keys %{$data{$device}{'disks'}}){
+		$s .= "# SCSI ".$data{$device}{'disks'}{$disk}."\n";
+		$s .= "echo offline > /sys/block/$disk/device/state\n";
+		$s .= "echo 1 >/sys/block/$disk/device/delete\n";
+	}
+	return $s;
+}
+
+
+sub get_mp_info
+{
+	my $device = shift;
+	my $cmd = "/sbin/multipath -ll $device";
+	verb("Running command: '$cmd'");
+	open IN, "$cmd |" or die "Error while executing '$cmd'\n";
+	my %data = ();
+	#open IN, "/tmp/multipath" or die "Error while executing '$cmd'\n";
+	while (<IN>) {
+		if (/([A-Za-z0-9_-])+\s+\(([a-f0-9]{33})\)\s+(dm-[0-9]+)/){
+			verb("Device found in multipath: $device");
+			verb("wwn: $2");
+			verb("Device mapper: $3");
+			$data{$device}{'wwn'} = $2;
+			$data{$device}{'dm'} = $3;
+		}
+		elsif(/\s+.*([0-9]+:[0-9]+:[0-9]+:[0-9]+)\s+(sd[a-z]+)/){
+			verb("SCSI device $1: /dev/$2");
+			$data{$device}{'disks'}{$2} = $1;
+			#push @{$data{$device}{'disks'}}, $2;
+		}
+	}
+	close IN;
+
+	die "No such multipath device" if (!keys %data);
+
+	$cmd = "pvs /dev/mpath/$device 2> /dev/null";
+	verb("Running command: '$cmd'");
+	open IN, "$cmd |" or die "Error while executing '$cmd'\n";
+	while (<IN>) {
+		if(/^s+PV/){
+		
+		}
+		elsif(/\/dev\/mpath\/$device\s+([A-Z-a-z0-9_-]+)\s+/) {
+			$data{$device}{'vg'} = $1;
+			verb("LUN used for VG: $1");
+		}
+		
+	}
+	return %data;
+}
+
+
+
+sub verb
+{
+	my $s = shift;
+	print $s."\n" if $o_verb;
+}
+
+sub usage
+{
+        my $s = "Usage: $0 lun [ -h ] [ -v ]\n";
+	$s .= "\t-e\t\texecute the commands instead of printing them\n";
+        $s .= "\t-h\t\tprint this help message\n";
+        $s .= "\t-v\t\tverbose mode\n";
+        print $s;
+        exit 3;
+}
+

@@ -1,0 +1,14 @@
+username=claeyje
+encoding=auto
+ssh_port=22
+host=opvmwstsx11
+min-speed=30
+password=
+quality=0
+port=2001
+speed=0
+min-quality=30
+mode=ssh
+bell=no
+autoconnect=true
+idle-timeout=0

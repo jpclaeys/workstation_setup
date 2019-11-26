@@ -1,0 +1,76 @@
+# root profile
+function define_root_env () {
+    PS1="[\u@\h \W]# "
+    define_root_path
+    alias ll="ls -lh"
+    alias lla="ls -alh"
+    alias lrt="ls -lrth"
+#    alias cmdb='/home/admin/bin/getcmdb.sh'
+    alias cmdb='~claeyje/bin/getcmdb.sh'
+}
+
+function addpath () {
+  [ $# -eq 0 ] && return 1
+  case ":${PATH}:" in
+    *:"$1":*)
+        ;;
+    *)
+    if [ -d "$1" ]; then
+       if [ "$2" = "after" ] ; then
+           PATH=$PATH:$1
+       else
+           PATH=$1:$PATH
+       fi
+    fi
+  esac
+}
+
+function define_root_path () {
+#    export PATH="$PATH:/usr/local/bin:/usr/bin:/usr/openwin/bin:/usr/sbin:/usr/sfw/bin:/usr/cluster/bin:$HOME/bin:/opt/emc/SYMCLI/bin:/etc:/home/claeyje/bin"
+addpath /etc after
+addpath /home/claeyje/bin after
+addpath /opt/emc/SYMCLI/bin after
+addpath /usr/bin after
+addpath /usr/cluster/bin after
+addpath /usr/local/bin after
+addpath /usr/openwin/bin after
+addpath /usr/sbin after
+addpath /usr/sfw/bin after
+}
+
+alias f='compgen -A function  | egrep -v "^_|quote|sush"'
+
+
+function symmetrix_to_lun () {
+[ $# -eq 0 ] && echo "Please enter the emc disk name" && return 1
+EMCDEV=$1
+#LUNS=`powermt display dev=$EMCDEV | awk '/pci/ {print $3}'| sed 's/s.$//' | xargs` && echo $LUNS
+LUNS=`powermt display dev=$EMCDEV | awk '/pci/ {print $3}'| xargs` && echo $LUNS
+#PATTERN="$EMCDEV|`echo $LUNS| sed 's/ /|/g'|xargs`" # && echo $PATTERN
+#echo | format | egrep "$PATTERN"
+}
+
+export HISTTIMEFORMAT="%d/%m/%y %T "
+
+FUNCTIONSFILES=(~claeyje/bin/bashrc )
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/bash_aliases)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/bash_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/decom_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/generic_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/LUNs_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/root_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/bash_colors.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/print_functions.sh)
+# FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/git_prompt.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/prompt.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/sshroot_functions.sh)
+
+
+for USERFUNCTIONS in ${FUNCTIONSFILES[@]}; do
+  [ -f ~/$USERFUNCTIONS ] && source ~/$USERFUNCTIONS
+done
+
+define_root_env
+
+[ "`uname -s`" == "SunOS" ] && TERM=xterm && unalias diff 2>/dev/null
+
