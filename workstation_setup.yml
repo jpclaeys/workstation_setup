@@ -22,6 +22,16 @@
     - git
     - bash
 
+  - name: Validate and create if doesn't exist
+    stat : path=~/.hushlogin
+    register: validate
+    tags: hush
+
+  - file:
+      path: ~/.hushlogin
+      state: '{{ "file" if validate.stat.exists else "touch" }}'
+    tags: hush
+
   - name: create symlinks
     include: symlinks.yml
 

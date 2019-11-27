@@ -21,7 +21,7 @@ The below three commands will perform most system setup
 
 ```
 sudo dnf -y install ansible
-wget https://raw.githubusercontent.com/db0/workstation_setup/master/workstation_setup.yml
+wget https://raw.githubusercontent.com/jpclaeys/workstation_setup/jpc/workstation_setup.yml
 
 ansible-playbook workstation_setup.yml --syntax-check
 ansible-playbook --check workstation_setup.yml
