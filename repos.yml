@@ -1,0 +1,28 @@
+---
+
+  - name: Add google-chrome repository
+    yum_repository:
+      name: google-chrome
+      description: Google Chrome repo
+      baseurl: http://dl.google.com/linux/chrome/rpm/stable/x86_64
+      gpgkey: https://dl.google.com/linux/linux_signing_key.pub
+      gpgcheck: 1
+    become: true
+    ignore_errors: true
+    tags: repo
+
+  - name: Check if RPMfusion already set
+    shell:            /bin/rpm -q --quiet rpmfusion-free-release && echo installed || echo missing
+    args:
+      warn: false
+    register:         rpmfusion
+    ignore_errors: true
+    tags: repo
+
+  - name: setup RPMfusion repository
+    command: yum localinstall -y --nogpgcheck {{ rpmfusion_rpm }}
+    when: ansible_distribution == "Fedora" and rpmfusion.stdout == "missing"
+    become: true
+    ignore_errors: true
+    tags: repo
+
