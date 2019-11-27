@@ -24,6 +24,38 @@
       force: true
     tags: bash
 
+  - name: setup .vimrc
+    file:
+      src: ~/git/workstation_setup/bin/vimrc
+      dest: ~/.vimrc
+      state: link
+      force: true
+    tags: bash
+
+  - name: setup .screenrc
+    file:
+      src: ~/git/workstation_setup/bin/screenrc
+      dest: ~/.screenrc
+      state: link
+      force: true
+    tags: bash
+
+  - name: setup .jpscreenrc_mobaxterm
+    file:
+      src: ~/git/workstation_setup/bin/jpscreenrc_mobaxterm
+      dest: ~/.jpscreenrc_mobaxterm
+      state: link
+      force: true
+    tags: bash
+
+  - name: setup .jpscreenrc_putty
+    file:
+      src: ~/git/workstation_setup/bin/jpscreenrc_putty
+      dest: ~/.jpscreenrc_putty
+      state: link
+      force: true
+    tags: bash
+
   - name: setup bin
     file:
       src: ~/git/workstation_setup/bin

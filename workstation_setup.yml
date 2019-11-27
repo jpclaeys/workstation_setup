@@ -25,8 +25,8 @@
   - name: create symlinks
     include: symlinks.yml
 
+  - name: define additional repos
+    include: repos.yml
+
   - name: Install other useful packages
     include: packages.yml
-
-#  - name: define additional repos
-#    include: repos.yml
