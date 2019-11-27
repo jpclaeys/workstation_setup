@@ -1,0 +1,56 @@
+# keep scrollback n lines
+defscrollback 50000
+
+startup_message off
+
+logfile /var/tmp/jpc/jpc_screen-%Y%m%d.%n.log
+logfile flush 1
+logstamp on
+logstamp after 5
+log on
+
+# THIS IS THE PRETTY BIT
+#change the hardstatus settings to give an window list at the bottom of the                                                                        
+##screen, with the time and date and with the current window highlighted                                                                            
+hardstatus             alwayslastline                                                                                                                          
+#hardstatus string '%{= mK}%-Lw%{= KW}%50>%n%f* %t%{= mK}%+Lw%< %{= kG}%-=%D %d %M %Y %c:%s%{-}'
+#hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %d/%m %{W}%c %{g}]'
+#hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{g}(%{W}%n*%f%t%?(%u)%?%{g})%{w}%?%+Lw%?%?%= %{g}][%{W} %d/%m %{W}%c %{g}]'
+hardstatus string '%{= kG}[%= %{= kw}%?%-Lw%?%{g}(%{W}%n*%f%t%?(%u)%?%{g})%{w}%?%+Lw%?%?%= %{g}][%{W} %d/%m %{W}%c %{g}]'
+terminfo * k0=\262
+terminfo * k1=\EOP
+terminfo * k2=\EOQ
+terminfo * k3=\EOR
+terminfo * k4=\EOS
+terminfo * k5=\E[15~
+terminfo * k6=\E[17~
+terminfo * k7=\E[18~
+terminfo * k8=\E[19~
+terminfo * k9=\E[20~
+terminfo * F1=\E[21~
+terminfo * F2=\E[24~
+bindkey -k k0 select 0  #  ²  = screen 0
+bindkey -k k1 select 1  #  F1 = screen 1
+bindkey -k k1 select 1  #  F1 = screen 1
+bindkey -k k2 select 2  #  F2 = screen 2
+bindkey -k k3 select 3  #  F3 = screen 3
+bindkey -k k4 select 4  #  F4 = screen 4
+bindkey -k k5 select 5  #  F5 = screen 5
+bindkey -k k6 select 6  #  F6 = screen 6
+bindkey -k k7 select 7  #  F7 = screen 7
+bindkey -k k8 select 8  #  F8 = screen 8
+bindkey -k k9 select 9  #  F9 = screen 9
+bindkey -k F1 prev      # F10 = prev
+bindkey -k F2 next      # F12 = next
+bindkey "^k" eval "copy" "stuff ^b"  # enter copy mode and move up one page
+bindkey -m "^k" stuff ^b             # move up one page
+bindkey "^l" eval "copy" "stuff ^f"  # enter copy mode and move down one page
+bindkey -m "^l" stuff ^f             # move up down page
+bindkey "^n" screen -fn
+bindkey "^w" detach 
+bindkey "^P" title 
+bindkey "^S" split
+bindkey "^Q" only
+bindkey "^X" remove 
+bindkey "^T" focus up
+#bindkey "^b" focus down

@@ -1,0 +1,80 @@
+# GNU Screen - main configuration file 
+# All other .screenrc files will source this file to inherit settings.
+# Author: Christian Wills - cwills.sys@gmail.com
+
+# keep scrollback n lines
+defscrollback 50000
+
+startup_message off
+
+logfile /var/tmp/jpc/jpc_screen_%S_%Y%m%d.%n.log
+logfile flush 1
+logstamp on
+logstamp after 5
+log on
+
+# Allow bold colors - necessary for some reason
+attrcolor b ".I"
+
+# Tell screen how to set colors. AB = background, AF=foreground
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
+# Enables use of shift-PgUp and shift-PgDn
+termcapinfo xterm*|xs|rxvt ti@:te@
+
+# Erase background with current bg color
+defbce "on"
+
+# Enable 256 color term
+term xterm-256color
+
+hardstatus alwayslastline 
+# Very nice tabbed colored hardstatus line
+hardstatus string '%{= Kd} %{= Kd}%-w%{= Kr}[%{= KW}%n %t%{= Kr}]%{= Kd}%+w %-= %{KG}|%S|%H|%{KW}%{KY}%101`%{KW}|%D %M %d %Y%{= Kc} %C%A%{-}'
+
+# change command character from ctrl-a to ctrl-b (emacs users may want this)
+#escape ^Bb
+
+# Hide hardstatus: ctrl-a f 
+bind f eval "hardstatus ignore"
+# Show hardstatus: ctrl-a F
+bind F eval "hardstatus alwayslastline"
+
+terminfo * k0=\262      #  ² 
+terminfo * k1=\E[11~
+terminfo * k2=\EOQ
+terminfo * k3=\EOR
+terminfo * k4=\EOS
+terminfo * k5=\E[15~
+terminfo * k6=\E[17~
+terminfo * k7=\E[18~
+terminfo * k8=\E[19~
+terminfo * k9=\E[20~
+terminfo * F1=\E[21~
+terminfo * F2=\E[24~
+bindkey -k k0 select 0  #  ²  = screen 0
+bindkey -k k1 select 1  #  F1 = screen 1
+bindkey -k k2 select 2  #  F2 = screen 2
+bindkey -k k3 select 3  #  F3 = screen 3
+bindkey -k k4 select 4  #  F4 = screen 4
+bindkey -k k5 select 5  #  F5 = screen 5
+bindkey -k k6 select 6  #  F6 = screen 6
+bindkey -k k7 select 7  #  F7 = screen 7
+bindkey -k k8 select 8  #  F8 = screen 8
+bindkey -k k9 select 9  #  F9 = screen 9
+bindkey -k F1 prev      # F11 = prev
+bindkey -k F2 next      # F12 = next
+
+bindkey "^k" eval "copy" "stuff ^b"  # enter copy mode and move up one page
+bindkey -m "^k" stuff ^b             # move up one page
+bindkey "^l" eval "copy" "stuff ^f"  # enter copy mode and move down one page
+bindkey -m "^l" stuff ^f             # move up down page
+bindkey "^n" screen -fn
+bindkey "^w" detach 
+bindkey "^t" title 
+bindkey "^S" split
+bindkey "^Q" only
+bindkey "^X" remove 
+bindkey "^t" focus up
+bindkey "^b" focus down
+
