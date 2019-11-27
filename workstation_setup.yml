@@ -28,3 +28,5 @@
   - name: Install other useful packages
     include: packages.yml
 
+#  - name: define additional repos
+#    include: repos.yml
