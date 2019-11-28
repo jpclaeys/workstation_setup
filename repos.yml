@@ -1,29 +1,42 @@
 ---
 
-
-  - name: Add google-chrome repository
-    yum_repository:
-      name: google-chrome
-      description: Google-Chrome
-      baseurl: http://dl.google.com/linux/chrome/rpm/stable/x86_64
-      gpgkey: https://dl.google.com/linux/linux_signing_key.pub
-      gpgcheck: true
-      enabled: true
-    become: true
-    ignore_errors: true
-    tags: repo
-
   - name: Check if RPMfusion already set
     shell:            /bin/rpm -q --quiet rpmfusion-free-release && echo installed || echo missing
     args:
       warn: false
     register:         rpmfusion
+    tags: repo
+
+    # it's RPM package to install a repo  
+  - name: setup RPMfusion repository
+    vars:
+      rpmfusion_rpm: "http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+    command: yum localinstall -y --nogpgcheck {{ rpmfusion_rpm }}
+    when: ansible_distribution == "Fedora" and rpmfusion.stdout == "missing"
+    ignore_errors: true
+    become: true
+    tags: repo
+
+    # it's Fedora package
+  - name: setup Fedora Workstation Repos
+    dnf:
+      name:
+      - fedora-workstation-repositories
+      state: present
+    become: true
     ignore_errors: true
     tags: repo
 
-  - name: setup RPMfusion repository
-    command: yum localinstall -y --nogpgcheck http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm
-    when: ansible_distribution == "Fedora" and rpmfusion.stdout == "missing"
+    # it's a URL that we set in our /etc/yum.repo.d/ conf 
+  - name: setup Google repos
+    yum_repository:
+      name: google-chrome
+      description: google-chrome
+      baseurl: "http://dl.google.com/linux/chrome/rpm/stable/x86_64"
+      gpgkey: "https://dl.google.com/linux/linux_signing_key.pub"
+      gpgcheck: true
+      enabled: true
+      skip_if_unavailable: true
     become: true
     ignore_errors: true
     tags: repo
