@@ -4,6 +4,9 @@ Resize online lvm on VMware Redhat
 
 2. Fetch current status
 vgs
+VGNAME=
+vgdisplay $VGNAME -v | egrep 'Physical|PV Name|Volume group|VG Size'
+pvs | egrep "PV|$VGNAME"
 
 # Find disk to extend
 {
@@ -24,7 +27,7 @@ Note : depending on disk the path could be different
 
 OR rescan all disks
 
-for D in `ls /sys/class/scsi_disk/*/device/rescan`; do echo "echo '1' > $D | sed 's/:/\\:/g'";done
+for D in `ls /sys/class/scsi_disk/*/device/rescan`; do echo "echo '1' > $D";done
 
 if syntax is ok, then pipe to bash
 
