@@ -38,7 +38,7 @@ Bonjour,
 Voulez-vous supprimer les clients suivants du monitoring:
 $VML
 EOT
-} | mailx -s "Remove $VML from the monitoring" -r $email -c $email,OPDL-INFRA-INT-PROD@publications.europa.eu,op-helpdesk@publications.europa.eu OP-IT-PRODUCTION.europa.eu
+} | mailx -s "Remove $VML from the monitoring" -r $email -c $email,OPDL-INFRA-INT-PROD@publications.europa.eu,op-helpdesk-it@ec.europa.eu OP-IT-PRODUCTION@publications.europa.eu
 
 
 ====================================================================================================================================

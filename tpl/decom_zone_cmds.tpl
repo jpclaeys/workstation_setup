@@ -145,7 +145,7 @@ Voulez-vous supprimer les clients suivants du monitoring:
 `cat ${tmp_folder}/network_ip.txt | awk '{print $2}' | sed -e 's/.opoce.cec.eu.int//' | grep -v "bkp-${zone_name}"`
 
 EOT
-} | mailx -s "Remove $zone_name from the monitoring" -r $who -c $who,OPDL-INFRA-INT-PROD@publications.europa.eu,op-helpdesk@publications.europa.eu OP-IT-PRODUCTION.europa.eu
+} | mailx -s "Remove $zone_name from the monitoring" -r $who -c $who,OPDL-INFRA-INT-PROD@publications.europa.eu,op-helpdesk-it@ec.europa.eu OP-IT-PRODUCTION@publications.europa.eu
 
 3.7 get storage information, on both nodes
 
