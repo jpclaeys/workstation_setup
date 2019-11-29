@@ -7,13 +7,13 @@ Ref: https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:nix:how
 read -p "Enter the password for the LDAP administrator: " LDAPPWD
 
 # Get the first available uid
-get_first_free_uid 30200 | grep -i First
+get_first_free_uid 30250 | grep -i First
 
 FIRST_NAME=
 LAST_NAME=
 USERLOGIN=
 USERID=
-
+GIDNUMBER=47110
 
 1.2.2 Create the LDAP definitions
 ----------------------------------
@@ -35,12 +35,23 @@ export int_test_member=no
 export dba_member=no
 }
 
-The “official” variable is used to specify if this user is an OP official or not.
-The “halian_user” variable is used for add the user to the Wiki group.
-The “system_team_member” variable is used for add the user to groups (opsys_ux, adminux, ldap-admin and sat-admin).
-The “int_prod_member” variable is used for add the user to the root-int group.
-The “int_test_member” variable is used for add the user to the int_test group.
-The “dba_member” variable is used for add the user to the rootdba group.
+# The “official” variable is used to specify if this user is an OP official or not.
+# The “halian_user” variable is used for add the user to the Wiki group.
+# The “system_team_member” variable is used for add the user to groups (opsys_ux, adminux, ldap-admin and sat-admin).
+# The “int_prod_member” variable is used for add the user to the root-int group.
+# The “int_test_member” variable is used for add the user to the int_test group.
+# The “dba_member” variable is used for add the user to the rootdba group.
+
+# Create “mailaddress” variable
+--------------------------------
+{
+PREFIX= && [[ $official == no ]] && PREFIX="ext."
+# remove spaces from the last_name if any
+lastnamemail=`echo ${last_name} | tr -d ' '` && echo $lastnamemail
+export mailaddress="${first_name}.${lastnamemail}@${PREFIX}publications.europa.eu" && echo $mailaddress
+}
+
+!!! Double check the mail address against the outlook address book !!!
 
 # Check the defined variables
 ------------------------------
@@ -59,20 +70,9 @@ system_team_member=$system_team_member
 int_prod_member=$int_prod_member
 int_test_member=$int_test_member
 dba_member=$dba_member
+mailaddress=$mailaddress
 "
 }
-
-
-# Then, we create “mailaddress” variable
------------------------------------------
-
-if [[ $official == yes ]]; then
-	export mailaddress="${first_name}.${last_name}@publications.europa.eu"
-else
-	export mailaddress="${first_name}.${last_name}@ext.publications.europa.eu"
-fi
-
-
 
 # Then start user creation:
 ----------------------------
@@ -84,7 +84,7 @@ dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
 uid: ${login}
 loginShell: /bin/bash
 uidNumber: ${uid}
-gidNumber: 47110
+gidNumber: ${GIDNUMBER}
 homeDirectory: /home/${login}
 shadowLastChange: 0
 shadowMax: -1
@@ -106,7 +106,7 @@ dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
 uid: ${login}
 loginShell: /bin/bash
 uidNumber: ${uid}
-gidNumber: 47110
+gidNumber: ${GIDNUMBER}
 homeDirectory: /home/${login}
 shadowLastChange: 0
 shadowMax: -1
@@ -124,6 +124,17 @@ fi
 }
 
 {
+if [[ $dba_member == yes ]]; then
+ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
+dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: SolarisAttrKeyValue
+SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle
+EOT
+fi
+}
+
+{
 for group in staff opunix op-unix aws-unix
 do
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
@@ -137,12 +148,14 @@ done
 
 {
 if [[ $dba_member == yes ]]; then
+for group in rootdba admindba aws-dba op-dba; do
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
-dn: cn=rootdba,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
 memberUid: $login
 EOT
+done
 fi
 }
 

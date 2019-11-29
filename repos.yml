@@ -1,10 +1,10 @@
 ---
 
   - name: Check if RPMfusion already set
-    shell:            /bin/rpm -q --quiet rpmfusion-free-release && echo installed || echo missing
+    shell: /bin/rpm -q --quiet rpmfusion-free-release && echo installed || echo missing
     args:
       warn: false
-    register:         rpmfusion
+    register: rpmfusion
     tags: repo
 
     # it's RPM package to install a repo  

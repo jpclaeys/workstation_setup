@@ -59,7 +59,6 @@ fi
 export email="jean-pierre.claeys@ext.publications.europa.eu"
 
 export ADMINWST=opvmwstsx11
-export LDAPSERVER=ldapa-pk
 #export SOLARISLOGINHOST=kenobi
 export SOLARISLOGINHOST=karadoc
 export OLDUNIXSYSTEMSTORE="/net/vdm-unix/systemstore"

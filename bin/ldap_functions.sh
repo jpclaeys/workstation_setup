@@ -1,3 +1,4 @@
+export LDAPSERVER=ldapa-pk
 
 function ldapsearchexists ()
 {
