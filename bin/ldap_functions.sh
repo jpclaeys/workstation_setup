@@ -16,41 +16,41 @@ function ldapsearchexists ()
 
 function ldapsearchaliases ()
 {
-[ "$#" -eq 0 ] && echo "Usage: $FUNCTNAME <userid>" && return 1
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid>" && return 1
 ldapsearchexists || return 1
 ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 | grep -v ^version
 }
 
 function ldapsearchemail ()
 {
-[ "$#" -eq 0 ] && echo "Usage: $FUNCTNAME <userid>" && return 1
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid>" && return 1
 ldapsearchexists || return 1
 ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 rfc822MailMember | grep rfc822MailMember | awk '{print $2}'
 }
 
 function ldapsearchuser ()
 {
-[ "$#" -eq 0 ] && echo "Usage: $FUNCTNAME <userid>" && return 1
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid>" && return 1
 ldapsearchexists || return 1
 ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=people,dc=opoce,dc=cec,dc=eu,dc=int' uid=$1 | grep -v ^version
 }
 
 function ldapsearchgecos ()
 {
-[ "$#" -eq 0 ] && echo "Usage: $FUNCTNAME <userid>" && return 1
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid>" && return 1
 ldapsearchexists || return 1
 ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=people,dc=opoce,dc=cec,dc=eu,dc=int' uid=$1 gecos | awk -F":" '/gecos/ {print $NF}'| xargs
 }
 
 function ldapsearchusergidnumber ()
 {
-[ "$#" -eq 0 ] && echo "Usage: $FUNCTNAME <userid>" && return 1
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid>" && return 1
 ldapsearchexists || return 1
 ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=people,dc=opoce,dc=cec,dc=eu,dc=int' uid=claeyje gidNumber | awk '/gidNumber/ {print $NF}'
 }
 function ldapsearchsolarisroles ()
 {
-[ "$#" -eq 0 ] && echo "Usage: $FUNCTNAME <userid>" && return 1
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid>" && return 1
 ldapsearchexists || return 1
 ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=people,dc=opoce,dc=cec,dc=eu,dc=int' uid=$1 | grep SolarisAttrKeyValue
 }
