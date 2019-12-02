@@ -1,4 +1,4 @@
-function define_cmds_aliases
+function definecmdsaliases
 {
 # Define cmds aliases
 if [ -d "$DOCDIR" ]; then
@@ -9,7 +9,7 @@ if [ -d "$DOCDIR" ]; then
 fi
 }
 
-function remove_spaces_in_file_name ()
+function removespacesinfilename ()
 {
 [ $# -eq 0 ] && return 1
 FILENAME="$@"

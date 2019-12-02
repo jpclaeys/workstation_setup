@@ -99,6 +99,50 @@ userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
 SolarisAttrKeyValue: type=normal;roles=opsys_ux
 EOT
  
+elif [[ $dba_member == yes ]]; then
+ 
+ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
+dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+uid: ${login}
+loginShell: /bin/bash
+uidNumber: ${uid}
+gidNumber: ${GIDNUMBER}
+homeDirectory: /home/${login}
+shadowLastChange: 0
+shadowMax: -1
+objectClass: account
+objectClass: posixaccount
+objectClass: shadowaccount
+objectClass: SolarisUserAttr
+objectClass: top
+gecos: ${gecos}
+cn: ${gecos}
+userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
+SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle
+EOT
+ 
+elif [[ $int_prod_member == yes ]]; then
+ 
+ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
+dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+uid: ${login}
+loginShell: /bin/bash
+uidNumber: ${uid}
+gidNumber: ${GIDNUMBER}
+homeDirectory: /home/${login}
+shadowLastChange: 0
+shadowMax: -1
+objectClass: account
+objectClass: posixaccount
+objectClass: shadowaccount
+objectClass: SolarisUserAttr
+objectClass: top
+gecos: ${gecos}
+cn: ${gecos}
+userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
+SolarisAttrKeyValue: type=normal;roles=root-int
+EOT
+ 
 else
  
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
@@ -119,7 +163,6 @@ gecos: ${gecos}
 cn: ${gecos}
 userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
 EOT
- 
 fi
 }
 
