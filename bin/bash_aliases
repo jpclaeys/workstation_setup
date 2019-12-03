@@ -160,3 +160,4 @@ alias mytickets="(separator 132&& smt.sh -a claeyje | awk '/Description/,/Incide
 alias myticketsidlist="mytickets | awk '/IncidentID/ {print \$NF}'| sed 's/\"//g'"
 [ -f /usr/bin/bat ] && alias cat='bat -p'
 alias gitw='cd ~/git/workstation_setup'
+alias ap=ansible-playbook
