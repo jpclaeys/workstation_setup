@@ -1,0 +1,13 @@
+LVM: How to extend a vg
+-------------------------
+
+rescan the scsi bus to discover the new disk
+
+pvcreate /dev/sdxx
+
+vgextend <myvg> /dev/sdxx
+
+vgs
+
+lvextend -l +100%FREE /dev/<vgname>/<lvname> -r
+
