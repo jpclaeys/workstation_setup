@@ -44,6 +44,8 @@ Open a session On the host
 
 # Fetch info about the Hosts
 ------------------------------
+!!!!! Note: /net/nfs-infra.isilon/unix/systemstore is only visible from opvmwstsx11 !!!!!
+
 {
 HOST=`uname -n | cut -d'.' -f1` && echo $HOST
 TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
@@ -325,7 +327,7 @@ Dear all,
 
 Please change the status of the nodes:
 
-`cat /net/nfs-infra.isilon/unix/systemstore/temp/${HOST}/sysinfo_${HOST}.txt`
+`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
 
 to
 
@@ -363,7 +365,7 @@ Dear all,
 
 Please unwire the following systems from the infrastructure:
 
-`cat /net/nfs-infra.isilon/unix/systemstore/temp/${HOST}/sysinfo_${HOST}.txt`
+`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
 
 will be removed from the rack
 
@@ -388,7 +390,7 @@ Dear all,
 
 Please unwire the following systems from the infrastructure:
 
-`cat /net/nfs-infra.isilon/unix/systemstore/temp/${HOST}/sysinfo_${HOST}.txt`
+`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
 
 will be removed from the rack
 
@@ -417,7 +419,7 @@ Dear all,
 
 please remove the following systems physically:
 
-`cat /net/nfs-infra.isilon/unix/systemstore/temp/${HOST}/sysinfo_${HOST}.txt`
+`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
 
 has order to be disconnected and can now remove from rack.
 
@@ -439,7 +441,7 @@ Dear all,
 
 please remove the following systems physically:
 
-`cat /net/nfs-infra.isilon/unix/systemstore/temp/${HOST}/sysinfo_${HOST}.txt`
+`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
 
 has order to be disconnected and can now remove from rack.
 

@@ -1,5 +1,7 @@
 Resize online lvm on VMware Redhat
 -----------------------------------
+Note: fdisk is limited to 2 TB capacity !!!
+
 1. Ask increase of storage to windows team
 
 2. Fetch current status
@@ -17,7 +19,17 @@ MOUNTPOINT=/applications/axway && echo "# MOUNTPOINT=$MOUNTPOINT"
 LVNAME=`df -hlP | grep $MOUNTPOINT | awk '/mapper/ {print $1}'` && echo "# LVNAME=$LVNAME"
 LVPATH=`lvdisplay $LVNAME | awk '/LV Path/ {print $NF}'` && echo  "# LVPATH=$LVPATH"
 df -hTP  $MOUNTPOINT
+# check the partition type (msdos or GPT)
+parted $DISK print
 }
+
+
+# find mapping between SCSI device entries in /sys and the disks in /dev
+
+# An easy way to get the correspondence is to look at the device/block subdirectory in the /sys hierarchy:
+ls -1d /sys/class/scsi_device/*/device/block/*
+OR
+ls -1d /sys/class/scsi_device/*/device/block/${DEV}
 
 2. Rescan disk 
 # find the target disk (ex. 2 for sdb)

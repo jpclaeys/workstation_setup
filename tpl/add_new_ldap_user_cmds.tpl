@@ -28,7 +28,7 @@ export login=$USERLOGIN
 export uid=$USERID
 export gecos="${first_name} ${last_name}"
 export official=no
-export halian_user=no
+export wiki_user=yes              # grant access to the wiki
 export system_team_member=no
 export int_prod_member=no
 export int_test_member=no
@@ -36,7 +36,7 @@ export dba_member=no
 }
 
 # The “official” variable is used to specify if this user is an OP official or not.
-# The “halian_user” variable is used for add the user to the Wiki group.
+# The “wiki_user” variable is used for add the user to the Wiki group.
 # The “system_team_member” variable is used for add the user to groups (opsys_ux, adminux, ldap-admin and sat-admin).
 # The “int_prod_member” variable is used for add the user to the root-int group.
 # The “int_test_member” variable is used for add the user to the int_test group.
@@ -65,7 +65,7 @@ login=$login
 uid=$uid
 gecos=$gecos
 official=$official
-halian_user=$halian_user
+wiki_user=$wiki_user
 system_team_member=$system_team_member
 int_prod_member=$int_prod_member
 int_test_member=$int_test_member
@@ -76,106 +76,55 @@ mailaddress=$mailaddress
 
 # Then start user creation:
 ----------------------------
+# Define the "SolarisAttrKeyValue"
+----------------------------------
 {
 if [[ $system_team_member == yes ]]; then
- 
-ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
-dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
-uid: ${login}
-loginShell: /bin/bash
-uidNumber: ${uid}
-gidNumber: ${GIDNUMBER}
-homeDirectory: /home/${login}
-shadowLastChange: 0
-shadowMax: -1
-objectClass: account
-objectClass: posixaccount
-objectClass: shadowaccount
-objectClass: SolarisUserAttr
-objectClass: top
-gecos: ${gecos}
-cn: ${gecos}
-userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
-SolarisAttrKeyValue: type=normal;roles=opsys_ux
-EOT
- 
+  SOLARISATTRKEYVALUE="SolarisAttrKeyValue: type=normal;roles=opsys_ux"
 elif [[ $dba_member == yes ]]; then
- 
-ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
-dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
-uid: ${login}
-loginShell: /bin/bash
-uidNumber: ${uid}
-gidNumber: ${GIDNUMBER}
-homeDirectory: /home/${login}
-shadowLastChange: 0
-shadowMax: -1
-objectClass: account
-objectClass: posixaccount
-objectClass: shadowaccount
-objectClass: SolarisUserAttr
-objectClass: top
-gecos: ${gecos}
-cn: ${gecos}
-userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
-SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle
-EOT
- 
+  SOLARISATTRKEYVALUE="SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle"
 elif [[ $int_prod_member == yes ]]; then
- 
-ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
-dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
-uid: ${login}
-loginShell: /bin/bash
-uidNumber: ${uid}
-gidNumber: ${GIDNUMBER}
-homeDirectory: /home/${login}
-shadowLastChange: 0
-shadowMax: -1
-objectClass: account
-objectClass: posixaccount
-objectClass: shadowaccount
-objectClass: SolarisUserAttr
-objectClass: top
-gecos: ${gecos}
-cn: ${gecos}
-userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
-SolarisAttrKeyValue: type=normal;roles=root-int
-EOT
- 
+  SOLARISATTRKEYVALUE="SolarisAttrKeyValue: type=normal;roles=root-int"
 else
- 
-ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
-dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
-uid: ${login}
-loginShell: /bin/bash
-uidNumber: ${uid}
-gidNumber: ${GIDNUMBER}
-homeDirectory: /home/${login}
-shadowLastChange: 0
-shadowMax: -1
-objectClass: account
-objectClass: posixaccount
-objectClass: shadowaccount
-objectClass: SolarisUserAttr
-objectClass: top
-gecos: ${gecos}
-cn: ${gecos}
-userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
-EOT
+  SOLARISATTRKEYVALUE=
 fi
+echo "SOLARISATTRKEYVALUE=$SOLARISATTRKEYVALUE"
 }
 
+# Create the user
+------------------
 {
-if [[ $dba_member == yes ]]; then
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
 dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
-changetype: modify
-add: SolarisAttrKeyValue
-SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle
+uid: ${login}
+loginShell: /bin/bash
+uidNumber: ${uid}
+gidNumber: ${GIDNUMBER}
+homeDirectory: /home/${login}
+shadowLastChange: 0
+shadowMax: -1
+objectClass: account
+objectClass: posixaccount
+objectClass: shadowaccount
+objectClass: SolarisUserAttr
+objectClass: top
+gecos: ${gecos}
+cn: ${gecos}
+userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
+$SOLARISATTRKEYVALUE
 EOT
-fi
 }
+
+# {
+# if [[ $dba_member == yes ]]; then
+# ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
+# dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+# changetype: modify
+# add: SolarisAttrKeyValue
+# SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle
+# EOT
+# fi
+# }
 
 {
 for group in staff opunix op-unix aws-unix
@@ -253,7 +202,7 @@ fi
 }
 
 {
-if [[ $halian_user == yes ]]; then
+if [[ $wiki_user == yes ]]; then
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
 dn: cn=user,ou=wiki,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
