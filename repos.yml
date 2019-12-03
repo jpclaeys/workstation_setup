@@ -5,7 +5,11 @@
     args:
       warn: false
     register: rpmfusion
+    check_mode: no
     tags: repo
+
+#  - debug: var=rpmfusion
+#    tags: repo
 
     # it's RPM package to install a repo  
   - name: setup RPMfusion repository

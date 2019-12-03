@@ -1,5 +1,15 @@
 ---
 
+  - name: create python -> python3 symlink
+    file:
+      src: /usr/bin/python3
+      dest: /usr/bin/python
+      state: link
+    become: true
+    ignore_errors: true
+    when: ansible_distribution == "Fedora"
+    tags: os
+
   - name: setup .bash_profile
     file:
       src: ~/git/workstation_setup/bin/bash_profile
