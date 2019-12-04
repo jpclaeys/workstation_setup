@@ -94,17 +94,28 @@ FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/misc_functions.sh)
 FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/check_functions.sh)
 FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/ldap_functions.sh)
 
-for USERFUNCTIONS in ${FUNCTIONSFILES[@]}; do
-  [ -f ~/$USERFUNCTIONS ] && source ~/$USERFUNCTIONS
-done
+#for USERFUNCTIONS in ${FUNCTIONSFILES[@]}; do  [ -f ~/$USERFUNCTIONS ] && source ~/$USERFUNCTIONS; done
 
-if [ `uname -n` == "iceman" ]; then
-ICEMANFUNCTIONSFILES=( bin/iceman_bash_functions.sh)
+FUNCTIONSFILES=`echo "
+bash_aliases
+bash_functions.sh
+basic_functions.sh
+bash_colors.sh
+print_functions.sh
+newlog_functions.sh
+LUNs_functions.sh
+git_prompt.sh
+prompt.sh
+sshroot_functions.sh
+misc_functions.sh
+check_functions.sh
+ldap_functions.sh
+" | xargs` # && echo "FUNCTIONSFILES=\"$FUNCTIONSFILES\""
 
-for USERFUNCTIONS in ${ICEMANFUNCTIONSFILES[@]}; do
-  [ -f ~/$USERFUNCTIONS ] && source ~/$USERFUNCTIONS
-done
-fi
+PREFIX=~/bin # && echo $PREFIX
+
+for UF in ${FUNCTIONSFILES}; do  F="$PREFIX/$UF" &&  [ -f $F ] && source $F || echo "$F unknown"; done
+
 
 # Set time stamps in history
 export HISTTIMEFORMAT="%d/%m/%y %T "
