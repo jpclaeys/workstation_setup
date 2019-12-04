@@ -3,14 +3,19 @@ Resize online lvm on VMware Redhat
 Note: fdisk is limited to 2 TB capacity !!!
 
 1. Ask increase of storage to windows team
+-------------------------------------------
 
 2. Fetch current status
+------------------------
 vgs
 VGNAME=
 vgdisplay $VGNAME -v | egrep 'Physical|PV Name|Volume group|VG Size'
+
+# Find the disk to extend
 pvs | egrep "PV|$VGNAME"
 
-# Find disk to extend
+# Define variables
+-------------------
 {
 DEV=<dev name>  && echo "# DEV=$DEV"   # ex. DEV=sdb 
 DISK=/dev/$DEV && echo "# DISK=$DISK"
@@ -25,7 +30,7 @@ parted $DISK print
 
 
 # find mapping between SCSI device entries in /sys and the disks in /dev
-
+--------------------------------------------------------------------------
 # An easy way to get the correspondence is to look at the device/block subdirectory in the /sys hierarchy:
 ls -1d /sys/class/scsi_device/*/device/block/*
 OR
@@ -38,12 +43,14 @@ echo '1' > /sys/class/scsi_disk/2\:0\:1\:0/device/rescan
 Note : depending on disk the path could be different
 
 OR rescan all disks
+--------------------
 
 for D in `ls /sys/class/scsi_disk/*/device/rescan`; do echo "echo '1' > $D";done
 
 if syntax is ok, then pipe to bash
 
 3. Check result
+----------------
 tail /var/log/messages | grep kernel
 
 OLDSIZE=`tail /var/log/messages | grep capacity | awk '{print $(NF-2)}'` && echo $OLDSIZE

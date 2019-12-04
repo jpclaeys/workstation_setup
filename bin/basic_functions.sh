@@ -102,6 +102,7 @@ proxy_password=hueRDv7
 export {http,https,ftp}_proxy=http://$proxy_username:$proxy_password@$proxy_server:$proxy_port
 }
 
+defineproxy
 
 function no_more_than_one ()
 {

@@ -662,14 +662,19 @@ function show_running_zones_t54 ()
 mypssH "`t54hosts`" '(/usr/sbin/zoneadm list | grep -v global;:)'
 }
 
-function show_running_zones ()
-{
-mypssH "`thosts`" '(/usr/sbin/zoneadm list | grep -v global;:)'
-}
-
 function show_running_zones_count ()
 {
 mypssH "`thosts`" '(/usr/sbin/zoneadm list | grep -v global;:)' | grep -v SUCCESS | wc -l
+}
+
+function show_running_zones_t52_count ()
+{
+mypssH "`t52hosts`" '(/usr/sbin/zoneadm list | grep -v global;:)' | grep -v SUCCESS | wc -l
+}
+
+function show_running_zones_t54_count ()
+{
+mypssH "`t54hosts`" '(/usr/sbin/zoneadm list | grep -v global;:)' | grep -v SUCCESS | wc -l
 }
 
 function show_non_running_zones ()

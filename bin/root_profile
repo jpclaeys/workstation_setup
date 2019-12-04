@@ -51,19 +51,23 @@ LUNS=`powermt display dev=$EMCDEV | awk '/pci/ {print $3}'| xargs` && echo $LUNS
 }
 
 export HISTTIMEFORMAT="%d/%m/%y %T "
-
-FUNCTIONSFILES=(~claeyje/bin/bashrc )
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/bash_aliases)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/bash_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/decom_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/generic_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/LUNs_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/root_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/bash_colors.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/print_functions.sh)
-# FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/git_prompt.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} ~claeyje/bin/prompt.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/sshroot_functions.sh)
+FUNCDIR="/home/claeyje/bin"
+FUNCTIONSFILES=($FUNCDIR/bashrc )
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/bash_aliases)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/basic_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/sshroot_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/misc_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/check_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/ldap_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/bash_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/decom_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/generic_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/LUNs_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/root_functions.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/bash_colors.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/print_functions.sh)
+# FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/git_prompt.sh)
+FUNCTIONSFILES=(${FUNCTIONSFILES[@]} $FUNCDIR/prompt.sh)
 
 
 for USERFUNCTIONS in ${FUNCTIONSFILES[@]}; do

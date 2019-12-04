@@ -1,0 +1,94 @@
+Resize lvm by adding a new disk to the vg
+------------------------------------------
+
+1. Ask new disk to the WIndows team
+-------------------------------------
+
+
+2. Fetch current status
+------------------------
+VGNAME=
+vgs $VGNAME
+vgdisplay $VGNAME -v | egrep 'Physical|PV Name|Volume group|VG Size'
+pvs | egrep "PV|$VGNAME"
+
+
+# Define variables
+-------------------
+{
+DEV=<dev name>  && echo "# DEV=$DEV"   # ex. DEV=sdb
+DISK=/dev/$DEV && echo "# DISK=$DISK"
+PARTITION=${DISK}1 && echo "# PARTITION=$PARTITION"
+MOUNTPOINT=/applications/axway && echo "# MOUNTPOINT=$MOUNTPOINT"
+LVNAME=`df -hlP | grep $MOUNTPOINT | awk '/mapper/ {print $1}'` && echo "# LVNAME=$LVNAME"
+LVPATH=`lvdisplay $LVNAME | awk '/LV Path/ {print $NF}'` && echo  "# LVPATH=$LVPATH"
+df -hTP  $LVNAME
+# check the partition type (msdos or GPT)
+parted $DISK print
+# show current devices
+pvs
+ls -1d  /sys/class/scsi_device/*/device/block/sd* --color=no | sort -t"/" -k7
+}
+
+===================================
+
+
+# scan scsi bus to get the new disk
+ex. /dev/sdl
+
+Rescan all disks
+--------------------
+
+for D in `ls /sys/class/scsi_disk/*/device/rescan`; do echo "echo '1' > $D";done
+
+if syntax is ok, then pipe to bash
+
+Define new DISK variables
+--------------------------
+
+grep capacity /var/log/messages
+ll /dev/sd* # --> last names in the list should be the new disk
+
+{
+DEV=<dev name>  && echo     "# DEV=$DEV"   # ex. DEV=sdb
+DISK=/dev/$DEV && echo      "# DISK=$DISK"
+PARTITION=${DISK}1 && echo  "# PARTITION=$PARTITION"
+}
+
+df -hP $LVNAME
+
+fdisk -l $DISK
+fdisk  $DISK   # create partition on the whole disk
+fdisk -l $DISK
+OR
+echo "parted -a optimal -s $DISK mklabel msdos unit % mkpart primary  0 100"
+lsblk | grep $DISK
+parted $DISK print
+
+# get current in-memory partition table
+cat /proc/partitions | grep $DEV
+# inform the OS of partition table changes
+partprobe
+cat /proc/partitions | grep $DEV
+
+# Create the new physical volume
+---------------------------------
+pvcreate $PARTITION
+vgs $VGNAME
+
+# Extend the volume group
+--------------------------
+vgextend $VGNAME $PARTITION
+vgs $VGNAME 
+
+# Extend the logical volume
+----------------------------
+lvresize -l +100%FREE $LVNAME -r
+df -hP $LVNAME
+
+lvdisplay $LVNAME | egrep "Name|Path|Size"
+
+
+
+
+
