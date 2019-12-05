@@ -79,10 +79,13 @@ mailaddress=$mailaddress
 # Define the "SolarisAttrKeyValue"
 ----------------------------------
 {
+# system team member
 if [[ $system_team_member == yes ]]; then
   SOLARISATTRKEYVALUE="SolarisAttrKeyValue: type=normal;roles=opsys_ux"
+# DBA team member
 elif [[ $dba_member == yes ]]; then
   SOLARISATTRKEYVALUE="SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle"
+# INT PROD team member
 elif [[ $int_prod_member == yes ]]; then
   SOLARISATTRKEYVALUE="SolarisAttrKeyValue: type=normal;roles=root-int"
 else

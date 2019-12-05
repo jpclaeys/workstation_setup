@@ -4,7 +4,13 @@
 for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
 multipath -ll
 
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+
 Using /sys class file
+----------------------
+
 You can use the echo command to scan each scsi host device as below. Now to rescan the bus, use the following command
 
 # echo "- - -" >  /sys/class/scsi_host/host0/scan
@@ -33,3 +39,13 @@ or
 echo "- - -" >/sys/class/scsi_host/${host}/scan;
 done
 It may look like very simple as we perform this operation but the system has much work to do in the background when you execute storage scanning commands.
+
+Find "h c t l" of a disk
+-------------------------
+ls -ld /sys/block/sd*/device
+
+ex. for lun sdm
+
+[root@fedorafs4-pk ~]# ls -ld /sys/block/sdm/device 
+lrwxrwxrwx 1 root root 0  5 déc 07:17 /sys/block/sdm/device -> ../../../2:0:13:0
+

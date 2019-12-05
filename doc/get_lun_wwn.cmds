@@ -1,0 +1,11 @@
+To get WWID of LUN you can use the /dev/disk/by-id/ file:
+----------------------------------------------------------
+
+# ls -la /dev/disk/by-id/
+scsi-3600508b400105e210000900000490000 -> ../../dm-1
+Now its easier to understand that dm-1 has WWID 3600508b400105e210000900000490000
+
+[root@fedorafs4-pk ~]# ls -la /dev/disk/by-id/| grep sdm
+lrwxrwxrwx 1 root root    9  5 déc 06:00 scsi-360000970000296700069533030303346 -> ../../sdm
+lrwxrwxrwx 1 root root    9  5 déc 06:00 wwn-0x60000970000296700069533030303346 -> ../../sdm
+
