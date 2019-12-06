@@ -1,51 +1,57 @@
-# Re-configure removed_luns (not yest recovered by the storage)
-----------------------------------------------------------------
+Configure new_luns by rescanning the scsi bus
+----------------------------------------------
 
-for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
-multipath -ll
-
+for DEVICE in `ls /sys/class/scsi_host/host?*/scan`; do echo "- - -" > $DEVICE; done
 
 ------------------------------------------------------------------------------------------------------------------------------------
-
-
 Using /sys class file
 ----------------------
 
 You can use the echo command to scan each scsi host device as below. Now to rescan the bus, use the following command
 
 # echo "- - -" >  /sys/class/scsi_host/host0/scan
-The three dash ("-  -  -") of the command act as wildcards meaning rescan everything. Remember that the three values normally stand for channel, SCSI target ID, and LUN.
+The three dash ("-  -  -") of the command act as wildcards meaning rescan everything. 
+Remember that the three values normally stand for channel, SCSI target ID, and LUN.
 
 # echo "c t l" >  /sys/class/scsi_host/hosth/scan
-where
+where:
 
 h is the HBA number
 c is the channel on the HBA
 t is the SCSI target ID
 l is the LUN.
-If you don't have the host bus number, you must list all the existing host bus number on your system with the command
 
-# ls /sys/class/scsi_host
-host0 host1 host2
+If you don't have the host bus number, you must rescan all the existing host scsi bus:
 
-Then you will scan every iscsi disk found and scan after every scanning if the new disk was detected. It means
+# for host in `ls /sys/class/scsi_host/`;do echo "- - -" >/sys/class/scsi_host/${host}/scan;done
 
-# echo "- - -" > /sys/class/scsi_host/host0/scan
-# echo "- - -" > /sys/class/scsi_host/host1/scan
-# echo "- - -" > /sys/class/scsi_host/host2/scan
-or
-
-# for host in `ls /sys/class/scsi_host/`;do
-echo "- - -" >/sys/class/scsi_host/${host}/scan;
-done
 It may look like very simple as we perform this operation but the system has much work to do in the background when you execute storage scanning commands.
 
+------------------------------------------------------------------------------------------------------------------------------------
 Find "h c t l" of a disk
 -------------------------
-ls -ld /sys/block/sd*/device
+ls -ld /sys/block/sdX/device
 
 ex. for lun sdm
-
 [root@fedorafs4-pk ~]# ls -ld /sys/block/sdm/device 
 lrwxrwxrwx 1 root root 0  5 déc 07:17 /sys/block/sdm/device -> ../../../2:0:13:0
 
+Then rescan the specific device:
+echo "1" > /sys/class/scsi_device/2:0:13:0/device/rescan
+
+------------------------------------------------------------------------------------------------------------------------------------
+An easy way to get the correspondence is to look at the device/block subdirectory in the /sys hierarchy:
+
+# ls -1d /sys/class/scsi_device/*/device/block/* | sort -t'/' -k7
+ex.
+[root@fedorafs4-recover-pk ~]# ls -1d /sys/class/scsi_device/*/device/block/*  | sort -t'/' -k7
+<snip>
+/sys/class/scsi_device/2:0:13:0/device/block/sdm
+<snip>
+
+------------------------------------------------------------------------------------------------------------------------------------
+The easiest way i’ve found is to rescan the specific device with the following command:
+
+echo "1" > /sys/class/block/sdX/device/rescan
+..where X is the device you increased and want to rescan.
+------------------------------------------------------------------------------------------------------------------------------------

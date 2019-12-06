@@ -1,0 +1,33 @@
+# Difference between fdisk and parted
+---------------------------------------
+1. fdisk formatting
+--------------------
+Disk /dev/sdm: 1073.7 GB, 1073743134720 bytes
+255 heads, 63 sectors/track, 130541 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x000a5341
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdm1               1      130541  1048570551   8e  Linux LVM
+
+2. parted formatting
+----------------------
+[root@fedorafs4-recover-pk ~]# echo "parted -a optimal -s $DISK mklabel msdos unit % mkpart primary  0 100"
+parted -a optimal -s /dev/sdm mklabel msdos unit % mkpart primary  0 100
+[root@fedorafs4-recover-pk ~]# echo "parted -a optimal -s $DISK mklabel msdos unit % mkpart primary  0 100"| bash
+[root@fedorafs4-recover-pk ~]# fdisk -l $DISK
+
+Disk /dev/sdm: 1073.7 GB, 1073743134720 bytes
+255 heads, 63 sectors/track, 130541 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x000a5341
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdm1               1      130542  1048576000   83  Linux
+
+
+==> partition is 1 cyl larger when using parted !!!

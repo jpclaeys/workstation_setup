@@ -1,53 +1,40 @@
 Resize lvm by adding a new disk to the vg
 ------------------------------------------
 
-1. Ask new disk to the WIndows team
+1. Ask new disk to the Windows team
 -------------------------------------
-
-
-2. Fetch current status
+Wait for the new disk
+====================================================================================================================================
+New disk info from SMT:
 ------------------------
-VGNAME=
-vgs $VGNAME
-vgdisplay $VGNAME -v | egrep 'Physical|PV Name|Volume group|VG Size'
-pvs | egrep "PV|$VGNAME"
 
 
-# Define variables
--------------------
-{
-DEV=<dev name>  && echo "# DEV=$DEV"   # ex. DEV=sdb
-DISK=/dev/$DEV && echo "# DISK=$DISK"
-PARTITION=${DISK}1 && echo "# PARTITION=$PARTITION"
-MOUNTPOINT=/applications/axway && echo "# MOUNTPOINT=$MOUNTPOINT"
-LVNAME=`df -hlP | grep $MOUNTPOINT | awk '/mapper/ {print $1}'` && echo "# LVNAME=$LVNAME"
-LVPATH=`lvdisplay $LVNAME | awk '/LV Path/ {print $NF}'` && echo  "# LVPATH=$LVPATH"
-df -hTP  $LVNAME
-# check the partition type (msdos or GPT)
-parted $DISK print
-# show current devices
-pvs
-ls -1d  /sys/class/scsi_device/*/device/block/sd* --color=no | sort -t"/" -k7
-}
+====================================================================================================================================
 
-===================================
-
-
-# scan scsi bus to get the new disk
-ex. /dev/sdl
-
-Rescan all disks
---------------------
+Rescan scsi bus to get the new disk(s)
+---------------------------------------
 
 for D in `ls /sys/class/scsi_disk/*/device/rescan`; do echo "echo '1' > $D";done
 
 if syntax is ok, then pipe to bash
 
-Define new DISK variables
---------------------------
+# get new disk info from /var/log/messages
+-------------------------------------------
 
-grep capacity /var/log/messages
-ll /dev/sd* # --> last names in the list should be the new disk
+grep -B1 -A7 "device added" /var/log/messages                            
+  OR
+zgrep -B1 -A7 "device added" /var/log/messages.1.gz
+
+# If we get the disk wwid in the SMT ticket
+--------------------------------------------
+
+DISKWWID=
+ll /dev/disk/by-id | grep $DISKWWID
+
+====================================================================================================================================
+
+2. Define new DISK variables
+------------------------------
 
 {
 DEV=<dev name>  && echo     "# DEV=$DEV"   # ex. DEV=sdb
@@ -55,14 +42,48 @@ DISK=/dev/$DEV && echo      "# DISK=$DISK"
 PARTITION=${DISK}1 && echo  "# PARTITION=$PARTITION"
 }
 
-df -hP $LVNAME
+3. Define variables
+-------------------
+# if the FS is not mounted; then mount it
+{
+MOUNTPOINT=     && echo "# MOUNTPOINT=$MOUNTPOINT"
+VGNAME=`df -hTP $MOUNTPOINT | tail -1 | awk -F'-' '{print $1}' | awk -F'/' '{print $NF}'` && echo "# VGNAME=$VGNAME"
+LVNAME=`df -hlP $MOUNTPOINT | awk '/mapper/ {print $1}'` && echo "# LVNAME=$LVNAME"
+LVPATH=`lvdisplay $LVNAME | awk '/LV Path/ {print $NF}'` && echo  "# LVPATH=$LVPATH"
+}
+
+4. Fetch current status
+------------------------
+{
+vgs $VGNAME
+vgdisplay $VGNAME -v | egrep 'Physical|PV Name|Volume group|VG Size'
+pvs | egrep "PV|$VGNAME"
+df -hTP  $LVNAME
+ls -1d  /sys/class/scsi_device/*/device/block/$DEV --color=no | sort -t"/" -k7
+}
+
+5. Format the new disk
+-----------------------
+echo $DISK
+fdisk -l $DISK
+
+fdisk  $DISK   # create partition on the whole disk
+# Answers:
+-----------
+n       # add a new partition
+p       # primary partition (1-4)
+1       # Partition number (1-4): choose 1
+1	# First cylinder (1-130541, default 1)
+<cr>    # Last cylinder, +cylinders or +size{K,M,G} (1-nnn, default nnn): use default value for the last cylinder (whole disk)
+t       # change system partition type to 8e (Linux LVM)
+p       # print partition table and double-check
+w       # if OK, then write down the partition table to the disk
+
+  OR
+
+echo "parted -a optimal -s $DISK mklabel msdos unit % mkpart primary  0 100"
 
 fdisk -l $DISK
-fdisk  $DISK   # create partition on the whole disk
-fdisk -l $DISK
-OR
-echo "parted -a optimal -s $DISK mklabel msdos unit % mkpart primary  0 100"
-lsblk | grep $DISK
 parted $DISK print
 
 # get current in-memory partition table
@@ -71,24 +92,61 @@ cat /proc/partitions | grep $DEV
 partprobe
 cat /proc/partitions | grep $DEV
 
-# Create the new physical volume
----------------------------------
+6.  Create the new physical volume
+------------------------------------
+echo $PARTITION $VGNAME
 pvcreate $PARTITION
+pvs $PARTITION
+
+7.  Extend the volume group
+-----------------------------
+pvs | egrep "PV|$VGNAME"
+vgs $VGNAME && vgextend $VGNAME $PARTITION && vgs $VGNAME 
+pvs | egrep "PV|$VGNAME"
+
+8.  Extend the logical volume
+--------------------------------
+echo  $VGNAME $LVNAME
+df -hP $LVNAME 
 vgs $VGNAME
-
-# Extend the volume group
---------------------------
-vgextend $VGNAME $PARTITION
-vgs $VGNAME 
-
-# Extend the logical volume
-----------------------------
-lvresize -l +100%FREE $LVNAME -r
+time lvresize -l +100%FREE $LVNAME -r
 df -hP $LVNAME
-
 lvdisplay $LVNAME | egrep "Name|Path|Size"
 
 
+[root@fedorafs4-pk log]# echo $LVNAME
+/dev/mapper/data_date7-main
+[root@fedorafs4-pk log]# df -hP $LVNAME
+Filesystem                   Size  Used Avail Use% Mounted on
+/dev/mapper/data_date7-main  2,1T  1,8T  141G  93% /applications/cellar/fedoradata_date_7
+[root@fedorafs4-pk log]# vgs $VGNAME
+  VG         #PV #LV #SN Attr   VSize VFree  
+  data_date7   3   1   0 wz--n- 3,03t 999,99g
+[root@fedorafs4-pk log]# time lvresize -l +100%FREE $LVNAME -r
+  Size of logical volume data_date7/main changed from 2,05 TiB (537598 extents) to 3,03 TiB (793596 extents).
+  Logical volume main successfully resized.
+resize2fs 1.41.12 (17-May-2010)
+Filesystem at /dev/mapper/data_date7-main is mounted on /applications/cellar/fedoradata_date_7; on-line resizing required
+old desc_blocks = 132, new_desc_blocks = 194
+Performing an on-line resize of /dev/mapper/data_date7-main to 812642304 (4k) blocks.
+The filesystem on /dev/mapper/data_date7-main is now 812642304 blocks long.
 
 
+real	2m38.951s
+user	0m0.179s
+sys	0m5.607s
+[root@fedorafs4-pk log]# df -hP $LVNAME
+Filesystem                   Size  Used Avail Use% Mounted on
+/dev/mapper/data_date7-main  3,0T  1,8T  1,1T  63% /applications/cellar/fedoradata_date_7
+[root@fedorafs4-pk log]# lvdisplay $LVNAME | egrep "Name|Path|Size"
+  LV Path                /dev/data_date7/main
+  LV Name                main
+  VG Name                data_date7
+  LV Size                3,03 TiB
+
+
+
+====================================================================================================================================
+====================================================================================================================================
+====================================================================================================================================
 
