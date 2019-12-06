@@ -49,7 +49,6 @@ PARTITION=${DISK}1 && echo  "# PARTITION=$PARTITION"
 MOUNTPOINT=     && echo "# MOUNTPOINT=$MOUNTPOINT"
 VGNAME=`df -hTP $MOUNTPOINT | tail -1 | awk -F'-' '{print $1}' | awk -F'/' '{print $NF}'` && echo "# VGNAME=$VGNAME"
 LVNAME=`df -hlP $MOUNTPOINT | awk '/mapper/ {print $1}'` && echo "# LVNAME=$LVNAME"
-LVPATH=`lvdisplay $LVNAME | awk '/LV Path/ {print $NF}'` && echo  "# LVPATH=$LVPATH"
 }
 
 4. Fetch current status
@@ -66,6 +65,8 @@ ls -1d  /sys/class/scsi_device/*/device/block/$DEV --color=no | sort -t"/" -k7
 -----------------------
 echo $DISK
 fdisk -l $DISK
+# get current in-memory partition table
+cat /proc/partitions | grep $DEV
 
 fdisk  $DISK   # create partition on the whole disk
 # Answers:
@@ -86,8 +87,6 @@ echo "parted -a optimal -s $DISK mklabel msdos unit % mkpart primary  0 100"
 fdisk -l $DISK
 parted $DISK print
 
-# get current in-memory partition table
-cat /proc/partitions | grep $DEV
 # inform the OS of partition table changes
 partprobe
 cat /proc/partitions | grep $DEV
@@ -112,38 +111,6 @@ vgs $VGNAME
 time lvresize -l +100%FREE $LVNAME -r
 df -hP $LVNAME
 lvdisplay $LVNAME | egrep "Name|Path|Size"
-
-
-[root@fedorafs4-pk log]# echo $LVNAME
-/dev/mapper/data_date7-main
-[root@fedorafs4-pk log]# df -hP $LVNAME
-Filesystem                   Size  Used Avail Use% Mounted on
-/dev/mapper/data_date7-main  2,1T  1,8T  141G  93% /applications/cellar/fedoradata_date_7
-[root@fedorafs4-pk log]# vgs $VGNAME
-  VG         #PV #LV #SN Attr   VSize VFree  
-  data_date7   3   1   0 wz--n- 3,03t 999,99g
-[root@fedorafs4-pk log]# time lvresize -l +100%FREE $LVNAME -r
-  Size of logical volume data_date7/main changed from 2,05 TiB (537598 extents) to 3,03 TiB (793596 extents).
-  Logical volume main successfully resized.
-resize2fs 1.41.12 (17-May-2010)
-Filesystem at /dev/mapper/data_date7-main is mounted on /applications/cellar/fedoradata_date_7; on-line resizing required
-old desc_blocks = 132, new_desc_blocks = 194
-Performing an on-line resize of /dev/mapper/data_date7-main to 812642304 (4k) blocks.
-The filesystem on /dev/mapper/data_date7-main is now 812642304 blocks long.
-
-
-real	2m38.951s
-user	0m0.179s
-sys	0m5.607s
-[root@fedorafs4-pk log]# df -hP $LVNAME
-Filesystem                   Size  Used Avail Use% Mounted on
-/dev/mapper/data_date7-main  3,0T  1,8T  1,1T  63% /applications/cellar/fedoradata_date_7
-[root@fedorafs4-pk log]# lvdisplay $LVNAME | egrep "Name|Path|Size"
-  LV Path                /dev/data_date7/main
-  LV Name                main
-  VG Name                data_date7
-  LV Size                3,03 TiB
-
 
 
 ====================================================================================================================================

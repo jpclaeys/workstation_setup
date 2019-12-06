@@ -14,42 +14,28 @@ vgdisplay $VGNAME -v | egrep 'Physical|PV Name|Volume group|VG Size'
 # Find the disk to extend
 pvs | egrep "PV|$VGNAME"
 
-# Define variables
--------------------
+3. Define variables
+--------------------
 {
 DEV=<dev name>  && echo "# DEV=$DEV"   # ex. DEV=sdb 
 DISK=/dev/$DEV && echo "# DISK=$DISK"
 PARTITION=${DISK}1 && echo "# PARTITION=$PARTITION"
 MOUNTPOINT=/applications/axway && echo "# MOUNTPOINT=$MOUNTPOINT"
 LVNAME=`df -hlP | grep $MOUNTPOINT | awk '/mapper/ {print $1}'` && echo "# LVNAME=$LVNAME"
-LVPATH=`lvdisplay $LVNAME | awk '/LV Path/ {print $NF}'` && echo  "# LVPATH=$LVPATH"
 df -hTP  $MOUNTPOINT
 # check the partition type (msdos or GPT)
 parted $DISK print
 }
 
-
-# find mapping between SCSI device entries in /sys and the disks in /dev
---------------------------------------------------------------------------
-# An easy way to get the correspondence is to look at the device/block subdirectory in the /sys hierarchy:
-ls -1d /sys/class/scsi_device/*/device/block/*
-OR
-ls -1d /sys/class/scsi_device/*/device/block/${DEV}
-
-2. Rescan disk 
-# find the target disk (ex. 2 for sdb)
-ls /sys/class/scsi_disk
-echo '1' > /sys/class/scsi_disk/2\:0\:1\:0/device/rescan 
-Note : depending on disk the path could be different
+4. Rescan disk 
+---------------
+echo "1" > /sys/class/block/${DEV}/device/rescan
 
 OR rescan all disks
 --------------------
+for D in `ls /sys/class/scsi_disk/*/device/rescan`; do echo '1' > $D;done
 
-for D in `ls /sys/class/scsi_disk/*/device/rescan`; do echo "echo '1' > $D";done
-
-if syntax is ok, then pipe to bash
-
-3. Check result
+5. Check result
 ----------------
 tail /var/log/messages | grep kernel
 
@@ -58,13 +44,14 @@ NEWSIZE=`tail /var/log/messages | grep capacity | awk '{print $(NF)}'` && echo $
 echo "scale=2;${OLDSIZE}/1024/1024/1024" | bc
 echo "scale=2;${NEWSIZE}/1024/1024/1024" | bc
 
-4. Get disk info
+6. Get disk info
+-----------------
 fdisk -l $DISK
 If there is no partition, then skip the fdisk recreate partition table section
 
 
-5. Recreate the partition table
-
+7. Recreate the partition table
+--------------------------------
 fdisk [-c=dos] $DISK
 use -c flag above if first sector of partition is below 2048
 
@@ -137,7 +124,8 @@ Syncing disks.
 ====================================================================================================================================
 
 
-6. Resize the physical volume
+8. Resize the physical volume
+------------------------------
 # get current in-memory partition table
 cat /proc/partitions | grep $DEV
 # inform the OS of partition table changes
@@ -153,15 +141,17 @@ echo pvresize $DISK
 pvscan
 vgs
 
-7. Extend volume and resize FS
+9. Extend volume and resize FS
+-------------------------------
 df -hTP $MOUNTPOINT
-echo "lvextend -L+<extend size>G $LVPATH -r"
+echo "lvextend -L+<extend size>G $LVNAME -r"
 OR 
-echo "lvextend -l+100%FREE $LVPATH -r"
+echo "lvextend -l+100%FREE $LVNAME -r"
 If the '-r' option is omitted, the resize the FS
 # resize2fs $LVNAME
 df -hTP $MOUNTPOINT
 lvdisplay $LVNAME | egrep "Name|Path|Size"
 
 
+====================================================================================================================================
 
