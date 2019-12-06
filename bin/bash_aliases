@@ -46,6 +46,7 @@ fi
 #Note: view function:  "declare -f <function_name>" or "type <function_name>"
 #alias F='typeset -F | grep -v " _"'
 alias f='compgen -A function  | egrep -v "^_|quote|sush"'
+alias fn='f | wc -l'
 unset FALL
 LIST="check clu decom newlog sym powermt show powercut ldap"
 for I in $LIST; do alias f$I="f | grep -i ^$I"; FALL="$FALL f$I"; done
@@ -162,3 +163,5 @@ alias myticketsidlist="mytickets | awk '/IncidentID/ {print \$NF}'| sed 's/\"//g
 alias gitw='cd ~/git/workstation_setup'
 alias ap=ansible-playbook
 alias line='separator 132 -'
+alias get_hba_wwns='cat /sys/class/fc_host/host?*/port_name'
+

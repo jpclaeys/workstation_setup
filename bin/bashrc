@@ -81,40 +81,29 @@ export TICKETSDIR=$HOME/log/tickets
 export MYTMPDIR=$HOME/tmp
 export DOWNLOADS=$HOME/Downloads
 
-FUNCTIONSFILES=(bin/bash_aliases bin/bash_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/basic_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/bash_colors.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/print_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/newlog_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/LUNs_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/git_prompt.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/prompt.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/sshroot_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/misc_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/check_functions.sh)
-FUNCTIONSFILES=(${FUNCTIONSFILES[@]} bin/ldap_functions.sh)
-
-#for USERFUNCTIONS in ${FUNCTIONSFILES[@]}; do  [ -f ~/$USERFUNCTIONS ] && source ~/$USERFUNCTIONS; done
-
+# Define functions
 FUNCTIONSFILES=`echo "
 bash_aliases
+bash_colors.sh
 bash_functions.sh
 basic_functions.sh
-bash_colors.sh
-print_functions.sh
-newlog_functions.sh
-LUNs_functions.sh
+check_functions.sh
+generic_functions.sh
 git_prompt.sh
+ldap_functions.sh
+LUNs_functions.sh
+misc_functions.sh
+newlog_functions.sh
+print_functions.sh
 prompt.sh
 sshroot_functions.sh
-misc_functions.sh
-check_functions.sh
-ldap_functions.sh
+decom_functions.sh
+root_functions.sh
 " | xargs` # && echo "FUNCTIONSFILES=\"$FUNCTIONSFILES\""
 
-PREFIX=~/bin # && echo $PREFIX
+FUNCDIR=/home/claeyje/bin # && echo $FUNCDIR
 
-for UF in ${FUNCTIONSFILES}; do  F="$PREFIX/$UF" &&  [ -f $F ] && source $F || echo "$F unknown"; done
+for UF in ${FUNCTIONSFILES}; do  F="$FUNCDIR/$UF" &&  [ -f $F ] && source $F || echo "$F unknown"; done
 
 
 # Set time stamps in history
