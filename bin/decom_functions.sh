@@ -66,7 +66,7 @@ who         $who
 "
 }
 
-function prline () {
+function prsingleline () {
     echo "#-------------------- $1  --------------------"
 }
 
@@ -84,7 +84,7 @@ cat << EOT > $TMP_FOLDER/sysinfo_${HOST_NAME}.txt
  `echo "LOCATION : " $LOCATION`
  `echo "SERIAL# : " $SERNUMB_CHASSIS`
 EOT
-prline sysinfo_${HOST_NAME}
+prsingleline sysinfo_${HOST_NAME}
 cat $TMP_FOLDER/sysinfo_${HOST_NAME}.txt
       
 # Gather IP info
@@ -92,7 +92,7 @@ cat $TMP_FOLDER/sysinfo_${HOST_NAME}.txt
 getent hosts  | grep -v `clnode list | grep -v $HOST_NAME` | grep -v localhost | grep -v `cat /etc/hosts  | grep -i quorum | awk '{print $2}' ` > ${TMP_FOLDER}/network_ip.txt
 echo "`nslookup bkp-${HOST_NAME} |  grep -n Address | grep 6: |awk '{print $2}' `   bkp-${HOST_NAME}  " >> ${TMP_FOLDER}/network_ip.txt
 
-prline "# Network_ip"
+prsingleline "# Network_ip"
 cat ${TMP_FOLDER}/network_ip.txt
 }
 
