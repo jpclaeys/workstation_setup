@@ -40,8 +40,8 @@ Then rescan the specific device:
 echo "1" > /sys/class/scsi_device/2:0:13:0/device/rescan
 
 ------------------------------------------------------------------------------------------------------------------------------------
-# find mapping between SCSI device entries in /sys and the disks in /dev
---------------------------------------------------------------------------
+# Correspondence between SCSI device entries in /sys and the disks in /dev
+---------------------------------------------------------------------------
 An easy way to get the correspondence is to look at the device/block subdirectory in the /sys hierarchy:
 
 # ls -1d /sys/class/scsi_device/*/device/block/* | sort -t'/' -k7
