@@ -88,7 +88,6 @@ bash_colors.sh
 bash_functions.sh
 basic_functions.sh
 check_functions.sh
-generic_functions.sh
 git_prompt.sh
 ldap_functions.sh
 LUNs_functions.sh
