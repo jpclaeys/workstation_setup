@@ -154,18 +154,20 @@ function check_apps ()
 if [ -f /usr/sbin/zonename ]; then
   if [ "`zonename`" == "global" ]; then
     if [ "`whoami`" == "root" ]; then
-      if [ $# -eq 0 ]; then
+      if [ $# -eq 0 ]; then # if no argument provided, check all zones
         for Z in `zoneadm list| grep -v global`; do
           echo "Checking apps for $Z"
           zlogin $Z '(for application in `ls /applications | grep -v wood | sed "s/\///g"`;do /applications/${application}/users/system/init.d/${application} status 2> /dev/null;done | grep -v STATE)'
         done
-      else
+      else 
         zlogin $1 '(for application in `ls /applications | grep -v wood | sed "s/\///g"`;do /applications/${application}/users/system/init.d/${application} status 2> /dev/null;done | grep -v STATE)'
-     fi # if $# -eq 0
+      fi # if $# -eq 0
     else
       echo "Must be root"
       return 1
     fi # if root
+  else  # not a global zone
+      for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} status 2>/dev/null; done | grep -v STATE
   fi # if global
 else # /usr/sbin/zonename not present
     if [ $# -eq 0 ]; then
@@ -174,8 +176,10 @@ else # /usr/sbin/zonename not present
       validatehost $1 || return 1
       s $1 check_apps
    fi
-fi
+fi # if /usr/sbin/zonename is present
 }
+
+
 
 function enable_apps ()
 {
