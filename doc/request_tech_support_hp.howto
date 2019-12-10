@@ -1,0 +1,149 @@
+Bonjour,
+
+Pouvez-vous faire 3 tickets différents pour la DIGIT avec le contenu suivant :
+
+
+
+Title : DCCS CANCOM/HPE Service Request - Server bootes
+
+Assignee group:
+CHD
+
+Cache Module need to be REPLACED.
+
+Code Word: EUROPA
+
+Digit Equipment information:
+- OF: 
+- DNS name – Server name : bootes
+- Serial Number:  CZJ330038D
+- Model: ProLiant BL460c Gen8 - 641016-B21
+
+Digit Equipment Site Location:
+- Building/Room/Floor:  Publications MERCIER 4 etage / 453
+- Rack/Position: -
+
+Digit Local Contact:
+- Name: Centre de Calcul / OP Data Center Facilities
+- Number: +352 2929-42444
+- Email:   sysopr@publications.europa.eu
+
+- Primary Contact for Technical Questions:
+- Name: Didier Bortolin
+- Number: +352 2929-42447
+- Email:   didier.bortolin@ext.publications.europa.eu
+
+Problem Description:
+Cache Module Status    Degraded
+Cache Module Serial Number   PBKHV
+Cache Module Memory               524288 KB
+
+
+
+
+
+
+
+
+
+Title : DCCS CANCOM/HPE Service Request - Server lando
+
+Assignee group:
+CHD
+
+Cache Module need to be REPLACED.
+
+Code Word: EUROPA
+
+Digit Equipment information:
+- OF: 
+- DNS name – Server name : lando
+- Serial Number:  CZJ402058X
+- Model: ProLiant BL460c Gen8 - 641016-B21
+
+Digit Equipment Site Location:
+- Building/Room/Floor:  Publications EUFO 3 etage / 465
+- Rack/Position: -
+
+Digit Local Contact:
+- Name: Centre de Calcul / OP Data Center Facilities
+- Number: +352 2929-42444
+- Email:   sysopr@publications.europa.eu
+
+- Primary Contact for Technical Questions:
+- Name: Didier Bortolin
+- Number: +352 2929-42447
+- Email:   didier.bortolin@ext.publications.europa.eu
+
+Problem Description:
+Cache Module Status    Degraded
+Cache Module Serial Number   PBKHV
+Cache Module Memory               524288 KB
+
+
+
+
+
+
+
+
+
+
+
+Title : DCCS CANCOM/HPE Service Request - Server vader
+
+Assignee group:
+CHD
+
+Cache Module need to be REPLACED.
+
+Code Word: EUROPA
+
+Digit Equipment information:
+- OF: 
+- DNS name – Server name : vader
+- Serial Number:  CZJ402058M
+- Model: ProLiant BL460c Gen8 - 641016-B21
+
+Digit Equipment Site Location:
+- Building/Room/Floor:  Publications EUFO 3 etage / 465
+- Rack/Position: -
+
+Digit Local Contact:
+- Name: Centre de Calcul / OP Data Center Facilities
+- Number: +352 2929-42444
+- Email:   sysopr@publications.europa.eu
+
+- Primary Contact for Technical Questions:
+- Name: Didier Bortolin
+- Number: +352 2929-42447
+- Email:   didier.bortolin@ext.publications.europa.eu
+
+Problem Description:
+Cache Module Status    Degraded
+Cache Module Serial Number   PBKHV
+Cache Module Memory               524288 KB
+
+
+
+Merci,
+
+Didier Bortolin
+System Team - Linux Engineer
+
+ 
+European Commission
+Directorate-General INFORMATICS
+Unit C3.003 OPC – Hosting and Platforms
+Halian S.à.r.l.  (under contract with the European Commission)
+Luxembourg MER 03 / 355
+Tel:    +352 2929-42447
+didier.bortolin@ext.publications.europa.eu
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+EUFO:
+-----
+
+EUROFORUM Bâtiment 10, rue Robert Stumper, L-2557 Luxembourg
+------------------------------------------------------------------------------------------------------------------------------------
