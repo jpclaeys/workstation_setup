@@ -1,0 +1,128 @@
+Commands to Wipe Disk on Linux
+-------------------------------
+Sometimes you can need to delete or format a hard drive for some operations. The most common use case for completely and irrevocably wiping a device will be when the device is going to be given away or sold as this is really important for data protection. There are some commands which can help you to do these operations in Linux.
+
+This article shows 4 commands to wipe hard disks or partitions data on your Linux system
+
+Table of Contents	
+1) dd
+2) shred
+3) wipe
+4) scrub
+1) dd
+The dd command can help you to copy and convert a file. The command can overwrite the whole disk with zeros and is considerably faster than generating gigabytes of random data. It offers some operands that you can use to specify what kind of formatting you want. The syntax is:
+
+dd if=<source> of=<target> [Options]
+Only superuser can run this command because you can face a big data loss due to its improper usage.
+
+# dd if=/dev/zero of=/dev/sda2 bs=512 count=1
+1+0 records in
+1+0 records out
+512 bytes copied, 0.0116875 s, 43.8 kB/s
+You can wipe a disk is done by writing new data over every single bit. To further complicate the recovering process we will write over the entire drive with random data.
+
+# dd if=/dev/urandom of=/dev/sda2 bs=4096
+2) shred
+The shred command is used to overwrite the specified files repeatedly and make it difficult for software to recover the data. The syntax is as below
+
+shred [option] <target>
+The command also overwrites data in a file or a whole device with random bits, making it nearly impossible to recover. This command permanently erases the data. The command has some options which can be used to wipe a disk as:
+
+-f changes permissions to allow writing if needed
+-n  (iterations=N) overwrites N times instead of the default (3)
+-s (size=N) specifies the number of bytes to shred
+-u truncates and removes files after overwriting
+-v shows verbose information about the progress
+-x does not round file sizes up to the next full block
+-z adds a final overwrite with zeros to hide shredding
+-u removes the file after overwriting
+So, to wipe the partition you can use
+
+# shred -vfz -n 10 /dev/sda2
+shred: /dev/sda2: pass 1/11 (random)...
+shred: /dev/sda2: pass 2/11 (ffffff)...
+shred: /dev/sda2: pass 3/11 (249249)...
+shred: /dev/sda2: pass 4/11 (000000)...
+shred: /dev/sda2: pass 5/11 (555555)...
+shred: /dev/sda2: pass 6/11 (random)...
+shred: /dev/sda2: pass 7/11 (6db6db)...
+shred: /dev/sda2: pass 8/11 (aaaaaa)...
+shred: /dev/sda2: pass 9/11 (db6db6)...
+shred: /dev/sda2: pass 10/11 (random)...
+shred: /dev/sda2: pass 11/11 (000000)...
+It is possible to use shred with random data as below
+
+# shred -v --random-source=/dev/urandom -n10 /dev/sda2
+shred: /dev/sda2: pass 1/10 (random)...
+shred: /dev/sda2: pass 2/10 (db6db6)...
+shred: /dev/sda2: pass 3/10 (aaaaaa)...
+shred: /dev/sda2: pass 4/10 (ffffff)...
+shred: /dev/sda2: pass 5/10 (6db6db)...
+shred: /dev/sda2: pass 6/10 (random)...
+shred: /dev/sda2: pass 7/10 (249249)...
+shred: /dev/sda2: pass 8/10 (555555)...
+shred: /dev/sda2: pass 9/10 (000000)...
+shred: /dev/sda2: pass 10/10 (random)...
+3) wipe
+The wipe command can be used to securely erase files from magnetic media. You can use the wipe command in order to wipe data on a disk. The wipe command has the command below
+
+wipe [options] <target>
+The command is not present by default, you need to install it.
+
+On Ubuntu 16.04/18.04
+
+# apt install wipe
+Reading package lists... Done
+Building dependency tree 
+Reading state information... Done
+The following NEW packages will be installed:
+ wipe
+0 upgraded, 1 newly installed, 0 to remove and 322 not upgraded.
+Need to get 41.8 kB of archives.
+On Centos 7, you need first to download the rpmforge
+
+# wget http://ftp.tu-chemnitz.de/pub/linux/dag/redhat/el7/en/x86_64/rpmforge/RPMS/rpmforge-release-0.5.3-1.el7.rf.x86_64.rpm
+Install it
+
+# rpm -Uvh rpmforge-release*rpm
+warning: rpmforge-release-0.5.3-1.el7.rf.x86_64.rpm: Header V3 DSA/SHA1 Signature, key ID 6b8d79e6: NOKEY
+Preparing... ################################# [100%]
+Updating / installing...
+ 1:rpmforge-release-0.5.3-1.el7.rf ################################# [100%]
+Then, install the wipe command
+
+# yum install wipe
+Loaded plugins: fastestmirror
+rpmforge | 1.9 kB 00:00:00 
+rpmforge/primary_db | 125 kB 00:00:15
+You can wipe a partition as below:
+
+# wipe /dev/sda2
+Okay to WIPE 1 special file ? (Yes/No) yes
+Operation finished. 
+1 file wiped and 0 special files ignored in 0 directories, 0 symlinks removed but not followed, 0 errors occured.
+4) scrub
+The scrub command can be used to overwrite data using patterns. The command is not available by default, you should need to install it on your Linux system. The syntax is
+
+scrub [option] <target>
+To scrub hard disk, you can do as below
+
+# scrub /dev/sda5
+scrub: using NNSA NAP-14.1-C patterns
+scrub: please verify that device size below is correct!
+scrub: scrubbing /dev/sda5 1071644672 bytes (~1022MB)
+scrub: random  |................................................|
+scrub: random  |................................................|
+scrub: 0x00    |................................................|
+scrub: verify  |................................................|
+Scrub uses some methods to operate on disks. You can use the dod method to wipe disks.
+
+# scrub -p dod /dev/sda5 -f
+scrub: using DoD 5220.22-M patterns
+scrub: please verify that device size below is correct!
+scrub: scrubbing /dev/sda5 1071644672 bytes (~1022MB)
+scrub: random  |................................................|
+scrub: 0x00    |................................................|
+scrub: 0xff    |................................................|
+scrub: verify  |................................................|
+Wiping a drive is dangerous because you can lose data permanently. You have to be sure to choose the right disk. Additionally, depending on how worried you are about someone taking the data, it can be difficult to ensure that some drives are truly non-recoverable.
