@@ -1,0 +1,60 @@
+There are four methods available to reset iLO 2 to factory defaults:
+
+   1. Removing power and clearing NVRAM by removing the battery
+   2. Using XML script called Factory_Defaults.xml
+   3. Navigating to the iLO 2 RBSU and selecting Factory Defaults
+      reboot the server, press F8 to enter to iLO 2 RBSU and restore the factory defaults from there.
+      RBSU: ROM-Based Setup Utility
+
+     Power ON
+     During POST, hit [F8]
+
+    File
+    Set Defaults
+    Confirmation / Set to factory defaults ? / [F10]=OK
+
+    File
+    Exit
+
+   4. Using HPONCFG.exe with /RESET parameter (hponcfg --reset)
+
+[root@donna ~]# which hponcfg
+/sbin/hponcfg
+
+[root@donna ~]# hponcfg -?
+HP Lights-Out Online Configuration utility
+Version 4.1.0 Date 1/3/2013 (c) Hewlett-Packard Company, 2013
+Firmware Revision = 2.25 Device type = iLO 2 Driver name = hpilo
+
+USAGE:
+  hponcfg  -?
+  hponcfg  -h
+  hponcfg  -m minFw
+  hponcfg  -r [-m minFw ]
+  hponcfg  [-a] -w filename [-m minFw]
+  hponcfg  -g [-m minFw]
+  hponcfg  -f filename [-l filename] [-s namevaluepair] [-v] [-m minFw]
+  hponcfg  -i [-l filename] [-s namevaluepair] [-v] [-m minFw]
+
+  -h,  --help           Display this message
+  -?                    Display this message
+  -r,  --reset          Reset the Management Processor to factory defaults
+  -f,  --file           Get/Set Management Processor configuration from "filename" 
+  -i,  --input          Get/Set Management Processor configuration from the XML input 
+                        received through the standard input stream.
+  -w,  --writeconfig    Write the Management Processor configuration to "filename"
+  -a,  --all            Capture complete Management Processor configuration to the file.
+                        This should be used along with '-w' option
+  -l,  --log            Log replies to "filename"
+  -v,  --xmlverbose     Display all the responses from Management Processor
+  -s,  --substitute     Substitute variables present in input config file
+                        with values specified in "namevaluepairs"
+  -g,  --get_hostinfo   Get the Host information
+  -m,  --minfwlevel     Minimum firmware level
+
+
+
+
+Only the first two methods can cause this issue, and only if the iLO 2 firmware is at version 2.00 or 2.01.
+
+Cfr. https://support.hpe.com/hpsc/doc/public/display?docId=emr_na-c02837034
