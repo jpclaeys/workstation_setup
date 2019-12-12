@@ -149,7 +149,6 @@ function generate_ip_delete_host_records ()
       if [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "A" ]; then
           REVERSE=`dig -x $ADDR | awk '/'$HOST'/{print $1}'| sed 's/\.$//'`
           printf "%-40s %-12s %s\n" $HOST "A" $ADDR $REVERSE "PTR" $HOST
-
       elif [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "CNAME" ]; then
           RECORD_VALUE=`dig $HOST | grep "^$HOST" | awk '{print $5}' | sed 's/\.$//'`
           printf "%-40s %-12s %-40s\n" $HOST "CNAME" $RECORD_VALUE
