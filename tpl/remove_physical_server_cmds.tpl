@@ -397,7 +397,7 @@ REASON: System will be removed
 Thx you in advance
  
 EOT
-} | mailx -s "Remove ${HOST_NAME} from the monitoring" -r $who -c $who,OPDL-INFRA-INT-PROD@publications.europa.eu,op-helpdesk-it@ec.europa.eu OP-IT-PRODUCTION@publications.europa.eu
+} | mailx -s "Remove ${HOST_NAME} from the monitoring" -r $who -c $who,OPDL-INFRA-INT-PROD@publications.europa.eu OP-IT-PRODUCTION@publications.europa.eu
 
 3.4.3 Network: Remove IP and DNS entry
 
@@ -562,7 +562,7 @@ REASON: System will be removed
 Thx you in advance
 
 EOT
-} | mailx -s "Remove $ILOM from the monitoring" -r $who -c $who,OPDL-INFRA-INT-PROD@publications.europa.eu,op-helpdesk-it@ec.europa.eu OP-IT-PRODUCTION@publications.europa.eu
+} | mailx -s "Remove $ILOM from the monitoring" -r $who -c $who,OPDL-INFRA-INT-PROD@publications.europa.eu OP-IT-PRODUCTION@publications.europa.eu
 
 
 3.4.9 Reset the Service Processor to the factory settings

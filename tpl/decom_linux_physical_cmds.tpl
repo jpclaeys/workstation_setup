@@ -16,7 +16,7 @@ Voulez-vous supprimer les clients suivants du monitoring:
 <hostname>
 
 EOT
-} | mailx -s "Remove <hostname> from the monitoring" -r $email -c $email,OPDL-INFRA-INT-PROD@publications.europa.eu,op-helpdesk-it@ec.europa.eu OP-IT-PRODUCTION@publications.europa.eu
+} | mailx -s "Remove <hostname> from the monitoring" -r $email -c $email,OPDL-INFRA-INT-PROD@publications.europa.eu OP-IT-PRODUCTION@publications.europa.eu
 ====================================================================================================================================
 
 ====================================================================================================================================
