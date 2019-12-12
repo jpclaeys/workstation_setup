@@ -131,4 +131,80 @@ DEVLIST=$(for DID in $DIDLIST; do cldev show $DID | grep `uname -n` | sed -n '1p
 for DISK in $DEVLIST ; do luxadm disp ${DISK}s2 | grep Unformat;done| awk '{sum += $3} END {print sum/1024/1024, "TB"}'
 }
 
+function generate_ip_delete_hostlist_records ()
+{
+local H BKP
+[ $# -eq 0 ] && errmsg "Please provide hosts list" && return 1
+for H in $@; do
+BKP="bkp-${H}"
+generate_ip_delete_host_records $H
+generate_ip_delete_host_records $BKP
+done
+}
+
+function generate_ip_delete_host_records ()
+{
+    [ $# -eq 0 ] && return 1
+    H=$1
+    DOMAIN=.opoce.cec.eu.int
+    HOST=${H}${DOMAIN}
+    ADDR=`dig ${HOST} +short | sed 's/\.$//'`
+    if [ -n "$ADDR" ]; then
+      if [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "A" ]; then
+          REVERSE=`dig -x $ADDR | awk '/'$HOST'/{print $1}'| sed 's/\.$//'`
+          printf "%-40s %-12s %s\n" $HOST "A" $ADDR $REVERSE "PTR" $HOST
+
+      elif [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "CNAME" ]; then
+          RECORD_VALUE=`dig $HOST | grep "^$HOST" | awk '{print $5}' | sed 's/\.$//'`
+          printf "%-40s %-12s %-40s\n" $HOST "CNAME" $RECORD_VALUE
+      fi
+    fi
+}
+
+print_ip_delete_info ()
+{
+    [ $# -eq 0 ] && return 1
+    H=$1
+    DOMAIN=.opoce.cec.eu.int
+    HOST=${H}${DOMAIN}
+    ADDR=`dig ${HOST} +short | sed 's/\.$//'`
+    if [ -n "$ADDR" ]; then
+      if [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "A" ]; then
+          BKPHOST="bkp-${HOST}"
+          BKPADDR=`dig ${BKPHOST} +short`
+          if [ -n "$BKPADDR" ]; then
+              printf "%-40s %-12s %-40s %s\n" $HOST "A" $ADDR Delete $BKPHOST "A" $BKPADDR Delete
+          else
+              printf "%-40s %-12s %-40s %s\n" $HOST "A" $ADDR Delete
+          fi
+      elif [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "CNAME" ]; then
+          RECORD_VALUE=`dig $HOST | grep "^$HOST" | awk '{print $5}' | sed 's/\.$//'`
+          printf "%-40s %-12s %-40s %s\n" $HOST "CNAME" $RECORD_VALUE Delete
+      fi
+    fi
+}
+
+function create_delete_ip_ticket_for_SNET ()
+{
+
+[ $# -eq 0 ] && errmsg "Please provide hosts " && return 1
+
+echo "
+Create the ticket for SNET
+---------------------------
+Title :              OP - IP ADDRESS REQUEST
+Description :        Please forward this request to S-NET team.
+Attachments :        The Excel file in attachment
+Incident type :      REQUEST FOR CHANGE
+Configuration Item : DNS INTERNE
+System :             SERVICE
+Component :          TC-DATA NETWORKS SERVICES
+Item :               DNS
+Status :             Assigned
+Assignment :         DIGIT ISHS SERVICE-DESK or CHD
+
+"
+printf "%-40s %-12s %-40s %s\n" Name    Type    Value   Action
+for H in $@; do print_ip_delete_info $H;done
+}
 

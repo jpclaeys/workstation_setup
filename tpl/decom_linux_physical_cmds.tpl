@@ -47,7 +47,7 @@ Open a session On the host
 !!!!! Note: /net/nfs-infra.isilon/unix/systemstore is only visible from opvmwstsx11 !!!!!
 
 {
-HOST=`uname -n | cut -d'.' -f1` && echo $HOST
+HOST=<hostname>
 TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
 [ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER
 
@@ -113,8 +113,7 @@ Ticket:
 Execute these commands on the host
 
 # define variables if they are not set yet
-HOST=`uname -n | cut -d'.' -f1` && echo $HOST
-
+HOST=<hostname>
 {
 cat <<EOT
 # Template: STORAGE REQUEST - Change masking
@@ -186,7 +185,8 @@ Connect to http://resop/ip and fill in the form
 - enter the CNAME
 
 HOST=<hostname>
-CNAME=
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
+CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_${HOST}.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
 
 # Hosts IP @
 printf "%-12s: " $HOST && dig ${HOST}.opoce.cec.eu.int +short
@@ -290,6 +290,7 @@ Connect to http://resop/ip and fill in the form
 - enter the hosts
 - enter the bkp-hosts
 - enter the consoles
+- enter the CNAME if any
 
 # send the request
 
@@ -298,10 +299,14 @@ OR
 # Use a script to generate the Excel file contents
 #----------------------------------------------------
 {
+HOST=<hostname>
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
+CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_${HOST}.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
+
 # view the IP @
 for H in <hostname> bkp-<hostname> <hostname>-sc; do printf "%-12s: " $H && dig ${H}.opoce.cec.eu.int +short;done
 
-HL="<hostname> <hostname>-sc"
+HL="<hostname> <hostname>-sc $CNAME"
 
 # Create the excel request file
 generate_ip_delete_hostlist_records $HL | tee ~/snet/data.txt
@@ -310,7 +315,7 @@ generate_ip_delete_hostlist_records $HL | tee ~/snet/data.txt
 # run the DNS_delete_entry macro
 
 # Create the ticket for SNET
-create_delete_ip_ticket_for_SNET $HL $CONSL
+create_delete_ip_ticket_for_SNET $HL 
 }
 
 ====================================================================================================================================
@@ -321,6 +326,8 @@ Inform the CMDB manager about remove
 -------------------------------------
 
 HOST=<hostname> && echo $HOST
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
+
 {
 cat << EOT
 Dear all,
@@ -350,12 +357,9 @@ DCF-OP : Server can be unwired
 Create an SMT Ticket and assign it to DCF-OP for unwiring
 ----------------------------------------------------------
 
-One ticket per Datacenter
-
-# Define MER hosts
-HOST=<hostname>
-
 {
+HOST=<hostname>
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
 cat << EOT
 
 # Template: OP_INFRA_SYSTEM decommissionnement
@@ -372,45 +376,22 @@ will be removed from the rack
 Best regards
 EOT
 }
-
-Ticket:
-
-----------------------------------------------------------------------------
-# Define EUFO hosts
---------------------
-HOST=<hostname>
-
-{
-cat << EOT
-
-# Template: OP_INFRA_SYSTEM decommissionnement
-# Title: Unwire ${HOST}
-
-Dear all,
-
-Please unwire the following systems from the infrastructure:
-
-`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
-
-will be removed from the rack
-
-Best regards
-EOT
-}
-
-Ticket
 
 ====================================================================================================================================
+Ticket:
 
+====================================================================================================================================
+====================================================================================================================================
+!!!!! WAIT until the server has been unwired !!!!!
+====================================================================================================================================
 ====================================================================================================================================
 
 Create a second SMT ticket, assigned to DCF-OP for the physical remove
 ------------------------------------------------------------------------
-Create one ticket per datacenter !
 
-# Define EUFO hosts
+{
 HOST=<hostname>
-{
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
 cat << EOT
 # Template: OP_INFRA_SYSTEM decommissionnement
 # Title: Remove ${HOST} physically
@@ -428,42 +409,9 @@ Best regards
 EOT
 }
 
-Ticket:
-
-# Define EUFO hosts
---------------------
-{
-cat << EOT
-# Template: OP_INFRA_SYSTEM decommissionnement
-# Title: Remove ${HOST} physically
-
-Dear all,
-
-please remove the following systems physically:
-
-`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
-
-has order to be disconnected and can now remove from rack.
-
-Best regards
-
-EOT
-}
+====================================================================================================================================
 
 Ticket:
-
-====================================================================================================================================
 ====================================================================================================================================
 
-====================================================================================================================================
-
-====================================================================================================================================
-
-====================================================================================================================================
-
-====================================================================================================================================
-
-====================================================================================================================================
-
-====================================================================================================================================
 ====================================================================================================================================
