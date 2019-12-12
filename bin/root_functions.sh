@@ -1,4 +1,4 @@
-function unmanage_runnting_zones ()
+function unmanage_running_zones ()
 {
 ZL=`zoneadm list -v| egrep -v "NAME|global"| awk '{print $2}'`&& echo $ZL
 for zone_name in $ZL; do
