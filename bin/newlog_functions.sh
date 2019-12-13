@@ -304,3 +304,28 @@ confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
 vi $LOGFILE
 }
 
+function newlog_add_new_ldap_user ()
+{
+local TICKET LASTNAME FIRSTNAME LOGIN
+[ $# -lt 4 ] && msg "Usage: $FUNCNAME <ticket> <lastname> <firstname> <login>" && return 1
+TICKET=$1
+LASTNAME=$2
+FIRSTNAME=$3
+LOGIN=$4
+TYPE=${FUNCNAME#newlog_}
+TARGETDIR=$LOGDIR/$TYPE
+TPL=$TPLDIR/${TYPE}_cmds.tpl
+TIMESTAMP=`date "+%d%m%Y"`
+LOGFILE=$TARGETDIR/${TICKET}_${TYPE}_${FIRSTNAME}_${LASTNAME}_${LOGIN}_$TIMESTAMP.log
+msg "Creating $LOGFILE"
+cp $TPL $LOGFILE
+SUB="s/<ticket>/$TICKET/g"
+SUB+=";s/<lastname>/$LASTNAME/"
+SUB+=";s/<firstname>/$FIRSTNAME/"
+SUB+=";s/<login>/$LOGIN/"
+perl -pe "$SUB" -i $LOGFILE
+insert_ticket_at_top_of_file $TICKET $LOGFILE
+confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
+vi $LOGFILE
+}
+

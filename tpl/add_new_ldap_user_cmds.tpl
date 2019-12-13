@@ -9,9 +9,9 @@ read -p "Enter the password for the LDAP administrator: " LDAPPWD
 # Get the first available uid
 get_first_free_uid 30250 | grep -i First
 
-FIRST_NAME=
-LAST_NAME=
-USERLOGIN=
+FIRST_NAME=<firstname>
+LAST_NAME=<lastname>
+USERLOGIN=<login>
 USERID=
 GIDNUMBER=47110
 
@@ -28,7 +28,7 @@ export login=$USERLOGIN
 export uid=$USERID
 export gecos="${first_name} ${last_name}"
 export official=no
-export wiki_user=yes              # grant access to the wiki
+export wiki_user=yes              # grant access to the wiki for unix, dba & int prod ; not for INT TEST
 export system_team_member=no
 export int_prod_member=no
 export int_test_member=no
@@ -48,7 +48,8 @@ export dba_member=no
 PREFIX= && [[ $official == no ]] && PREFIX="ext."
 # remove spaces from the last_name if any
 lastnamemail=`echo ${last_name} | tr -d ' '` && echo $lastnamemail
-export mailaddress="${first_name}.${lastnamemail}@${PREFIX}publications.europa.eu" && echo $mailaddress
+#export mailaddress="${first_name}.${lastnamemail}@${PREFIX}publications.europa.eu" && echo $mailaddress
+export mailaddress=`echo "${first_name}.${lastnamemail}@${PREFIX}publications.europa.eu" | tr '[:upper:]' '[:lower:]'` && echo $mailaddress
 }
 
 !!! Double check the mail address against the outlook address book !!!
@@ -156,14 +157,17 @@ fi
 
 {
 if [[ $int_test_member == yes ]]; then
+for group in int_test aws-t-int op-t-int; do
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
-dn: cn=int_test,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
 memberUid: $login
 EOT
+done
 fi
 }
+
 
 {
 if [[ $int_prod_member == yes ]]; then
@@ -243,22 +247,32 @@ rfc822mailMember: ${mailaddress}
 EOT
 }
 
+1.2.3 Check group membership of the new user
+----------------------------------------------
 
-1.2.3 Create the HOME of the user
+ldapsearchusergroups <login> 
+ OR
+id <login>
+# Compare withe another member if the same team
+
+1.2.4 Create the HOME of the user
 ----------------------------------
 Elect one of the LDAP server to store the HOME of the user. It is either ladpa-pk or ldapb-pk. 
 On one of these servers, you should run as root:
 
 {
-login= 				# set the login user
-
+login=<login> 			# set the login user
 cd /net/nfs-infra.isilon.opoce.cec.eu.int/home
 mkdir ${login}
 chown ${login}.opunix ${login}
-ls -ls ${login}
+ls -ld ${login}
 }
 
-2. Important note:
+3. Puppet configuration
+------------------------
+For INT TEST users, update the user_attr in puppet (Cfr. ...)
+
+4. Important note:
 -------------------
 
 It takes some time to populate the ldap modifications on all of the servers.
