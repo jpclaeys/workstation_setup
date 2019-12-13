@@ -51,5 +51,23 @@ git push
 git status
 
 ##### test on the puppet client, checking out from the DEVELOPMENT branch
-:
+# Find a Solaris 11 test zone:
+for Z in `zonesnoprod| grep -v SUCCESS`; do s $Z uname -rn;done | grep 11
+opgtwint-tz 5.11
+ceresng-tz 5.11
+
+puppet agent -t --noop -o --environment  development
+Note: this will only show the modifications that would apply, but doesn't actually do it because of the "noop" option
+
+
+##### if all looks good, commit from DEVELOPMENT into PRODUCTION branch
+cd ../production
+git pull origin production && git pull --no-ff
+{
+pwd | grep Solaris >/dev/null
+if [[ $? == 0 ]]; then git push && cd -; fi
+pwd | grep Linux >/dev/null
+if [[ $? == 0 ]]; then git push origin production && cd -; fi
+}
+
 

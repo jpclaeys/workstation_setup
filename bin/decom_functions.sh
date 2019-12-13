@@ -140,17 +140,19 @@ done
 
 function generate_ip_delete_host_records ()
 {
+    local H DOMAIN HOST ADDR DIGINFO RECORD_TYPE RECORD_VALUE BKPHOST BKPADDR REVERSE
     [ $# -eq 0 ] && return 1
     H=$1
     DOMAIN=.opoce.cec.eu.int
     HOST=${H}${DOMAIN}
     ADDR=`dig ${HOST} +short | sed 's/\.$//'`
     if [ -n "$ADDR" ]; then
-      if [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "A" ]; then
+      DIGINFO=`dig $HOST | grep "^$HOST" | sed 's/\.$//' | awk '{print $4,$5}'`
+      IFS=" " read  -r RECORD_TYPE RECORD_VALUE <<< $DIGINFO
+      if [ "$RECORD_TYPE" == "A" ]; then
           REVERSE=`dig -x $ADDR | awk '/'$HOST'/{print $1}'| sed 's/\.$//'`
           printf "%-40s %-12s %s\n" $HOST "A" $ADDR $REVERSE "PTR" $HOST
-      elif [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "CNAME" ]; then
-          RECORD_VALUE=`dig $HOST | grep "^$HOST" | awk '{print $5}' | sed 's/\.$//'`
+      elif [ "$RECORD_TYPE" == "CNAME" ]; then
           printf "%-40s %-12s %-40s\n" $HOST "CNAME" $RECORD_VALUE
       fi
     fi
@@ -158,13 +160,16 @@ function generate_ip_delete_host_records ()
 
 print_ip_delete_info ()
 {
+    local H DOMAIN HOST ADDR DIGINFO RECORD_TYPE RECORD_VALUE BKPHOST BKPADDR
     [ $# -eq 0 ] && return 1
     H=$1
     DOMAIN=.opoce.cec.eu.int
     HOST=${H}${DOMAIN}
     ADDR=`dig ${HOST} +short | sed 's/\.$//'`
     if [ -n "$ADDR" ]; then
-      if [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "A" ]; then
+      DIGINFO=`dig $HOST | grep "^$HOST" | sed 's/\.$//' | awk '{print $4,$5}'`
+      IFS=" " read  -r RECORD_TYPE RECORD_VALUE <<< $DIGINFO
+      if [ "$RECORD_TYPE" == "A" ]; then
           BKPHOST="bkp-${HOST}"
           BKPADDR=`dig ${BKPHOST} +short`
           if [ -n "$BKPADDR" ]; then
@@ -172,8 +177,7 @@ print_ip_delete_info ()
           else
               printf "%-40s %-12s %-40s %s\n" $HOST "A" $ADDR Delete
           fi
-      elif [ `dig $HOST | grep "^$HOST" | awk '{print $4}'` == "CNAME" ]; then
-          RECORD_VALUE=`dig $HOST | grep "^$HOST" | awk '{print $5}' | sed 's/\.$//'`
+      elif [ "$RECORD_TYPE" == "CNAME" ]; then
           printf "%-40s %-12s %-40s %s\n" $HOST "CNAME" $RECORD_VALUE Delete
       fi
     fi

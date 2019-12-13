@@ -7,8 +7,8 @@ Configure access to existing shared folder
 
 1. Required info:
    FULLNAME=
-   USERID=     # If not provided, get the uid from the outlook address book (Alias field)
-   USERNAME=
+   USERID=
+   USERNAME=   # If not provided, get the username from the outlook address book (Alias field)
    TARGETHOST=
 
 2. Get the User identifier (UID):
