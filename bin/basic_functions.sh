@@ -88,7 +88,7 @@ function validatehost ()
             ping -c1 $MYHOST -w1 > /dev/null
         fi
         if [ $? -ne 0 ]; then
-          errmsg "Host \"$MYHOST\" is not responding" && return 1
+          [ "$2" != "-q" ] && errmsg "Host \"$MYHOST\" is not responding" && return 1
         fi
     else
         [ "$2" != "-q" ] && errmsg "Host \"$MYHOST\" is unknown" && return 1
@@ -217,5 +217,15 @@ for OPT in $OPTS
 do
    echo -n "$OPT: " && cmdb $OPT | sed 1d | wc -l
 done
+}
+
+function zone-where ()
+{
+if [ $# -eq 0 ]; then
+   /usr/sbin/eeprom | /usr/bin/awk -F"=" '/banner=/ {print $NF}'
+   else
+   validatehost $@ || return 1
+   s $1 /usr/sbin/eeprom | /usr/bin/awk -F"=" '/banner=/ {print $NF}'
+fi
 }
 

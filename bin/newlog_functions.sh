@@ -103,10 +103,19 @@ vi $LOGFILE
 }
 
 function define_primary_and_secondary ()
-{
+{ 
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <zone_name>" && return 1
-PRIMARYHOST=`cmdb zone | grep "$1;" | awk -F";" '/Primary/ {print $7}'` && echo "Primary host for $1: $PRIMARYHOST"
-SECONDAYHOST=`cmdb zone | grep "$1;" | awk -F";" '/Secondary/ {print $7}'` && echo "Secondary host for $1: $SECONDAYHOST"
+PRIMARYHOST=`cmdb zone | grep "$1;" | awk -F";" '/Primary/ {print $7}'`
+SECONDARYHOST=`cmdb zone | grep "$1;" | awk -F";" '/Secondary/ {print $7}'`
+EFFECTIVE_PRIMARYHOST=`zone-where $1 -q`
+if [ $? -eq 0 ]; then
+    if [ "$EFFECTIVE_PRIMARYHOST" != "PRIMARYHOST" ] ; then
+       SECONDARYHOST=$PRIMARYHOST
+       PRIMARYHOST=$EFFECTIVE_PRIMARYHOST
+    fi
+fi
+echo "Primary host for $1: $PRIMARYHOST"
+echo "Secondary host for $1: $SECONDARYHOST"
 }
 
 function newlog_decom_zone ()
@@ -116,7 +125,7 @@ TICKET=$1
 HOST=$2
 if [ -n "$3" ]; then
   PRIMARYHOST=$3 && echo "Primary host for $HOST: $PRIMARYHOST"
-  SECONDAYHOST=$4 && echo "Secondary host for $HOST: $SECONDAYHOST"
+  SECONDARYHOST=$4 && echo "Secondary host for $HOST: $SECONDARYHOST"
 else
   define_primary_and_secondary $HOST
 fi
@@ -129,7 +138,7 @@ msg "Creating $LOGFILE"
 cp $TPL $LOGFILE
 SUB="s/<zone_name>/$HOST/g"
 SUB+=";s/<primary_host>/$PRIMARYHOST/"
-SUB+=";s/<secondary_host>/$SECONDAYHOST/"
+SUB+=";s/<secondary_host>/$SECONDARYHOST/"
 perl -pe "$SUB" -i $LOGFILE
 insert_ticket_at_top_of_file $TICKET $LOGFILE
 confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
@@ -175,7 +184,7 @@ echo "Template type: $TYPE"
 [ $# -lt 1 ] && msg "Usage: $FUNCNAME <zone_name> [<pool_name>] [<ticketnumber>] [<primary host> <secondary host>]" && return 1
 if [ -n "$4" ]; then
   PRIMARYHOST=$4 && echo "Primary host for $1: $PRIMARYHOST"
-  SECONDAYHOST=$5 && echo "Secondary host for $1: $SECONDAYHOST"
+  SECONDARYHOST=$5 && echo "Secondary host for $1: $SECONDARYHOST"
 else
   define_primary_and_secondary $1
 fi
@@ -190,7 +199,7 @@ cp $TPL $LOGFILE
 SUB="s/<zone_name>/$1/g"
 [ -n "$POOL_NAME" ] && SUB+=";s/<pool_name>/$POOL_NAME/"
 SUB+=";s/<primary_host>/$PRIMARYHOST/"
-SUB+=";s/<secondary_host>/$SECONDAYHOST/"
+SUB+=";s/<secondary_host>/$SECONDARYHOST/"
 perl -pe "$SUB" -i $LOGFILE
 [ -n "$TICKET" ] && insert_ticket_at_top_of_file $TICKET $LOGFILE
 confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
@@ -217,7 +226,7 @@ echo "Template type: $TYPE"
 [ $# -lt 1 ] && msg "Usage: $FUNCNAME <zone_name> [<primary host> <secondary host>]" && return 1
 if [ -n "$3" ]; then
   PRIMARYHOST=$2 && echo "Primary host for $1: $PRIMARYHOST"
-  SECONDAYHOST=$3 && echo "Secondary host for $1: $SECONDAYHOST"
+  SECONDARYHOST=$3 && echo "Secondary host for $1: $SECONDARYHOST"
 else
   define_primary_and_secondary $1
 fi
@@ -229,7 +238,7 @@ msg "Creating $LOGFILE"
 cp $TPL $LOGFILE
 SUB="s/<zone_name>/$1/g"
 SUB+=";s/<primary_host>/$PRIMARYHOST/"
-SUB+=";s/<secondary_host>/$SECONDAYHOST/"
+SUB+=";s/<secondary_host>/$SECONDARYHOST/"
 perl -pe "$SUB" -i $LOGFILE
 confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
 vi $LOGFILE

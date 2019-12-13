@@ -772,13 +772,3 @@ function count_opsrv ()
 fping 2>/dev/null -A `cmdb opsrv | awk -F';' '{print $1}'| sort -u ` | grep -c alive
 }
 
-function zone-where ()
-{
-if [ $# -eq 0 ]; then
-   /usr/sbin/eeprom | /usr/bin/awk -F"=" '/banner=/ {print $NF}'
-   else
-   validatehost $1 || return 1
-   s $1 /usr/sbin/eeprom | /usr/bin/awk -F"=" '/banner=/ {print $NF}'
-fi
-}
-
