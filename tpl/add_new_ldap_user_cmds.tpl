@@ -270,7 +270,7 @@ ls -ld ${login}
 
 3. Puppet configuration
 ------------------------
-For INT TEST users, update the user_attr in puppet (Cfr. ...)
+For INT TEST users, update the user_attr in puppet (Cfr. add_solaris_roles_to_int_test_user.tpl)
 
 4. Important note:
 -------------------
