@@ -1,0 +1,37 @@
+How To Find The Cluster Name In Oracle RAC
+-------------------------------------------
+
+If you want to find the cluster name from an existing RAC setup, then use below command.
+-----------------------------------------------------------------------------------------
+
+Note:
+-----
+At OPOCE,
+GRID_HOME=/applications/rac/orabin/grid
+
+1. $GRID_HOME/bin/olsnodes -c
+
+2. $GRID_HOME/bin/cemutlo -n
+
+
+Find nodes list
+----------------
+
+$GRID_HOME/bin/olsnodes -n
+
+------------------------------------------------------------------------------------------------------------------------------------
+[root@solo ~]# $GRID_HOME/bin/olsnodes -?
+Usage: olsnodes [ [ [-n] [-i] [-s] [-t] [<node> | -l [-p]] ] | [-c] | [-a] ] [-g] [-v]
+	where
+		-n print node number with the node name
+		-p print private interconnect address for the local node
+		-i print virtual IP name or address with the node name
+		<node> print information for the specified node
+		-l print information for the local node 
+		-s print node status - active or inactive 
+		-t print node type - pinned or unpinned 
+		-g turn on logging 
+		-v Run in debug mode; use at direction of Oracle Support only.
+		-c print clusterware name
+		-a print active node roles of the nodes in the cluster
+------------------------------------------------------------------------------------------------------------------------------------

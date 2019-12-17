@@ -751,24 +751,38 @@ echo -e "\n#===> lvs <===\n" && lvs
 echo -e "\n#===> df -h <===\n" && df -h
 echo -e "\n#===> fstab <===\n" && cat /etc/fstab
 }
-
 function count_linuxphys ()
 {
-fping  2>/dev/null `cmdb serial| egrep -v 'Solaris|NAME|HOST' | awk -F';' '{print $1}'`| grep -c alive
+printf "%-12s: %s\n" linuxphys $(fping  2>/dev/null `cmdb serial | egrep -v 'Solaris|NAME|HOST' | awk -F';' '{print $1}' | sort -u`| grep -c alive)
 }
 
 function count_solarisphys ()
 {
-fping 2>/dev/null `cmdb serial| egrep  'Solaris' | awk -F';' '{print $1}'`| grep -c alive
+printf "%-12s: %s\n" solarisphys $(fping 2>/dev/null `cmdb serial | egrep  'Solaris' | awk -F';' '{print $1}' | sort -u`| grep -c alive)
+}
+
+function count_solariszones ()
+{
+printf "%-12s: %s\n" zones $(fping 2>/dev/null `cmdb zone | egrep  'Solaris' | awk -F';' '{print $1}' | sort -u`| grep -c alive)
 }
 
 function count_linuxvm ()
 {
-fping 2>/dev/null -A `cmdb linuxvm| egrep -v 'HOST|NAME' | awk -F';' '{print $1}' | sort -u ` | grep -c alive
+printf "%-12s: %s\n" linuxvm $(fping 2>/dev/null `cmdb linuxvm | egrep -v 'HOST|NAME' | awk -F';' '{print $1}' | sort -u` | grep -c alive)
+}
+
+function count_oracle ()
+{
+printf "%-12s: %s\n" oracle $(fping 2>/dev/null `cmdb oracle | egrep -v 'Server|HOST|NAME' | awk -F';' '{print $1}' | sort -u` | grep -c alive)
 }
 
 function count_opsrv ()
 {
-fping 2>/dev/null -A `cmdb opsrv | awk -F';' '{print $1}'| sort -u ` | grep -c alive
+printf "%-12s: %s\n" opsrv $(fping 2>/dev/null `cmdb opsrv | egrep -v 'HOST|NAME' | awk -F';' '{print $1}'| sort -u` | grep -c alive)
+}
+
+function count_all 
+{
+for i in linuxphys solarisphys solariszones linuxvm oracle opsrv; do count_$i;done
 }
 
