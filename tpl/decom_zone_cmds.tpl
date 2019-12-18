@@ -5,7 +5,7 @@ Remove a zone
 This procedure describes how to remove a Solaris 10 container
 2 Prerequisites
 
-# If archiving is needed, stop the applications and open a ticket to SBA-OP to archive the zone
+# If backup is needed, stop the applications and open a ticket to SBA-OP to ask a last full backup of the zone
 2.1 on primary source node, disable the application
 
 # Check if apps are already disabled
@@ -28,13 +28,13 @@ for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applic
 os=`zlogin <zone_name> uname -r | sed -e 's/^5\./Solaris /'` && echo $os  
 echo "
 # Template: BACKUP REQUEST - Client archiving
-# Title: Client archiving for <zone_name>
+# Title: Client last full backup for <zone_name>
 
 # Description:
 
 OS: $os
 Client name: <zone_name>
-Retention: 3 years
+Retention: 60 days
 
 Note: All applications have been stopped on the zone.
 "
