@@ -42,6 +42,14 @@
       force: true
     tags: bash
 
+  - name: setup .inputrc
+    file:
+      src: ~/git/workstation_setup/bin/inputrc
+      dest: ~/.inputrc
+      state: link
+      force: true
+    tags: bash
+
   - name: setup .screenrc
     file:
       src: ~/git/workstation_setup/bin/screenrc
