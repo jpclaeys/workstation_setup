@@ -1,0 +1,10 @@
+Host *
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    NoHostAuthenticationForLocalhost yes
+    ForwardAgent yes
+    LogLevel quiet
+    ServerAliveInterval 15
+#    TCPKeepAlive yes
+    ConnectTimeout 3
+    ForwardX11 yes

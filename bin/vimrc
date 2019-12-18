@@ -2,3 +2,5 @@ syntax off
 set nohlsearch
 set t_Co=0
 set paste
+set noincsearch
+filetype off

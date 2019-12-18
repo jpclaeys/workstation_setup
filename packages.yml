@@ -28,6 +28,9 @@
       - solaar
       - vim
       - nmap
+      - smem
+      - ipcalc
+      - sipcalc
       state: latest
     become: true
     ignore_errors: true
