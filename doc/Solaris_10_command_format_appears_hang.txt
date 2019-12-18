@@ -5,7 +5,7 @@ Situation
 
 "format" command appears hang.
 
-Unable to do anything with format, for example, printing the partition table, modifying the partition table of the device, la belling the disk, etc.
+Unable to do anything with format, for example, printing the partition table, modifying the partition table of the device, labelling the disk, etc.
 Error
 
 No errors produced, as it hangs.

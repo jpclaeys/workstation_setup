@@ -1,0 +1,23 @@
+On Linux
+---------
+
+# do not bell on tab-completion
+# Uncomment the line below in /etc/initrc
+#set bell-style none
+
+OR 
+
+Create ~/.inputrc
+# do not bell on tab-completion
+set bell-style none
+set show-all-if-ambiguous on
+
+
+
+On Solaris
+-----------
+
+# cancel "beep" or "bell"
+
+[ -f /usr/openwin/bin/xset ] && /usr/openwin/bin/xset b 0 2>/dev/null
+
