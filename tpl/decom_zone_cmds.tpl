@@ -365,7 +365,9 @@ Select "Delete" in the Type field
 Enter the fqdn in the Record Name field, and click on the "IP" icon, the record value should show up
  
   OR
-
+------------------------------------------------------------------------------------------------------------------------------------
+# Goto Linux workstation with personal credentials 
+------------------------------------------------------------------------------------------------------------------------------------
 HL="<zone_name> <opsrv...>" && echo $HL
 
 # Hosts IP @

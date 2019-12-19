@@ -1,0 +1,9 @@
+
+[claeyje@digiop4 workstation_setup]# alias ap gitw
+alias ap='ansible-playbook'
+alias gitw='cd ~/git/workstation_setup'
+
+# test the packages
+ap --check --tags=pkgs workstation_setup.yml -K
+
+ap  --tags=pkgs workstation_setup.yml -K
