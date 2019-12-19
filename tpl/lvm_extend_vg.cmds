@@ -88,6 +88,7 @@ fdisk -l $DISK
 parted $DISK print
 
 # inform the OS of partition table changes
+partprobe -d #  dry-run
 partprobe
 cat /proc/partitions | grep $DEV
 

@@ -129,6 +129,7 @@ Syncing disks.
 # get current in-memory partition table
 cat /proc/partitions | grep $DEV
 # inform the OS of partition table changes
+partprobe -d  # dry-run
 partprobe
 cat /proc/partitions | grep $DEV
 lvdisplay $LVNAME | egrep "Name|Path|Size"

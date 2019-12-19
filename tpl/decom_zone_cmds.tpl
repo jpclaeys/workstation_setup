@@ -34,7 +34,7 @@ echo "
 
 OS: $os
 Client name: <zone_name>
-Retention: 60 days
+Retention: 90 days
 
 Note: All applications have been stopped on the zone.
 "

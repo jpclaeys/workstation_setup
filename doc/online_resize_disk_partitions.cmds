@@ -102,6 +102,7 @@ Syncing disks.
 While on-disk partition table has been updated, observe that on-memory kernel partition table has not:
 
 Raw
+# partprobe -d   # dry-run
 # partprobe 
 Error: Partition(s) 2 on /dev/vda have been written, but we have been unable to inform the kernel of the change, probably because it/they are in use.  As a result, the old partition(s) will remain in use.  You should reboot now before making further changes.
 

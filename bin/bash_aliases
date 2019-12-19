@@ -17,6 +17,7 @@ alias lrt10='lrta | tail -10'
 alias lrt25='lrta | tail -25'
 alias ll='ls -lh '                  # long list
 alias lla='ls -Alh '                # long list inc hidden files
+alias lll='ls -Alh | grep ^l'       # long list inc hidden files
 alias lld='ls -lh | grep ^d'        # long list for directories
 alias llad='ls -Alh | grep ^d'      # long list for directories inc hidden files
 alias llh='ls -Alh | grep " \."|grep -v ^d'    # long list for for hidden files
@@ -164,4 +165,4 @@ alias gitw='cd ~/git/workstation_setup'
 alias ap=ansible-playbook
 alias line='separator 132 -'
 alias get_hba_wwns='cat /sys/class/fc_host/host?*/port_name'
-
+alias dcmds=definecmdsaliases
