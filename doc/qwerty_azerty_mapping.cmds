@@ -1,12 +1,29 @@
-QWERTY      AZERTY
+QWERTY US	AZERTY BE
 -------------------------
-^]          CTRL SHIFT 5
-%           SHIFT 5
-q           a
-w           z
-m           ,
-@           SHIFT 2
-:           SHIFT m
-[           ^
-]           $
+^]		CTRL SHIFT 5
+q		a
+a		q
+w		z
+m		,
+:		SHIFT m
+@		SHIFT 2
+#		SHIST 3
+$		SHIFT 4
+%		SHIFT 5
+^		SHIFT 6
+§		SHIFT 7
+*		SHIFT 8
+[		^
+]		$
+^]		CTRL SHIFT 5
+/		SHIFT =/+
+|		
+\
+=		-/_
++		SHIFT -/_
+
+QWERTY US	AZERTY FR
+--------------------------
+@		Alt Gr 0
+!		=
 
