@@ -113,7 +113,11 @@ ldapsearchexists || return 1
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <uid>" && return 1
 # ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' memberuid=$1| awk '/cn:/ {print $NF}' | sort | xargs
 F="uid=$1,ou=people,dc=opoce,dc=cec,dc=eu,dc=int"
-ldapsearch -x -h $LDAPSERVER -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' "(|(memberuid=$1)(uniquemember="$F")(member=$F))" cn | awk '/cn:/ {print $NF}' | sort | xargs
+if [ "$2" == "-v" ]; then
+  ldapsearch -x -h $LDAPSERVER -b 'dc=opoce,dc=cec,dc=eu,dc=int' "(|(memberuid=$1)(uniquemember="$F")(member=$F))" cn
+else
+  ldapsearch -x -h $LDAPSERVER -b 'dc=opoce,dc=cec,dc=eu,dc=int' "(|(memberuid=$1)(uniquemember="$F")(member=$F))" cn | awk '/cn:/ {print $NF}' | sort | xargs
+fi
 }
 
 function ldapsearchopdt ()
