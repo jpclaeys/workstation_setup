@@ -36,7 +36,7 @@
 
   - name: setup .vimrc
     file:
-      src: ~/git/workstation_setup/bin/vimrc
+      src: ~/git/workstation_setup/config/vimrc
       dest: ~/.vimrc
       state: link
       force: true
@@ -44,7 +44,7 @@
 
   - name: setup .inputrc
     file:
-      src: ~/git/workstation_setup/bin/inputrc
+      src: ~/git/workstation_setup/config/inputrc
       dest: ~/.inputrc
       state: link
       force: true
@@ -52,7 +52,7 @@
 
   - name: setup .screenrc
     file:
-      src: ~/git/workstation_setup/bin/screenrc
+      src: ~/git/workstation_setup/config/screenrc
       dest: ~/.screenrc
       state: link
       force: true
@@ -60,7 +60,7 @@
 
   - name: setup .jpscreenrc_mobaxterm
     file:
-      src: ~/git/workstation_setup/bin/jpscreenrc_mobaxterm
+      src: ~/git/workstation_setup/config/jpscreenrc_mobaxterm
       dest: ~/.jpscreenrc_mobaxterm
       state: link
       force: true
@@ -68,8 +68,16 @@
 
   - name: setup .jpscreenrc_putty
     file:
-      src: ~/git/workstation_setup/bin/jpscreenrc_putty
+      src: ~/git/workstation_setup/config/jpscreenrc_putty
       dest: ~/.jpscreenrc_putty
+      state: link
+      force: true
+    tags: bash
+
+  - name: setup terminator config
+    file:
+      src: ~/git/workstation_setup/config/terminator.config
+      dest: ~/.config/terminator/config
       state: link
       force: true
     tags: bash
@@ -113,6 +121,13 @@
     file:
       src: ~/git/workstation_setup/Documentation
       dest: ~/Documentation
+      state: link
+    tags: bash
+
+  - name: setup config
+    file:
+      src: ~/git/workstation_setup/config
+      dest: ~/config
       state: link
     tags: bash
 
