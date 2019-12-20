@@ -1,0 +1,8 @@
+Output fields from the nagios nrpe io check
+--------------------------------------------
+
+4	lspci:	physical cards
+4	lba map: ports
+4	active
+0	not active
+
