@@ -148,16 +148,6 @@ alias yum_list_installed_all="yum history list all | sed '1,3d;\$d' | awk '{prin
 alias yum_list_installed="yum history list | sed '1,3d;\$d' | awk '{print \$1}' | xargs -n1 echo yum history list| sh | egrep -v 'history list|\-\-\-|plugins|Command line|Login'"
 alias yum_list_installed_this_year='yum history list | grep `date "+%Y"` | awk '\''{print $1}'\'' | xargs -n1 echo yum history list| sh | egrep -v '\''history list|\-\-\-|plugins|Command line|Login'\'''
 alias image_viewer=eog # Eye of GNOME (eog) is the GNOME image viewer.
-alias kvm_clusters='cat ~/doc/kvm_clusters.txt'
-# Clusters KVM
-alias kvmcl='echo voyager tng noblegases'
-alias voyager='echo chakotay tuvok janeway torres'
-alias alogens='echo fluorine bromine iodine chlorine'
-alias tng='echo laforge worf picard riker'
-alias metals='echo titanium chromium vanadium palladium'
-alias noblegases='echo argon xenon neon krypton'
-alias kvmclandhosts='for i in `kvmcl`; do printf "%-12s: " $i ; eval $i;done'
-alias kvmhosts='for i in `kvmcl`; do eval $i;done|xargs'
 alias mytickets="(separator 132&& smt.sh -a claeyje | awk '/Description/,/IncidentID/'| egrep -v 'Contact|Authorised' && separator 132)"
 alias myticketsidlist="mytickets | awk '/IncidentID/ {print \$NF}'| sed 's/\"//g'"
 [ -f /usr/bin/bat ] && alias cat='bat -p'

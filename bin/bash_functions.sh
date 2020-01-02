@@ -21,60 +21,6 @@ echo
 confirmexecution $CMD && eval $CMD
 }
 
-function kvmclcmd ()
-{
-# send command to one host of a kvm cluster
-h=$1
-shift
-sre $h $@
-}
-
-function kvmallclcmd ()
-{
-# send command to one node on all kvm clusters
-for cl in `kvmcl`; do msggreen "$cl: " && h=`eval $cl | cut -d" " -f4`  && kvmclcmd $h $@ ;done
-}
-
-function kvmdisabledvms ()
-{
-kvmallclcmd "pcs status | grep Virtual | grep disabled"
-}
-
-function kvmstoppedvms ()
-{
-kvmallclcmd "pcs status | grep Virtual | grep Stopped"
-}
-
-function kvmlistvms ()
-{
-[ -z "$mypasswd" ] && definemypasswd
-kvmallclcmd "pcs status | grep Virtual"
-}
-
-function kvmlistvmsandcluster ()
-{
-[ -z "$mypasswd" ] && definemypasswd
-# send command to one node on all kvm clusters
-#for cl in `kvmcl`; do msggreen "$cl: " && h=`eval $cl | cut -d" " -f4`  && sre $h "pcs status | grep Virtual | sed 's/^./$cl: /'" ;done
-for cl in `kvmcl`; do msggreen "$cl: " && h=`eval $cl | cut -d" " -f4` && sre $h "pcs status" | grep Virtual | sed "s/^./$cl: /;s/, /,/"|awk '{printf "%-16s %-24s %-12s %-s\n", $1, $2, $4,$5}'; done
-}
-
-function kvmlistvmsstoppedandcluster ()
-{
-[ -z "$mypasswd" ] && definemypasswd
-# send command to one node on all kvm clusters
-#for cl in `kvmcl`; do msggreen "$cl: " && h=`eval $cl | cut -d" " -f4`  && sre $h "pcs status | grep Virtual | grep -i stopped | sed 's/^./$cl: /'" ;done
-for cl in `kvmcl`; do msggreen "$cl: " && h=`eval $cl | cut -d" " -f4` && sre $h "pcs status" | grep Virtual | grep -i stopped | sed "s/^./$cl: /;s/, /,/"|awk '{printf "%-16s %-24s %-12s %-s\n", $1, $2, $4,$5}'; done
-}
-
-function kvmlistvmsstartedandcluster ()
-{
-[ -z "$mypasswd" ] && definemypasswd
-# send command to one node on all kvm clusters
-#for cl in `kvmcl`; do msggreen "$cl: " && h=`eval $cl | cut -d" " -f4`  && sre $h "pcs status | grep Virtual | grep -i started | sed 's/^./$cl: /'" ;done
-for cl in `kvmcl`; do msggreen "$cl: " && h=`eval $cl | cut -d" " -f4` && sre $h "pcs status" | grep Virtual | grep -i started | sed "s/^./$cl: /;s/, /,/"|awk '{printf "%-16s %-24s %-12s %-s\n", $1, $2, $4,$5}'; done
-}
-
 function hostslists (){
 CMDBHOST=/tmp/cmdbhost$$
 cmdb host > $CMDBHOST
@@ -301,7 +247,7 @@ zonesnoprodeufo | grep -v "\[" | wc -l
 
 function zones ()
 {
-mypssH "`thosts`" '(/usr/sbin/zoneadm list | egrep -v global)'
+mypssH "`thosts`" '(/usr/sbin/zoneadm list | egrep -v global;:)'
 }
 
 function zonescount ()
@@ -763,7 +709,8 @@ printf "%-12s: %s\n" solarisphys $(fping 2>/dev/null `cmdb serial | egrep  'Sola
 
 function count_solariszones ()
 {
-printf "%-12s: %s\n" zones $(fping 2>/dev/null `cmdb zone | egrep  'Solaris' | awk -F';' '{print $1}' | sort -u`| grep -c alive)
+#printf "%-12s: %s\n" zones $(fping 2>/dev/null `cmdb zone | egrep  'Solaris' | awk -F';' '{print $1}' | sort -u`| grep -c alive)
+printf "%-12s: %s\n" zones `zonescount`
 }
 
 function count_linuxvm ()

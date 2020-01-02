@@ -186,15 +186,6 @@ TITLE= && [ ! -z "$1" ] && TITLE="$@"
 nohup terminator --geometry=1280x800 -l 4terminals -T "$TITLE" &
 }
 
-function myterminatorkvmcluster ()
-{
-if [ $# -eq 0 ]; then
-   errmsg "Please provide clustername"
-   return 1
-fi
-nohup terminator --geometry=1280x800 -l $1 -T "$1" &
-}
-
 function mychrome ()
 {
 nohup /usr/bin/google-chrome &

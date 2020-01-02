@@ -284,13 +284,6 @@ function check_var ()
 for H in `thosts`; do msggreen $H &&  sre $H "du -hs /var/cluster/logs && du -hs /var/fm/fmd && du -hs /var/log/zones && du /hs /var/crash" | grep G ;done
 }
 
-function check_kvm_multipath ()
-{
-[ -z "$mypasswd" ] && definemypasswd
-CMD="/home/claeyje/bin/check-multipath.pl"
-for H in `kvmhosts`; do msggreen "$H" && sre $H $CMD | grep -v '[47]\/4' | egrep -v "^exit|$CMD" ;done
-}
-
 function check_ldap_duplicate_uids ()
 {
 DUPLICATES=`ldapsearchalluidNumbers | uniq -d`
