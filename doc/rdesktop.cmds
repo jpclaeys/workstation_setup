@@ -34,3 +34,22 @@ rdesktop -x 0x81 mywinserver   # equals the broadband default + font smoothing
 rdesktop -x 0x80 mywinserver   # equals the LAN default + font smoothing
 
 
+rdesktop: open on second screen
+--------------------------------
+
+Tip: use the optional offset in the -g option
+
+     -g <geometry>
+              Desktop geometry (WxH[@DPI][+X[+Y]]). If geometry is the special word "workarea", the geometry will be fetched from the extended window man‐
+              ager  hints  property  _NET_WORKAREA, from the root window. The geometry can also be specified as a percentage of the whole screen, e.g. "-g
+              80%", "-g 80%x70%".
+
+              If the specified geometry depends on the screen size, and the screen size is changed, rdesktop will automatically reconnect  using  the  new
+              screen size. This requires that rdesktop has been compiled with RandR support.
+
+              Offset placement of window is optional. Starting point is upper left corner of screen.  Window manager might push into visible  area,  if  a
+              panel would be covered.  The schema is "-g <value>+<xoff>+<yoff>, f.e. "-g 30%+200+600".
+
+ex.
+---
+/usr/bin/rdesktop -d publications -x 0x80 -P -a 32 -g 1920x1024+1920+0 -k fr-be -u claeyje opdt199
