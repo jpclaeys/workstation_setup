@@ -1,0 +1,15 @@
+How to delete broken symlinks in one go
+----------------------------------------
+
+This simple one liner does the job quite fast, requires GNU find:
+
+find . -xtype l -delete
+
+A bit of explanation:
+----------------------
+-xtype l tests for links that are broken (it is the opposite of -type)
+
+-delete deletes the files directly, no need for further bothering with xargs or -exec
+
+NOTE: -xtype l means -xtype low case L (as in link)
+
