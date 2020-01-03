@@ -15,8 +15,9 @@ clean all               Remove all stored metadata
 repolist [-v]           Produces a list of configured repositories
 repolist all
 history                 view what has happened in past transactions
-yum history list [ID]
-
+history list [ID]
+history info [ID]
+changelog
 
 # How to know from which yum repository a package has been installed?
 
@@ -77,3 +78,9 @@ OR
 yum history undo `yum history list | awk '/Downgrade/ {print $1;exit}'`
 
 ------------------------------------------------------------------------------------------------------------------------------------
+# changelog ex.
+----------------
+dnf changelog gnome-shell-extension-topicons-plus
+
+------------------------------------------------------------------------------------------------------------------------------------
+

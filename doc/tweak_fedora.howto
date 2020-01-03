@@ -1,19 +1,22 @@
 Howto tweak fedora
+-------------------
 
 1. run "tweaks"
+----------------
 
-# Allow the botoom bar to show the list of active windows
+# Allow the bottom bar to show the list of active windows
 On the "Extensions" sub-menu, enable the "Window list"
 
+# Enable Topicons plus
+# This extension moves legacy tray icons (bottom left of Gnome Shell) to the top panel
+On the "Extensions" sub-menu, enable the "Topicons plus"
 
 # Add the Maximise and Minimise icons on the Windows Titlbars
-
 On the "Window Titlebars" sub-menu, enable the "Maximise" and "Minimise" buttons in the "Titlebar Buttons" section
 
 
-Adding keyboard shortcuts:
---------------------------
-
+2. Adding keyboard shortcuts:
+------------------------------
 
 Open the "Settings" 
 Select "Devices"

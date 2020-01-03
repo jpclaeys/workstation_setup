@@ -1,25 +1,47 @@
 ---
 
-  - name: Check if RPMfusion already set
+  - name: Check if RPMfusion free is already set
     shell: /bin/rpm -q --quiet rpmfusion-free-release && echo installed || echo missing
     args:
       warn: false
-    register: rpmfusion
+    register: rpmfusion_free
     check_mode: no
     tags: repo
 
-#  - debug: var=rpmfusion
+#  - debug: var=rpmfusion_free
 #    tags: repo
 
     # it's RPM package to install a repo  
-  - name: setup RPMfusion repository
+  - name: setup RPMfusion free repository
     vars:
-      rpmfusion_rpm: "http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
-    command: yum localinstall -y --nogpgcheck {{ rpmfusion_rpm }}
-    when: ansible_distribution == "Fedora" and rpmfusion.stdout == "missing"
+      rpmfusion_free_rpm: "http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+    command: dnf localinstall -y --nogpgcheck {{ rpmfusion_free_rpm }}
+    when: ansible_distribution == "Fedora" and rpmfusion_free.stdout == "missing"
     ignore_errors: true
     become: true
     tags: repo
+
+  - name: Check if RPMfusion nonfree is already set
+    shell: /bin/rpm -q --quiet rpmfusion-nonfree-release && echo installed || echo missing
+    args:
+      warn: false
+    register: rpmfusion_nonfree
+    check_mode: no
+    tags: repo
+
+#  - debug: var=rpmfusion_nonfree
+#    tags: repo
+
+    # it's RPM package to install a repo
+  - name: setup RPMfusion nonfree repository
+    vars:
+      rpmfusion_nonfree_rpm: "http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+    command: dnf localinstall -y --nogpgcheck {{ rpmfusion_nonfree_rpm }}
+    when: ansible_distribution == "Fedora" and rpmfusion_nonfree.stdout == "missing"
+    ignore_errors: true
+    become: true
+    tags: repo
+
 
     # it's Fedora package
   - name: setup Fedora Workstation Repos
@@ -27,6 +49,7 @@
       name:
       - fedora-workstation-repositories
       state: present
+    when: ansible_distribution == "Fedora" 
     become: true
     ignore_errors: true
     tags: repo
