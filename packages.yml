@@ -23,7 +23,7 @@
       - gkrellm
       - pssh
       - google-chrome-stable
-#      - gnome-shell-extensions
+      - gnome-shell-extension-topicons-plus
       - gnome-tweaks
       - solaar
       - vim
