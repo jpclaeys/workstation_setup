@@ -21,6 +21,7 @@
       - sysstat
       - vlc
       - gkrellm
+      - copyq
       - pssh
       - google-chrome-stable
       - gnome-shell-extension-topicons-plus
