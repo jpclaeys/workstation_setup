@@ -86,6 +86,7 @@ FUNCTIONSFILES=`echo "
 bash_aliases
 bash_colors.sh
 bash_functions.sh
+hosts_functions.sh
 basic_functions.sh
 check_functions.sh
 git_prompt.sh
