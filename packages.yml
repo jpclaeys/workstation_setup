@@ -33,6 +33,7 @@
       - ipcalc
       - sipcalc
       - vsftpd
+      - keychain
       state: latest
     become: true
     ignore_errors: true
