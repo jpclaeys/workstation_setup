@@ -253,7 +253,7 @@ EOT
 ldapsearchusergroups <login> 
  OR
 id <login>
-# Compare withe another member if the same team
+# Compare with another member if the same team
 
 1.2.4 Create the HOME of the user
 ----------------------------------

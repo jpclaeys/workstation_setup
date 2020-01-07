@@ -1,0 +1,9 @@
+Centreon White screen after login 
+----------------------------------
+
+Issue:
+For some reason the index file /usr/share/centreon/www/index.html was cleared.
+
+Solution:
+Recover /usr/share/centreon/www/index.html from backup.
+
