@@ -1,0 +1,32 @@
+Windows keys c v h stopped working
+-----------------------------------
+
+Keyboard Input Ignored for c, h, t, and v Keys in Specific Applications Only
+-----------------------------------------------------------------------------
+Fix:
+Hit the right Windows key twice; that's it.
+
+
+
+Random Solutions and Workarounds Culled from the Comments (and Elsewhere):
+---------------------------------------------------------------------------
+(In no particular order.  This may not be complete and up-to-date.)
+
+1. A double-tap of the Windows (or Super) key.
+2. A double-tap of specifically the right Windows key.
+3. Restart the effected application (or Explorer if effected)
+4. Reboot (last resort).
+5. “Detect and Repair” from the Help menu in Outlook (Outlook only)
+6. Press CapsLock and Shift back down to lower case (this is a per letter fix)
+7. Fn key + Windows key may toggle problem on and off.
+8. Alt key + Windows key may toggle problem on and off (especially in Win8).
+9. Region and Language —> Keyboards and Languages —> change keyboards;
+delete all keyboards other than your language and delete all instances of “Ink Correction”.  Or try changing the format setting at Format (dropdown): from English (United States) to English (United Kingdom) and click OK.
+10. Disable Sticky Keys (Control Panel —> Ease of Access Center —> Make the keyboard easier to use —> Make it easier to type —> uncheck “Turn on Sticky Keys“)
+11. Remove all keyboards from the Device Manager and reboot.
+12. Login to the effected machine via RDP and then return to the machine and login locally.
+13. Laptops may have to use the Widows key on the laptop and not a secondary keyboard.
+14. In Win7 it may be useful to check for keyboard/language changing hotkeys here Control Panel —> Region and Language —> Keyboards and Languages —> Change Keyboards —> Advanced Key Settings
+15. If you have only a left Windows key, you may attach an external keyboard which does.  Failing that, user Matan below wrote a right-Windows-key simulator which can be found here.  (Please note that I cannot guarantee the integrity of that source, so please use appropriate caution when downloading from unknown sources.)
+16. User Klode as offered another possible solution for users lacking a right-Windows key.  Open a command prompt and type first cd /d c:\tmp (then press Enter) followed by nircmd sendkeypress rwin (and press Enter).  Klode also describes how to create a shortcut for that and his comment can be found here.
+

@@ -45,8 +45,8 @@ echo "[ ! -d $HOMEDIR ] && mkdir $HOMEDIR && chown $USERID:$GROUPID $HOMEDIR && 
 3.3 Change the password
 ------------------------
 DATE=`date "+%Y%m%d"`
-PASSWORD=$USERID$DATE && echo $PASSWORD
-passwd $USERID
+PASSWORD=$USERNAME && echo $PASSWORD
+passwd $USERNAME
 New Password: $PASSWORD
 
 3.4 Check that we can connect with the userid
@@ -81,8 +81,10 @@ go to target host
 cd /etc
 ls -l hosts.allow
 TIMESTAMP=`date "+%Y%m%d"`
+OPPCNAME=
+host ${OPPCNAME}.publications.win
 cp hosts.allow hosts.allow.$TIMESTAMP
-echo "sshd:$OPPCNAME.publications.win # $USERID" >> hosts.allow
+echo "sshd:$OPPCNAME.publications.win # $USERNAME - $FULLNAME" >> hosts.allow
 tail -1 hosts.allow
 
 ----------------------------------------------------------------------------------------------------------------------------------
