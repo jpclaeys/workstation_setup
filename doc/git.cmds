@@ -11,6 +11,8 @@ git diff
 git reset --hard origin/master
 # If ok, commit the modifications
 git commit -am "<ticketnumber> JPC"
+# if you don't want to specify a comment
+git commit -am --no-edit
 # The comment can be modified before pushing
 git --amend -m "New message"
 git pull && git push
@@ -19,6 +21,7 @@ git [ref]log            # view modofications
 git [ref]log -1         # view only the last modofication
 git [ref]log -1 --stat  # view only the last modofication + files changed
 git [ref]log -1 -p      # view only the last modofication + diff
+git [ref]log --oneline  # to simplify the output
 git revert <commit id>
 # Find who modifed a file
 git blame <full path of file>
