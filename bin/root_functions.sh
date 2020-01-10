@@ -15,3 +15,14 @@ echo "clrg manage ${zone_name}-rg && clrg status ${zone_name}-rg && clrg online 
 done
 echo zoneadm list -civ
 }
+
+function unmanage_zone ()
+{
+# Parameter: <zone_name>
+check_input $@ || return 1
+validatehost $1 || return 1
+zone_name=$1
+CMD="clrg offline ${zone_name}-rg && clrs list -g ${zone_name}-rg | xargs clrs disable && clrg unmanage ${zone_name}-rg && clrg status ${zone_name}-rg"
+confirmexecution $CMD && eval $CMD
+}
+
