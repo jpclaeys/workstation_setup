@@ -69,6 +69,22 @@ smt.sh $TICKET | tee -a  ${TICKETFILE}
    fi
 }
 
+function mytickets ()
+{
+SEP=`separator 132 -`
+smt.sh -a claeyje | awk '/Description/,/IncidentID/'| egrep -v 'Contact|Authorised' | perl -pe 's/(Description": {)/\n'$SEP'\n\1/' && echo $SEP
+}
+
+function mytickets_summry ()
+{
+mytickets  | egrep "IncidentID|Server Name|Action" | tac | sed "s/,$//;s/<//g;s/>//g" | xargs -n5 | sort -t":" -k5
+}
+
+function myticketsidlist ()
+{
+mytickets | awk '/IncidentID/ {print \$NF}'| sed 's/\"//g'
+}
+
 function newlog_move_zone ()
 {
 [ $# -lt 4 ] && msg "Usage: $FUNCNAME <zone_name> <target_cluster> <date> <time> [primarysource secondarysource primarytarget secondarytarget]" && return 1
