@@ -69,7 +69,16 @@ smt.sh $TICKET | tee -a  ${TICKETFILE}
    fi
 }
 
-function mytickets ()
+function get_ticket_journal ()
+{
+if [ $# -lt 1 ]; then
+  msg "Usage: $FUNCNAME <ticket>"
+  return 1
+fi
+smt.sh $1 | awk '/IncidentID/ || /JournalUpdates/,/]/'
+}
+
+function myticketslist ()
 {
 SEP=`separator 132 -`
 smt.sh -a claeyje | awk '/IncidentID/ {print $NF}' | sed 's/\"//g' | perl -pe 's/(Description: {)/\n'$SEP'\n\1/' && echo $SEP
@@ -83,12 +92,8 @@ smt.sh -a claeyje | awk '/IncidentID/ || /Description/,/}/' | sed 's/\"//g'| per
 
 function mytickets_summry ()
 {
-smt.sh -a claeyje  | egrep "IncidentID|Server Name|Action" | tac | sed "s/,$//;s/<//g;s/>//g" | xargs -n5 | sort -t":" -k5
-}
-
-function myticketsidlist ()
-{
-mytickets | awk '/IncidentID/ {print \$NF}'| sed 's/\"//g'
+#smt.sh -a claeyje  | egrep "IncidentID|Server Name|Action" | tac | sed "s/,$//;s/<//g;s/>//g" | xargs -n5 | sort -t":" -k5
+smt.sh -a claeyje  | egrep "IncidentID|Server Name|Action" | tac | sed "s/,$//;s/<//g;s/>//g"
 }
 
 function newlog_move_zone ()
