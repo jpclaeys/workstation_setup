@@ -377,3 +377,23 @@ confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
 vi $LOGFILE
 }
 
+function newlog_delete_host_from_satellite ()
+{
+local TICKET LASTNAME FIRSTNAME 
+[ $# -lt 2 ] && msg "Usage: $FUNCNAME <ticket> <hostname>" && return 1
+TICKET=$1
+HOSTNAME=$2
+TYPE=${FUNCNAME#newlog_}
+TARGETDIR=$LOGDIR/$TYPE
+TPL=$TPLDIR/${TYPE}_cmds.tpl
+TIMESTAMP=`date "+%d%m%Y"`
+LOGFILE=$TARGETDIR/${TICKET}_${TYPE}_${HOSTNAME}_$TIMESTAMP.log
+msg "Creating $LOGFILE"
+cp $TPL $LOGFILE
+SUB=";s/<hostname>/$HOSTNAME/"
+perl -pe "$SUB" -i $LOGFILE
+insert_ticket_at_top_of_file $TICKET $LOGFILE
+confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
+vi $LOGFILE
+}
+
