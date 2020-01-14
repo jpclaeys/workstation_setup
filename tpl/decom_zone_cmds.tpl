@@ -22,7 +22,7 @@ The server is not configured in Satellite, because it is a Solaris zone.
 -----------------------------------------------------------------
 User Additional Info:
 ----------------------
-We have to wait 30 days before beeing destroyed.
+Freeze period before Deletion: 30 days
 
 Check box "Planned by current group"
 ...After: set current date +30 days.
