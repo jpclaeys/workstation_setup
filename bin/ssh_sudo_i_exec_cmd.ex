@@ -15,6 +15,8 @@ expect -re ".*assword.*"
 send -- "$pass\r"
 stty echo
 expect "#"
+send -- "exec bash\r"
+send -- ". ~claeyje/root_profile 2> /dev/null \r"
 send -- "$cmd\r"
 send -- "exit\r"
 interact 

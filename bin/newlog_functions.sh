@@ -72,12 +72,18 @@ smt.sh $TICKET | tee -a  ${TICKETFILE}
 function mytickets ()
 {
 SEP=`separator 132 -`
-smt.sh -a claeyje | awk '/Description/,/IncidentID/'| egrep -v 'Contact|Authorised' | perl -pe 's/(Description": {)/\n'$SEP'\n\1/' && echo $SEP
+smt.sh -a claeyje | awk '/IncidentID/ {print $NF}' | sed 's/\"//g' | perl -pe 's/(Description: {)/\n'$SEP'\n\1/' && echo $SEP
+}
+
+function mytickets_description ()
+{
+SEP=`separator 132 -`
+smt.sh -a claeyje | awk '/IncidentID/ || /Description/,/}/' | sed 's/\"//g'| perl -pe 's/(Description: {)/\n'$SEP'\n\1/' && echo $SEP
 }
 
 function mytickets_summry ()
 {
-mytickets  | egrep "IncidentID|Server Name|Action" | tac | sed "s/,$//;s/<//g;s/>//g" | xargs -n5 | sort -t":" -k5
+smt.sh -a claeyje  | egrep "IncidentID|Server Name|Action" | tac | sed "s/,$//;s/<//g;s/>//g" | xargs -n5 | sort -t":" -k5
 }
 
 function myticketsidlist ()

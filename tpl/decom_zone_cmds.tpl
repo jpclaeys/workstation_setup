@@ -1,3 +1,32 @@
+------------------------------------------------------------------------------------------------------------------------------------
+In case we only need to shutdown the zone, and decom it after a delay of 30 days:
+----------------------------------------------------------------------------------
+Comment on the main ticket:
+----------------------------
+
+# Shutdown the zone and set the RG to the "unmanaged" state.
+-------------------------------------------------------------
+
+zone-where <zone_name>
+# connect to the zone primary host
+zoneadm -z <zone_name> list -v && clrg status <zone_name>-rg
+unmanage_zone <zone_name>
+
+# Resolve the child ticket:
+----------------------------
+Resolution:
+The server has been shut down as requested.
+The server is not configured in Satellite, because it is a Solaris zone.
+
+# Put the main ticket in "Planned" and schedule it after 30 days
+-----------------------------------------------------------------
+User Additional Info:
+----------------------
+We have to wait 30 days before beeing destroyed.
+
+Check box "Planned by current group"
+...After: set current date +30 days.
+------------------------------------------------------------------------------------------------------------------------------------
 Remove a zone
 --------------
 1 Description
@@ -75,13 +104,11 @@ global_zone_os=     $global_zone_os
 }
 
 
-3.2 If the zone rg is in the unmanaged state, then put it bask in managed state
+3.2 If the zone rg is in the unmanaged state, then put it back in managed state
 
 zoneadm -z <zone_name> list -v
 clrg status <zone_name>-rg
-
-clrg manage <zone_name>-rg
-clrg online -e <zone_name>-rg
+clrg online -M -e -n <primary_host> <zone_name>-rg
 
 3.3 inform integration, db teams
 3.4 schedule dowtine in centreon

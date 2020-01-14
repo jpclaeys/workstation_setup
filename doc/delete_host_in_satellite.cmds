@@ -1,0 +1,20 @@
+How to delete hosts in bulk using hammer CLI on Red Hat Satellite 6 ?
+----------------------------------------------------------------------
+
+Environment
+Red Hat Satellite 6.3.
+Issue
+How to delete all the content host registered with Red Hat Satellite server whose name matches with a pattern for example all name starting from abc - abc-xxxxxx.example.com?
+Resolution
+Creating a loop to fetch the ID's from a list of the hosts and then delete it helped in the resolution as stated below:-
+
+Raw
+
+for i in $(hammer --csv host list --search="name ~ hostname" | grep -vi '^ID' | awk -F, {'print $1'} | sort -n)
+do
+hammer host delete --id $i
+done
+
+Replace the hostname from the above query with the name of hosts to be search and delete.
+
+
