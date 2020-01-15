@@ -93,6 +93,7 @@ git_prompt.sh
 ldap_functions.sh
 LUNs_functions.sh
 misc_functions.sh
+tickets_functions.sh
 newlog_functions.sh
 print_functions.sh
 prompt.sh

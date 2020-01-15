@@ -452,3 +452,13 @@ function count_all ()
 for i in linuxphys solarisphys solariszones linuxvm oracle opsrv; do count_$i;done
 }
 
+function clfirsthost ()
+{
+# Returns the first host from all clusters
+for H in `clhosts`; do s $H cluster list | awk -F'_' '{print $1}'  ;done | sort -u
+}
+
+function show_allunmanagedRG ()
+{
+for H in `clfirsthost`; do msggreen `s $H cluster list` && s $H show_unmanaged_RG ;done
+}
