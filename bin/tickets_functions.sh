@@ -75,16 +75,15 @@ fi
 smt.sh $1 | awk '/IncidentID/ || /JournalUpdates/,/]/'
 }
 
-function myticketslist ()
+function mytickets ()
 {
-SEP=`separator 132 -`
-smt.sh -a claeyje | awk '/IncidentID/ {print $NF}' | sed 's/\"//g' | perl -pe 's/(Description: {)/\n'$SEP'\n\1/' && echo $SEP
+smt.sh -a claeyje | awk '/IncidentID/ {print $NF}' | sed 's/\"//g'
 }
 
 function mytickets_description ()
 {
 SEP=`separator 132 -`
-smt.sh -a claeyje | awk '/IncidentID/ || /Description/,/}/' | sed 's/\"//g'| perl -pe 's/(Description: {)/\n'$SEP'\n\1/' && echo $SEP
+smt.sh -a claeyje | awk '/IncidentID/ || /Description/,/}/' | sed 's/\"//g;s/,$//' | perl -pe 's/(Description: {)/\n'$SEP'\n\1/' && echo $SEP
 }
 
 function mytickets_summary ()
