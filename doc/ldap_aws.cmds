@@ -1,0 +1,42 @@
+Howto for force an immediate upload of the latest version of the LDAP Dump to AWS
+----------------------------------------------------------------------------------
+
+goto ldapa-pk
+
+crontab -l
+[root@ldapa-pk ~]# crontab -l
+#45 13 * * * /etc/cron.hourly/upload-to-aws.sh
+Note:
+This is commented out because the script is placed in /etc/cron.hourly
+
+[root@ldapa-pk ~]# ll /etc/cron.hourly
+total 4,0K
+-rwxr-xr-x. 1 root root 392 29 mar  2017 0anacron
+lrwxrwxrwx  1 root root  33 30 nov  2018 upload-to-aws.sh -> /root/ldap-tools/upload-to-aws.sh
+
+Anything in /etc/cron.hourly will be executed hourly, just like anything in /etc/cron.daily will be run once a day. 
+Make sure the file is executable, and start it with #!/bin/bash or #!/usr/bin/python (or #!/usr/bin/env python ) or 
+whatever is appropriate for the type of script you'll be running.
+
+
+
+In order to force an immediate upload, add the "now" parameter at script launch:
+---------------------------------------------------------------------------------
+
+/etc/cron.hourly/upload-to-aws.sh now
+
+
+# Check
+
+grep AWS /var/log/messages
+
+ex.
+
+[root@ldapa-pk ~]# zgrep AWS /var/log/messages.?.gz
+<snip>
+/var/log/messages.7.gz:Jan  8 15:12:54 ldapa-pk AWS: Update required
+/var/log/messages.7.gz:Jan  8 15:12:54 ldapa-pk AWS: Update required
+/var/log/messages.7.gz:Jan  8 15:12:56 ldapa-pk AWS: Dump copied to AWS
+/var/log/messages.7.gz:Jan  8 15:12:56 ldapa-pk AWS: Dump copied to AWS
+<snip>
+

@@ -18,13 +18,19 @@ git push
 puppet agent -t --noop -o --environment  development
 
 ##### if all looks good, commit from DEVELOPMENT into PRODUCTION branch
-cd ../production && git branch
-git pull origin production && git pull --no-ff
+# cd ../production && git branch
 {
-pwd | grep Solaris >/dev/null
-if [[ $? == 0 ]]; then git push && cd -; fi
-pwd | grep Linux >/dev/null
-if [[ $? == 0 ]]; then git push origin production && cd -; fi
+grep -q Solaris <<< $(pwd) && cd $HOME/git/Solaris/production && pwd && git branch
+grep -q Linux   <<< $(pwd) && cd $HOME/git/Linux/production   && pwd && git branch
+}
+
+git pull origin production && git pull --no-ff
+
+{
+# pwd | grep Solaris >/dev/null; if [[ $? == 0 ]]; then git push && cd -; fi
+# pwd | grep Linux   >/dev/null; if [[ $? == 0 ]]; then git push origin production && cd -; fi
+grep -q Solaris <<< $(pwd) && git push
+grep -q Linux   <<< $(pwd) && git push origin production
 }
 ------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------

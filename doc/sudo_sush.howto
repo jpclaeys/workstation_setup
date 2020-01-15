@@ -1,0 +1,42 @@
+Adding entries to the sudoers configuration (howto sudo sush)
+-------------------------------------------------------------
+
+Cfr. url: https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:linux:howto_sudo_sush
+
+Intro
+------
+This procedure explains how to add users to the sudoers configuration
+
+
+Locate the right file for adding a new entry
+---------------------------------------------
+sudo configuration files are distributed with puppet. 
+They can be found in your GIT repository at modules/applications/files/RedHat/etc/sudoers.d:
+
+$ ls modules/applications/files/RedHat/etc/sudoers.d
+20-backup                        50-jira01.test
+20-valleje-mpi                   50-jurexs.prod
+50-anninter.prod                 50-jurexs.test
+<snip>
+
+and modules/opoce/files/RedHat/etc/sudoers.d
+
+ls modules/opoce/files/RedHat/etc/sudoers.d
+09-opoce-cmd-def                10-opoce-rootdba.odp
+10-opoce-opsys_ux               50-emcpprequester
+<snip>
+
+the former ones being application specific configurations, the latter ones being system specific.
+
+Adding users
+-------------
+These files are standard sudoers files, so the standard syntax for adding entries applies. You can take existing entries for other users as a template for adding the new user if needed.
+
+
+Creating new sudoers instances
+-------------------------------
+Should you need to create a completely new file, make sure its naming scheme is correct. For system specific configurations, the file should be named <num>-<name>{.<substring>}, where num is 10 or higher, name is the affected user name and substring can be used for finer granulation by specifying hostnames, environments etc.
+
+For application specific configurations, the file should be named 50-<application>{.<environment>}{.<substring>}{.<substring>} with application being the application name, environment being one of prod, test, reception, sandbox and substring being used for finer granulation by specifying hostnames, Linux versions and the like. The application string is mandatory, all others are optional. If a completely new instance has been created, make sure it is added to the appropriate manifest inside modules/opoce/manifests or modules/applications/manifests in your GIT repository.
+
+

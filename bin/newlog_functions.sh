@@ -397,3 +397,27 @@ confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
 vi $LOGFILE
 }
 
+function newlog_sudo_sush ()
+{
+local TICKET LASTNAME FIRSTNAME LOGIN
+[ $# -lt 3 ] && msg "Usage: $FUNCNAME <ticket> <login> <hostname>" && return 1
+TICKET=$1
+LOGIN=$2
+HOSTNAME=$3
+TYPE=${FUNCNAME#newlog_}
+TARGETDIR=$LOGDIR/$TYPE
+TPL=$TPLDIR/${TYPE}_cmds.tpl
+TIMESTAMP=`date "+%d%m%Y"`
+LOGFILE=$TARGETDIR/${TICKET}_${TYPE}_${LOGIN}_${HOSTNAME}_$TIMESTAMP.log
+msg "Creating $LOGFILE"
+cp $TPL $LOGFILE
+SUB="s/<ticket>/$TICKET/g"
+SUB+=";s/<login>/$LOGIN/"
+SUB+=";s/<hostname>/$HOSTNAME/"
+perl -pe "$SUB" -i $LOGFILE
+insert_ticket_at_top_of_file $TICKET $LOGFILE
+confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
+vi $LOGFILE
+}
+
+
