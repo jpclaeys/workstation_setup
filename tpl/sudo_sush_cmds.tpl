@@ -42,13 +42,13 @@ sr <hostname>
 puppet agent -t --noop -o --environment  development
 
 ##### if all looks good, commit from DEVELOPMENT into PRODUCTION branch
-{
-grep -q Solaris <<< $(pwd) && cd $HOME/git/Solaris/production && pwd && git branch
-grep -q Linux   <<< $(pwd) && cd $HOME/git/Linux/production   && pwd && git branch
-}
+# Go into your production repository
+for OS in Solaris Linux; do grep -q ${OS} <<< $(pwd) && cd $HOME/git/${OS}/production && pwd && git branch;done
 
+# Sync development into production
 git pull origin production && git pull --no-ff
 
+# Push your local production repository to the remote production repository
 {
 grep -q Solaris <<< $(pwd) && git push
 grep -q Linux   <<< $(pwd) && git push origin production
