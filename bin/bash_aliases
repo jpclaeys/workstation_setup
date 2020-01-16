@@ -96,7 +96,7 @@ alias gitreset='git reset --hard origin/master'
 alias gitclean='git clean -f'
 alias gitpp='git pull && git push'
 alias gitw='cd ~/git/workstation_setup'
-alias gitcw='git commit -am --no-edit && git push && git status'
+alias gitwc='git commit -am --no-edit && git push && git status'
 alias gits='git status'
 
 alias setkbdbe='setxkbmap -layout be'
