@@ -25,7 +25,7 @@ MODEL=			$MODEL
 
 function save_decom_linux_vars ()
 {
-[ `whoami` != "root" ] && echo "Need to be root to read the disks" && return 1
+check_root || return 1
 [ $# -eq 0 ] && export HOST_NAME=`uname -n | cut -d"." -f1` || export HOST_NAME=$1
 TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/${HOST_NAME}
 [ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER

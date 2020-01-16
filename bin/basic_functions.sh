@@ -45,8 +45,16 @@ function executeCMDs ()
 function check_input ()
 {
 if [ $# -eq 0 ]; then
-   errmsg "Please provide hostname"
-   return 1
+  errmsg "Please provide hostname"
+  return 1
+fi
+}
+
+function check_root ()
+{
+if [ `whoami` != "root" ]; then 
+  errmsg "Need to be root"
+  return 1
 fi
 }
 

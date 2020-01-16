@@ -150,6 +150,7 @@ alias yum_list_installed_this_year='yum history list | grep `date "+%Y"` | awk '
 alias image_viewer=eog # Eye of GNOME (eog) is the GNOME image viewer.
 [ -f /usr/bin/bat ] && alias cat='bat -p'
 alias gitw='cd ~/git/workstation_setup'
+alias gitcw='git commit -am --no-edit && git push && git satus'
 alias ap=ansible-playbook
 alias line='separator 132 -'
 alias get_hba_wwns='cat /sys/class/fc_host/host?*/port_name'

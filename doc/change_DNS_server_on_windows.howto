@@ -1,0 +1,14 @@
+How to Change DNS Server on Windows 7, 8, Windows 10
+-----------------------------------------------------
+
+Windows
+Follow these steps to change DNS servers on Windows. These steps will work on Windows 7, 8, or 10.
+
+How to change DNS on Windows 7, Windows 8, or Windows 10:
+
+1. Open Control Panel and select Network and Sharing Centre. 
+   Alternatively you can right-click the network status icon on the system tray (bottom-right of the screen, near volume controls).
+2. Click Change adapter settings on the left pane.
+3. Right-click the Internet connection you want to change DNS servers for and select Properties.
+4. Select Internet Protocol Version 4 (TCP / IPv4) and click Properties.
+5. Click the button next to Use the following DNS server addresses: and enter the DNS server addresses of your choice. Click OK when you’re done.
