@@ -288,6 +288,7 @@ local TICKET LASTNAME FIRSTNAME
 [ $# -lt 2 ] && msg "Usage: $FUNCNAME <ticket> <hostname>" && return 1
 TICKET=$1
 HOSTNAME=$2
+validatehost $HOSTNAME || return 1
 TYPE=${FUNCNAME#newlog_}
 TARGETDIR=$LOGDIR/$TYPE
 TPL=$TPLDIR/${TYPE}_cmds.tpl

@@ -2,7 +2,8 @@
 # Template: delete_host_from_satellite_cmds.tpl
 ----------------------------------------------------------------------------------------------------
 
-sr satellite satellite_delete_host <hostname>
+sr satellite-pk 
+satellite_delete_host <hostname>
 
 ----------------------------------------------------------------------------------------------------
 log:

@@ -1,0 +1,78 @@
+Howto remove a file on the Master repository
+---------------------------------------------
+
+goto satellite-pk
+
+cd /etc/puppet/environments/
+
+find . -name <filespec>
+
+remove the unwanted files.
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+ex.
+[root@satellite-pk ~]# cd /etc/puppet/environments/
+[root@satellite-pk environments]# find . -name "CERESNG*"
+./development/modules/applications/files/RedHat/applications/centreon/plugins/custom/probes_applis/CERESNGSERVICES.pm
+./development/modules/applications/files/RedHat/applications/centreon/plugins/custom/probes_applis/CERESNG-MONIT.pm.dev
+./production/modules/applications/files/RedHat/applications/centreon/plugins/custom/probes_applis/CERESNG-MONIT.pm.dev
+./production/modules/applications/files/RedHat/applications/centreon/plugins/custom/probes_applis/CERESNGSERVICES.pm
+
+
+cd ./production/modules/applications/files/RedHat/applications/centreon/plugins/custom/probes_applis/
+
+[root@satellite-pk environments]# ll CERESNG-PROD.p*
+-rwxrwxr-x 1 centreon centreon 2 16 jan 10:02 CERESNG-PROD.pm
+-rwxrwxr-x 1 centreon centreon 2 16 jan 10:02 CERESNG-PROD.pm.cancel
+-rwxrwxr-x 1 centreon centreon 2 16 jan 10:02 CERESNG-PROD.pm.dev
+-rwxrwxr-x 1 centreon centreon 2 16 jan 10:02 CERESNG-PROD.pm.dev.cancel
+
+\rm CERESNG-PROD.p*
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+# Then goto the clients
+------------------------
+Manually remove the files
+run puppet agent; he files will not come back.
+------------------------------------------------------------------------------------------------------------------------------------
+[claeyje@banta Linux]# sr infra3-tk
+password for claeyje: 
+exec bash
+[root@infra3-tk ~]# . ~claeyje/root_profile 2> /dev/null 
+[root@infra3-tk ~]# 
+[root@infra3-tk ~]# cd /applications/centreon/
+[root@infra3-tk centreon]# find . -name "CERESNG-*"
+./users/centreon/plugins/custom/probes_applis/CERESNG-MONIT.pm.dev
+./users/centreon/plugins/custom/probes_applis/CERESNG-PROD.pm.dev.cancel
+./users/centreon/plugins/custom/probes_applis/CERESNG-PROD.pm.cancel
+./users/centreon/plugins/custom/probes_applis/CERESNG-PROD.pm
+./users/centreon/plugins/custom/probes_applis/CERESNG-PROD.pm.dev
+[root@infra3-tk centreon]# cd ./users/centreon/plugins/custom/probes_applis/
+[root@infra3-tk probes_applis]# ll CERESNG-PROD.p*
+-rwxrwxr-x 1 centreon centreon 2 16 jan 10:02 CERESNG-PROD.pm
+-rwxrwxr-x 1 centreon centreon 2 16 jan 10:02 CERESNG-PROD.pm.cancel
+-rwxrwxr-x 1 centreon centreon 2 16 jan 10:02 CERESNG-PROD.pm.dev
+-rwxrwxr-x 1 centreon centreon 2 16 jan 10:02 CERESNG-PROD.pm.dev.cancel
+[root@infra3-tk probes_applis]# \rm CERESNG-PROD.p*
+[root@infra3-tk probes_applis]# ll CERESNG-PROD.p*
+ls: cannot access CERESNG-PROD.p*: No such file or directory
+[root@infra3-tk probes_applis]# ll CERESNG*
+-rwxrwxr-x 1 centreon centreon 1,8K  6 mar  2019 CERESNG-MONIT.pm.dev
+-rwxrwxr-x 1 centreon centreon 1,3K  6 mar  2019 CERESNGSERVICES.pm
+[root@infra3-tk probes_applis]# puppet agent -t
+Info: Retrieving pluginfacts
+Info: Retrieving plugin
+Info: Loading facts
+Info: Caching catalog for infra3-tk.opoce.cec.eu.int
+Info: Applying configuration version '1579253002'
+Notice: Finished catalog run in 19.23 seconds
+[root@infra3-tk probes_applis]# ll CERESNG*
+-rwxrwxr-x 1 centreon centreon 1,8K  6 mar  2019 CERESNG-MONIT.pm.dev
+-rwxrwxr-x 1 centreon centreon 1,3K  6 mar  2019 CERESNGSERVICES.pm
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+
