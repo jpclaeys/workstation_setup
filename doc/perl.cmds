@@ -1,4 +1,5 @@
 How to remove line in file using perl
+--------------------------------------
 
 perl -ne 'print unless /<mypattern>/' -i <myfile>
 
@@ -8,7 +9,7 @@ sed -i '\|<mountpoint>|d' /etc/fstab
 When you use a nonstandard character for a pattern delimiter, such as |pattern|, the first use of that character must be escaped:
 
 # Remove binary characters from quorum disk content view
-
+----------------------------------------------------------
 [root@perceval /]# time less -f /dev/rdsk/c0t6001405E9AF457775E64E71A3452AA85d0s0 | perl -pe 's/\x00.*$/\n/g'
 LIO-ORG-M_quorum_percev-4.0 cyl 98 alt 2 hd 64 sec 32
 real    0m2.072s
@@ -18,4 +19,10 @@ real    0m0.021s
 
 [root@karadoc tmp]# dd if=/dev/rdsk/c0t60014059F9A2F3AA13443BA9177EA433d0s0  bs=512 count=1 2> /dev/null | perl -pe 's/cyl.*$/\n/g'
 LIO-ORG-E_quorum_percev-4.0 
+
+How to move lines containing specific strings to top of file?
+--------------------------------------------------------------
+With perl we maintain two arrays to store the matching and nonmatching lines:
+
+perl -pe 'push @{/<mypattern>/ ?  \@A : \@B}, $_}{print @A, @B' -i  <myfile>
 

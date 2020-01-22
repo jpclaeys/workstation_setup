@@ -55,6 +55,7 @@ function newlog_decom_zone ()
 [ $# -lt 2 ] && msg "Usage: $FUNCNAME <ticket> <zone_name> [<primary host> <secondary host>]" && return 1
 TICKET=$1
 HOST=$2
+validatehost $HOST || return 1
 if [ -n "$3" ]; then
   PRIMARYHOST=$3 && echo "Primary host for $HOST: $PRIMARYHOST"
   SECONDARYHOST=$4 && echo "Secondary host for $HOST: $SECONDARYHOST"
@@ -285,9 +286,16 @@ vi $LOGFILE
 function newlog_delete_host_from_satellite ()
 {
 local TICKET LASTNAME FIRSTNAME 
-[ $# -lt 2 ] && msg "Usage: $FUNCNAME <ticket> <hostname>" && return 1
+[ $# -lt 1 ] && msg "Usage: $FUNCNAME <ticket> [<hostname>]" && return 1
+unset TICKETFILE
 TICKET=$1
-HOSTNAME=$2
+get_ticket_description $TICKET || return 1
+if [ -z "$2" ]; then
+# fetching the hostname in the ticket
+  HOSTNAME=`grep -i "Server Name" $TICKETFILE | sed 's/<//;s/>//' | awk '{print $NF}' | cut -d"." -f1` && echo "Hostname:=$HOSTNAME"
+else
+  HOSTNAME=$2
+fi
 validatehost $HOSTNAME || return 1
 TYPE=${FUNCNAME#newlog_}
 TARGETDIR=$LOGDIR/$TYPE
@@ -298,7 +306,8 @@ msg "Creating $LOGFILE"
 cp $TPL $LOGFILE
 SUB=";s/<hostname>/$HOSTNAME/"
 perl -pe "$SUB" -i $LOGFILE
-insert_ticket_at_top_of_file $TICKET $LOGFILE
+#insert_ticket_at_top_of_file $TICKET $LOGFILE
+sed -i -e "1 e cat $TICKETFILE" $LOGFILE
 confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
 vi $LOGFILE
 }

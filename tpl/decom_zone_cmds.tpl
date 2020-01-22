@@ -1,32 +1,31 @@
-------------------------------------------------------------------------------------------------------------------------------------
+====================================================================================================================================
 In case we only need to shutdown the zone, and decom it after a delay of 30 days:
 ----------------------------------------------------------------------------------
-Comment on the main ticket:
-----------------------------
-
-# Shutdown the zone and set the RG to the "unmanaged" state.
--------------------------------------------------------------
+1. Shutdown the zone and set the RG to the "unmanaged" state.
+--------------------------------------------------------------
 
 zone-where <zone_name>
 # connect to the zone primary host
 zoneadm -z <zone_name> list -v && clrg status <zone_name>-rg
 unmanage_zone <zone_name>
 
-# Resolve the child ticket:
-----------------------------
-Resolution:
-The server has been shut down as requested.
-The server is not configured in Satellite, because it is a Solaris zone.
+------------------------------------------------------------------------------------------------------------------------------------
+log:
+----
 
-# Put the main ticket in "Planned" and schedule it after 30 days
------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+
+2. Put the main ticket in "Planned" and schedule it after 30 days
+------------------------------------------------------------------
 User Additional Info:
 ----------------------
-Freeze period before Deletion: 30 days
+The server has been shut down as requested.
+Freeze period before deletion: 30 days
 
 Check box "Planned by current group"
 ...After: set current date +30 days.
-------------------------------------------------------------------------------------------------------------------------------------
+
+====================================================================================================================================
 Remove a zone
 --------------
 1 Description
