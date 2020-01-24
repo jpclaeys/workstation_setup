@@ -80,3 +80,10 @@ smiths 212
 denniss 100
 olivert 10
 
+How to combine three consecutive lines of text file 
+----------------------------------------------------
+
+awk '{ printf "%s", $0; if (NR % 3 == 0) print ""; else printf " " }' <file>   >/dev/null
+Or via sed
+sed 'N;N;s/\n/ /g' <file>  >/dev/null
+

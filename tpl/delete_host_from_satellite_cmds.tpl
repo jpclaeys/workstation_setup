@@ -16,7 +16,7 @@ Server <hostname> has been deleted from satellite as requested.
 
 If Solaris zone:
 -----------------
-Server <hostname> is a Solaris zone and is not configured in satellite.
+Server <hostname> is not configured in satellite.
 No further action required.
 
 ----------------------------------------------------------------------------------------------------

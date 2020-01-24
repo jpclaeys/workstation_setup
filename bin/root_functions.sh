@@ -29,7 +29,7 @@ confirmexecution $CMD && eval $CMD
 function satellite_host_list ()
 {
 [ "`uname -n`" != "satellite-pk" ] && errmsg "Need to be on satellite-pk" && return 1
-[ `whoami` != "root" ] && echo "Need to be root" && return 1
+#[ `whoami` != "root" ] && echo "Need to be root" && return 1
 unset http_proxy
 if [ ! -z $1 ]; then
   hammer --csv host list --search="name ~ $1"
@@ -41,7 +41,7 @@ fi
 function satellite_delete_host ()
 {
 [ "`uname -n`" != "satellite-pk" ] && errmsg "Need to be on satellite-pk" && return 1
-[ `whoami` != "root" ] && echo "Need to be root" && return 1
+#[ `whoami` != "root" ] && echo "Need to be root" && return 1
 [ $# -eq 0 ] && errmsg "Please provide hostname" && return 1
 unset http_proxy
 satellite_host_list $1

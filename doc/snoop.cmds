@@ -1,0 +1,3 @@
+root@opgtw # snoop -qr -o /tmp/snoop_dns.out -d net0_169  -v 158.169.97.3 10.135.43.10 
+snoop -i  /tmp/snoop_dns.out dns
+

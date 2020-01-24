@@ -1,24 +1,57 @@
-hammer --csv  hostgroup list
-hammer hostgroup delete ...
-[root@satellite-pk ~]# hammer hostgroup delete --help
-Usage:
-    hammer hostgroup delete [OPTIONS]
+Using Hammer, the Satellite's CLI tool.
+----------------------------------------
 
-Options:
- --id ID                        
- --name NAME                   Hostgroup name
- --title TITLE                 Hostgroup title
- -h, --help                    print help
+------------------------------------------------------------------------------------------------------------------------------------
+Config hammer:
+---------------
+Authentication.
+----------------
+By default, hammer prompts for your Satellite credentials each time you issue a command. You can specify your credentials when executing a command as follows:
 
+$ hammer -u <username> -p <password> <subcommands>
+As an alternative, follow these steps to use saved credentials:
 
+Create the file ~/.hammer/cli_config.yml and add the following contents to the file:
+
+:foreman:
+ :host: 'https://satellite.example.com/'
+ :username: 'username'
+ :password: 'password'
+Replace the example values with your own details. Do not use tabs in the file, always use indentation by spaces.
+
+To protect your password, make sure the file is readable only by the current user:
+
+$ chmod 600 ~/.hammer/cli_config.yml
+Save and close the file. Now when you start hammer it will use the credentials in the ~/.hammer/cli_config.yml file.
+
+ex.
+---
+[claeyje@satellite-pk ~]# cat .hammer/cli_config.yml 
+foreman:
+  :enable_module: true
+  :host: 'https://satellite-pk.opoce.cec.eu.int'
+  :username: 'lopmarc'
+  :password: 'H4llvent0#'
+  :request_timeout: -1 #seconds     
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+hammer [--csv [--csv-separator " "]]  hostgroup list
+
+hammer --csv host list
+hammer --csv host list --search <pattern>
+hammer --csv host list --search="name ~ $1"
 
 hammer --csv --csv-separator " " hostgroup list | grep -v "Title" | head -5 | awk '{print $3}' | cut -d'/' -f2
 GL=`hammer --csv --csv-separator " " hostgroup list | grep -v "Title" | awk '{print $3}' ` && echo $GL
 for G in $GL; do msg $G && hammer host list --search $G;done
 
+------------------------------------------------------------------------------------------------------------------------------------
+
 [root@satellite-pk ~]# GL=`hammer --csv --csv-separator " " hostgroup list | grep -v "Title" | awk '{print $3}' | sed 's:Projects/::g' ` && echo $GL
 Basic Basic/Linux Basic/Linux_no-network Cluster Cluster/alogens Cluster/metals Cluster/noblegases Cluster/tng Cluster/voyager Desktop Desktop/Centos Projects anninter Apache_Traffic_Server atm Atto Axway Axway/gateway Axway/relay Axway/sentinel BigData BigData_no-network Cellar Cellar2eli Cellar/bo Cellar/fedorafs Cellar/fo Cellar/fo-joseki2 CellarProtectpoint CellarProtectpoint/coordinator CellarProtectpoint/nodes Centreon ceresng checklex ciba conslife Cportal Cportal/diff Cportal/flex Cportal/fs Cportal/oad crm dcim defa DNS eli_validator elk elk-nb enotices esentool etendering etrustex Eudorarc Eurlex Eurlex/bo Eurlex/fo evindex Formexweb IDOL IDOL_no-network Infra Infra/portal Jira jira01 jurexs KVM-HyperVisor KVM-HyperVisor_no-network legap leojparaph Liferay Lod Mdr medora Monitoring Networker Networker/Archiving Networker/Nmc Networker/Servers Networker/Storagenode newLDAP_servers ODP Oracle-oms Oracle-oud Oracle-rac Oracle-rac1 Oracle-rac2 Oracle-rac3 Oracle-rac4 Oracle-rac5 Oracle-rac6 Oracle-rac7 planjo planpubli pmki portalsearch portalsearch/pses portalsearch/psmq portalsearch/psqp portalsearch/pssa portalsearch/psxd qa RDFng RDFng-dual satellite seicr sicof skosmos studiesdb styleguide svn tedmonitor Vocbench Vocbench3 wiki RHEL7
 
+------------------------------------------------------------------------------------------------------------------------------------
 
 GLT="Cluster Cluster/alogens Cluster/metals Cluster/noblegases Cluster/tng Cluster/voyager Cellar Cellar2eli Cellar/bo Cellar/fedorafs Cellar/fo Cellar/fo-joseki2 CellarProtectpoint CellarProtectpoint/coordinator CellarProtectpoint/nodes Centreon ceresng "
 

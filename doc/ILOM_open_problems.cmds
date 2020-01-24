@@ -1,0 +1,118 @@
+Howto check open problems on ILOM.
+-----------------------------------
+
+ex. FS Full ERROR
+
+
+-> show /System/Open_Problems
+
+Open Problems (1)
+Date/Time                 Subsystems          Component
+------------------------  ------------------  ------------
+Thu Nov 21 15:30:56 2019  System              MB/SP (SP Board Module)
+        ILOM has detected that its filesystem has exceeded the filesystem capacity limit. (Probability:100, 
+        UUID:93443e79-add2-68ef-bccb-a4d1f45ac152, Resource:/SYS/MB/SP, Part Number:7066335, Serial 
+        Number:465769T+1519UF149H, Reference Document:http://support.oracle.com/msg/ILOM-8000-JV)
+
+
+Solution:
+-> show /System/Open_Problems
+
+Open Problems (1)
+Date/Time                 Subsystems          Component
+------------------------  ------------------  ------------
+Thu Nov 21 15:30:56 2019  System              MB/SP (SP Board Module)
+        ILOM has detected that its filesystem has exceeded the filesystem capacity limit. (Probability:100, 
+        UUID:93443e79-add2-68ef-bccb-a4d1f45ac152, Resource:/SYS/MB/SP, Part Number:7066335, Serial 
+        Number:465769T+1519UF149H, Reference Document:http://support.oracle.com/msg/ILOM-8000-JV)
+
+-> start /SP/faultmgmt/shell
+Are you sure you want to start /SP/faultmgmt/shell (y/n)? y
+
+faultmgmtsp> fmadm faulty
+------------------- ------------------------------------ -------------- --------
+Time                UUID                                 msgid          Severity
+------------------- ------------------------------------ -------------- --------
+2019-11-21/15:30:56 93443e79-add2-68ef-bccb-a4d1f45ac152 ILOM-8000-JV   Major
+
+Problem Status           : open
+Diag Engine              : fdd 1.0
+System                  
+   Manufacturer          : Oracle Corporation
+   Name                  : SPARC T5-2
+   Part_Number           : 33594203+1+1
+   Serial_Number         : AK00306982
+
+System Component        
+   Firmware_Manufacturer : Oracle Corporation
+   Firmware_Version      : (ILOM)4.0.2.2.a,(POST)5.3.12,(OBP)4.38.12,(HV)1.15.12
+   Firmware_Release      : (ILOM)2018.03.29,(POST)2018.03.28,(OBP)2018.03.28,(HV)2018.03.28
+
+----------------------------------------
+Suspect 1 of 1
+   Problem class  : defect.ilom.fs.full
+   Certainty      : 100%
+   Affects        : /SYS/MB/SP
+   Status         : faulted
+
+   FRU                 
+      Status            : faulty
+      Location          : /SYS/MB/SP
+      Manufacturer      : Oracle Corporation
+      Name              : ASSY,SP,T5
+      Part_Number       : 7066335
+      Revision          : 01
+      Serial_Number     : 465769T+1519UF149H
+      Chassis          
+         Manufacturer   : Oracle Corporation
+         Name           : SPARC T5-2
+         Part_Number    : 33594203+1+1
+         Serial_Number  : AK00306982
+
+Description : ILOM has detected that its filesystem has exceeded the
+              filesystem capacity limit.
+
+Response    : The chassis wide service-required LED is illuminated.
+
+Impact      : ILOM commands may fail execution, especially those that make
+              configuration changes.
+
+Action      : Please refer to the associated reference document at
+              http://support.oracle.com/msg/ILOM-8000-JV for the latest
+              service procedures and policies regarding this diagnosis.
+
+faultmgmtsp> fmadm acquit 93443e79-add2-68ef-bccb-a4d1f45ac152
+faultmgmtsp> fmadm rotate errlog
+faultmgmtsp> fmadm rotate infolog 
+faultmgmtsp> fmadm rotate fltlog  
+faultmgmtsp> fmadm reset -s all 
+faultmgmtsp> fmadm list           
+No faults found
+faultmgmtsp> exit
+
+-> set /System/Log clear=true
+Are you sure you want to clear /System/Log (y/n)? y
+Set 'clear' to 'true'
+-> set /SP/logs/event/ clear=true
+Are you sure you want to clear /SP/logs/event (y/n)? y
+Set 'clear' to 'true'
+-> set /SP/logs/audit clear=true 
+Are you sure you want to clear /SP/logs/audit (y/n)? y
+Set 'clear' to 'true'
+
+-> show /System/Open_Problems  
+
+Open Problems (0)
+Date/Time                 Subsystems          Component
+------------------------  ------------------  ------------
+
+-> show /System/ health
+
+/System
+    Properties:
+        health = OK
+
+
+
+
+

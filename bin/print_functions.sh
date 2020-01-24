@@ -155,14 +155,21 @@ function resetcolor ()
 }
 
 # A more flexible approach, and also using modal terminal line-drawing characters instead of hyphens:
-hr() {
+function hr() {
   local start=$'\e(0' end=$'\e(B' line='qqqqqqqqqqqqqqqq'
-  local cols=${COLUMNS:-$(tput cols)}
+  if [ -z "$1" ]; then
+    local cols=${COLUMNS:-$(tput cols)}
+  else
+    cols=$1
+  fi
   while ((${#line} < cols)); do line+="$line"; done
   printf '%s%s%s\n' "$start" "${line:0:cols}" "$end"
 }
 
-set_title() { printf '\e]2;%s\a' "$*"; }
+function line () { hr 132; }
 
+function lineh () { separator 132 - ; }
+
+set_title() { printf '\e]2;%s\a' "$*"; }
 
 #==========================================================================
