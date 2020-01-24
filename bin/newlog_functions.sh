@@ -55,7 +55,7 @@ function newlog_decom_zone ()
 [ $# -lt 2 ] && msg "Usage: $FUNCNAME <ticket> <zone_name> [<primary host> <secondary host>]" && return 1
 TICKET=$1
 HOST=$2
-validatehost $HOST || return 1
+validatehost $HOST 
 if [ -n "$3" ]; then
   PRIMARYHOST=$3 && echo "Primary host for $HOST: $PRIMARYHOST"
   SECONDARYHOST=$4 && echo "Secondary host for $HOST: $SECONDARYHOST"
