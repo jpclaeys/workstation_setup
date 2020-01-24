@@ -1,0 +1,23 @@
+  478  23/01/20 08:25:01 . ~claeyje/root_profile 2> /dev/null 
+  479  23/01/20 08:25:15 svcprop dns/client
+  480  23/01/20 08:26:03 vi /etc/resolv.conf 
+  481  23/01/20 08:26:36 svcadm restart dns/client
+  482  23/01/20 08:26:43 cat /etc/resolv.conf 
+  483  23/01/20 08:27:20 vi /etc/resolv.conf 
+  484  23/01/20 08:28:32 nscfg import -vf dns/client
+  485  23/01/20 08:28:46 vi /etc/resolv.conf 
+  486  23/01/20 08:28:57 nscfg import -vf dns/client
+  487  23/01/20 08:29:29 nslookup tank
+  488  23/01/20 08:29:37 vi /etc/resolv.conf 
+  489  23/01/20 08:29:50 nscfg import -vf dns/client
+  490  23/01/20 08:29:54 nslookup tank
+  491  23/01/20 08:30:26 svcadm restart dns/client
+  492  23/01/20 08:30:36 nslookup tank
+  493  23/01/20 08:31:42 puppet agent -t 
+  494  23/01/20 08:32:30 cat /etc/resolv.conf 
+  495  23/01/20 08:33:19 puppet agent -t 
+  496  23/01/20 08:34:13 cat /etc/resolv.conf 
+  497  24/01/20 09:28:57 . ~claeyje/root_profile 2> /dev/null 
+  498  24/01/20 09:29:01 history
+
+svcprop dns/client | grep ^config/nameserver

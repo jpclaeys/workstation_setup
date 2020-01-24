@@ -1,0 +1,72 @@
+Checking a new DNS
+-------------------
+
+nslookup <host>  <alternate dns>
+OR
+dig @<alternate dns>  <host> [+short]
+
+ex.
+----
+[claeyje@banta doc]# nslookup neo
+Server:		158.167.97.161
+Address:	158.167.97.161#53
+
+Non-authoritative answer:
+Name:	neo.opoce.cec.eu.int
+Address: 10.199.99.76
+
+[claeyje@banta doc]# nslookup neo 10.135.43.10
+Server:		10.135.43.10
+Address:	10.135.43.10#53
+
+Non-authoritative answer:
+Name:	neo.opoce.cec.eu.int
+Address: 10.199.99.76
+
+
+[claeyje@banta doc]# dig neo.opoce.cec.eu.int
+
+; <<>> DiG 9.9.4-RedHat-9.9.4-73.el7_6 <<>> neo.opoce.cec.eu.int
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 27373
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4000
+;; QUESTION SECTION:
+;neo.opoce.cec.eu.int.		IN	A
+
+;; ANSWER SECTION:
+neo.opoce.cec.eu.int.	98	IN	A	10.199.99.76
+
+;; Query time: 1 msec
+;; SERVER: 158.167.97.161#53(158.167.97.161)
+;; WHEN: ven jan 24 14:08:22 CET 2020
+;; MSG SIZE  rcvd: 65
+
+[claeyje@banta doc]# dig @10.135.43.10  neo.opoce.cec.eu.int 
+
+; <<>> DiG 9.9.4-RedHat-9.9.4-73.el7_6 <<>> @10.135.43.10 neo.opoce.cec.eu.int
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 10683
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4000
+;; QUESTION SECTION:
+;neo.opoce.cec.eu.int.		IN	A
+
+;; ANSWER SECTION:
+neo.opoce.cec.eu.int.	63	IN	A	10.199.99.76
+
+;; Query time: 2 msec
+;; SERVER: 10.135.43.10#53(10.135.43.10)
+;; WHEN: ven jan 24 14:08:47 CET 2020
+;; MSG SIZE  rcvd: 65
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------

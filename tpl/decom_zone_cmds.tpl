@@ -19,7 +19,7 @@ log:
 ------------------------------------------------------------------
 User Additional Info:
 ----------------------
-The server has been shut down as requested.
+The zone <zone_name> has been shut down as requested.
 Freeze period before deletion: 30 days
 
 Check box "Planned by current group"

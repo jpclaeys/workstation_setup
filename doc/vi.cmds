@@ -52,3 +52,11 @@ Instead of inserting the block, it is also possible to replace (paste over) the 
 When a count is used before v, V, or ^V (character, line or block selection), an area equal to the previous area, multiplied by the count, is selected. See the paragraph after :help <LeftRelease>.
 
 Note that this will only work if you actually did something to the previous visual selection, such as a yank, delete, or change operation. It will not work after visually selecting an area and leaving visual mode without taking any actions.
+------------------------------------------------------------------------------------------------------------------------------------
+helpful shortcuts related to executing things in the shell:
+------------------------------------------------------------
+:! 		By itself, runs the last external command (from your shell history)
+:!! 		Repeats the last command
+:silent !{cmd} 	Eliminates the need to hit enter after the command is done
+:r !{cmd} 	Puts the output of $cmd into the current buffer.
+------------------------------------------------------------------------------------------------------------------------------------

@@ -4,10 +4,16 @@ noincsearch command is used to turn off incremental highlighting of the searchin
 Usage:
 :set noincsearch
 
-
-
+------------------------------------------------------------------------------------------------------------------------------------
+ex.
+----
 [claeyje@muscadet ~]$ cat .vimrc
 syntax off
 set nohlsearch
 set t_Co=0
-
+set paste
+set noincsearch
+filetype off
+command Line :r ~/bin/line
+command Date :r! date
+------------------------------------------------------------------------------------------------------------------------------------
