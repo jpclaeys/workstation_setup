@@ -296,7 +296,7 @@ if [ -z "$2" ]; then
 else
   HOSTNAME=$2
 fi
-validatehost $HOSTNAME || return 1
+validatehost $HOSTNAME
 TYPE=${FUNCNAME#newlog_}
 TARGETDIR=$LOGDIR/$TYPE
 TPL=$TPLDIR/${TYPE}_cmds.tpl
@@ -329,6 +329,33 @@ cp $TPL $LOGFILE
 SUB="s/<ticket>/$TICKET/g"
 SUB+=";s/<login>/$LOGIN/"
 SUB+=";s/<hostname>/$HOSTNAME/"
+perl -pe "$SUB" -i $LOGFILE
+insert_ticket_at_top_of_file $TICKET $LOGFILE
+confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1
+vi $LOGFILE
+}
+
+function newlog_ssh_access ()
+{
+local TICKET LASTNAME FIRSTNAME LOGIN
+[ $# -lt 5 ] && msg "Usage: $FUNCNAME <ticket> <login> <fullname> <oppcname> <targethost>" && return 1
+TICKET=$1
+LOGIN=$2
+FULLNAME=$3
+OPPCNAME=$4
+TARGETHOST=$5
+TYPE=${FUNCNAME#newlog_}
+TARGETDIR=$LOGDIR/$TYPE
+TPL=$TPLDIR/${TYPE}_cmds.tpl
+TIMESTAMP=`date "+%d%m%Y"`
+LOGFILE=$TARGETDIR/${TICKET}_${TYPE}_${LOGIN}_$TIMESTAMP.log
+msg "Creating $LOGFILE"
+cp $TPL $LOGFILE
+SUB="s/<ticket>/$TICKET/g"
+SUB+=";s/<login>/$LOGIN/"
+SUB+=";s/<fullname>/$FULLNAME/"
+SUB+=";s/<oppcname>/$OPPCNAME/"
+SUB+=";s/<targethost>/$TARGETHOST/"
 perl -pe "$SUB" -i $LOGFILE
 insert_ticket_at_top_of_file $TICKET $LOGFILE
 confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1

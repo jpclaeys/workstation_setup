@@ -1,11 +1,11 @@
 How to grant access to a server for a user
 ------------------------------------------
 1. Required info:
-   FULLNAME=
+   FULLNAME="<fullname>"
    USERID=     # If not provided, get the uid from the outlook address book (Alias field)
-   USERNAME=  
-   OPPCNAME=
-   TARGETHOST=
+   USERNAME=<login>  
+   OPPCNAME=<oppcname>
+   TARGETHOST=<targethost>
 
 2. Get the User identifier (UID):
 
@@ -29,65 +29,73 @@ go to infrak2-pk
 ----------------------------------------------------------
 3.1. Create the new local user
 -------------------------------
+sr <targethost>
 {
-FULLNAME=""
-USERNAME=
+FULLNAME="<fullname>"
+USERNAME=<login>
+OPPCNAME=<oppcname>
+TARGETHOST=<targethost>
 USERID=
 GROUPID=10     # staff
-HOMEDIR=/export/home/$USERNAME && SHELL=/usr/bin/bash
+HOMEDIR=/export/home/$USERNAME && SHELL=/bin/bash
 echo "/usr/sbin/useradd -g $GROUPID -u $USERID -s $SHELL -c \"$FULLNAME\" -d $HOMEDIR  $USERNAME"
 }
 
 3.2 Create the home dir
 -----------------------
-echo "[ ! -d $HOMEDIR ] && mkdir $HOMEDIR && chown $USERID:$GROUPID $HOMEDIR && ls -ld $HOMEDIR"
+echo "[ ! -d $HOMEDIR ] && mkdir -p $HOMEDIR && chown $USERID:$GROUPID $HOMEDIR && ls -ld $HOMEDIR"
 
 3.3 Change the password
 ------------------------
-DATE=`date "+%Y%m%d"`
-PASSWORD=$USERNAME && echo $PASSWORD
-passwd $USERNAME
+DATE=`date "+%Y%m%d"` && echo $DATE
+PASSWORD=paunemi$DATE && echo $PASSWORD
+passwd <login>
 New Password: $PASSWORD
 
 3.4 Check that we can connect with the userid
 ----------------------------------------------
-ssh 0 -l $USERID
+ssh 0 -l <login>
 
 3.5 Force user to change his password at first login
 -----------------------------------------------------
-passwd -x0 $USERID
-
-3.6 Send a mail to the requester to inform him about his username/passord and ask him for his OPPC's name
-----------------------------------------------------------------------------------------------------------
-echo "
-Dear,
-
-Your account has been created on $TARGETHOST:
-
-Username: $USERID
-Password: $PASSWORD
-
-You will need to change your password at the first login.
-
-Can you provide us your PC name in order to grant you access to the server ?
-"
+passwd -x0 <login>
 
 4. Add entry to /etc/hosts.allow file
 --------------------------------------
 
-Entry:  sshd:<oppc name>.publications.win # <userid>
+Entry:  sshd:<oppcname>.publications.win # <userid>
 
 go to target host
 cd /etc
 ls -l hosts.allow
-TIMESTAMP=`date "+%Y%m%d"`
-OPPCNAME=
-host ${OPPCNAME}.publications.win
+TIMESTAMP=`date "+%Y%m%d"` && echo $TIMESTAMP
+# Validate the oppc
+host <oppcname>.publications.win
 cp hosts.allow hosts.allow.$TIMESTAMP
-echo "sshd:$OPPCNAME.publications.win # $USERNAME - $FULLNAME" >> hosts.allow
+echo "sshd: <oppcname>.publications.win # <ticket> - $USERNAME - $FULLNAME" >> hosts.allow
 tail -1 hosts.allow
+
+5. Send a mail to the requester to inform him about his username/passord and ask him for his OPPC's name
+----------------------------------------------------------------------------------------------------------
+
+echo "
+Dear,
+
+Your access on garcimore has been created:
+
+Username: paunemi
+Password: $PASSWORD
+PC: $OPPCNAME
+
+You will need to change your password at the first login.
+
+"
 
 ----------------------------------------------------------------------------------------------------------------------------------
 
-5. Resolve the ticket.
+6. Resolve the ticket.
 -----------------------
+
+The ssh access for <login> on <targethost> has been created as requested.
+The password will be sent by mail.
+

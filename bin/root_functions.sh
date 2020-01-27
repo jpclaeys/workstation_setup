@@ -31,8 +31,12 @@ function satellite_host_list ()
 [ "`uname -n`" != "satellite-pk" ] && errmsg "Need to be on satellite-pk" && return 1
 #[ `whoami` != "root" ] && echo "Need to be root" && return 1
 unset http_proxy
+local HL FILTER
 if [ ! -z $1 ]; then
-  hammer --csv host list --search="name ~ $1"
+#  hammer --csv host list --search="name ~ $1"
+  HL="$@"
+  FILTER=`echo $HL| sed 's/ /|/g'` && echo "Hosts filter:= $FILTER"
+  hammer --csv host list --search=$FILTER
 else
   hammer --csv host list
 fi
@@ -42,14 +46,19 @@ function satellite_delete_host ()
 {
 [ "`uname -n`" != "satellite-pk" ] && errmsg "Need to be on satellite-pk" && return 1
 #[ `whoami` != "root" ] && echo "Need to be root" && return 1
-[ $# -eq 0 ] && errmsg "Please provide hostname" && return 1
+[ $# -eq 0 ] && errmsg "Please provide hostname(s)" && return 1
 unset http_proxy
-satellite_host_list $1
-for i in $(hammer --csv host list --search="name ~ $1" | grep -vi '^ID' | awk -F, {'print $1'} | sort -n)
-do
-CMD="hammer host delete --id $i"
-confirmexecution "Do you want to delete this host ($CMD) ?" || return 1
-eval $CMD
+local HL FILTER
+#satellite_host_list $@
+HL="$@"
+FILTER=`echo $HL| sed 's/ /|/g'` && echo "Hosts filter:= $FILTER"
+hammer --csv host list --search=$FILTER
+#for i in $(hammer --csv host list --search="name ~ $1" | grep -vi '^ID' | awk -F, {'print $1'} | sort -n)
+for i in $(hammer --csv host list --search=$FILTER | grep -vi '^ID' | awk -F, {'print $1'})
+  do
+    CMD="hammer host delete --id $i"
+    confirmexecution "Do you want to delete this host ($CMD) ?" || return 1
+    eval $CMD
 done
 }
 
