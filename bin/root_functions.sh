@@ -53,12 +53,12 @@ local HL FILTER
 HL="$@"
 FILTER=`echo $HL| sed 's/ /|/g'` && echo "Hosts filter:= $FILTER"
 hammer --csv host list --search=$FILTER
-#for i in $(hammer --csv host list --search="name ~ $1" | grep -vi '^ID' | awk -F, {'print $1'} | sort -n)
-for i in $(hammer --csv host list --search=$FILTER | grep -vi '^ID' | awk -F, {'print $1'})
+cmds=("") && cmdindex=0
+for ID in $(hammer --csv host list --search=$FILTER | grep -vi '^ID' | awk -F, {'print $1'})
   do
-    CMD="hammer host delete --id $i"
-    confirmexecution "Do you want to delete this host ($CMD) ?" || return 1
-    eval $CMD
+    cmds[$cmdindex]="hammer host delete --id $ID"
+    cmdindex=$((cmdindex + 1))
 done
+executeCMDs "${cmds[@]}"
 }
 

@@ -12,7 +12,7 @@ FILE=$2
 #msg "insert_ticket_at_top_of_file $TICKET $FILE"
 [ ! -f "$FILE" ] && errmsg "unknown file $FILE" && return 1
 get_ticket_description $TICKET || return 1
-sed -i -e "1 e cat $TICKETFILE" $FILE
+sed -i -e "1 e /usr/bin/cat $TICKETFILE" $FILE
 }
 
 function get_ticket_description ()
@@ -45,7 +45,7 @@ if [ $? -eq 5 ]; then  # jq: error (at <stdin>:): Cannot iterate over string ...
 fi
 echo >> ${TICKETFILE}
 separator 100 - >> ${TICKETFILE}
-[ -z $2 ] && cat ${TICKETFILE}
+[ -z $2 ] && /usr/bin/cat ${TICKETFILE}
 return 0
 }
 function get_ticket_all_info ()

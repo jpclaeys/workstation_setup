@@ -11,9 +11,11 @@ function executeCMDs ()
         echo "[$i] ${CMDS[$i]}"
         i=$((i+1))
     done
-    c=$(ckkeywd -Q -p "[?] Confirm execution on host `hostname`" yes no skip )
+#   c=$(ckkeywd -Q -p "[?] Confirm execution on host `hostname`" yes no skip )
+    printf "[?] Confirm execution on host `hostname` [yes no skip]: "; read ans
+    c=`echo $ans | awk '{print substr(tolower($0),0,1)}'`;
     case "$c" in 
-        'yes')
+        'y')
             i=0
             while [ $i -lt ${#CMDS[@]} ]
             do 
@@ -21,8 +23,10 @@ function executeCMDs ()
                 eval ${CMDS[$i]}
                 rc=$?;
                 if [ $rc -ne 0 ]; then
-                    c=$(ckkeywd -Q -p "  [$i] non zero return code ($rc), continue anyway ?" yes no)
-                    if [ "$c" = "no" ]; then
+#                   c=$(ckkeywd -Q -p "  [$i] non zero return code ($rc), continue anyway ?" yes no)
+                    printf "[$i] non zero return code ($rc), continue anyway  [yes no]: "; read ans
+                    c=`echo $ans | awk '{print substr(tolower($0),0,1)}'`;
+                    if [ "$c" = "n" ]; then
                         break;
                     fi
                 fi
@@ -30,11 +34,11 @@ function executeCMDs ()
             done
             return 0
         ;;
-        'no')
+        'n')
             return 2
         ;;
-        'skip')
-            return 1
+        's')
+            return 3
         ;;
         *)
             return 1
