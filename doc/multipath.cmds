@@ -20,3 +20,6 @@ mer_vmax3453_t1_rdfng_data2 size=509G (360000970000292603453533031313032) dm-3
 # Editing /etc/multipath.conf
 # Validating:
 multipath -d -v 2
+
+# More verbose
+multipath -v4 -ll

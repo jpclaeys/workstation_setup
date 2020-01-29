@@ -1,0 +1,91 @@
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+[root@ldapa-pk log]#  HISTTIMEFORMAT="%d/%m/%y %T "
+[root@ldapa-pk log]# history
+ 1002  29/01/20 07:34:15 systemctl status
+ 1003  29/01/20 07:34:44 cd /var/log
+ 1004  29/01/20 07:34:45 ll
+ 1005  29/01/20 07:34:48 lrt
+ 1006  29/01/20 07:34:55 ll -rt
+ 1007  29/01/20 07:35:14 su - claeyje
+ 1008  29/01/20 07:35:54 ps -ef|grep slap
+ 1009  29/01/20 07:36:03 cd /var/log/
+ 1010  29/01/20 07:36:04 ls
+ 1011  29/01/20 07:36:12 unalias ls
+ 1012  29/01/20 07:36:29 alias ls='ls -F'
+ 1013  29/01/20 07:36:30 ls
+ 1014  29/01/20 07:36:36 less ldap.log 
+ 1015  29/01/20 07:36:47 less slapd.log
+ 1016  29/01/20 07:38:17 netstat -a|grep ldap
+ 1017  29/01/20 07:38:35 netstat -a|grep ldap|grep CLOSE
+ 1018  29/01/20 07:44:01 slapcat 
+ 1019  29/01/20 07:45:24 systemctl status slapd
+ 1020  29/01/20 07:45:34 systemctl status -l slapd
+ 1021  29/01/20 07:45:39 systemctl status -v slapd
+ 1022  29/01/20 07:45:40 systemctl status -l slapd
+ 1023  29/01/20 07:51:20 cd /etc/openldap/
+ 1024  29/01/20 07:51:20 ls
+ 1025  29/01/20 07:51:22 cd certs/
+ 1026  29/01/20 07:51:22 ls
+ 1027  29/01/20 07:52:16 openssl x509 -noout -text ldapa-pk_opoce_cec_eu_int.pem 
+ 1028  29/01/20 07:52:55 openssl x509 -text ldapa-pk_opoce_cec_eu_int.pem 
+ 1029  29/01/20 07:54:32 ls
+ 1030  29/01/20 07:54:46 cp ldapa-pk_opoce_cec_eu_int_key.pem ldapa-pk_opoce_cec_eu_int.pem /tmp/
+ 1031  29/01/20 07:54:49 cd /tmp/
+ 1032  29/01/20 07:54:59 openssl x509 -noout -text -inldapa-pk_opoce_cec_eu_int.pem 
+ 1033  29/01/20 07:55:05 openssl x509 -noout -text -in ldapa-pk_opoce_cec_eu_int.pem 
+ 1034  29/01/20 07:55:34 openssl x509 -noout -text -in ldapa-pk_opoce_cec_eu_int.pem |less
+ 1035  29/01/20 07:55:54 openssl x509 -noout -text -in ldapa-pk_opoce_cec_eu_int_key.pem |less
+ 1036  29/01/20 07:56:17 slapcat 
+ 1037  29/01/20 07:56:37 service slapd status
+ 1038  29/01/20 07:56:42 service slapd status -l
+ 1039  29/01/20 07:56:53 service slapd restart
+ 1040  29/01/20 07:57:24 service slapd status -l
+ 1041  29/01/20 07:57:38 cd /var/log/
+ 1042  29/01/20 07:57:40 less slapd.log
+ 1043  29/01/20 07:58:55 df -h 
+ 1044  29/01/20 08:01:25 netstat -a|grep ldap
+ 1045  29/01/20 08:13:52 history
+ 1046  29/01/20 09:18:20  HISTTIMEFORMAT="%d/%m/%y %T "
+ 1047  29/01/20 09:18:24 history
+[root@ldapa-pk log]# 
+
+------------------------------------------------------------------------------------------------------------------------------------
+[root@ldapb-pk openldap]# history
+  595  29/01/20 07:40:56 ps -ef|grep slap
+  596  29/01/20 07:41:02 cd /var/log/
+  597  29/01/20 07:41:08 unalias ls
+  598  29/01/20 07:41:23 alias ls="ls -F"
+  599  29/01/20 07:41:24 ls
+  600  29/01/20 07:41:27 less slapd.log
+  601  29/01/20 07:43:29 netstat -an|grep 632
+  602  29/01/20 07:43:36 netstat -a|grep ldaps
+  603  29/01/20 07:43:49 slapcat 
+  604  29/01/20 07:44:08 su - ettelma
+  605  29/01/20 07:44:20 df
+  606  29/01/20 07:44:25 cd /home/ettelma
+  607  29/01/20 07:44:40 cd /home/beggifr
+  608  29/01/20 07:45:51 systemctl status -l slapd
+  609  29/01/20 07:46:35 cd /etc/openldap/
+  610  29/01/20 07:46:35 ls
+  611  29/01/20 07:46:38 less ldap.conf 
+  612  29/01/20 07:46:46 less /etc/openldap/cacerts/commission2.pem 
+  613  29/01/20 07:47:03 less /etc/openldap/cacerts/cacert.pem 
+  614  29/01/20 07:47:18 less /etc/openldap/certs/
+  615  29/01/20 07:47:30 less /etc/openldap/certs/ldapb-pk_opoce_cec_eu_int_key.pem 
+  616  29/01/20 07:47:35 less /etc/openldap/certs/ldapb-pk_opoce_cec_eu_int.pem 
+  617  29/01/20 07:47:48 ls -l  /etc/openldap/certs/
+  618  29/01/20 07:58:50 df -h 
+  619  29/01/20 07:59:06 service slapd restart
+  620  29/01/20 07:59:38 less -1000f /var/log/slapd.log
+  621  29/01/20 07:59:50 less  /var/log/slapd.log
+  622  29/01/20 08:00:32 cd /home/beggifr
+  623  29/01/20 08:00:43 su - ettelma
+  624  29/01/20 08:01:03 netstat -a|grep ldap
+  625  29/01/20 08:20:40 history
+  626  29/01/20 08:21:30 HISTTIMEFORMAT=%d/%m/%y %T 
+  627  29/01/20 08:21:39 HISTTIMEFORMAT="%d/%m/%y %T "
+  628  29/01/20 09:18:06 history
+[root@ldapb-pk openldap]# 
+------------------------------------------------------------------------------------------------------------------------------------

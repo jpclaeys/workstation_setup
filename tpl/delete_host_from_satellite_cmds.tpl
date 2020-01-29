@@ -12,7 +12,7 @@ satellite_delete_host <hostname>
 
 HL=`echo "
 
-"` && echo $HL
+"` && echo $HL && wc -w <<< $HL
 
 satellite_delete_host $HL
 
