@@ -3,7 +3,7 @@ Howto remove luns
 1. use the script located in the admin environment:
 /home/admin/bin/removelun_rhel
 
-2. If it doesn't work, try the manual way:
+2. If removelun_rhel doesn't work, try the manual way:
 
 Cleanup and disconnect disks
 -----------------------------
