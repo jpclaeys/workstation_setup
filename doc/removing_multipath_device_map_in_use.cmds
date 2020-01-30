@@ -1,0 +1,82 @@
+Removing multipath device – map in use
+---------------------------------------
+I got in trouble when I tried to remove a multipath device from my servers. This device is on top on some lvm volumes that I am not using it any longer. I tried to remove with multipath -f, but it was not possible, it said that the map was in use:
+
+~# multipath -f /dev/mapper/2554b454e79496758
+Dec 05 12:22:31 | 2554b454e79496758: map in use
+Dec 05 12:22:31 | failed to remove multipath map 2554b454e79496758
+You can view how many processes are using this map with the dmsetup tool, see the open count field:
+
+~# dmsetup info  /dev/mapper/2554b454e79496758
+Name:              2554b454e79496758
+State:             ACTIVE
+Read Ahead:        256
+Tables present:    LIVE
+Open count:        4
+Event number:      1086846
+Major, minor:      251, 4
+Number of targets: 1
+UUID: mpath-2554b454e79496758
+First remove any LVM active devices on this device, ex: if you have a volume group “vggroup” and a lvm “vol1” on this device remove them:
+
+~# lvremove /dev/vggroup/vol1
+~# vgremove vggroup
+~# pvremove /dev/mapper/2554b454e79496758
+and if the device file is still mapped under /dev remove it:
+
+~# dmsetup remove /dev/vggroup/*
+At this point there shouldn’t be any processes accessing this device and we should be able to remove it with the command above, but it some cases there are still processes blocked waiting for the device. We can try to find out which processes are with lsoft command filtering by device mayor and minor number:
+
+~# lsof | grep "251,4"
+In my case there was some vgs processes blocked trying to access the device. We cannot kill these processes, because they are already waiting for a signal from the kernel.
+
+~# ps aux | grep sbin/vgs
+root     1206972  0.0  0.0  32444  4288 ?        D    dic02   0:00 /sbin/vgs --separator : --noheadings --units b --unbuffered --nosuffix --options vg_name,vg_size,vg_free
+root     1213321  0.0  0.0  32444  4308 ?        D    dic02   0:00 /sbin/vgs --separator : --noheadings --units b --unbuffered --nosuffix --options vg_name,vg_size,vg_free
+root     1248170  0.0  0.0  32444  4196 ?        D    dic02   0:00 /sbin/vgs --separator : --noheadings --units b --unbuffered --nosuffix --options vg_name,vg_size,vg_free
+root     2542017  0.0  0.0  32444  4252 ?        D    10:46   0:00 /sbin/vgs --separator : --noheadings --units b --unbuffered --nosuffix --options vg_name,vg_size,vg_free
+We can try to suspend the multipath device to force timeout to the processes:
+
+~# dmsetup suspend /dev/mapper/2554b454e79496758
+~# dmsetup info /dev/mapper/2554b454e79496758
+Name:              2554b454e79496758
+State:             SUSPENDED
+Read Ahead:        256
+Tables present:    LIVE
+Open count:        4
+Event number:      1086846
+Major, minor:      251, 4
+Number of targets: 1
+UUID: mpath-2554b454e79496758
+And try to clear the device table:
+
+~# dmsetup clear  /dev/mapper/2554b454e79496758
+~# dmsetup wipe_table  /dev/mapper/2554b454e79496758
+We are lucky and finally the device is not in use any longer:
+
+~# dmsetup info  /dev/mapper/2554b454e79496758
+Name:              2554b454e79496758
+State:             ACTIVE
+Read Ahead:        256
+Tables present:    LIVE
+Open count:        0
+Event number:      1086846
+Major, minor:      251, 7
+Number of targets: 1
+UUID: mpath-2554b454e79496758
+Now, we can remove it without problems:
+
+~# mutipath -f  /dev/mapper/2554b454e79496758
+To avoid multipath rediscover the device again we can blacklist it. Remove device from already discovered devices:
+
+~# sed -i '/2554b454e79496758/d' /etc/multipath/wwids
+In the multipath configuration file add an entry in the blacklist section withe the wwid of the deivce, if the file does not exist create it:
+/etc/multipath.conf
+
+blacklist {
+   wwid 2554b454e79496758
+}
+And finally reload multipath:
+
+~# systemctl reload multipath-tools
+

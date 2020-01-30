@@ -172,11 +172,13 @@ Ticket:
 # On all servers remove the luns
 ----------------------------------
 
+check-multipath.pl
 for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort | awk '{print $1}'`; do echo "/home/admin/bin/removelun_rhel $LUN | bash";done
 for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $LUN | bash ;done
 
 # Check: all LUNs are gone
 multipath -ll | egrep -c 'EMC|HITACHI'
+check-multipath.pl
 
 ====================================================================================================================================
 
@@ -298,27 +300,37 @@ Connect to http://resop/ip and fill in the form
 
 - enter the hosts
 - enter the bkp-hosts
+- enter the opsrvxxx
 - enter the consoles
 
 {
 echo $HL
-CONSL=`for H in $HL; do echo ${H}-sc;done|xargs` && echo $CONSL
 # Hosts IP @
 for H in $HL; do printf "%-12s: " $H && dig ${H}.opoce.cec.eu.int +short;done
 # backup IP @
 for H in $HL; do printf "%-12s: " bkp-${H} && dig bkp-${H}.opoce.cec.eu.int +short;done
-# Consoles IP @
-for H in $CONSL; do printf "%-12s: " ${H} && dig ${H}.opoce.cec.eu.int +short;done
+# opsrv
+FILTER=`echo $HL| sed 's/ /|/g'` && echo "Hosts filter:= $FILTER"
+OPSRV=`cmdb opsrv | egrep "\;($FILTER)" | awk -F";" '{print $1}'| xargs` && echo "OPSRV:= $OPSRV"
+# Consoles
+CONSL=`for H in $HL; do echo ${H}-sc;done|xargs` && echo $CONSL
+for H in $CONSL; do printf "%-15s: " ${H} && dig ${H}.opoce.cec.eu.int +short | xargs;done
+# ALLHL="$HL $OPSRV $CONSL"
+ALLHL="$HL $OPSRV"
 }
 
-# Create the excel request file 
-generate_ip_delete_hostlist_records $HL $CONSL | tee ~/snet/data.txt
+# validate the opsrv values
+for H in $OPSRV; do echo -n "$H " && s $H uname -n;done
+
+# Create the excel request file
+generate_ip_delete_hostlist_records $ALLHL | tee ~/snet/data.txt
 
 # On Windows, create a new excel sheet based on the "OPS-RFC-DNS-RF2.3-delete.xltx" template
 run DNS_delete_entry macro
 
 # Create the ticket for SNET
-create_delete_ip_ticket_for_SNET $HL $CONSL
+create_delete_ip_ticket_for_SNET $ALLHL
+
 
 ====================================================================================================================================
 
@@ -329,7 +341,11 @@ Ticket:
 3.3.5 Inform the CMDB manager about remove
 -------------------------------------------
 
-HL=""
+# goto opvmwstsx11
+# Define the hosts list
+
+HL=
+
 {
 cat << EOT
 Dear all,

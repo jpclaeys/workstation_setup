@@ -1,26 +1,25 @@
-
 SED - Insert file at top of another
+------------------------------------
 
 With the N command
 Provided that file2.txt has more than one line (else see the other section):
 
 sed -i -e '1 { r file1.txt' -e 'N; }' file2.txt
+
 The trick is to defer the printing of the first line with the N command.
 
 From the manual:
-
 N
-
 Append the next line of input into the pattern space.
 
 With the e command
+
 Provided that file2.txt is not empty (else just do a copy):
 
 sed -i -e '1 e cat file1.txt' file2.txt
+
 GNU sed provides a e command that executes the command in parameter. The result is output is immediately.
-
 From the manual:
-
 e [COMMAND]
 
 This command allows one to pipe input from a shell command into pattern space. Without parameters, the `e' command executes the command that is found in pattern space and replaces the pattern space with the output; a trailing newline is suppressed.
@@ -28,5 +27,10 @@ This command allows one to pipe input from a shell command into pattern space. W
 If a parameter is specified, instead, the `e' command interprets it as a command and sends its output to the output stream.
 
 Note that, unlike the 'r' command, the output of the command will be printed immediately; the 'r' command instead delays the output to the end of the current cycle.
-----------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------------------------------------------------------------
+Remove line matching <pattern>
+-------------------------------
+
+sed -i '/<pattern>/d' <file>
+------------------------------------------------------------------------------------------------------------------------------------
