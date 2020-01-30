@@ -1,0 +1,20 @@
+HP Proliant BL460c Gen8 - ILO 4
+--------------------------------
+
+Use Firefox, as the Internet explorer Version is too old !
+
+Remote console
+Web Start
+open iLO-jirc.jnlp 
+Open with Java Web Launcher (default) 
+...
+
+
+On the console
+Click Virtual Drives
+Image File CD/DVD-ROM
+
+Select the Y:\claeyje\dban-2.3.0_i586.iso
+
+Power Switch
+Momentary Press

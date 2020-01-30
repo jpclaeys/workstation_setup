@@ -6,7 +6,7 @@ decom multiple linux physical hosts
 unalias cat
 HL=`echo "
 
-" | xargs` && echo $HL && wc -w <<< $HL
+" | sort | xargs` && echo $HL && wc -w <<< $HL
 
 ex.
 HL="anakin chewbacca deathstar draco ewok han hydra jabba lando leia luke obiwan padawan palpatine r2d2 sidious vader yoda bootes fornax"
@@ -291,6 +291,22 @@ Select the "IMM Configuration" tab
 Select the "Reset IMM to factory defaults" option
 Confirm Reset to factory defaults
 
+If the Web gui doesn't provide the reset option (ex. on Blades)
+-----------------------------------------------------------------
+
+Navigating to the iLO 2 RBSU and selecting Factory Defaults
+reboot the server, press F8 to enter to iLO 2 RBSU and restore the factory defaults from there.
+RBSU: ROM-Based Setup Utility
+
+Power ON
+During POST, hit [F8]
+
+File
+Set Defaults
+Confirmation / Set to factory defaults ? / [F10]=OK
+
+File
+Exit
 
 ====================================================================================================================================
 3.3.2 Network: Remove IP and DNS entry for the server, the bkp and the consoles

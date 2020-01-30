@@ -1,0 +1,45 @@
+Exerpt from the HPE iLO 4 UserGuide
+------------------------------------
+
+Resetting iLO to the factory default settings (iLO RBSU)
+---------------------------------------------------------
+CAUTION: This operation clears all user and license data.
+
+1. Optional: If you access the server remotely, start an iLO remote console session.
+2. Restart or power on the server.
+3. Press F8 in the server POST screen.
+   The iLO RBSU starts. 
+   RBSU: ROM-Based Setup Utility
+4. Select File→Set Defaults.
+5. When prompted to confirm the request, press F10 to continue.
+   iLO RBSU notifies you that iLO will be reset to the factory defaults, and will reboot. The iLO
+   RBSU utility will close.
+6. Press Enter.
+   iLO resets and the server boot process finishes.
+7. Optional: Use the default iLO account information to log in to iLO after the reset.
+
+
+Resetting iLO to the factory default settings (iLO 4 Configuration Utility)
+----------------------------------------------------------------------------
+CAUTION: This operation clears all user and license data.
+1. Optional: If you access the server remotely, start an iLO remote console session.
+2. Restart or power on the server.
+3. Press F9 in the server POST screen.
+   The UEFI System Utilities start.
+4. From the System Utilities screen, select System Configuration→iLO 4 Configuration
+   Utility→Set to factory defaults, and press Enter.
+   The iLO 4 Configuration Utility prompts you to select YES or NO.
+5. Select YES, and press Enter.
+6. When prompted to confirm the request, press Enter.
+   iLO resets to the factory default settings. If you are managing iLO remotely, the remote
+   console session is automatically ended. You cannot access the iLO 4 Configuration Utility
+   again until after the next system reboot.
+7. Resume the boot process:
+  a. Optional: If you are managing iLO remotely, wait for the iLO reset to finish, and then
+     start the iLO remote console.
+     The iLO 4 Configuration Utility screen is still open from the previous session.
+  b. Press Esc until the main menu is displayed.
+  c. Select Exit and Resume Boot in the main menu, and press Enter.
+  d. When prompted to confirm the request, press Enter to exit the screen and resume the boot process.
+8. Optional: Use the default iLO account information to log in to iLO after the reset.
+
