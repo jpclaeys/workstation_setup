@@ -33,6 +33,7 @@ s: backup server
 c: client name
 
 
+------------------------------------------------------------------------------------------------------------------------------------
 # command help:
 ----------------
 
@@ -40,7 +41,7 @@ c: client name
 Current working directory is /root/
 recover> help
 6477:recover: Available commands are:
-	add [-q] [filename] - add `filename' to list of files to be recovered
+	add [-q] [filename] - add `filename' to list of files to be recovered (`filename' can be either a file or a directory)
 	cd [dir] - change directory to dir
 	changetime [date | -l locale_date] - change the time that you are browsing, changetime [-l] displays the supported [[locale_]date] format
 	debug
@@ -62,5 +63,19 @@ recover> help
 	verbose - toggle verbose mode; feedback about what is going on
 	versions [filename] - report on each version of file `filename'
 	volumes [filename] - report volumes needed to recover marked files
-6478:recover: `filename' can be either a file or a directory
 
+changetime [ time | -l locale_date [time] ]
+        Display the filesystem as it existed at a different time.  If no time is specified the `current' time is displayed, and a prompt  is  issued
+        for a `new' time.  The new time is given in nsr_getdate(3) format by default, or <locale date [time]> format if -l is specified.
+
+        For example, changetime <date> specifies date/time in nsr_getdate (3) format, whereas changetime -l <locale date [time]> specifies date/time
+        in the locale format, where [time] is optional.
+
+        This nsr_getdate format is very flexible. It accepts absolute dates, such as March 17, 1997, and  relative  dates,  such  as  last  Tuesday.
+        Absolute  dates  can be given in two formats: MM/DD[/YY], and Month DD[, YYYY].  Times can also be specified as either absolute or relative,
+        with absolute times in the format: HH[[:MM][:SS]] [am|pm] [time zone].  For example, 12:30 am, 14:21, and 10 pm PST.  The  current  time  is
+        used  to  calculate  unspecified  parts of a relative date (e.g. 2 days ago means 2 days ago at the current time), and the end of the day is
+        assumed for unspecified times on an absolute date (e.g. July 2 means July 2 at 11:59:59 PM).  By default, the present is used as the current
+        time.
+
+------------------------------------------------------------------------------------------------------------------------------------

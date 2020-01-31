@@ -8,10 +8,11 @@ git pull
 
 ##### edit/write/change file
 vi <path/to/file.foo>
+git diff
 
 ##### from local repository, push configuration to puppet server in developement branch
 git add <path/to/file.foo>
-git commit       
+git commit -am "<ticketnumber> - <comment>"
 git push                              
 
 ##### test on the puppet client, checking out from the DEVELOPMENT branch
@@ -28,6 +29,7 @@ git pull origin production && git pull --no-ff
 {
 grep -q Solaris <<< $(pwd) && git push
 grep -q Linux   <<< $(pwd) && git push origin production
+git status
 }
 ------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------
