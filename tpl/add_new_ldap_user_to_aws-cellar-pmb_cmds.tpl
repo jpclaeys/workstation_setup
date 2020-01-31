@@ -116,7 +116,7 @@ login= 				# set the login user
 
 {
 cd /net/nfs-infra.isilon.opoce.cec.eu.int/home
-mkdir ${login}; chown ${login}.opunix ${login}; ls -lsd ${login}
+mkdir ${login}; chown ${login}.$GIDNUMBER ${login}; ls -lsd ${login}
 }
 
 2. Important note:

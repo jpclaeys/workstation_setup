@@ -264,7 +264,7 @@ On one of these servers, you should run as root:
 login=<login> 			# set the login user
 cd /net/nfs-infra.isilon.opoce.cec.eu.int/home
 mkdir ${login}
-chown ${login}.opunix ${login}
+chown ${login}.GIDNUMBER ${login}
 ls -ld ${login}
 }
 
