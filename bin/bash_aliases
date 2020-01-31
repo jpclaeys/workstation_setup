@@ -25,7 +25,13 @@ alias la='ls -A'                    # all but . and ..
 alias l='ls -CF'                    #
 alias l1='ls -ac1'
 
-[ "`uname -s`" == "Linux" ] && unalias grep egrep fgrep diff 2>/dev/null
+if [ "`uname -s`" == "Linux" ]; then
+  unalias diff 2>/dev/null
+  alias grep='grep 2>/dev/null'
+  alias egrep='egrep 2>/dev/null'
+  alias fgrep='fgrep 2>/dev/null'
+fi
+
 alias sharedhome='cd /home/`whoami`'
 
 #alias winvm='nohup /usr/bin/rdesktop -x 0x80 -g 1900x1040 -k fr-be -a 24 -u "publications\claeyje" opdt199 &'

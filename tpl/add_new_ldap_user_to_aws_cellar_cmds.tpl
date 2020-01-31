@@ -9,9 +9,9 @@ read -p "Enter the password for the LDAP administrator: " LDAPPWD
 # Get the first available uid
 get_first_free_uid 30200 | grep -i First
 
-FIRST_NAME=
-LAST_NAME=
-USERLOGIN=
+FIRST_NAME=<firstname>
+LAST_NAME=<lastname>
+USERLOGIN=<login>
 USERID=
 GIDNUMBER=10    # staff
 CELLARGROUPS="staff aws-cellar-pmb aws-unix"
@@ -112,14 +112,21 @@ EOT
 Elect one of the LDAP server to store the HOME of the user. It is either ladpa-pk or ldapb-pk. 
 On one of these servers, you should run as root:
 
-login= 				# set the login user
+login=<login> 				# set the login user
 
 {
 cd /net/nfs-infra.isilon.opoce.cec.eu.int/home
-mkdir ${login}; chown ${login}.$GIDNUMBER ${login}; ls -lsd ${login}
+mkdir <login>; chown <login>.$GIDNUMBER <login>; ls -ldh <login>
 }
 
-2. Important note:
+2. Upload the new ldap data to aws
+-----------------------------------
+
+/root/ldap-tools/upload-to-aws.sh now
+grep AWS /var/log/messages | grep -i "$(date "+%b %e %H")"
+
+
+3. Important note:
 -------------------
 
 It takes some time to populate the ldap modifications on all of the servers.
@@ -128,6 +135,3 @@ To be sure that ldap is updated on a specific server, just restart the sssd serv
 
 # systemctl restart sssd. 
 
-:t!pwd
-
-/home/claeyje/tpl

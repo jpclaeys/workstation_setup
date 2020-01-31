@@ -5,7 +5,7 @@ Ref: https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:nix:how
 
 # Set the LDAP admin password so it is not plaintext and not in .bash_history 
 read -p "Enter the password for the LDAP administrator: " LDAPPWD
-
+0pocE123!!
 # Get the first available uid
 get_first_free_uid 30250 | grep -i First
 
