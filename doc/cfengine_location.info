@@ -1,0 +1,5 @@
+# cfengine fonciguration files location
+----------------------------------------
+aiserver-pz
+/var/cfengine/master/SYSTEM_FILES/dns
+

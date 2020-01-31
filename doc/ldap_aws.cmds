@@ -24,11 +24,13 @@ whatever is appropriate for the type of script you'll be running.
 In order to force an immediate upload, add the "now" parameter at script launch:
 ---------------------------------------------------------------------------------
 
+[root@ldapa-pk ~]# ll /etc/cron.hourly/upload-to-aws.sh
+lrwxrwxrwx 1 root root 33 30 nov  2018 /etc/cron.hourly/upload-to-aws.sh -> /root/ldap-tools/upload-to-aws.sh
+
 /etc/cron.hourly/upload-to-aws.sh now
 
-
 # Check
-
+--------
 grep AWS /var/log/messages
 grep AWS /var/log/messages | grep -i "$(date "+%b %e %H")"
 
