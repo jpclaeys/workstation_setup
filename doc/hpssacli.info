@@ -1,16 +1,14 @@
-All HP servers where RHEL7 has been installed show the same check error:
-
-bkpsnd3a;disks_health;2;check_disks_health CRITICAL (1 critical error)(checked: R: 0/0/0: S: 2/2): missing /usr/sbin/hpacucli
-
-The tool has been deprecated in RHEL7 and substituted with ssacli. 
-
-
+------------------------------------------------------------------------------------------------------------------------------------
 [root@fred ~]# which hpssacli
 /sbin/hpssacli
 
 hpssacli ctrl all show config
+hpssacli ctrl all show detail
+hpssacli ctrl all show config detail
+hpssacli ctrl all show status
 
 
+------------------------------------------------------------------------------------------------------------------------------------
 [root@fred ~]# hpssacli ctrl all show config
 
 Smart Array P410i in Slot 0 (Embedded)    (sn: 50014380231459D0)
@@ -39,8 +37,10 @@ Smart Array P410i in Slot 0 (Embedded)    (sn: 50014380231459D0)
 
    SEP (Vendor ID PMCSIERA, Model  SRC 8x6G) 250  (WWID: 50014380231459DF)
 
+------------------------------------------------------------------------------------------------------------------------------------
 [root@fred ~]# which hpssacli
 /sbin/hpssacli
+------------------------------------------------------------------------------------------------------------------------------------
 [root@fred ~]# hpssacli ctrl all show status
 
 Smart Array P410i in Slot 0 (Embedded)
@@ -48,12 +48,323 @@ Smart Array P410i in Slot 0 (Embedded)
    Cache Status: OK
    Battery/Capacitor Status: OK
 
-
-[root@fred ~]# hpssacli ctrl all show status
+------------------------------------------------------------------------------------------------------------------------------------
+[root@fred ~]# hpssacli ctrl all  show summary
+------------------------------------------------------------------------------------------------------------------------------------
+[root@fred ~]# hpssacli ctrl all  show config detail
 
 Smart Array P410i in Slot 0 (Embedded)
+   Bus Interface: PCI
+   Slot: 0
+   Serial Number: 50014380231459D0
+   Cache Serial Number: PAAVPID12170HVQ
    Controller Status: OK
+   Hardware Revision: C
+   Firmware Version: 6.40
+   Rebuild Priority: Medium
+   Expand Priority: Medium
+   Surface Scan Delay: 15 secs
+   Surface Scan Mode: Idle
+   Parallel Surface Scan Supported: No
+   Queue Depth: Automatic
+   Monitor and Performance Delay: 60  min
+   Elevator Sort: Enabled
+   Degraded Performance Optimization: Disabled
+   Inconsistency Repair Policy: Disabled
+   Wait for Cache Room: Disabled
+   Surface Analysis Inconsistency Notification: Disabled
+   Post Prompt Timeout: 0 secs
+   Cache Board Present: True
    Cache Status: OK
+   Cache Ratio: 25% Read / 75% Write
+   Drive Write Cache: Disabled
+   Total Cache Size: 512 MB
+   Total Cache Memory Available: 400 MB
+   No-Battery Write Cache: Disabled
+   Cache Backup Power Source: Batteries
+   Battery/Capacitor Count: 1
    Battery/Capacitor Status: OK
+   SATA NCQ Supported: True
+   Number of Ports: 2 Internal only
+   Driver Name: hpsa
+   Driver Version: 3.4.14
+   Driver Supports HP SSD Smart Path: True
+   PCI Address (Domain:Bus:Device.Function): 0000:05:00.0
+   Host Serial Number: CZ224603MC
+   Sanitize Erase Supported: False
+   Primary Boot Volume: None
+   Secondary Boot Volume: None
 
 
+   Port Name: 1I
+         Port ID: 0
+         Port Connection Number: 0
+         SAS Address: 50014380231459D0
+         Port Location: Internal
+
+   Port Name: 2I
+         Port ID: 1
+         Port Connection Number: 1
+         SAS Address: 50014380231459D4
+         Port Location: Internal
+
+   Internal Drive Cage at Port 1I, Box 1, OK
+      Power Supply Status: Not Redundant
+      Drive Bays: 4
+      Port: 1I
+      Box: 1
+      Location: Internal
+
+   Physical Drives
+      physicaldrive 1I:1:1 (port 1I:box 1:bay 1, SAS, 0 MB, Failed)
+      physicaldrive 1I:1:2 (port 1I:box 1:bay 2, SAS, 300 GB, OK)
+      physicaldrive 1I:1:3 (port 1I:box 1:bay 3, SAS, 300 GB, OK)
+      physicaldrive 1I:1:4 (port 1I:box 1:bay 4, SAS, 300 GB, OK)
+      None attached
+
+
+   Internal Drive Cage at Port 2I, Box 1, OK
+      Power Supply Status: Not Redundant
+      Drive Bays: 4
+      Port: 2I
+      Box: 1
+      Location: Internal
+
+   Physical Drives
+      physicaldrive 2I:1:5 (port 2I:box 1:bay 5, SAS, 300 GB, OK)
+      physicaldrive 2I:1:6 (port 2I:box 1:bay 6, SAS, 300 GB, OK)
+      physicaldrive 2I:1:7 (port 2I:box 1:bay 7, SAS, 300 GB, OK)
+      physicaldrive 2I:1:8 (port 2I:box 1:bay 8, SAS, 300 GB, OK)
+      None attached
+
+   Array: A
+      Interface Type: SAS
+      Unused Space: 0  MB (0.0%)
+      Used Space: 2.2 TB (100.0%)
+      Status: Failed Physical Drive
+      Array Type: Data
+
+      Warning: One of the drives on this array have failed or has been removed.
+
+
+
+
+      Logical Drive: 1
+         Size: 1.6 TB
+         Fault Tolerance: 50
+         Number of Parity Groups: 2
+         Heads: 255
+         Sectors Per Track: 32
+         Cylinders: 65535
+         Strip Size: 256 KB
+         Full Stripe Size: 768 KB
+         Status: Interim Recovery Mode
+         Caching:  Enabled
+         Parity Initialization Status: Initialization Completed
+         Unique Identifier: 600508B1001C2DBAEA19F51036DF5B8E
+         Disk Name: /dev/sda 
+         Mount Points: /boot 500 MB Partition Number 2
+         OS Status: LOCKED
+         Logical Drive Label: A9B2A14850014380231459D01955
+         Parity Group 1:
+            physicaldrive 1I:1:1 (port 1I:box 1:bay 1, SAS, 0 MB, Failed)
+            physicaldrive 1I:1:3 (port 1I:box 1:bay 3, SAS, 300 GB, OK)
+            physicaldrive 2I:1:5 (port 2I:box 1:bay 5, SAS, 300 GB, OK)
+            physicaldrive 2I:1:7 (port 2I:box 1:bay 7, SAS, 300 GB, OK)
+         Parity Group 2:
+            physicaldrive 1I:1:2 (port 1I:box 1:bay 2, SAS, 300 GB, OK)
+            physicaldrive 1I:1:4 (port 1I:box 1:bay 4, SAS, 300 GB, OK)
+            physicaldrive 2I:1:6 (port 2I:box 1:bay 6, SAS, 300 GB, OK)
+            physicaldrive 2I:1:8 (port 2I:box 1:bay 8, SAS, 300 GB, OK)
+         Drive Type: Data
+         LD Acceleration Method: Controller Cache
+
+      physicaldrive 1I:1:1
+         Port: 1I
+         Box: 1
+         Bay: 1
+         Status: Failed
+         Last Failure Reason: Init start unit failed
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 0 MB
+         Drive exposed to OS: False
+         Native Block Size: 0
+
+         PHY Count: 1
+         PHY Transfer Rate: 6.0Gbps
+         Sanitize Erase Supported: False
+
+      physicaldrive 1I:1:2
+         Port: 1I
+         Box: 1
+         Bay: 2
+         Status: OK
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 300 GB
+         Drive exposed to OS: False
+         Native Block Size: 512
+         Rotational Speed: 10000
+         Firmware Revision: HPD7
+         Serial Number: 6XP4EJ4Q0000M238DFPB
+         Model: HP      EG0300FBLSE
+         Current Temperature (C): 24
+         Maximum Temperature (C): 53
+         PHY Count: 2
+         PHY Transfer Rate: 6.0Gbps, Unknown
+         Sanitize Erase Supported: False
+
+      physicaldrive 1I:1:3
+         Port: 1I
+         Box: 1
+         Bay: 3
+         Status: OK
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 300 GB
+         Drive exposed to OS: False
+         Native Block Size: 512
+         Rotational Speed: 10000
+         Firmware Revision: HPDA
+         Serial Number: PMX5THDD
+         Model: HP      EG0300FBDBR
+         Current Temperature (C): 23
+         Maximum Temperature (C): 44
+         PHY Count: 2
+         PHY Transfer Rate: 6.0Gbps, Unknown
+         Sanitize Erase Supported: False
+
+      physicaldrive 1I:1:4
+         Port: 1I
+         Box: 1
+         Bay: 4
+         Status: OK
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 300 GB
+         Drive exposed to OS: False
+         Native Block Size: 512
+         Rotational Speed: 10000
+         Firmware Revision: HPDA
+         Serial Number: PMX614MF
+         Model: HP      EG0300FBDBR
+         Current Temperature (C): 25
+         Maximum Temperature (C): 46
+         PHY Count: 2
+         PHY Transfer Rate: 6.0Gbps, Unknown
+         Sanitize Erase Supported: False
+
+      physicaldrive 2I:1:5
+         Port: 2I
+         Box: 1
+         Bay: 5
+         Status: OK
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 300 GB
+         Drive exposed to OS: False
+         Native Block Size: 512
+         Rotational Speed: 10000
+         Firmware Revision: HPD7
+         Serial Number: 6XP4DGZ50000N3027M5P
+         Model: HP      EG0300FBLSE
+         Current Temperature (C): 25
+         Maximum Temperature (C): 46
+         PHY Count: 2
+         PHY Transfer Rate: 6.0Gbps, Unknown
+         Sanitize Erase Supported: False
+
+      physicaldrive 2I:1:6
+         Port: 2I
+         Box: 1
+         Bay: 6
+         Status: OK
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 300 GB
+         Drive exposed to OS: False
+         Native Block Size: 512
+         Rotational Speed: 10000
+         Firmware Revision: HPDA
+         Serial Number: PMX4MAXF
+         Model: HP      EG0300FBDBR
+         Current Temperature (C): 25
+         Maximum Temperature (C): 46
+         PHY Count: 2
+         PHY Transfer Rate: 6.0Gbps, Unknown
+         Sanitize Erase Supported: False
+
+      physicaldrive 2I:1:7
+         Port: 2I
+         Box: 1
+         Bay: 7
+         Status: OK
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 300 GB
+         Drive exposed to OS: False
+         Native Block Size: 512
+         Rotational Speed: 10000
+         Firmware Revision: HPDA
+         Serial Number: PMX65MSF
+         Model: HP      EG0300FBDBR
+         Current Temperature (C): 24
+         Maximum Temperature (C): 45
+         PHY Count: 2
+         PHY Transfer Rate: 6.0Gbps, Unknown
+         Sanitize Erase Supported: False
+
+      physicaldrive 2I:1:8
+         Port: 2I
+         Box: 1
+         Bay: 8
+         Status: OK
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 300 GB
+         Drive exposed to OS: False
+         Native Block Size: 512
+         Rotational Speed: 10000
+         Firmware Revision: HPD3
+         Serial Number: 5760A0RHFXFD1718
+         Model: HP      EG000300JWBHR
+         Current Temperature (C): 22
+         Maximum Temperature (C): 38
+         PHY Count: 2
+         PHY Transfer Rate: 6.0Gbps, Unknown
+         Sanitize Erase Supported: False
+
+
+   SEP (Vendor ID PMCSIERA, Model  SRC 8x6G) 250 
+      Device Number: 250
+      Firmware Version: RevC
+      WWID: 50014380231459DF
+      Vendor ID: PMCSIERA
+      Model: SRC 8x6G
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+[root@fred ~]# hpssacli ctrl slot=0 physicaldrive 1I:1:1 show detail
+
+Smart Array P410i in Slot 0 (Embedded)
+
+   array A
+
+      physicaldrive 1I:1:1
+         Port: 1I
+         Box: 1
+         Bay: 1
+         Status: Failed
+         Last Failure Reason: Init start unit failed
+         Drive Type: Data Drive
+         Interface Type: SAS
+         Size: 0 MB
+         Drive exposed to OS: False
+         Native Block Size: 0
+
+         PHY Count: 1
+         PHY Transfer Rate: 6.0Gbps
+         Sanitize Erase Supported: False
+
+------------------------------------------------------------------------------------------------------------------------------------

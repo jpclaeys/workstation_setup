@@ -444,7 +444,7 @@ printf "%-12s: %s\n" oracle $(fping 2>/dev/null `cmdb oracle | egrep -v 'Server|
 
 function count_opsrv ()
 {
-printf "%-12s: %s\n" opsrv $(fping 2>/dev/null `cmdb opsrv | egrep -v 'HOST|NAME' | awk -F';' '{print $1}'| sort -u` | grep -c alive)
+printf "%-12s: %s\n" opsrv $(fping 2>/dev/null `cmdb opsrv | egrep -v 'HOST|NAME|Archived|Removed' | awk -F';' '{print $1}'| sort -u` | grep -c alive)
 }
 
 function count_all ()
