@@ -368,3 +368,89 @@ Smart Array P410i in Slot 0 (Embedded)
          Sanitize Erase Supported: False
 
 ------------------------------------------------------------------------------------------------------------------------------------
+Utility Keyword abbreviations
+------------------------------
+chassisname = ch
+controller = ctrl
+logicaldrive = ld
+physicaldrive = pd
+drivewritecache = dwc
+t/m gen9 zit de eerste ctrl in slot 0 vanaf gen10 lijkt deze bij slot 255 te beginnen.  
+
+
+Hpssacli tool
+--------------
+
+# hpssacli
+# hpssacli help
+# hpssacli "ctrl all show config"
+
+Controller commands
+--------------------
+
+show config (details)
+hpssacli> ctrl all show config [detail]
+
+status
+hpssacli> ctrl all show status
+
+Cache
+hpssacli> ctrl slot=0 modify dwc=enable
+hpssacli> ctrl slot=0 modify dwc=disable
+
+Cache zonder batterij (niet verstandig) 
+hpssacli> ctrl slot=0 modify nbwc=enable
+
+scan de config new/wijzigingen in config
+hpssacli> rescan
+
+Physical disk commands
+-----------------------
+
+display (details)
+hpssacli> ctrl slot=0 pd all show [detail]
+
+show status
+hpssacli> ctrl slot=0 pd all show status
+hpssacli> ctrl slot=0 pd 2:3 show status
+
+erase 
+hpssacli> ctrl slot=0 pd 2I:1:6 modify erase
+
+blink physical disk LED
+hpssacli> ctrl slot=0 pd 2I:1:6 modify led=on
+hpssacli> ctrl slot=0 pd 2I:1:6 modify led=off
+
+Logical disk commands
+----------------------
+
+display (detail)
+hpssacli> ctrl slot=0 ld all show [detail]
+hpssacli> ctrl slot=0 ld 2 show
+
+re-enable failed drive
+hpssacli> ctrl slot=0 ld 4 modify reenable forced 
+
+create raid0 logical drive
+hpssacli> ctrl slot=0 create type=ld drives=1I:1:2 raid=0
+
+create raid1 logical drive
+hpssacli> ctrl slot=0 create type=ld drives=1I:1:1,1I:1:2 raid=1
+
+create raid5 logical drive
+hpssacli> ctrl slot=0 create type=ld drives=1I:1:1,1I:1:2,2I:1:6,2I:1:7,2I:1:8 raid=5
+
+Delete logical drive
+hpssacli> ctrl slot=0 ld 2 delete
+
+Add new physical drive to logicalvolume
+hpssacli> ctrl slot=0 ld 2 add drives=2I:1:6,2I:1:7
+
+Add spare disk
+hpssacli> ctrl slot=0 array all add spares=2I:1:6,2I:1:7
+
+Note:
+kijk in de help voor meer raid opties zoals raid5 met parity groups
+
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------

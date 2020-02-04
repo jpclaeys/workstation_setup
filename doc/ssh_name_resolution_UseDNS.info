@@ -23,3 +23,17 @@ However there are still cases where a lookup has to be performed when a user has
 
 from=<hostname>
 like entries in his authorized_keys file, or when authentication methods or configuration directives are used that involve hostnames.
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+We are making an unnecessary DNS lookup from CoreOS nodes every time we connect to it.
+
+I'd propose to make the default setting for UseDNS be No.
+
+From the manpage of sshd_config(5):
+
+ UseDNS  Specifies whether sshd(8) should look up the remote host name and
+         check that the resolved host name for the remote IP address maps
+         back to the very same IP address.  The default is “yes”.
+Enabling this makes access from a location without proper (forward and reverse) DNS generate a warning in the logs.
+------------------------------------------------------------------------------------------------------------------------------------
