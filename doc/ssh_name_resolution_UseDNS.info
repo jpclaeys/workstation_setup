@@ -1,0 +1,25 @@
+Disabling reverse dns lookups in ssh
+-------------------------------------
+
+Sometimes it is very annoying to wait ten’s of seconds to finish remote ssh server’s reverse dns lookup procedure. It can be disabled on the server side but this process has a few tricks.
+
+First of all, you have to make “UseDNS no” in /etc/ssh/sshd_config file, default answer is yes and if this line not exists in your config file, just add it to as below:
+
+
+UseDNS no
+
+
+This directive tells sshd process to check resolved host name for the connected client’s ip address maps back to the very same ip address or not.
+
+However, it does not prevent the sshd server from performing any DNS lookups at all. That’s not the purpose of that directive.
+
+In order to remove dns lookups completely, you have to use -u0 options when starting sshd server.
+
+You can easily add this options to /etc/default/ssh or /etc/sysconfig/sshd or elsewhere suitable for your distribution.
+
+-u0 option’s means that it will not put hostnames into the utmp structure (i.e. what you see when you type “who” at the shell prompt), which means that sshd will not perform any DNS lookups for that purpose.
+
+However there are still cases where a lookup has to be performed when a user has
+
+from=<hostname>
+like entries in his authorized_keys file, or when authentication methods or configuration directives are used that involve hostnames.
