@@ -163,3 +163,5 @@ alias image_viewer=eog # Eye of GNOME (eog) is the GNOME image viewer.
 alias ap=ansible-playbook
 alias get_hba_wwns='cat /sys/class/fc_host/host?*/port_name'
 alias dcmds=definecmdsaliases
+alias aws1='s $AWS1' && alias aws2='s $AWS2'
+alias aws1r='sr $AWS1' && alias aws2r='sr $AWS2'

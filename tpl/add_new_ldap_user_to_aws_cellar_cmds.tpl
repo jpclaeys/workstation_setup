@@ -5,6 +5,7 @@ Ref: https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:nix:how
 
 # Set the LDAP admin password so it is not plaintext and not in .bash_history 
 read -p "Enter the password for the LDAP administrator: " LDAPPWD
+0pocE123!!
 
 # Get the first available uid
 get_first_free_uid 30200 | grep -i First
@@ -134,4 +135,36 @@ It takes some time to populate the ldap modifications on all of the servers.
 To be sure that ldap is updated on a specific server, just restart the sssd service:
 
 # systemctl restart sssd. 
+
+4. Add user in the "users" group
+---------------------------------
+
+TIMESTAMP=`date "+%Y%m%d"` && echo $TIMESTAMP
+cd /etc
+grep ^users group
+perl -pe 's/^(users.*)/\1,<login>/' -i.bak_$TIMESTAMP group
+grep <login> group
+
+5. Create the .ssh/config file
+-------------------------------
+
+mkdir /home/<login>/.ssh
+echo "Host bastion.op.aws.cloud.tech.ec.europa.eu
+ServerAliveInterval 40" > /home/<login>/.ssh/config
+chmod 700 /home/<login>/.ssh
+chmod 644 /home/<login>/.ssh/config
+chown -R <login>.$GIDNUMBER /home/<login>
+
+5. Grant ssh access from the user'oppc to the aws management hosts (opvmwsaws01 and opvmwsaws02)
+-------------------------------------------------------------------------------------------------
+# Add <login> to /etc/hosts.allow
+
+cd /etc
+ls -l hosts.allow
+TIMESTAMP=`date "+%Y%m%d"` && echo $TIMESTAMP
+# Validate the oppc
+host <oppcname>.publications.win
+cp hosts.allow hosts.allow.$TIMESTAMP
+echo "sshd: <oppcname>.publications.win # <ticket> - <login> - <lastname> <firstname>" >> hosts.allow
+tail -1 hosts.allow
 

@@ -265,11 +265,12 @@ vi $LOGFILE
 function newlog_add_new_ldap_user_to_aws_cellar ()
 {
 local TICKET LASTNAME FIRSTNAME LOGIN
-[ $# -lt 4 ] && msg "Usage: $FUNCNAME <ticket> <lastname> <firstname> <login>" && return 1
+[ $# -lt 4 ] && msg "Usage: $FUNCNAME <ticket> <lastname> <firstname> <login> [<oppcname>]" && return 1
 TICKET=$1
 LASTNAME=$2
 FIRSTNAME=$3
 LOGIN=`lower $4`
+OPPCNAME=$5
 TYPE=${FUNCNAME#newlog_}
 TARGETDIR=$LOGDIR/$TYPE
 TPL=$TPLDIR/${TYPE}_cmds.tpl
@@ -281,6 +282,7 @@ SUB="s/<ticket>/$TICKET/g"
 SUB+=";s/<lastname>/$LASTNAME/"
 SUB+=";s/<firstname>/$FIRSTNAME/"
 SUB+=";s/<login>/$LOGIN/g"
+SUB+=";s/<oppcname>/$OPPCNAME/g"
 perl -pe "$SUB" -i $LOGFILE
 insert_ticket_at_top_of_file $TICKET $LOGFILE
 confirmexecution "Do you want to edit the file $LOGFILE ?" || return 1

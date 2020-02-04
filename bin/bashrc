@@ -67,6 +67,8 @@ export UNIXSYSTEMSTORE="${UNIXSHARE}/systemstore"
 export UNIXXCHANGE="${UNIXSHARE}/xchange"
 export XCHANGE="/net/nfs-infra.isilon.opoce.cec.eu.int/xchange"
 export GIT_REPOS=~/git
+export AWS1=opvmwsaws01
+export AWS2=opvmwsaws02
 
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
 # export SYSTEMD_PAGER=
