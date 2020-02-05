@@ -128,4 +128,31 @@ ldapsearchexists || return 1
 ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=netgroup,dc=opoce,dc=cec,dc=eu,dc=int' cn=* | grep -v ^version | egrep -i "cn:|dn:|objectclass|$1" | grep -B4 -i $1 | grep -iv objectclass
 }
 
+function ldapsearchallnetgroups ()
+{
+ldapsearchexists || return 1
+ldapsearch -x -h $LDAPSERVER -b 'ou=netgroup,dc=opoce,dc=cec,dc=eu,dc=int' | grep cn= | sed 's/=/,/' | awk -F, '{print $2}'| sort
+}
+
+function ldapsearchnetgrouphost ()
+{
+ldapsearchexists || return 1
+[ $# -lt 2 ] && msg "Usage: $FUNCNAME <netgroup> <host>" && return 1
+ldapsearch -x -h $LDAPSERVER -b 'ou=netgroup,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 | grep $2
+}
+
+function ldapsearchnetgroupallhosts ()
+{
+ldapsearchexists || return 1
+[ $# -lt 1 ] && msg "Usage: $FUNCNAME <netgroup>" && return 1
+ldapsearch -x -h $LDAPSERVER -b 'ou=netgroup,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 | grep nisNetgroupTriple
+}
+
+function ldapsearchnfs_cellar_pz_public_ro ()
+{
+ldapsearchexists || return 1
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <host>" && return 1
+ldapsearchnetgrouphost nfs_cellar_pz_public_ro $1
+}
+
 
