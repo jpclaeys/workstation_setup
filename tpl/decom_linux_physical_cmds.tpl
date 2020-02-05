@@ -2,25 +2,32 @@ decom linux physical server - <hostname>
 -----------------------------------------
 
 ====================================================================================================================================
+# Open ticket to remove the monitoring:
+----------------------------------------
 
-goto to opvmwstsx11
-
-# Mail to monitoring:
-----------------------
+Incident type: REQUEST FOR SERVICE
+Configuration item: SERVER
+System: HARDWARE AND OPERATING SYSTEMS
+Component: SERVERS
 
 {
 cat <<EOT
-Bonjour,
+# Title:
+REMOVE MONITORING: <hostname>
 
-Voulez-vous supprimer les clients suivants du monitoring:
-<hostname>
+# Description:
 
+Servers list: <hostname>
+Action: Stop monitoring
 EOT
-} | mailx -s "Remove <hostname> from the monitoring" -r $email -c $email,OPDL-INFRA-INT-PROD@publications.europa.eu OP-IT-PRODUCTION@publications.europa.eu
-====================================================================================================================================
+}
+
+TO:  IT-PRODUCTION-OP
+------------------------------------------------------------------------------------------------------------------------------------
+Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
 
 ====================================================================================================================================
-
 # Open a ticket to delete the backup client
 --------------------------------------------
 
@@ -32,11 +39,12 @@ echo
 echo Client name: $CLIENT
 echo OS: Linux
 echo Reason: server removed
-} | mailx -s "create a ticket with this content - delete backup client for $CLIENT" $email
+}
 
-====================================================================================================================================
-
+TO: SBA-OP
+------------------------------------------------------------------------------------------------------------------------------------
 Ticket: 
+------------------------------------------------------------------------------------------------------------------------------------
 
 ====================================================================================================================================
 Open a session On the host
@@ -47,31 +55,39 @@ Open a session On the host
 !!!!! Note: /net/nfs-infra.isilon/unix/systemstore is only visible from opvmwstsx11 !!!!!
 
 {
-HOST=<hostname>
-TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
+msg "Define the TMP folder"
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
 [ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER
+echo $TMP_FOLDER
 
 # Create the sysinfo file (from cmdb)
-. ~claeyje/bin/set_decom_linux_vars.sh 
-save_decom_linux_vars $HOST
+msg "Create the sysinfo file (from cmdb)"
+. ~claeyje/bin/set_decom_linux_vars.sh
+save_decom_linux_vars <hostname>
 
 # Save HBS WWN's
-cat /sys/class/fc_host/host?/port_name | tee $TMP_FOLDER/hba_wwns_${HOST}.txt
+msg "Save HBS WWN's"
+cat /sys/class/fc_host/host?/port_name | tee $TMP_FOLDER/hba_wwns_<hostname>.txt
 
 # Save /etc/hosts
-cat /etc/hosts | tee $TMP_FOLDER/etc_hosts_${HOST}
+msg "Save /etc/hosts"
+cat /etc/hosts | tee $TMP_FOLDER/etc_hosts_<hostname>.txt
 
 # Save IP info
-ip a > $TMP_FOLDER/ip_config_${HOST}.txt
+msg "Save IP info"
+ip a > $TMP_FOLDER/ip_config_<hostname>.txt
 
 # Get luns
+msg "Get luns"
 # rescan the SCSI bus
 for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
-multipath -ll | egrep 'EMC|HITACHI' | sort | tee $TMP_FOLDER/LUNs_${HOST}.txt
+multipath -ll | egrep 'EMC|HITACHI' | sort | tee $TMP_FOLDER/LUNs_<hostname>.txt
 
 # System product name
-(dmidecode -s system-manufacturer && dmidecode -s system-product-name )| xargs | tee $TMP_FOLDER/product_name_${HOST}.txt
+msg "System product name"
+(dmidecode -s system-manufacturer && dmidecode -s system-product-name )| xargs | tee $TMP_FOLDER/product_name_<hostname>.txt
 
+msg "TMP_FOLDER content"
 # List $TMP_FOLDER content
 ls -lh $TMP_FOLDER
 }
@@ -79,9 +95,24 @@ ls -lh $TMP_FOLDER
 {
 # Remove the luns if any
 #------------------------
+# rescan the SCSI bus
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
 
+# Try removal by using the removelun_rhel script
 for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort | awk '{print $1}'`; do echo "/home/admin/bin/removelun_rhel $LUN | bash";done
 for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $LUN | bash ;done
+
+# removelun_rhel doesn't work, do it manually
+{
+multipath -ll | grep 3600
+DEVLIST=`multipath -ll | grep running | awk '{print $(NF-4)}' ` && echo $DEVLIST
+DEVALIAS=`multipath -ll | grep EMC | awk '{print $1}' ` && echo $DEVALIAS
+#for i in $DEVALIAS; do echo multipath -f /dev/mapper/${i}P1;done | bash   # for i in $DEVALIAS; do echo multipath -f /dev/mapper/$i;done | bash
+for i in $DEVALIAS; do echo multipath -f /dev/mapper/$i;done | bash
+for i in $DEVLIST; do echo "echo offline > /sys/block/$i/device/state"; echo "echo 1 >/sys/block/$i/device/delete" ;done | bash
+multipath -ll
+}
+
 
 # Check: all LUNs are gone
 #--------------------------
@@ -93,19 +124,23 @@ multipath -ll | egrep -c 'EMC|HITACHI'
 ====================================================================================================================================
 # Create ticket for storage: retrieve storage
 ----------------------------------------------
+
 {
-echo "#SMT Template: STORAGE REQUEST - Retrieve unused storage"
-echo "#SMT Title: Recover storage for $HOST"
-echo "Type of storage (VNX - VMAX - VMAX3 - NAS - eNAS): VMAX"
-echo "Impacted hosts: $HOST"
-echo "Masking info (vm, datastore, zone,... name): $HOST"
-echo "LUN WWN and/or ID:"
-<luns>
+cat <<EOT
+#SMT Template: STORAGE REQUEST - Retrieve unused storage
+#SMT Title: Recover storage for <hostname>
+Type of storage (VNX - VMAX - VMAX3 - NAS - eNAS): VMAX
+Impacted hosts: <hostname>
+Masking info (vm, datastore, zone,... name): <hostname>
+LUN WWN and/or ID:
+`cat $TMP_FOLDER/LUNs_<hostname>.txt`
+EOT
 }
 
-====================================================================================================================================
-
+TO: SBA-OP
+------------------------------------------------------------------------------------------------------------------------------------
 Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
 
 ====================================================================================================================================
 # Remove the masking/zoning
@@ -113,12 +148,11 @@ Ticket:
 Execute these commands on the host
 
 # define variables if they are not set yet
-HOST=<hostname>
 {
 cat <<EOT
 # Template: STORAGE REQUEST - Change masking
-# Title: Removal of zoning and masking for $HOST
-Impacted host: $HOST
+# Title: Removal of zoning and masking for <hostname>
+Impacted host: <hostname>
 HBA-PORTS Impacted devices:
 `cat /sys/class/fc_host/host?/port_name`
 
@@ -128,24 +162,11 @@ Best regards
 EOT
 }
 
-===================================================================================================================================
-
+TO: SBA-OP
+------------------------------------------------------------------------------------------------------------------------------------
 Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
 
-====================================================================================================================================
-
-Remove the server from satellite
----------------------------------
-If you have the necessary rights go to satellite page https://satellite-pk search for the server and the right site you will have a click button
-
-Opsatellite WebGUI
-Goto Hosts
-enter <hostname> in the search window 
-Select the host
-In the edit drop down menu select delete
-confirm
-
-====================================================================================================================================
 ====================================================================================================================================
 Retrieve information for later
 -------------------------------
@@ -153,27 +174,43 @@ Recover the ip address
 
 Retrieve address for the service processor:
 
-export ILO=`/home/admin/bin/getcmdb.sh cons | grep ${HOST}-sc | awk '{print $1}' | cut -f 1 -d ";"` && echo $ILO
-====================================================================================================================================
+export ILO=`/home/admin/bin/getcmdb.sh cons | grep <hostname>-sc | awk '{print $1}' | cut -f 1 -d ";"` && echo $ILO
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------------------------------------------------------------
 
 
 ====================================================================================================================================
-
-
 ====================================================================================================================================
 ====================================================================================================================================
 !!!!!!!!!! Wait until the storage finishes the cleanup (retrieve luns if any and remove masking) !!!!!!!!!!
 ====================================================================================================================================
 ====================================================================================================================================
-
-
 ====================================================================================================================================
 
+====================================================================================================================================
 # Shutdown the server
 ----------------------
 shutdown -h now
-OR
+ OR
 poweroff
+
+====================================================================================================================================
+Remove the server from satellite
+---------------------------------
+If you have the necessary rights go to satellite page https://satellite-pk search for the server and the right site you will have a click button
+
+Open satellite WebGUI
+Goto Hosts
+enter <hostname> in the search window 
+Select the host
+In the edit drop down menu select delete
+confirm
+
+ OR
+
+satellite_delete_host <hostname>
 
 ====================================================================================================================================
 Network: Remove IP and DNS entry for the server 
@@ -184,18 +221,17 @@ Connect to http://resop/ip and fill in the form
 - enter the hosts
 - enter the CNAME
 
-HOST=<hostname>
-TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
-CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_${HOST}.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
+CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_<hostname>.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
 
 # Hosts IP @
-printf "%-12s: " $HOST && dig ${HOST}.opoce.cec.eu.int +short
+printf "%-12s: " <hostname> && dig <hostname>.opoce.cec.eu.int +short
 
 # Create the excel request file (template: OPS-RFC-DNS-delete.xltx)
-generate_ip_delete_hostlist_records $HOST $CNAME | tee ~/snet/data.txt
+generate_ip_delete_hostlist_records <hostname> $CNAME | tee ~/snet/data.txt
 
 # Create the ticket for SNET
-create_delete_ip_ticket_for_SNET $HOST $CNAME
+create_delete_ip_ticket_for_SNET <hostname> $CNAME
 
 ====================================================================================================================================
 
@@ -299,9 +335,8 @@ OR
 # Use a script to generate the Excel file contents
 #----------------------------------------------------
 {
-HOST=<hostname>
-TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
-CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_${HOST}.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
+CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_<hostname>.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
 
 # view the IP @
 for H in <hostname> bkp-<hostname> <hostname>-sc; do printf "%-12s: " $H && dig ${H}.opoce.cec.eu.int +short;done
@@ -325,8 +360,7 @@ Ticket:
 Inform the CMDB manager about remove
 -------------------------------------
 
-HOST=<hostname> && echo $HOST
-TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
 
 {
 cat << EOT
@@ -334,7 +368,7 @@ Dear all,
 
 Please change the status of the nodes:
 
-`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
+`cat ${TMP_FOLDER}/sysinfo_<hostname>.txt`
 
 to
 
@@ -342,7 +376,7 @@ MODE: REMOVED/ARCHIVED.
 
 Best regards
 EOT
-} | mailx -s "Change CMDB for ${HOST} to archived" -r $email -c $email OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
+} | mailx -s "Change CMDB for <hostname> to archived" -r $email -c $email OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
 
 
 ====================================================================================================================================
@@ -358,18 +392,17 @@ Create an SMT Ticket and assign it to DCF-OP for unwiring
 ----------------------------------------------------------
 
 {
-HOST=<hostname>
-TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
 cat << EOT
 
 # Template: OP_INFRA_SYSTEM decommissionnement
-# Title: Unwire ${HOST}
+# Title: Unwire <hostname>
 
 Dear all,
 
 Please unwire the following systems from the infrastructure:
 
-`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
+`cat ${TMP_FOLDER}/sysinfo_<hostname>.txt`
 
 will be removed from the rack
 
@@ -390,17 +423,16 @@ Create a second SMT ticket, assigned to DCF-OP for the physical remove
 ------------------------------------------------------------------------
 
 {
-HOST=<hostname>
-TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/$HOST
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
 cat << EOT
 # Template: OP_INFRA_SYSTEM decommissionnement
-# Title: Remove ${HOST} physically
+# Title: Remove <hostname> physically
 
 Dear all,
 
 please remove the following systems physically:
 
-`cat ${TMP_FOLDER}/sysinfo_${HOST}.txt`
+`cat ${TMP_FOLDER}/sysinfo_<hostname>.txt`
 
 has order to be disconnected and can now remove from rack.
 

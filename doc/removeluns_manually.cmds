@@ -9,9 +9,10 @@ Cleanup and disconnect disks
 -----------------------------
 
 {
-multipath -ll
+multipath -ll | grep 3600
 DEVLIST=`multipath -ll | grep running | awk '{print $(NF-4)}' ` && echo $DEVLIST
 DEVALIAS=`multipath -ll | grep EMC | awk '{print $1}' ` && echo $DEVALIAS
+for i in $DEVALIAS; do echo multipath -f /dev/mapper/${i}P1;done | bash # sometimes required
 for i in $DEVALIAS; do echo multipath -f /dev/mapper/$i;done | bash
 for i in $DEVLIST; do echo "echo offline > /sys/block/$i/device/state"; echo "echo 1 >/sys/block/$i/device/delete" ;done | bash
 multipath -ll

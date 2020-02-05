@@ -41,7 +41,7 @@ PRIMARYHOST=`cmdb zone | grep "$1;" | awk -F";" '/Primary/ {print $7}'`
 SECONDARYHOST=`cmdb zone | grep "$1;" | awk -F";" '/Secondary/ {print $7}'`
 EFFECTIVE_PRIMARYHOST=`zone-where $1 -q`
 if [ $? -eq 0 ]; then
-    if [ "$EFFECTIVE_PRIMARYHOST" != "PRIMARYHOST" ] ; then
+    if [ "$EFFECTIVE_PRIMARYHOST" != "$PRIMARYHOST" ] ; then
        SECONDARYHOST=$PRIMARYHOST
        PRIMARYHOST=$EFFECTIVE_PRIMARYHOST
     fi

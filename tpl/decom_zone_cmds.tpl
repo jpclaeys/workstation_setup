@@ -50,7 +50,7 @@ for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applic
 for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} disable 2>/dev/null; done
 for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} status 2>/dev/null; done | grep -v STATE
 
-2.2 Open an SMT ticket to SBA-OP to archive the zone for 3 years (or 7 years for financial products).
+2.2 Open an SMT ticket to SBA-OP to run a last full backup
 
 {
 os=`zlogin <zone_name> uname -r | sed -e 's/^5\./Solaris /'` && echo $os  
@@ -62,6 +62,7 @@ echo "
 
 OS: $os
 Client name: <zone_name>
+Action: run a last full backup
 Retention: 90 days
 
 Note: All applications have been stopped on the zone.
@@ -164,15 +165,32 @@ cat ${tmp_folder}/network_ip.txt
 
 3.6.1 (3.22) remove client monitoring
 
+# Open ticket to remove the monitoring:
+----------------------------------------
+
+Incident type: REQUEST FOR SERVICE
+Configuration item: SERVER
+System: HARDWARE AND OPERATING SYSTEMS
+Component: SERVERS
+
 {
 cat <<EOT
-Bonjour,
+# Title:
+OP - REMOVE MONITORING: $HL
 
-Voulez-vous supprimer les clients suivants du monitoring:
-`cat ${tmp_folder}/network_ip.txt | awk '{print $2}' | sed -e 's/.opoce.cec.eu.int//' | grep -v "bkp-<zone_name>"`
+# Description:
 
+Application Name IS :
+Servers list: $HL
+Action: Stop monitoring
 EOT
-} | mailx -s "Remove <zone_name> from the monitoring" -r $who -c $who,OPDL-INFRA-INT-PROD@publications.europa.eu OP-IT-PRODUCTION@publications.europa.eu
+}
+
+TO:  IT-PRODUCTION-OP
+------------------------------------------------------------------------------------------------------------------------------------
+Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
+
 
 3.7 get storage information, on both nodes
 
