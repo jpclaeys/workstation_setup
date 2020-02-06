@@ -7,6 +7,8 @@ sr satellite-pk
 # If only one host:
 
 satellite_delete_host <hostname>
+# Check
+satellite_host_list <hostname>
 
 # If multiple hosts
 

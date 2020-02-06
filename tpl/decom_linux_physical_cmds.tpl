@@ -31,14 +31,15 @@ Ticket:
 # Open a ticket to delete the backup client
 --------------------------------------------
 
-CLIENT=bkp-<hostname> && echo $CLIENT
 {
-echo "#SMT Title: Remove backup client for $CLIENT"
-echo "#SMT Template: BACKUP REQUEST - Delete client"
-echo
-echo Client name: $CLIENT
-echo OS: Linux
-echo Reason: server removed
+cat <<EOT
+#SMT Title: Remove backup client for bkp-<hostname>
+#SMT Template: BACKUP REQUEST - Delete client
+
+Client name: bkp-<hostname>
+OS: Linux
+Reason: server removed
+EOT
 }
 
 TO: SBA-OP

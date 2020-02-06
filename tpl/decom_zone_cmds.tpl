@@ -124,17 +124,28 @@ cldg show <zone_name> 2>/dev/null | grep -i name | grep -i name | sed 's:/dev/di
 
 
 3.5.1 (3.18) Open an SMT ticket to SBA-OP to remove the backup client
+====================================================================================================================================
+# Open a ticket to delete the backup client
+--------------------------------------------
 
 {
-echo "#SMT Title: Remove backup client for bkp-<zone_name>"
-echo "#SMT Template: BACKUP REQUEST - Delete client"
-echo
-echo Client name: bkp-<zone_name>
-echo OS: $os
-echo Reason: zone removed
-} | mailx -s "create a ticket with this content" $who
+cat <<EOT
+#SMT Title: Remove backup client for bkp-<hostname>
+#SMT Template: BACKUP REQUEST - Delete client
 
-Ticket: 
+Client name: bkp-<hostname>
+OS: Linux
+Reason: server removed
+EOT
+}
+
+TO: SBA-OP
+------------------------------------------------------------------------------------------------------------------------------------
+Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
+
+====================================================================================================================================
+
 
 3.5.2 (3.20) Request DB team to remove the RMAN backup client, if any
 
@@ -382,19 +393,29 @@ For puppet, delete the host from the Foreman GUI : https://foreman/users/login
 
 3.19 Open an SMT ticket to SBA-OP to recover the storage
 
+====================================================================================================================================
+# Create ticket for storage: retrieve storage
+----------------------------------------------
+
 {
 export tmp_folder=${UNIXSYSTEMSTORE}/temp/<zone_name>
-echo "#SMT Template: STORAGE REQUEST - Retrieve unused storage\n"
-echo "#SMT Title: Recover storage for <zone_name>\n"
-echo "Type of storage (VNX - VMAX - VMAX3 - NAS - eNAS): `cat ${tmp_folder}/storage_type.txt | sort -u`\n"
-echo "Impacted hosts: `clnode list | xargs| perl -pe 's/ /, /'`\n"
-echo "Masking info (vm, datastore, zone,... name): <zone_name>\n"
-echo "LUN WWN and/or ID:
-`cat ${tmp_folder}/wwn.txt`"
-} | mailx -s "create a ticket for <zone_name> with this content" $who
+cat <<EOT
+#SMT Template: STORAGE REQUEST - Retrieve unused storage
+#SMT Title: Recover storage for <zone_name>
+Type of storage (VNX - VMAX - VMAX3 - NAS - eNAS): `cat ${tmp_folder}/storage_type.txt | sort -u`
+Impacted hosts: `clnode list | xargs| perl -pe 's/ /, /'`
+Masking info (vm, datastore, zone,... name): <zone_name>
+LUN WWN and/or ID:
+`cat ${tmp_folder}/wwn.txt`
+EOT
+}
 
+TO: SBA-OP
+------------------------------------------------------------------------------------------------------------------------------------
+Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
 
-Ticket: 
+====================================================================================================================================
 
 3.21 network: free up the zone IP's
 

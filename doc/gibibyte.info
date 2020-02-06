@@ -1,0 +1,34 @@
+Gibibyte
+---------
+From Wikipedia, the free encyclopedia
+
+Multiples of bytes
+Decimal
+Value		Metric
+1000	kB	kilobyte
+10002	MB	megabyte
+10003	GB	gigabyte
+10004	TB	terabyte
+10005	PB	petabyte
+10006	EB	exabyte
+10007	ZB	zettabyte
+10008	YB	yottabyte
+Binary
+Value		IEC			JEDEC
+1024	KiB	kibibyte	KB	kilobyte
+10242	MiB	mebibyte	MB	megabyte
+10243	GiB	gibibyte	GB	gigabyte
+10244	TiB	tebibyte	–
+10245	PiB	pebibyte	–
+10246	EiB	exbibyte	–
+10247	ZiB	zebibyte	–
+10248	YiB	yobibyte	–
+Orders of magnitude of data
+
+The gibibyte is a multiple of the unit byte for digital information. The binary prefix gibi means 230, therefore one gibibyte is equal to 1073741824bytes = 1024 mebibytes. The unit symbol for the gibibyte is GiB. It is one of the units with binary prefixes defined by the International Electrotechnical Commission (IEC) in 1998.[1][2]
+
+The gibibyte is closely related to the gigabyte (GB), which is defined by the IEC as 109 bytes = 1000000000bytes, 1GiB ≈ 1.074GB. 1024 gibibytes are equal to one tebibyte. In the context of computer memory, gigabyte and GB are customarily used to mean 10243 (230) bytes, although not in the context of data transmission and not necessarily for hard drive size.[3]
+
+Hard drive and SSD manufacturers use the gigabyte to mean 1000000000 bytes. Therefore, the capacity of a 128 GB SSD is 128000000000 bytes. Expressed in gibibytes this is about 119.2 GiB. Some operating systems, including Microsoft Windows, display such a drive capacity as 119 GB, using the SI prefix G with the binary meaning. No space is missing: the size is simply being expressed in a different unit, even though the same prefix (G) is used in both cases.
+
+The use of gigabyte (GB) to refer to 1000000000 bytes in some contexts and to 1073741824 bytes in others, sometimes in reference to the same device, has led to claims of confusion, controversies, and lawsuits.[4][5][6][7] The IEC created the binary prefixes (kibi, mebi, gibi, etc.) in an attempt to reduce such confusion. They are increasingly used in technical literature and open-source software, and are a component of the International System of Quantities.[
