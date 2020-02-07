@@ -61,7 +61,6 @@ TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/${HOST}
 [ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER
 
 # Create the sysinfo file (from cmdb)
-. ~claeyje/bin/set_decom_linux_vars.sh 
 save_decom_linux_vars
 
 # Save HBS WWN's
@@ -274,7 +273,7 @@ for H in $CONSL; do printf "%-12s: " ${H} && dig ${H}.opoce.cec.eu.int +short;do
 }
 
 # Create the excel request file 
-generate_ip_delete_hostlist_records $HL $CONSL | tee ~/snet/data.txt
+generate_ip_delete_hostlist_records $HL $CONSL | tee ~claeyje/snet/data.txt
 
 # On Windows, create a new excel sheet based on the "OPS-RFC-DNS-RF2.3-delete.xltx" template
 run DNS_delete_entry macro

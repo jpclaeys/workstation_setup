@@ -148,7 +148,7 @@ VML="<vmlist>"
 CNAMEL=         # CNAMES list
 
 # Create the excel request file (template: OPS-RFC-DNS-delete.xltx)
-generate_ip_delete_hostlist_records $VML $CNAMEL| tee ~/snet/data.txt
+generate_ip_delete_hostlist_records $VML $CNAMEL| tee ~claeyje/snet/data.txt
 
 # Create the ticket for SNET
 create_delete_ip_ticket_for_SNET $VML $CNAMEL

@@ -63,8 +63,7 @@ echo $TMP_FOLDER
 
 # Create the sysinfo file (from cmdb)
 msg "Create the sysinfo file (from cmdb)"
-. ~claeyje/bin/set_decom_linux_vars.sh
-save_decom_linux_vars <hostname>
+save_decom_linux_vars
 
 # Save HBS WWN's
 msg "Save HBS WWN's"
@@ -229,7 +228,7 @@ CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_<hostname>.txt | grep -v opsvc0000 
 printf "%-12s: " <hostname> && dig <hostname>.opoce.cec.eu.int +short
 
 # Create the excel request file (template: OPS-RFC-DNS-delete.xltx)
-generate_ip_delete_hostlist_records <hostname> $CNAME | tee ~/snet/data.txt
+generate_ip_delete_hostlist_records <hostname> $CNAME | tee ~claeyje/snet/data.txt
 
 # Create the ticket for SNET
 create_delete_ip_ticket_for_SNET <hostname> $CNAME
@@ -345,7 +344,7 @@ for H in <hostname> bkp-<hostname> <hostname>-sc; do printf "%-12s: " $H && dig 
 HL="<hostname> <hostname>-sc $CNAME"
 
 # Create the excel request file
-generate_ip_delete_hostlist_records $HL | tee ~/snet/data.txt
+generate_ip_delete_hostlist_records $HL | tee /snet/data.txt
 
 # On Windows, create a new excel sheet based on the "OPS-RFC-DNS-RF2.3-delete.xltx" template
 # run the DNS_delete_entry macro

@@ -439,7 +439,7 @@ HL="<zone_name> <opsrv...>" && echo $HL
 printf "%-12s: " <zone_name> && dig <zone_name>.opoce.cec.eu.int +short
 
 # Create the excel request file (template: OPS-RFC-DNS-delete.xltx)
-generate_ip_delete_hostlist_records $HL | tee ~/snet/data.txt
+generate_ip_delete_hostlist_records $HL | tee ~claeyje/snet/data.txt
 
 # Create the ticket for SNET
 create_delete_ip_ticket_for_SNET $HL

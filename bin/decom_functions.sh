@@ -15,7 +15,7 @@ export ILOM=`cmdb cons | grep $HOST_NAME | awk '{ print $1}' | cut -f 1 -d ";"`
 export SYSTEM=`cmdb host | grep $HOST_NAME | cut  -f 7 -d ";" |  awk '{print $1}'`
 export RELEASE=`cmdb host | grep $HOST_NAME | cut  -f 7 -d ";" |  awk '{print $2 " " $3}'`
 export OS="${SYSTEM} ${RELEASE}"
-export SERNUMB_CHASSIS=`cmdb serial | grep $HOST_NAME | cut  -f 9 -d ";"`
+export SERIAL=`cmdb serial | grep $HOST_NAME | cut  -f 9 -d ";"`
 export LOCATION=`cmdb host | grep $HOST_NAME | cut  -f 5 -d ";"`
 export MODEL=`cmdb host | grep $HOST_NAME | cut  -f 10 -d ";"`
 define_email
@@ -29,7 +29,7 @@ SYSTEM      $SYSTEM
 RELEASE	    $RELEASE
 OS          $OS
 LOCATION    $LOCATION
-SERIAL#     $SERNUMB_CHASSIS
+SERIAL#     $SERIAL
 MODEL       $MODEL
 email       $email
 who         $who
@@ -78,7 +78,7 @@ cat << EOT > $TMP_FOLDER/sysinfo_${HOST_NAME}.txt
  `echo "MODEL: " $MODEL`
  `echo "OS : "   $OS`
  `echo "LOCATION : " $LOCATION`
- `echo "SERIAL# : " $SERNUMB_CHASSIS`
+ `echo "SERIAL# : " $SERIAL`
 EOT
 msg sysinfo_${HOST_NAME}
 cat $TMP_FOLDER/sysinfo_${HOST_NAME}.txt
@@ -125,6 +125,67 @@ function get_asm_disks_size2 ()
 DIDLIST=`zonecfg  -z $1 info device | awk -F"/" '/match/ {print $NF}'| sed 's/s.$//'| xargs` && echo $DIDLIST
 DEVLIST=$(for DID in $DIDLIST; do cldev show $DID | grep `uname -n` | sed -n '1p'| awk -F":" '{print $NF}';done|xargs) && echo $DEVLIST
 for DISK in $DEVLIST ; do luxadm disp ${DISK}s2 | grep Unformat;done| awk '{sum += $3} END {print sum/1024/1024, "TB"}'
+}
+
+function set_decom_linux_vars ()
+{
+local HOSTNAME
+check_root || return 1
+export HOSTNAME=`uname -n | cut -d"." -f1` || export HOSTNAME=$1
+export TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/${HOSTNAME}
+DOMAINNAME=opoce.cec.eu.int
+export IP=`dig ${HOSTNAME}.${DOMAINNAME} +short`
+export ILO=${HOSTNAME}-sc
+OS=`cat /etc/system-release`
+SERIAL=`dmidecode -s system-serial-number` 
+MANUFACTURER=`dmidecode -s system-manufacturer`
+PRODUCTNAME=`dmidecode -s system-product-name`
+MODEL="$MANUFACTURER $PRODUCTNAME"
+export LOCATION=`/home/admin/bin/getcmdb.sh linux | grep $HOSTNAME-sc | cut  -f 5 -d ";"`
+echo "
+HOSTNAME=               $HOSTNAME
+IP=                     $IP
+ILO=                    $ILO
+OS=                     $OS
+SERIAL=                 $SERIAL
+LOCATION=               $LOCATION
+MODEL=                  $MODEL
+"
+}
+
+function set_decom_linux_vars_cmdb ()
+{
+local HOSTNAME
+check_root || return 1
+[ $# -eq 0 ] && export HOSTNAME=`uname -n | cut -d"." -f1` || export HOSTNAME=$1
+export IP=`/home/admin/bin/getcmdb.sh linux | grep $HOSTNAME-sc | cut  -f 2 -d ";"`
+export TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/${HOSTNAME}
+export ILO=`/home/admin/bin/getcmdb.sh cons | grep $HOSTNAME-sc | awk '{ print $1}' | cut -f 1 -d ";"`
+export SYSTEM=`/home/admin/bin/getcmdb.sh linux | grep $HOSTNAME | cut  -f 7 -d ";" |  awk '{print $1,$2;exit}'`
+export RELEASE=`/home/admin/bin/getcmdb.sh linux | grep $HOSTNAME | cut  -f 7 -d ";" |  awk '{print $7;exit}'`
+export OS="${SYSTEM} ${RELEASE}"
+export SERIAL=`/home/admin/bin/getcmdb.sh serial | grep $HOSTNAME | cut  -f 9 -d ";"`
+export LOCATION=`/home/admin/bin/getcmdb.sh linux | grep $HOSTNAME-sc | cut  -f 5 -d ";"`
+export MODEL=`/home/admin/bin/getcmdb.sh serial | grep $HOSTNAME | awk -F";"  '{print $7 "-" $6}'`
+echo "
+HOSTNAME=		$HOSTNAME
+IP=			$IP
+ILO=			$ILO
+OS=			$OS
+SERIAL=			$SERIAL
+LOCATION=		$LOCATION
+MODEL=			$MODEL
+"
+}
+
+function save_decom_linux_vars ()
+{
+local HOSTNAME
+check_root || return 1
+export HOSTNAME=`uname -n | cut -d"." -f1` || export HOSTNAME=$1
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/${HOSTNAME}
+[ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER
+set_decom_linux_vars | tee ${TMP_FOLDER}/sysinfo_${HOSTNAME}.txt
 }
 
 function generate_ip_delete_hostlist_records ()
@@ -189,8 +250,10 @@ function create_delete_ip_ticket_for_SNET ()
 [ $# -eq 0 ] && errmsg "Please provide hosts " && return 1
 
 echo "
-Create the ticket for SNET
----------------------------
+--------------------------------------------------------------------------------
+                           Create the ticket for SNET                           
+--------------------------------------------------------------------------------
+
 Title :              OP - IP ADDRESS REQUEST
 Description :        Please forward this request to S-NET team.
 Attachments :        The Excel file in attachment
