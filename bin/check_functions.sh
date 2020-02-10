@@ -296,3 +296,28 @@ else
 fi
 }
 
+function check_alive_vm_satellite_vs_cmdb ()
+{
+cd /home/claeyje/log/satellite
+TIMESTAMP=`date "+%Y%m%d%H%M%S"`
+ALL_SAT=vm_satellite$TIMESTAMP
+ALL_CMDB=vm_cmdb$TIMESTAMP
+ALIVE_SAT=${ALL_SAT}_alive
+ALIVE_CMDB=${ALL_CMDB}_alive
+echo "0 satellite" > $ALIVE_SAT
+echo "1 cmdb" > $ALIVE_CMDB
+
+msg "Get all vm's in satellite"
+s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT
+msg "Get alive vm's in satellite"
+fping `cat $ALL_SAT` | awk '/alive/ {print $1}' >> $ALIVE_SAT
+
+msg "Get all vm's in cmdb"
+cmdb linuxvm | grep -v ^NAME | awk -F";" '{print $1}' | sort > $ALL_CMDB
+msg "Get alive vm's in cmdb"
+fping `cat $ALL_CMDB` | awk '/alive/ {print $1}' >> $ALIVE_CMDB
+msg "Compare satellite vs cmdb"
+comm $ALIVE_SAT $ALIVE_CMDB -3 --output-delimiter="                              "
+}
+
+
