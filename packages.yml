@@ -34,6 +34,7 @@
       - sipcalc
       - vsftpd
       - keychain
+      - dos2unix
       state: latest
     become: true
     ignore_errors: true

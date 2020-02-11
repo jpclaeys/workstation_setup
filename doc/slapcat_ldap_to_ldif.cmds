@@ -1,0 +1,19 @@
+# slapcat - SLAPD database to LDIF utility
+
+TIMESTAMP=`date "+%d%m%Y"`
+DATABASE='dc=opoce,dc=cec,dc=eu,dc=int'
+LDAPDB=ldapdb_${TIMESTAMP}.ldif
+LDAPSERVER=ldapa-pk
+
+sr $LDAPSERVER slapcat -o ldif-wrap=no -b $DATABASE | tee $LDAPDB
+
+
+
+USER=claeyje
+awk '/dn: uid='$USER'/,/userPassword::/' $LDAPDB
+
+# Dump the user definition including the encrypted password
+slapcat -o ldif-wrap=no -b 'dc=opoce,dc=cec,dc=eu,dc=int' -a "uid=$USER"
+# Dump all groups the use is member of
+slapcat -o ldif-wrap=no -b 'dc=opoce,dc=cec,dc=eu,dc=int' -a "memberUid=$USER"
+
