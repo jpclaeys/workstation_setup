@@ -298,26 +298,55 @@ fi
 
 function check_alive_vm_satellite_vs_cmdb ()
 {
-cd /home/claeyje/log/satellite
+SATDIR="/home/claeyje/log/satellite"
 TIMESTAMP=`date "+%Y%m%d%H%M%S"`
-ALL_SAT=vm_satellite$TIMESTAMP
-ALL_CMDB=vm_cmdb$TIMESTAMP
-ALIVE_SAT=${ALL_SAT}_alive
-ALIVE_CMDB=${ALL_CMDB}_alive
-echo "0 satellite" > $ALIVE_SAT
-echo "1 cmdb" > $ALIVE_CMDB
+ALL_SAT_VM=${SATDIR}/vm_satellite_$TIMESTAMP
+ALL_CMDB_VM=${SATDIR}/vm_cmdb_$TIMESTAMP
+ALIVE_SAT_VM=${ALL_SAT_VM}_alive
+ALIVE_CMDB_VM=${ALL_CMDB}_alive
+echo "0 satellite vm" > $ALIVE_SAT_VM
+echo "1 cmdb vm" > $ALIVE_CMDB_VM
 
 msg "Get all vm's in satellite"
-s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT
+s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM
 msg "Get alive vm's in satellite"
-fping `cat $ALL_SAT` | awk '/alive/ {print $1}' >> $ALIVE_SAT
+fping < $ALL_SAT_VM | awk '/alive/ {print $1}' >> $ALIVE_SAT_VM
 
 msg "Get all vm's in cmdb"
-cmdb linuxvm | grep -v ^NAME | awk -F";" '{print $1}' | sort > $ALL_CMDB
+cmdb linuxvm | grep -v ^NAME | awk -F";" '{print $1}' | sort > $ALL_CMDB_VM
 msg "Get alive vm's in cmdb"
-fping `cat $ALL_CMDB` | awk '/alive/ {print $1}' >> $ALIVE_CMDB
-msg "Compare satellite vs cmdb"
-comm $ALIVE_SAT $ALIVE_CMDB -3 --output-delimiter="                              "
+fping < $ALL_CMDB_VM | awk '/alive/ {print $1}' >> $ALIVE_CMDB_VM
+msg "Compare satellite vs cmdb vm's"
+comm $ALIVE_SAT_VM $ALIVE_CMDB_VM -3 --output-delimiter="                              "
 }
 
+function check_alive_physical_satellite_vs_cmdb ()
+{
+SATDIR="/home/claeyje/log/satellite"
+TIMESTAMP=`date "+%Y%m%d%H%M%S"`
+ALL_SAT=${SATDIR}/all_satellite_$TIMESTAMP
+ALL_SAT_VM=${SATDIR}/vm_satellite_$TIMESTAMP
+ALL_SAT_PHYS=${SATDIR}/phys_satellite_$TIMESTAMP
+ALL_CMDB_PHYS=${SATDIR}/phys_cmdb_$TIMESTAMP
+ALIVE_SAT_PHYS=${ALL_SAT_PHYS}_alive
+ALIVE_CMDB_PHYS=${ALL_CMDB}_alive
+echo "0 satellite phys" > $ALIVE_SAT_PHYS
+echo "1 cmdb phys" > $ALIVE_CMDB_PHYS
+
+msg "Get all satellite hosts"
+s satellite-pk hammer --csv host list | egrep -v '^Id|virt-who|Desktop' 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT && wc -l $ALL_SAT
+msg "Get all satellite vm's"
+s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l  $ALL_SAT_VM
+msg "Get all in satellite physical hosts"
+comm $ALL_SAT $ALL_SAT_VM -3 > $ALL_SAT_PHYS && wc -l $ALL_SAT_PHYS 
+msg "Get alive satellite physical hosts"
+fping < $ALL_SAT_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_SAT_PHYS && cat $ALIVE_SAT_PHYS | sed '1d' | wc -l
+
+msg "Get all cmdb physical hosts"
+cmdb linux | grep -v NAME | awk -F";" '{print $1}' | sort -u > $ALL_CMDB_PHYS && wc -l $ALL_CMDB_PHYS
+msg "Get alive cmdb physical hosts"
+fping < $ALL_CMDB_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_CMDB_PHYS && cat $ALIVE_CMDB_PHYS | sed '1d' | wc -l
+msg "Compare satellite vs cmdb physical hosts"
+comm $ALIVE_SAT_PHYS $ALIVE_CMDB_PHYS -3 --output-delimiter="                              "
+}
 

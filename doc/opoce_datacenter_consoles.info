@@ -3,3 +3,21 @@ Open the op portal (http://opitportal)
 
 Select Data Center CMDB
 Select row -024-Systems-Workstations-List-Info	Information on Solaris Workstations & Desktops including Alias and connection type, operating system versions, kernel patches, types and models
+
+NAME;ALIAS;TYPE;BRAND;MODEL;HOST LOCATION;CONNECTION TYPE;VERSION & RELEASE;KERNEL PATCH;
+
+eufocons01;console;Administration Consoles;Fujitsu Siemens;SCENIC E620;EUFO 03/465 (CC);ssh;Solaris 10 5/09 s10x_u7wos_08;Generic_139556-08;
+eufocons02;console;Administration Consoles;Fujitsu Siemens;SCENIC E620;EUFO 03/465 (CC);ssh;Solaris 10 5/09 s10x_u7wos_08;Generic_139556-08;
+
+mercons01;console;Administration Consoles;Fujitsu Siemens;SCENIC E620;MER 04/453 (CC);ssh;Solaris 10 5/09 s10x_u7wos_08;Generic_139556-08;
+mercons02;console;Administration Consoles;Fujitsu Siemens;SCENIC E600;MER 04/453 (CC);ssh;Solaris 10 5/09 s10x_u7wos_08;Generic_139556-08;
+
+beast;hank;Administration Workstations;Sun Microsystems;Ultra 20 Workstation;HALIAN;ssh;Solaris 11.2 X86;0.5.11-0.175.2.2.0.7.0;
+checkov;work;Administration Workstations;Fujitsu Siemens;SCENIC E620;MER 04/489;ssh;Solaris 11.2 X86;0.5.11-0.175.2.2.0.7.0;
+cyclops;scott;Administration Workstations;Sun Microsystems;Ultra 20 Workstation;HALIAN;ssh;Solaris 11.2 X86;0.5.11-0.175.2.2.0.7.0;
+imhotep;work;Administration Workstations;Fujitsu Siemens;SCENIC E620;MER 04/463;ssh;Solaris 11.2 X86;0.5.11-0.175.2.2.0.7.0;
+storm;work;Administration Workstations;Sun Microsystems;Ultra 20 Workstation;HALIAN;ssh;Solaris 11.2 X86;0.5.11-0.175.2.2.0.7.0;
+valerian;work;Administration Workstations;Fujitsu Siemens;SCENIC E620;MER 04/457;ssh;Solaris 11.2 X86;0.5.11-0.175.2.2.0.7.0;
+xantia;work;Administration Workstations;Fujitsu Siemens;SCENIC E620;MER 04/489;ssh;Solaris 11.2 X86;0.5.11-0.175.2.2.0.7.0;
+
+==> root pwd on eufocons01 is "EUf7le"
