@@ -307,15 +307,14 @@ ALIVE_CMDB_VM=${ALL_CMDB}_alive
 echo "0 satellite vm" > $ALIVE_SAT_VM
 echo "1 cmdb vm" > $ALIVE_CMDB_VM
 
-msg "Get all vm's in satellite"
-s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM
+msg "Get all satellite vm's"
+s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l $ALL_SAT_VM
 msg "Get alive vm's in satellite"
-fping < $ALL_SAT_VM | awk '/alive/ {print $1}' >> $ALIVE_SAT_VM
-
-msg "Get all vm's in cmdb"
+fping < $ALL_SAT_VM | awk '/alive/ {print $1}' >> $ALIVE_SAT_VM && wc -l $ALIVE_SAT_VM
+msg "Get all cmdb vm's"
 cmdb linuxvm | grep -v ^NAME | awk -F";" '{print $1}' | sort > $ALL_CMDB_VM
-msg "Get alive vm's in cmdb"
-fping < $ALL_CMDB_VM | awk '/alive/ {print $1}' >> $ALIVE_CMDB_VM
+msg "Get alive cmdb vm's"
+fping < $ALL_CMDB_VM | awk '/alive/ {print $1}' >> $ALIVE_CMDB_VM && wc -l $ALIVE_CMDB_VM
 msg "Compare satellite vs cmdb vm's"
 comm $ALIVE_SAT_VM $ALIVE_CMDB_VM -3 --output-delimiter="                              "
 }

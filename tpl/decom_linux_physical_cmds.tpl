@@ -92,13 +92,18 @@ msg "TMP_FOLDER content"
 ls -lh $TMP_FOLDER
 }
 
+------------------------------------------------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------------------------------------------------------------
+
 {
 # Remove the luns if any
 #------------------------
 # rescan the SCSI bus
 for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
 
-# Try removal by using the removelun_rhel script
+# Try removal by using the removelun_rhel script (Requires Switch.pm module for perl)
+[ ! -f "/usr/share/perl5/Switch.pm" ] && errmsg "Perl Switch.pm module is missing"
 for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort | awk '{print $1}'`; do echo "/home/admin/bin/removelun_rhel $LUN | bash";done
 for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $LUN | bash ;done
 

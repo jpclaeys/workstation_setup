@@ -7,6 +7,21 @@ LDAPSERVER=ldapa-pk
 
 sr $LDAPSERVER slapcat -o ldif-wrap=no -b $DATABASE | tee $LDAPDB
 
+Note:
+-----
+on ldap server
+
+-l ldif-file
+    Write LDIF to specified file instead of standard output.
+-n dbnum
+    Generate output for the dbnum-th database listed in the configuration file. 
+    The config database slapd-config(5), is always the first database, so use -n 0 to select it.
+    The -n cannot be used in conjunction with the -b option.
+
+0: configuration database
+2: data database
+
+slapcat -o ldif-wrap=no -n 2 -l <output file>
 
 
 USER=claeyje
