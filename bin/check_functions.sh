@@ -304,8 +304,6 @@ ALL_SAT_VM=${SATDIR}/vm_satellite_$TIMESTAMP
 ALL_CMDB_VM=${SATDIR}/vm_cmdb_$TIMESTAMP
 ALIVE_SAT_VM=${SATDIR}/alive_vm_satellite_$TIMESTAMP
 ALIVE_CMDB_VM=${SATDIR}/alive_vm_cmdb_$TIMESTAMP
-echo "0 satellite vm" > $ALIVE_SAT_VM
-echo "1 cmdb vm" > $ALIVE_CMDB_VM
 
 msg "Get all satellite vm's"
 s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l $ALL_SAT_VM
@@ -316,7 +314,11 @@ cmdb linuxvm | grep -v ^NAME | awk -F";" '{print $1}' | sort > $ALL_CMDB_VM && w
 msg "Get alive cmdb vm's"
 fping < $ALL_CMDB_VM | awk '/alive/ {print $1}' >> $ALIVE_CMDB_VM && wc -l $ALIVE_CMDB_VM
 msg "Compare satellite vs cmdb vm's"
-comm $ALIVE_SAT_VM $ALIVE_CMDB_VM -3 --output-delimiter="                              "
+LEN=32
+DELIMITER=`printf  '%*s\n' $LEN`
+printf "%-${LEN}s%-${LEN}s\n" "satellite vm" "cmdb vm"
+separator 80 -
+comm $ALIVE_SAT_VM $ALIVE_CMDB_VM -3 --output-delimiter="$DELIMITER"
 }
 
 function check_alive_physical_satellite_vs_cmdb ()
@@ -329,8 +331,6 @@ ALL_SAT_PHYS=${SATDIR}/phys_satellite_$TIMESTAMP
 ALL_CMDB_PHYS=${SATDIR}/phys_cmdb_$TIMESTAMP
 ALIVE_SAT_PHYS=${SATDIR}/alive_phys_satellite_$TIMESTAMP
 ALIVE_CMDB_PHYS=${SATDIR}/alive_phys_cmdb_$TIMESTAMP
-echo "0 satellite phys" > $ALIVE_SAT_PHYS
-echo "1 cmdb phys" > $ALIVE_CMDB_PHYS
 
 msg "Get all satellite hosts"
 s satellite-pk hammer --csv host list | egrep -v '^Id|virt-who|Desktop' 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT && wc -l $ALL_SAT
@@ -339,13 +339,17 @@ s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id 2> /dev/null
 msg "Get all in satellite physical hosts"
 comm $ALL_SAT $ALL_SAT_VM -3 > $ALL_SAT_PHYS && wc -l $ALL_SAT_PHYS 
 msg "Get alive satellite physical hosts"
-fping < $ALL_SAT_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_SAT_PHYS && cat $ALIVE_SAT_PHYS | sed '1d' | wc -l
+fping < $ALL_SAT_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_SAT_PHYS && wc -l $ALIVE_SAT_PHYS
 
 msg "Get all cmdb physical hosts"
 cmdb linux | grep -v NAME | awk -F";" '{print $1}' | sort -u > $ALL_CMDB_PHYS && wc -l $ALL_CMDB_PHYS
 msg "Get alive cmdb physical hosts"
-fping < $ALL_CMDB_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_CMDB_PHYS && cat $ALIVE_CMDB_PHYS | sed '1d' | wc -l
+fping < $ALL_CMDB_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_CMDB_PHYS && wc -l $ALIVE_CMDB_PHYS
 msg "Compare satellite vs cmdb physical hosts"
-comm $ALIVE_SAT_PHYS $ALIVE_CMDB_PHYS -3 --output-delimiter="                              "
+LEN=32
+DELIMITER=`printf  '%*s\n' $LEN`
+printf "%-${LEN}s%-${LEN}s\n" "satellite physical" "cmdb physical"
+separator 80 -
+comm $ALIVE_SAT_PHYS $ALIVE_CMDB_PHYS -3 --output-delimiter="$DELIMITER"
 }
 
