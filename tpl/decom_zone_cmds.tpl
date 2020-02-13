@@ -40,7 +40,7 @@ This procedure describes how to remove a Solaris 10 container
 check_apps <zone_name>
 
 # get primary host name
-primary=`zone-where <zone_name>`
+primary=`zone-where <zone_name>` && echo $primary
 sr $primary
 
 zlogin <zone_name>
@@ -80,7 +80,7 @@ Ticket:
 {
 export zone_name="<zone_name>"
 decom_zone_set_vars <zone_name>
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/<zone_name>
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/<zone_name>
 [ ! -d $tmp_folder ] && mkdir $tmp_folder
 cd $tmp_folder
 who=`who am i | awk '{print $1}'`
@@ -172,6 +172,7 @@ else
 fi
 cat /zones/<zone_name>/root/etc/hosts >${tmp_folder}/network_etc_hosts.txt
 cat ${tmp_folder}/network_ip.txt
+OPSRVL=`cmdb opsrv | grep <zone_name> | awk -F ";" '{print $1}' | sort -u | xargs` && echo "opsrv list:= $OPSRVL"
 }
 
 3.6.1 (3.22) remove client monitoring
@@ -236,8 +237,9 @@ done
 }>${tmp_folder}/storage_info_<zone_name>.txt
 # cat ${tmp_folder}/storage_info_<zone_name>.txt
 cat ${tmp_folder}/storage_hex_lun_id.txt | sort -u | tee ${tmp_folder}/storage_hex_lun_id.txt 
-cat ${tmp_folder}/storage_hex_lun_id.txt
+cat ${tmp_folder}/storage_hex_lun_id.txt && wc -l ${tmp_folder}/storage_hex_lun_id.txt
 
+wc -l ${tmp_folder}/storage_info_<zone_name>.txt
 cat ${tmp_folder}/storage_info_<zone_name>.txt| awk '{print $1, $9, $(NF-3), $(NF-7), $3, $(NF-8), substr($8,0,10)}'| sed 's/_$//'| sort -u
 
 3.9 get zone storage information on secondary node
@@ -250,6 +252,7 @@ done
 } >> ${tmp_folder}/storage_info_<zone_name>.txt
 # cat ${tmp_folder}/storage_info_<zone_name>.txt
 
+wc -l ${tmp_folder}/storage_info_<zone_name>.txt
 cat ${tmp_folder}/storage_info_<zone_name>.txt| awk '{print $1, $9, $(NF-3), $(NF-7), $3, $(NF-8), substr($8,0,10)}'| sed 's/_$//'| sort -u
 
 
@@ -398,7 +401,7 @@ For puppet, delete the host from the Foreman GUI : https://foreman/users/login
 ----------------------------------------------
 
 {
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/<zone_name>
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/<zone_name>
 cat <<EOT
 #SMT Template: STORAGE REQUEST - Retrieve unused storage
 #SMT Title: Recover storage for <zone_name>
@@ -420,7 +423,7 @@ Ticket:
 3.21 network: free up the zone IP's
 
 Instructions:
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/<zone_name>
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/<zone_name>
 cat ${tmp_folder}/network_ip.txt
 for IP in `awk -F":" '/opsrv/ {print $1}' ${tmp_folder}/network_ip.txt | xargs`; do host $IP;done
 

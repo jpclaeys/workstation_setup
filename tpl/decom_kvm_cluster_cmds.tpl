@@ -137,7 +137,6 @@ cat <<EOT
 
 Reason: Clients are going to be decommissioned
 
-Best regards
 EOT
 }
 
@@ -293,7 +292,6 @@ Ticket:
 HL=""
 {
 cat << EOT
-Dear all,
 
 Please change the status of the nodes:
 
@@ -304,7 +302,6 @@ to
 MODE: REMOVED/ARCHIVED.
 
 
-Best regards
 
 
 EOT
@@ -346,7 +343,6 @@ cat << EOT
 # Template: OP_INFRA_SYSTEM decommissionnement
 # Title: Unwire ${HL}
 
-Dear all,
 
 Please unwire the following systems from the infrastructure:
 
@@ -354,7 +350,6 @@ Please unwire the following systems from the infrastructure:
 
 will be removed from the rack
 
-Best regards
 EOT
 }
 
@@ -373,7 +368,6 @@ cat << EOT
 # Template: OP_INFRA_SYSTEM decommissionnement
 # Title: Unwire ${HL}
 
-Dear all,
 
 Please unwire the following systems from the infrastructure:
 
@@ -381,7 +375,6 @@ Please unwire the following systems from the infrastructure:
 
 will be removed from the rack
 
-Best regards
 EOT
 }
 
@@ -403,15 +396,13 @@ cat << EOT
 # Template: OP_INFRA_SYSTEM decommissionnement
 # Title: Remove ${HL} physically
 
-Dear all,
 
-please remove the following systems physically:
+Please remove the following system physically:
 
 `for H in $HL; do cat /net/nfs-infra.isilon/unix/systemstore/temp/${H}/sysinfo_${H}.txt;done`
 
-has order to be disconnected and can now remove from rack.
+must be disconnected and can now be removed from the rack.
 
-Best regards
 
 EOT
 }
@@ -429,15 +420,13 @@ cat << EOT
 # Template: OP_INFRA_SYSTEM decommissionnement
 # Title: Remove ${HL} physically
 
-Dear all,
 
-please remove the following systems physically:
+Please remove the following system physically:
 
 `for H in $HL; do cat /net/nfs-infra.isilon/unix/systemstore/temp/${H}/sysinfo_${H}.txt;done`
 
-has order to be disconnected and can now remove from rack.
+must be disconnected and can now be removed from the rack.
 
-Best regards
 
 EOT
 }

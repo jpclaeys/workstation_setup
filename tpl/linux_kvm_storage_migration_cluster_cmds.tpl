@@ -153,7 +153,6 @@ MAILCC=OPDL-INFRA-SYSTEMS@publications.europa.eu,jean-claude.vallet@ext.publicat
 MAILDEST=$MAILTESTDEST
 
 {
-Dears,
 
 The VM $VM_NAME will be OFFLINE for about one hour for storage migration.
 } | mailx -s "$VM_NAME OFFLINE for storage migration" -r $who -c $MAILCC $MAILDEST
@@ -353,7 +352,6 @@ MAILDEST="$MAILTESTDEST,thomas.schmidt@ext.publications.europa.eu"
 
 {
 echo "
-Dears,
 
 The storage migration of $VM_NAME has completed successfully, the server is back up and running.
 "

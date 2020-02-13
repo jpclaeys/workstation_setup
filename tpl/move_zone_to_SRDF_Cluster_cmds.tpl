@@ -33,7 +33,7 @@ secondary_source_node=<secondarysource>
 primary_target_node=<primarytarget>
 secondary_target_node=<secondarytarget>
 
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/${zone_name}
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/${zone_name}
 [ ! -d $tmp_folder ] && mkdir $tmp_folder
 who=`who am i | awk '{print $1}'`
 site=$(/home/admin/bin/getcmdb.sh host | grep `uname -n` | awk -F';' '{print $5}' | awk '{print $1}') && echo $site
@@ -139,7 +139,6 @@ echo "Dears,
 
 Please be informed that we plan to move the zone ${zone_name} from ${primary_source_node}/${secondary_source_node} to ${primary_target_node}/${secondary_target_node} on ${start_date} as of ${start_hour}.
 
-Thanks & Best Regards"
 } | mailx -s "Zone move: $zone_name" -r $who -c $who,Jean-Claude.VALLET@ext.publications.europa.eu OPDL-INFRA-SYSTEMS@publications.europa.eu
 
 ==================================================================================================================================
@@ -235,7 +234,7 @@ cat <<EOT
 Hi,
 
 The ${zone_name} is down; the devices are offline.
-Can you please execute the changes previously requested between ${primary_source_node}/${secondary_source_node} and ${primary_target_node}/${secondary_target_node} ?
+Please execute the changes previously requested between ${primary_source_node}/${secondary_source_node} and ${primary_target_node}/${secondary_target_node} ?
 
 Thanks in advance.
 EOT

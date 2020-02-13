@@ -25,7 +25,7 @@ get_zone_primary_and_secondary_hosts <zone_name>
 # Define variables
 {
 export zone_name="<zone_name>"
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/${zone_name}
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/${zone_name}
 [ ! -d $tmp_folder ] && mkdir $tmp_folder
 cd $tmp_folder
 who=`who am i | awk '{print $1}'`
@@ -683,9 +683,8 @@ rename the new DiskGroup to  ${zone_name}
 
 {
 echo "
-Dears,
 
-Can you please rename the device groups for the zone ${zone_name} in the following way:
+Please rename the device groups for the zone ${zone_name} in the following way:
 
 ${zone_name}  becomes old_${zone_name}
 

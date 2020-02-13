@@ -4,7 +4,7 @@
 
 ##### variables
 export zone_name=<zone_name>
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/$zone_name
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/$zone_name
 export POOLTOMIGRATE=${zone_name}-<type>
 export OLDPOOL=${POOLTOMIGRATE}_old
 export POOLTOMIGRATEDISK=                # emcpower58a

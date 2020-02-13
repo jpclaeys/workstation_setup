@@ -17,7 +17,7 @@ REMOVE MONITORING: <hostname>
 
 # Description:
 
-Servers list: <hostname>
+Server name: <hostname>
 Action: Stop monitoring
 EOT
 }
@@ -163,7 +163,6 @@ HBA-PORTS Impacted devices:
 
 Reason: Client is going to be decommissioned
 
-Best regards
 EOT
 }
 
@@ -215,7 +214,9 @@ confirm
 
  OR
 
+s satellite-pk
 satellite_delete_host <hostname>
+satellite_host_list <hostname>
 
 ====================================================================================================================================
 Network: Remove IP and DNS entry for the server 
@@ -225,6 +226,8 @@ Connect to http://resop/ip and fill in the form
 
 - enter the hosts
 - enter the CNAME
+
+ OR
 
 TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
 CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_<hostname>.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
@@ -369,7 +372,6 @@ TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
 
 {
 cat << EOT
-Dear all,
 
 Please change the status of the nodes:
 
@@ -379,7 +381,6 @@ to
 
 MODE: REMOVED/ARCHIVED.
 
-Best regards
 EOT
 } | mailx -s "Change CMDB for <hostname> to archived" -r $email -c $email OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
 
@@ -403,7 +404,6 @@ cat << EOT
 # Template: OP_INFRA_SYSTEM decommissionnement
 # Title: Unwire <hostname>
 
-Dear all,
 
 Please unwire the following systems from the infrastructure:
 
@@ -411,13 +411,15 @@ Please unwire the following systems from the infrastructure:
 
 will be removed from the rack
 
-Best regards
 EOT
 }
 
-====================================================================================================================================
-Ticket:
+TO: DCF-OP
+------------------------------------------------------------------------------------------------------------------------------------
 
+------------------------------------------------------------------------------------------------------------------------------------
+Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
 ====================================================================================================================================
 ====================================================================================================================================
 !!!!! WAIT until the server has been unwired !!!!!
@@ -433,22 +435,18 @@ cat << EOT
 # Template: OP_INFRA_SYSTEM decommissionnement
 # Title: Remove <hostname> physically
 
-Dear all,
 
-please remove the following systems physically:
+Please remove the following system physically:
 
 `cat ${TMP_FOLDER}/sysinfo_<hostname>.txt`
 
-has order to be disconnected and can now remove from rack.
-
-Best regards
-
+must be disconnected and can now be removed from the rack.
 EOT
 }
+TO: DCF-OP
+------------------------------------------------------------------------------------------------------------------------------------
 
-====================================================================================================================================
-
+------------------------------------------------------------------------------------------------------------------------------------
 Ticket:
-====================================================================================================================================
-
+------------------------------------------------------------------------------------------------------------------------------------
 ====================================================================================================================================

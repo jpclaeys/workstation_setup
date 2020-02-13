@@ -22,7 +22,7 @@ secondary_host=`cmdb zone | grep <zone_name> | awk -F";" '/Secondary/ {print $7}
 # Define variables
 {
 export zone_name="<zone_name>"
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/${zone_name}
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/${zone_name}
 [ ! -d $tmp_folder ] && mkdir $tmp_folder
 cd $tmp_folder
 who=`who am i | awk '{print $1}'`

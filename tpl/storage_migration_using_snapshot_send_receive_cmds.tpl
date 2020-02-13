@@ -20,7 +20,7 @@ echo zpool list $NEWDATAPOOL
 # Define variables
 {
 export zone_name="metaconv-pz"
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/${zone_name}
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/${zone_name}
 [ ! -d $tmp_folder ] && mkdir $tmp_folder
 cd $tmp_folder
 who=`who am i | awk '{print $1}'`
@@ -50,7 +50,7 @@ global_zone_os=     $global_zone_os
 export zone_name=<zone_name>
 export primary_host=
 export secondary_host=
-export tmp_folder=${UNIXSYSTEMSTORE}/temp/$zone_name
+export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/$zone_name
 export POOLTOMIGRATE=${zone_name}_<suffix>
 export NEWPOOL=newrdf-${POOLTOMIGRATE} 
 export OLDPOOL=${POOLTOMIGRATE}_old

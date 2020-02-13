@@ -79,7 +79,6 @@ tail -1 hosts.allow
 ----------------------------------------------------------------------------------------------------------
 
 echo "
-Dear,
 
 Your access on garcimore has been created:
 
