@@ -302,8 +302,8 @@ SATDIR="/home/claeyje/log/satellite"
 TIMESTAMP=`date "+%Y%m%d%H%M%S"`
 ALL_SAT_VM=${SATDIR}/vm_satellite_$TIMESTAMP
 ALL_CMDB_VM=${SATDIR}/vm_cmdb_$TIMESTAMP
-ALIVE_SAT_VM=${ALL_SAT_VM}_alive
-ALIVE_CMDB_VM=${ALL_CMDB}_alive
+ALIVE_SAT_VM=${SATDIR}/alive_vm_satellite_$TIMESTAMP
+ALIVE_CMDB_VM=${SATDIR}/alive_vm_cmdb_$TIMESTAMP
 echo "0 satellite vm" > $ALIVE_SAT_VM
 echo "1 cmdb vm" > $ALIVE_CMDB_VM
 
@@ -312,7 +312,7 @@ s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id | awk -F, '{
 msg "Get alive vm's in satellite"
 fping < $ALL_SAT_VM | awk '/alive/ {print $1}' >> $ALIVE_SAT_VM && wc -l $ALIVE_SAT_VM
 msg "Get all cmdb vm's"
-cmdb linuxvm | grep -v ^NAME | awk -F";" '{print $1}' | sort > $ALL_CMDB_VM
+cmdb linuxvm | grep -v ^NAME | awk -F";" '{print $1}' | sort > $ALL_CMDB_VM && wc -l $ALL_CMDB_VM
 msg "Get alive cmdb vm's"
 fping < $ALL_CMDB_VM | awk '/alive/ {print $1}' >> $ALIVE_CMDB_VM && wc -l $ALIVE_CMDB_VM
 msg "Compare satellite vs cmdb vm's"
@@ -327,8 +327,8 @@ ALL_SAT=${SATDIR}/all_satellite_$TIMESTAMP
 ALL_SAT_VM=${SATDIR}/vm_satellite_$TIMESTAMP
 ALL_SAT_PHYS=${SATDIR}/phys_satellite_$TIMESTAMP
 ALL_CMDB_PHYS=${SATDIR}/phys_cmdb_$TIMESTAMP
-ALIVE_SAT_PHYS=${ALL_SAT_PHYS}_alive
-ALIVE_CMDB_PHYS=${ALL_CMDB}_alive
+ALIVE_SAT_PHYS=${SATDIR}/alive_phys_satellite_$TIMESTAMP
+ALIVE_CMDB_PHYS=${SATDIR}/alive_phys_cmdb_$TIMESTAMP
 echo "0 satellite phys" > $ALIVE_SAT_PHYS
 echo "1 cmdb phys" > $ALIVE_CMDB_PHYS
 
