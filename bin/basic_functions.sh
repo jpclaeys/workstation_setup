@@ -140,11 +140,11 @@ validatehost $1 || return 1
 ssh -q $@
 }
 
-
-
 function definemypasswd ()
 {
-echo -n "password for `whoami`: "; stty -echo; read mypasswd; export mypasswd; stty echo; echo
+if [ -z "$mypasswd" -o "$1" == "-f" ]; then
+  echo -n "password for `whoami`: "; stty -echo; read mypasswd; export mypasswd; stty echo; echo
+fi
 }
 
 function defineproxy ()

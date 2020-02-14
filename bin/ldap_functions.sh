@@ -191,15 +191,17 @@ ldapsearchexists || return 1
 ldapsearchnetgrouphost nfs_cellar_pz_public_ro $1
 }
 
-function ldapsearchuserandpasswd ()
+function ldapsearchuserfull ()
 {
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
+definemypasswd
 sr ldapb-pk slapcat -n2 -a uid=$1
 }
 
 function ldapsearchuserpasswd ()
 {
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
+definemypasswd
 sr ldapb-pk slapcat -n2 -a uid=$1 | grep userPassword
 }
 
