@@ -1,0 +1,28 @@
+slappasswd - OpenLDAP password utility
+---------------------------------------
+Slappasswd  is  used  to  generate  an  userPassword value suitable for use with ldapmodify(1), slapd.conf(5) rootpw configuration directive 
+or the slapd-config(5) olcRootPW configuration directive.
+
+OPTIONS
+       -h "scheme"
+              If -h is specified, one of the following RFC 2307 schemes may be specified: {CRYPT}, {MD5}, {SMD5},  {SSHA},  and  {SHA}.   The  default  is
+              {SSHA}.
+
+              Note that scheme names may need to be protected, due to { and }, from expansion by the user's command interpreter.
+
+              {SHA} and {SSHA} use the SHA-1 algorithm (FIPS 160-1), the latter with a seed.
+
+              {MD5} and {SMD5} use the MD5 algorithm (RFC 1321), the latter with a seed.
+
+              {CRYPT} uses the crypt(3).
+
+              {CLEARTEXT}  indicates that the new password should be added to userPassword as clear text.  Unless {CLEARTEXT} is used, this flag is incom‐
+              patible with option -g.
+
+
+ex. 
+[claeyje@ldapa-pk ~]# slappasswd -h {CRYPT}
+New password: 
+Re-enter new password: 
+{CRYPT}pTma6.MERs7Kw
+

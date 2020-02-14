@@ -1,5 +1,41 @@
 export LDAPSERVER=ldapa-pk
 
+function ldap_reset_password ()
+{
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid> [<new passwd>]" && return 1
+
+id $1 >/dev/null 2>&1 ; [ $? -ne 0 ] && errmsg "no such user $1" && return 1
+LOGIN=$1
+NEWPWDCLEAR=$LOGIN
+[ -n "$2" ] && NEWPWDCLEAR="$2"
+
+# Set the LDAP admin password
+LDAPPWD='0pocE123!!'
+echo "Resetting password for '$LOGIN' to '$NEWPWDCLEAR'"
+
+# get current passwd
+ldapsearchuserpasswd $LOGIN
+
+NEWPASSWD=`perl -e  'print crypt('${NEWPWDCLEAR}', '${NEWPWDCLEAR}')'` && echo "New passwd: {CRYPT}$NEWPASSWD"
+
+confirmexecution "Do you want to proceed with the password reset for $LOGIN ?" || return 1
+
+# Reset the password to the login name
+{
+ldap_server=ldapa-pk
+bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
+ldapmodify -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
+dn: uid=${LOGIN},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: userPassword
+userPassword: {CRYPT}$NEWPASSWD
+EOT
+}
+
+# check new password
+ldapsearchuserpasswd $LOGIN
+}
+
 function ldapsearchexists ()
 {
 #if [ "`uname -s`" == "SunOS" ] ; then
