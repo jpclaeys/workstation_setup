@@ -1,6 +1,6 @@
 export LDAPSERVER=ldapa-pk
 
-function ldap_reset_password ()
+function ldapresetpasswd ()
 {
 [ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid> [<new passwd>]" && return 1
 
