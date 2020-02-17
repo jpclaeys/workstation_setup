@@ -195,14 +195,14 @@ function ldapsearchuserfull ()
 {
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
 definemypasswd
-sr ldapb-pk slapcat -n2 -a uid=$1
+sr $LDAPSERVER slapcat -n2 -a uid=$1
 }
 
 function ldapsearchuserpasswd ()
 {
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
 definemypasswd
-sr ldapb-pk slapcat -n2 -a uid=$1 | grep userPassword
+sr $LDAPSERVER slapcat -n2 -a uid=$1 | grep userPassword
 }
 
 
