@@ -1,0 +1,58 @@
+Find Out All Live Hosts IP Addresses Connected on Network in Linux
+-------------------------------------------------------------------
+
+nmap -sn <ip>/<mask>
+Note:
+-sn is -sP on latest versions of nmap
+
+-sn - is the type of scan, which means a ping scan. By default, Nmap performs port scanning, but this scan will disable port scanning.
+
+
+nmap -sP 158.167.226.79/27| grep -v latency
+
+[root@localhost ~]# nmap -sn 10.135.39.0/25| grep -v latency
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-02-17 08:20 CET
+Nmap scan report for 10.135.39.1
+MAC Address: 00:17:DF:ED:90:00 (Cisco Systems)
+Nmap scan report for 10.135.39.4
+MAC Address: 30:CD:A7:1F:A0:8A (Samsung Electronics)
+Nmap scan report for 10.135.39.6
+MAC Address: A0:66:10:01:AE:A5 (Fujitsu Limited)
+Nmap scan report for 10.135.39.8
+MAC Address: 00:50:B6:9F:22:87 (Good WAY IND.)
+Nmap scan report for digiop1.opoce.cec.eu.int (10.135.39.13)
+MAC Address: 10:E7:C6:AE:E2:ED (Hewlett Packard)
+Nmap scan report for 10.135.39.69
+MAC Address: B8:AC:6F:1D:59:DD (Dell)
+Nmap scan report for 10.135.39.70
+MAC Address: 3C:18:A0:51:4B:B0 (Luxshare Precision Industry Company Limited)
+Nmap scan report for 10.135.39.73
+MAC Address: DC:4A:3E:86:7A:97 (Hewlett Packard)
+Nmap scan report for 10.135.39.5
+Host is up.
+Nmap done: 128 IP addresses (9 hosts up) scanned in 1.06 seconds
+
+[root@localhost ~]# nmap -sn 10.199.99.208/24 | grep -v latency
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-02-17 08:26 CET
+Nmap scan report for argon.opoce.cec.eu.int (10.199.99.21)
+Nmap scan report for bonacieux.opoce.cec.eu.int (10.199.99.45)
+Nmap scan report for richelieu.opoce.cec.eu.int (10.199.99.46)
+Nmap scan report for neelix.opoce.cec.eu.int (10.199.99.60)
+Nmap scan report for kes.opoce.cec.eu.int (10.199.99.61)
+Nmap scan report for neo.opoce.cec.eu.int (10.199.99.76)
+Nmap scan report for morpheus.opoce.cec.eu.int (10.199.99.77)
+Nmap scan report for trinity.opoce.cec.eu.int (10.199.99.78)
+Nmap scan report for niobe.opoce.cec.eu.int (10.199.99.79)
+Nmap scan report for abel.opoce.cec.eu.int (10.199.99.145)
+Nmap scan report for tank.opoce.cec.eu.int (10.199.99.208)
+Nmap scan report for perceval.opoce.cec.eu.int (10.199.99.209)
+Nmap scan report for dozer.opoce.cec.eu.int (10.199.99.210)
+Nmap scan report for karadoc.opoce.cec.eu.int (10.199.99.211)
+Nmap scan report for VL199-MER-DC0.opoce.cec.eu.int (10.199.99.250)
+Nmap scan report for VL199-MER-DC1.opoce.cec.eu.int (10.199.99.251)
+Nmap scan report for VL199-EUF-DC0.opoce.cec.eu.int (10.199.99.252)
+Nmap scan report for VL199-EUF-DC1.opoce.cec.eu.int (10.199.99.253)
+Nmap scan report for VL199-HSRP.opoce.cec.eu.int (10.199.99.254)
+Nmap done: 256 IP addresses (19 hosts up) scanned in 4.29 seconds
+[root@localhost ~]# 
+

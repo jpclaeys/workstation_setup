@@ -356,3 +356,16 @@ comm $ALIVE_SAT_PHYS $ALIVE_CMDB_PHYS -3 --output-delimiter="$DELIMITER"
 separator 80 -
 }
 
+function check_satellite_left_over_entries ()
+{
+cd /home/claeyje/log/delete_host_from_satellite
+# Multiple hosts in files
+HLMULTI=`grep filter *multiple* | sort -u |awk -F= '{print $NF}' |sed 's/|/ /g'| xargs` && echo $HLMULTI && wc -w  <<< $HLMULTI
+# Single hosts in files
+HLS=`ll | awk -F_ '/_satellite_/ {print $(NF-1)}' | grep -v multiple | xargs` && echo $HLS && wc -w <<< $HLS
+HL="$HLMULTI $HLS" && echo $HL && wc -w <<< $HL
+FILTER=`sed 's/ /|/g' <<< $HL` #  && echo $FILTER
+# s satellite-pk satellite_host_list $HL
+s satellite-pk satellite_host_list | grep -v virt-who | egrep "$FILTER"
+cd -
+}
