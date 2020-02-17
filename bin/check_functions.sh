@@ -1,27 +1,3 @@
-function check_zones_cmdb_against_host ()
-{
-# comm examples:
-#       comm -12 file1 file2
-#              Print only lines present in both file1 and file2.
-#
-#       comm -3 file1 file2
-#              Print lines in file1 not in file2, and vice versa.
-#
-# Check zones differences between cmdb and zoneadm list on the global zones
-
-TIMESTAMP=`date "+%Y%m%d%H%M%S"`
-DIR=/var/tmp
-FILE1=${DIR}/zl_real_$TIMESTAMP.log
-FILE2=${DIR}/zl_cmdb_$TIMESTAMP.log
-echo "a Host info" > $FILE1
-echo "a Cmdb info" > $FILE2
-
-mypssH "`t5hosts`" '(/usr/sbin/zoneadm list| egrep -v "NAME|glob")'| grep -v '\['| sort >> $FILE1
-cmdb zone | grep -v ^ZONE | awk -F";" '{print $1}' | sort -u >> $FILE2
-comm -3 $FILE1 $FILE2 --output-delimiter="		"
-rm $FILE1 $FILE2
-}
-
 
 function check_if_all_zones_are_running_on_their_primary_host ()
 {
@@ -295,6 +271,31 @@ else
     done
 fi
 }
+function check_zones_cmdb_against_host ()
+{
+# comm examples:
+#       comm -12 file1 file2
+#              Print only lines present in both file1 and file2.
+#
+#       comm -3 file1 file2
+#              Print lines in file1 not in file2, and vice versa.
+#
+# Check zones differences between cmdb and zoneadm list on the global zones
+
+TIMESTAMP=`date "+%Y%m%d%H%M%S"`
+DIR=/var/tmp
+FILE1=${DIR}/zl_real_$TIMESTAMP.log
+FILE2=${DIR}/zl_cmdb_$TIMESTAMP.log
+
+mypssH "`t5hosts`" '(/usr/sbin/zoneadm list| egrep -v "NAME|glob")'| grep -v '\['| sort >> $FILE1
+cmdb zone | grep -v ^ZONE | awk -F";" '{print $1}' | sort -u >> $FILE2
+LEN=32 && DELIMITER=`printf  '%*s\n' $LEN`
+printf "%-${LEN}s%-${LEN}s\n" "zoneadm list" "cmdb list"
+separator 80 -
+comm -3 $FILE1 $FILE2 --output-delimiter="$DELIMITER"
+rm $FILE1 $FILE2
+separator 80 -
+}
 
 function check_alive_vm_satellite_vs_cmdb ()
 {
@@ -319,6 +320,7 @@ DELIMITER=`printf  '%*s\n' $LEN`
 printf "%-${LEN}s%-${LEN}s\n" "satellite vm" "cmdb vm"
 separator 80 -
 comm $ALIVE_SAT_VM $ALIVE_CMDB_VM -3 --output-delimiter="$DELIMITER"
+separator 80 -
 }
 
 function check_alive_physical_satellite_vs_cmdb ()
@@ -351,5 +353,6 @@ DELIMITER=`printf  '%*s\n' $LEN`
 printf "%-${LEN}s%-${LEN}s\n" "satellite physical" "cmdb physical"
 separator 80 -
 comm $ALIVE_SAT_PHYS $ALIVE_CMDB_PHYS -3 --output-delimiter="$DELIMITER"
+separator 80 -
 }
 
