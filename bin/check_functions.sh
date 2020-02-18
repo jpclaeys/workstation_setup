@@ -59,7 +59,7 @@ function check_fmadm ()
 {
 for H in `primary_domains`; do 
 # msggreen $H && sre $H fmadm faulty -s
-msggreen $H && sre $H '(fmadm faulty | grep -A4 EVENT)'
+msggreen $H && sre $H fmadm faulty | grep -A4 EVENT
 done
 }
 

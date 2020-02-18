@@ -136,7 +136,8 @@ esac
 
 function s ()
 {
-validatehost $1 || return 1
+#validatehost $1 || return 1
+validatehost ${1##*@} || return 1
 ssh -q $@
 }
 

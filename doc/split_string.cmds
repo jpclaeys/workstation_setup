@@ -1,0 +1,24 @@
+Split string with bash with symbol
+-----------------------------------
+
+Using Parameter Expansion:
+
+The # character says Remove the smallest prefix of the expansion matching the pattern.
+The % character means Remove the smallest suffix of the expansion matching the pattern. (So you can do "${str%@*}" to get the "test1" part.)
+The / character means Remove the smallest and first substring of the expansion matching the following pattern. Bash has it, but it's not POSIX.
+If you double the pattern character it matches greedily.
+
+## means Remove the largest prefix of the expansion matching the pattern.
+%% means Remove the largest suffix of the expansion matching the pattern.
+// means Remove all substrings of the expansion matching the pattern.
+
+Ex.
+---
+[claeyje@banta doc]# str='test1@test2'
+
+[claeyje@banta doc]# echo "${str%@*}"
+test1
+
+[claeyje@banta doc]# echo "${str#*@}"
+test2
+
