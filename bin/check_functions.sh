@@ -357,15 +357,22 @@ separator 80 -
 }
 
 function check_satellite_left_over_entries ()
-{
+{ 
 cd /home/claeyje/log/delete_host_from_satellite
+LEFTOVERLIST=leftover.list
 # Multiple hosts in files
-HLMULTI=`grep filter *multiple* | sort -u |awk -F= '{print $NF}' |sed 's/|/ /g'| xargs` && echo $HLMULTI && wc -w  <<< $HLMULTI
+HLMULTI=`grep filter *multiple* | sort -u |awk -F= '{print $NF}' |sed 's/|/ /g'| xargs` # && echo $HLMULTI && wc -w  <<< $HLMULTI
 # Single hosts in files
-HLS=`ll | awk -F_ '/_satellite_/ {print $(NF-1)}' | grep -v multiple | xargs` && echo $HLS && wc -w <<< $HLS
-HL="$HLMULTI $HLS" && echo $HL && wc -w <<< $HL
+HLS=`ll | awk -F_ '/_satellite_/ {print $(NF-1)}' | grep -v multiple | xargs` # && echo $HLS && wc -w <<< $HLS
+HL="$HLMULTI $HLS" && echo "Deleted hosts list: $HL" && wc -w <<< $HL
 FILTER=`sed 's/ /|/g' <<< $HL` #  && echo $FILTER
 # s satellite-pk satellite_host_list $HL
-s satellite-pk satellite_host_list | grep -v virt-who | egrep "$FILTER"
-cd -
+s satellite-pk satellite_host_list | grep -v virt-who | egrep "$FILTER" | tee $LEFTOVERLIST
+if [ -s "$LEFTOVERLIST" ]; then        # file is not empty
+  HLLEFT=`cat $LEFTOVERLIST | awk -F, '{print $2}' | cut -d. -f1 | xargs` # && echo $HLLEFT
+  DEADVM=`fping $HLLEFT | grep -v alive | awk '{print $1}'` && echo $DEADVM
+# if the hosts are not reponding anymore, then cleanup satellite
+  [ -n "$DEADVM" ] && msg "Delete dead hosts" && s satellite-pk satellite_delete_host $DEADVM
+fi
+cd - > /dev/null
 }

@@ -22,7 +22,7 @@ CELLARGROUPS="staff aws-cellar-pmb aws-unix"
 # On one of the PROD LDAP servers (ldapa-pk or ldapb-pk), do :
 
 {
-export ldap_server=ldapa-pk
+export ldap_server=$LDAPSERVER
 export bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
 export first_name=$FIRST_NAME
 export last_name=$LAST_NAME

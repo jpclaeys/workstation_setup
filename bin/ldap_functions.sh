@@ -22,7 +22,7 @@ confirmexecution "Do you want to proceed with the password reset for $LOGIN ?" |
 
 # Reset the password to the login name
 {
-ldap_server=ldapa-pk
+ldap_server=$LDAPSERVER
 bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
 ldapmodify -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
 dn: uid=${LOGIN},ou=People,dc=opoce,dc=cec,dc=eu,dc=int

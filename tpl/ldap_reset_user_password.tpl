@@ -13,7 +13,7 @@ NEWPASSWD=`perl -e  'print crypt('${LOGIN}', '${LOGIN}')'` && echo $NEWPASSWD
 ldapsearchuserpasswd $LOGIN
 
 {
-ldap_server=ldapa-pk
+ldap_server=$LDAPSERVER
 bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
 ldapmodify -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
 dn: uid=${LOGIN},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
