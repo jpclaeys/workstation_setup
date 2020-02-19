@@ -1,10 +1,8 @@
 Modify the auto_home map for this user this way:
 --------------------------------------------------
-/home/claeyje/git/workstation_setup/tpl
-
 read -p "Enter the password for the LDAP administrator: " LDAPPWD
 LDAPPWD='0pocE123!!'
-export ldap_server=ldapa-tk
+export ldap_server=$LDAPSERVER
 export bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
 login=bortodi
 

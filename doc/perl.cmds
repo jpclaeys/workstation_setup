@@ -26,3 +26,6 @@ With perl we maintain two arrays to store the matching and nonmatching lines:
 
 perl -pe 'push @{/<mypattern>/ ?  \@A : \@B}, $_}{print @A, @B' -i  <myfile>
 
+How to generate an encrypted password using perl
+-------------------------------------------------
+echo -n {CRYPT} && perl -e 'print crypt ('$login','$login')' && echo
