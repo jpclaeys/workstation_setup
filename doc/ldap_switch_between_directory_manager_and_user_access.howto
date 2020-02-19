@@ -10,7 +10,7 @@ login with your personal credentials (i.e. login with user id)
 http://ldapb-pk
 ----------------
 
-login with the ldap admin account (directory manager)
+login with the ldap admin account (directory manager) in order to modify passwords
 
 login field: "CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
 password:    Cfr. keepassx
