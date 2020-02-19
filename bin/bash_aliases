@@ -26,7 +26,8 @@ alias l='ls -CF'                    #
 alias l1='ls -ac1'
 
 if [ "`uname -s`" == "Linux" ]; then
-  unalias diff 2>/dev/null
+#  unalias diff 2>/dev/null
+  alias diff='diff -y --suppress-common-lines'
   alias grep='grep 2>/dev/null'
   alias egrep='egrep 2>/dev/null'
   alias fgrep='fgrep 2>/dev/null'

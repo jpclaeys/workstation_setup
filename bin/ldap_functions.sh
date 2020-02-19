@@ -201,8 +201,14 @@ sr $LDAPSERVER slapcat -n2 -a uid=$1
 function ldapsearchuserpasswd ()
 {
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
-definemypasswd
-sr $LDAPSERVER slapcat -n2 -a uid=$1 | grep userPassword
+LOCALHOST=`uname -n | cut -d. -f1`
+if [ "$LOCALHOST" == "$LDAPSERVER" ]; then
+   check_root || return 1
+   slapcat -n2 -a uid=$1 | grep userPassword 2> /dev/null
+else
+   definemypasswd
+   sr $LDAPSERVER slapcat -n2 -a uid=$1 | grep userPassword 2> /dev/null
+fi
 }
 
 

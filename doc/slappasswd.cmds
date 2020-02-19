@@ -26,3 +26,10 @@ New password:
 Re-enter new password: 
 {CRYPT}pTma6.MERs7Kw
 
+s ldapa-pk slappasswd -h {SSHA} -s Opoce123
+[claeyje@banta doc]# s ldapa-pk slappasswd -h {SSHA} -s Opoce123
+{SSHA}jQFrO3F1+r73+Chck7SHNuOUiBzoJgZj
+
+[claeyje@banta ~]# s ldapa-tk  slappasswd -h {CRYPT} -s Opoce123
+{CRYPT}lqMSG3GWu5J3w
+

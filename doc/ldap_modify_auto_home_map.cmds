@@ -1,0 +1,32 @@
+Modify the auto_home map for this user this way:
+--------------------------------------------------
+/home/claeyje/git/workstation_setup/tpl
+
+read -p "Enter the password for the LDAP administrator: " LDAPPWD
+LDAPPWD='0pocE123!!'
+export ldap_server=ldapa-tk
+export bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
+login=bortodi
+
+
+[root@ldapb-tk ldap]# slapcat -o ldif-wrap=no -n2 -a automountKey=bortodi| head -3
+dn: automountKey=bortodi,automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+automountInformation: -soft opsvc230:/applications/homes/&
+automountKey: bortodi
+
+
+{
+NFSSERVER='nfs-infra.isilon.opoce.cec.eu.int'
+ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
+dn: automountKey=${login},automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+replace: automountInformation
+automountInformation: -soft ${NFSSERVER}:/home/&
+EOT
+}
+
+[root@ldapb-tk ldap]# slapcat -o ldif-wrap=no -n2 -a automountKey=bortodi | egrep 'automount[KI]'
+dn: automountKey=bortodi,automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+automountKey: bortodi
+automountInformation: -soft nfs-infra.isilon.opoce.cec.eu.int:/home/&
+
