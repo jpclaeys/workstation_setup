@@ -14,7 +14,7 @@ FIRST_NAME=<firstname>
 LAST_NAME=<lastname>
 USERLOGIN=<login>
 USERID=
-GIDNUMBER=47110
+GIDNUMBER=47110  # opunix
 
 1.2.2 Create the LDAP definitions
 ----------------------------------
@@ -120,6 +120,7 @@ $SOLARISATTRKEYVALUE
 EOT
 }
 
+# Obsolete: already done durin user creation
 # {
 # if [[ $dba_member == yes ]]; then
 # ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
@@ -131,6 +132,7 @@ EOT
 # fi
 # }
 
+# Groups for all users
 {
 for group in staff opunix op-unix aws-unix
 do
@@ -143,6 +145,7 @@ EOT
 done
 }
 
+# Additional groups for dba's
 {
 if [[ $dba_member == yes ]]; then
 for group in rootdba admindba aws-dba op-dba; do
@@ -156,6 +159,7 @@ done
 fi
 }
 
+# Additional groups for INT TEST team
 {
 if [[ $int_test_member == yes ]]; then
 for group in int_test aws-t-int op-t-int; do
@@ -170,6 +174,7 @@ fi
 }
 
 
+# Additional groups for INT PROD team
 {
 if [[ $int_prod_member == yes ]]; then
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
@@ -181,6 +186,8 @@ EOT
 fi
 }
 
+
+# Additional groups for SYSTEM team
 {
 if [[ $system_team_member == yes ]]; then
 for group in opsys_ux adminux aws-sysadm op-sysadm
@@ -209,6 +216,7 @@ EOT
 fi
 }
 
+# Additional group for wiki
 {
 if [[ $wiki_user == yes ]]; then
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
@@ -220,8 +228,7 @@ EOT
 fi
 }
 
-#  Add the auto_home map for this user this way:
-
+#  Add the auto_home map 
 {
 NFSSERVER='nfs-infra.isilon.opoce.cec.eu.int'
  
@@ -234,7 +241,7 @@ objectClass: top
 EOT
 }
 
-# Add the email alias for this user:
+# Add the email alias
 {
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
 dn: cn=${login},ou=aliases,dc=opoce,dc=cec,dc=eu,dc=int

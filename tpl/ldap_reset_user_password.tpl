@@ -6,10 +6,10 @@ read -p "Enter the password for the LDAP administrator: " LDAPPWD
 
 0pocE123!!
 
-LOGIN=<LOGIN>
+LOGIN=<login>
 NEWPASSWD=`perl -e  'print crypt('${LOGIN}', '${LOGIN}')'` && echo $NEWPASSWD
 
-# check new password
+# check current password
 ldapsearchuserpasswd $LOGIN
 
 {
