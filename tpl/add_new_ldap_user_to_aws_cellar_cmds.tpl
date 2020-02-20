@@ -1,5 +1,5 @@
-Add new ldap cellar user cmds template
------------------------------------------
+Add new ldap aws-cellar user cmds template
+-------------------------------------------
 
 Ref: https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:nix:howto_manage_user_accounts&#adding_a_user_account
 
@@ -15,7 +15,7 @@ LAST_NAME=<lastname>
 USERLOGIN=<login>
 USERID=
 GIDNUMBER=10    # staff
-CELLARGROUPS="staff aws-cellar-pmb aws-unix"
+awscellargroups="staff aws-cellar-pmb aws-unix"
 
 1.2.2 Create the LDAP definitions
 ----------------------------------
@@ -69,7 +69,7 @@ EOT
 }
 
 {
-for group in $CELLARGROUPS
+for group in $awscellargroups
 do
 ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
 dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int

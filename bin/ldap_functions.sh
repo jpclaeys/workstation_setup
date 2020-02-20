@@ -1,5 +1,315 @@
 export LDAPSERVER=ldapa-pk
+# ------------------------------------------------------------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------------------------------------------------------------
+# Add new ldap user 
+# ------------------------------------------------------------------------------------------------------------------------------------
+# Ref: https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:nix:howto_manage_user_accounts&#adding_a_user_account
+
+function ldapadduser ()
+{
+[ $# -lt 4 ] && msg "Usage: $FUNCNAME: <first_name> <last_name> <login> <uid> [-dry] [-v] [gid=] [ldap_server=] [wiki=] [official=] [system=] [int_test=] [int_prod=] [dba=] [aws_cellar=]" && return 1
+
+# Set deafult values
+# -------------------
+gid=47110		# default value=opunix
+ldap_server=$LDAPSERVER
+bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
+official=no
+wiki_user=no		# grant access to the wiki for unix, dba & int prod ; not for INT TEST
+system_team_member=no
+int_prod_member=no
+int_test_member=no
+dba_member=no
+aws_cellar_member=no
+
+nfsserver='nfs-infra.isilon.opoce.cec.eu.int'
+systemgroups="opsys_ux adminux aws-sysadm op-sysadm"
+allgroups="staff opunix op-unix aws-unix"
+dbagroups="rootdba admindba aws-dba op-dba"
+inttestgroups="int_test aws-t-int op-t-int"
+awscellargroups="staff aws-cellar-pmb aws-unix"
+intprodgroup="root-int"
+
+# Read input parameters
+# ----------------------
+
+first_name="$1"
+last_name="$2"
+login=$3
+uid=$4
+
+gecos="${first_name} ${last_name}"
+grep -q gid= 		<<< $@ && gid=`awk -F"gid=" '{print $2}' <<< $@ | awk '{print $1}'`
+grep -q ldap_server= 	<<< $@ && ldap_server=`awk -F"ldap_server=" '{print $2}' <<< $@ | awk '{print $1}'`
+grep -q official=y 	<<< $@ && official=yes
+grep -q wiki=y 		<<< $@ && wiki_user=yes
+grep -q system=y 	<<< $@ && system_team_member=yes
+grep -q int_test=y 	<<< $@ && int_test_member=yes
+grep -q int_prod=y 	<<< $@ && int_prod_member=yes
+grep -q dba=y 		<<< $@ && dba_member=yes
+grep -q aws_cellar=y	<<< $@ && aws_cellar_member=yes
+grep -q '\-dry'		<<< $@ && dryrun="-n"  || dryrun= 	#; echo $dryrun
+grep -q '\-v'		<<< $@ && verbose="-v" || verbose= 	#; echo $verbose
+
+# The “official” variable is used to specify if this user is an OP official or not.
+# The “wiki_user” variable is used for add the user to the Wiki group.
+# The “system_team_member” variable is used for add the user to groups (opsys_ux, adminux, ldap-admin and sat-admin).
+# The “int_prod_member” variable is used for add the user to the root-int group.
+# The “int_test_member” variable is used for add the user to the int_test group.
+# The “dba_member” variable is used for add the user to the rootdba group.
+
+LDAPPWD='0pocE123!!'
+[ "$test" == "y" ] &&  dryrun="-n"  # force dry-run during test phase
+LDAPADDCMD='ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 '"$dryrun $verbose" # && echo $LDAPADDCMD
+
+# Check if uid already exists
+ldapsearch -x -h $ldap_server -b 'ou=people,dc=opoce,dc=cec,dc=eu,dc=int' -s sub "(uid=*)" uidNumber | grep -q $uid && errmsg "uid already exists: `id $uid | cut -d' ' -f1`, aborting" && return 1
+
+# Create “mailaddress” variable
+# --------------------------------
+PREFIX= && [[ $official == no ]] && PREFIX="ext."
+# remove spaces from the last_name if any
+lastnamemail=`echo ${last_name} | tr -d ' '`
+mailaddress=`echo "${first_name}.${lastnamemail}@${PREFIX}publications.europa.eu" | tr '[:upper:]' '[:lower:]'`
+
+# Check defined variables
+# ------------------------
+msgsep "Check defined variables"
+cat <<EOT
+first_name="$first_name"
+last_name="$last_name"
+login=$login
+uid=$uid
+gid=$gid
+gecos="$gecos"
+mailaddress="$mailaddress"
+ldap_server=$ldap_server
+official=$official
+wiki_user=$wiki_user
+system_team_member=$system_team_member
+int_prod_member=$int_prod_member
+int_test_member=$int_test_member
+dba_member=$dba_member
+aws_cellar_member=$aws_cellar_member
+nfsserver=$nfsserver
+dryrun=$dryrun
+verbose=$verbose
+ldap_cmd=$LDAPADDCMD
+EOT
+
+confirmexecution "Do you want to proceed with the user creation ?" || return 1
+
+# Then start user creation:
+msgsep "start user creation"
+msgsep Define the SolarisAttrKeyValue
+# ---------------------------------------
+# Define the "SolarisAttrKeyValue"
+# ---------------------------------------
+{
+# system team member
+if [[ $system_team_member == yes ]]; then
+  solarisattrkeyvalue="SolarisAttrKeyValue: type=normal;roles=opsys_ux"
+# DBA team member
+elif [[ $dba_member == yes ]]; then
+  solarisattrkeyvalue="SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle"
+# INT PROD team member
+elif [[ $int_prod_member == yes ]]; then
+  solarisattrkeyvalue="SolarisAttrKeyValue: type=normal;roles=root-int"
+else
+  solarisattrkeyvalue=
+fi
+echo "solarisattrkeyvalue=$solarisattrkeyvalue"
+}
+
+# Create the user
+# ---------------------------------------
+msgsep Create the user
+{
+$LDAPADDCMD <<EOT
+dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+uid: ${login}
+loginShell: /bin/bash
+uidNumber: ${uid}
+gidNumber: ${gid}
+homeDirectory: /home/${login}
+shadowLastChange: 0
+shadowMax: -1
+objectClass: account
+objectClass: posixaccount
+objectClass: shadowaccount
+objectClass: SolarisUserAttr
+objectClass: top
+gecos: ${gecos}
+cn: ${gecos}
+userPassword: {CRYPT}`perl -e  'print crypt('${login}', '${login}')' `
+$solarisattrkeyvalue
+EOT
+}
+
+# Groups for all users
+# ---------------------------------------
+msgsep Add user to common groups
+{
+for group in $allgroups; do
+$LDAPADDCMD <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: memberUid
+memberUid: $login
+EOT
+done
+}
+
+# Additional groups for dba's
+# ---------------------------------------
+{
+if [[ $dba_member == yes ]]; then
+msgsep Add user to DBA groups
+for group in $dbagroups; do
+$LDAPADDCMD <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: memberUid
+memberUid: $login
+EOT
+done
+fi
+}
+
+# Additional groups for INT TEST team
+# ---------------------------------------
+{
+if [[ $int_test_member == yes ]]; then
+msgsep Add user to INT TEST groups
+for group in $inttestgroups; do
+$LDAPADDCMD <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: memberUid
+memberUid: $login
+EOT
+done
+fi
+}
+
+
+# Additional groups for INT PROD team
+# ---------------------------------------
+{
+if [[ $int_prod_member == yes ]]; then
+msgsep Add user to INT PROD group
+$LDAPADDCMD <<EOT
+dn: cn=$intprodgroup,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: memberUid
+memberUid: $login
+EOT
+fi
+}
+
+# Additional groups for SYSTEM team
+# ---------------------------------------
+{
+if [[ $system_team_member == yes ]]; then
+msgsep Add user to SYSTEM groups
+for group in $systemgroups; do
+$LDAPADDCMD <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: memberUid
+memberUid: $login
+EOT
+done
+
+$LDAPADDCMD <<EOT
+dn: cn=ldap-admins,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: member
+member: uid=$login,ou=people,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+
+$LDAPADDCMD <<EOT
+dn: cn=sat-admin,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: uniqueMember
+uniqueMember: uid=$login,ou=people,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+fi
+}
+
+# Additional groups for aws_cellar users
+# ---------------------------------------
+{
+if [[ $aws_cellar_member == yes ]]; then
+msgsep Add user to AWS_CELLAR groups
+for group in $awscellargroups
+do
+$LDAPADDCMD <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: memberUid
+memberUid: $login
+EOT
+done
+fi
+}
+
+# Additional group for wiki
+# ---------------------------------------
+{
+if [[ $wiki_user == yes ]]; then
+msgsep Add user to the wiki group
+$LDAPADDCMD <<EOT
+dn: cn=user,ou=wiki,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+add: memberUid
+memberUid: $login
+EOT
+fi
+}
+
+#  Add the auto_home map
+# ---------------------------------------
+{
+msgsep Add the auto_home map for the user
+$LDAPADDCMD <<EOT
+dn: automountKey=${login},automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+automountInformation: -soft ${nfsserver}:/home/&
+automountKey: ${login}
+objectClass: automount
+objectClass: top
+EOT
+}
+
+# Add the email alias
+# ---------------------------------------
+{
+msgsep Add the email alias for the user
+$LDAPADDCMD <<EOT
+dn: cn=${login},ou=aliases,dc=opoce,dc=cec,dc=eu,dc=int
+objectClass: mailgroup
+objectClass: nismailalias
+objectClass: top
+mail:  ${login}
+cn: ${login}
+mgrpRFC822MailMember: ${mailaddress}
+rfc822mailMember: ${mailaddress}
+EOT
+}
+
+
+msgsep "Goto $ldap_server and execute the following commands"
+cat<<EOT
+cd /net/$nfsserver/home
+mkdir ${login} && chown ${login}.${gid} ${login} && ls -ld ${login}
+EOT
+
+}
+
+
+# ------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------
 function ldapresetpasswd ()
 {
 [ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid> [<new passwd>]" && return 1
@@ -31,6 +341,12 @@ replace: userPassword
 userPassword: {CRYPT}$NEWPASSWD
 EOT
 }
+
+# ------------------------------------------------------------------------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------
 
 # check new password
 ldapsearchuserpasswd $LOGIN

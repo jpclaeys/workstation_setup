@@ -58,9 +58,9 @@ separator()
 function title ()
 {
   local width=80
-  separator $width
+  separator $width -
   prline $width "" c $@
-  separator $width
+  separator $width -
 }
 
 function titlegreen ()
@@ -77,8 +77,9 @@ function msg ()
 
 function msgsep ()
 {
-separator 132
+separator 80 -
 msg "$@"
+separator 80 -
 }
 
 function errmsg ()

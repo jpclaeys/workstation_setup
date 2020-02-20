@@ -120,7 +120,7 @@ $SOLARISATTRKEYVALUE
 EOT
 }
 
-# Obsolete: already done durin user creation
+# Obsolete: already done during user creation
 # {
 # if [[ $dba_member == yes ]]; then
 # ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
