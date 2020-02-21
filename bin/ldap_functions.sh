@@ -534,4 +534,20 @@ else
 fi
 }
 
+function ldapsearchallgroups ()
+{
+ldapsearchexists || return 1
+ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' cn | awk '/^cn/ {print $2}' | sort -u
+}
 
+function ldapsearchgroupmembers ()
+{
+ldapsearchexists || return 1
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <group_name>" && return 1
+ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 | awk '/memberUid:/ {print $2}' | sort | xargs
+}
+
+function ldapsearch_aws-cellar-pmb_members ()
+{
+ldapsearchgroupmembers aws-cellar-pmb
+}
