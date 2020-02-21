@@ -36,7 +36,7 @@ cd ./production/modules/applications/files/RedHat/applications/centreon/plugins/
 # Then goto the clients
 ------------------------
 Manually remove the files
-run puppet agent; he files will not come back.
+run puppet agent; the files will not come back.
 ------------------------------------------------------------------------------------------------------------------------------------
 [claeyje@banta Linux]# sr infra3-tk
 password for claeyje: 

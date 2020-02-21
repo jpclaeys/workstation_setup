@@ -188,12 +188,12 @@ Component: SERVERS
 {
 cat <<EOT
 # Title:
-OP - REMOVE MONITORING: $HL
+OP - REMOVE MONITORING: <zone_name>
 
 # Description:
 
 Application Name IS :
-Servers list: $HL
+Servers list: <zone_name>
 Action: Stop monitoring
 EOT
 }
@@ -453,6 +453,7 @@ Ticket:
 3.23 change status in CMDB to archived
 
 {
+who=`who am i | awk '{print $1}'`
 echo "The zone <zone_name> has been decommissioned; it can be removed from the CMDB."
 } | mailx -s "Update the CMDB: <zone_name>" -r $who -c $who OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
 

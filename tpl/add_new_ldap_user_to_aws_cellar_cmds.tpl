@@ -18,7 +18,7 @@ GIDNUMBER=10    # staff
 ------------------------
 ===> Usage: ldapadduser: <first_name> <last_name> <login> <uid> [-dry] [-v] [-gid=] [-ldap_server=] [-wiki] [-official] [-system] [-int_test] [-int_prod] [-dba] [-aws_cellar] <===
 
-ldapadduser "$FIRST_NAME" "$LAST_NAME" $USERLOGIN $USERID $GIDNUMBER -aws_cellar -dry -v
+ldapadduser "$FIRST_NAME" "$LAST_NAME" $USERLOGIN $USERID -gid=$GIDNUMBER -aws_cellar -dry -v
 
 3. Check group membership of the new user
 ------------------------------------------

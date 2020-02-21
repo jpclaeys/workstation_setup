@@ -10,9 +10,11 @@ function ldapadduser ()
 {
 [ $# -lt 4 ] && msg "Usage: $FUNCNAME: <first_name> <last_name> <login> <uid> [-dry] [-v] [-gid=] [-ldap_server=] [-wiki] [-official] [-system] [-int_test] [-int_prod] [-dba] [-aws_cellar]" && return 1
 
-# Set deafult values
+# Set default values
 # -------------------
-gid=47110		# default value=opunix
+opunix=47110
+staff=10
+gid=$opunix		# default value=opunix
 ldap_server=$LDAPSERVER
 bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
 official=no
@@ -25,7 +27,7 @@ aws_cellar_member=no
 
 nfsserver='nfs-infra.isilon.opoce.cec.eu.int'
 systemgroups="opsys_ux adminux aws-sysadm op-sysadm"
-allgroups="staff opunix op-unix aws-unix"
+opunixgroups="staff opunix op-unix aws-unix"
 dbagroups="rootdba admindba aws-dba op-dba"
 inttestgroups="int_test aws-t-int op-t-int"
 awscellargroups="staff aws-cellar-pmb aws-unix"
@@ -41,7 +43,6 @@ uid=$4
 
 gecos="${first_name} ${last_name}"
 
-grep -q '\-gid='        <<< $@ && gid=`awk -F"-gid=" '{print $2}' <<< $@ | awk '{print $1}'`
 grep -q '\-ldap_server' <<< $@ && ldap_server=`awk -F"-ldap_server=" '{print $2}' <<< $@ | awk '{print $1}'`
 grep -q '\-official'    <<< $@ && official=yes
 grep -q '\-wiki'        <<< $@ && wiki_user=yes
@@ -49,7 +50,8 @@ grep -q '\-system'      <<< $@ && system_team_member=yes
 grep -q '\-int_test'    <<< $@ && int_test_member=yes
 grep -q '\-int_prod'    <<< $@ && int_prod_member=yes
 grep -q '\-dba'         <<< $@ && dba_member=yes
-grep -q '\-aws_cellar'  <<< $@ && aws_cellar_member=yes
+grep -q '\-aws_cellar'  <<< $@ && aws_cellar_member=yes && gid=$staff
+grep -q '\-gid='        <<< $@ && gid=`awk -F"-gid=" '{print $2}' <<< $@ | awk '{print $1}'`
 grep -q '\-dry'         <<< $@ && dryrun="-n"  || dryrun=       #; echo $dryrun
 grep -q '\-v'           <<< $@ && verbose="-v" || verbose=      #; echo $verbose
 
@@ -103,24 +105,26 @@ confirmexecution "Do you want to proceed with the user creation ?" || return 1
 
 # Then start user creation:
 msgsep "start user creation"
-msgsep Define the SolarisAttrKeyValue
 # ---------------------------------------
 # Define the "SolarisAttrKeyValue"
 # ---------------------------------------
 {
 # system team member
 if [[ $system_team_member == yes ]]; then
+  msgsep Define the SolarisAttrKeyValue for system users
   solarisattrkeyvalue="SolarisAttrKeyValue: type=normal;roles=opsys_ux"
 # DBA team member
 elif [[ $dba_member == yes ]]; then
+  msgsep Define the SolarisAttrKeyValue for dba users
   solarisattrkeyvalue="SolarisAttrKeyValue: type=normal;roles=orastor,rootdba,oracle"
 # INT PROD team member
 elif [[ $int_prod_member == yes ]]; then
+  msgsep Define the SolarisAttrKeyValue for int prod users
   solarisattrkeyvalue="SolarisAttrKeyValue: type=normal;roles=root-int"
 else
   solarisattrkeyvalue=
 fi
-echo "solarisattrkeyvalue=$solarisattrkeyvalue"
+[[ -n $solarisattrkeyvalue ]] && echo "solarisattrkeyvalue=$solarisattrkeyvalue" && echo
 }
 
 # Create the user
@@ -148,11 +152,12 @@ $solarisattrkeyvalue
 EOT
 }
 
-# Groups for all users
+# Groups for opunix users
 # ---------------------------------------
-msgsep Add user to common groups
 {
-for group in $allgroups; do
+if [[ $gid -eq $opunix ]]; then
+msgsep Add user to opunix groups
+for group in $opunixgroups; do
 $LDAPADDCMD <<EOT
 dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
@@ -160,6 +165,7 @@ add: memberUid
 memberUid: $login
 EOT
 done
+fi
 }
 
 # Additional groups for dba's

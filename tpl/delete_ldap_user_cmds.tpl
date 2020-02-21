@@ -3,8 +3,8 @@ Delete ldap user cmds template
 
 # Set the LDAP admin password so it is not plaintext and not in .bash_history 
 read -p "Enter the password for the LDAP administrator: " LDAPPWD
-
-export USERLOGIN=<login>
+0pocE123!!
+USERLOGIN=<login>
 
 getent passwd <login>
 id <login>
