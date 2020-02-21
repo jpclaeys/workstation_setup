@@ -16,7 +16,7 @@ GIDNUMBER=47110  # opunix
 
 2. Add the user to ldap
 ------------------------
-===> Usage: ldapadduser: <first_name> <last_name> <login> <uid> [-dry] [-v] [gid=] [ldap_server=] [wiki=] [official=] [system=] [int_test=] [int_prod=] [dba=] [aws_cellar=] <===
+===> Usage: ldapadduser: <first_name> <last_name> <login> <uid> [-dry] [-v] [-gid=] [-ldap_server=] [-wiki] [-official] [-system] [-int_test] [-int_prod] [-dba] [-aws_cellar] <===
 
 ldapadduser "$FIRST_NAME" "$LAST_NAME" $USERLOGIN $USERID -dry -v
 

@@ -8,7 +8,7 @@ export LDAPSERVER=ldapa-pk
 
 function ldapadduser ()
 {
-[ $# -lt 4 ] && msg "Usage: $FUNCNAME: <first_name> <last_name> <login> <uid> [-dry] [-v] [gid=] [ldap_server=] [wiki=] [official=] [system=] [int_test=] [int_prod=] [dba=] [aws_cellar=]" && return 1
+[ $# -lt 4 ] && msg "Usage: $FUNCNAME: <first_name> <last_name> <login> <uid> [-dry] [-v] [-gid=] [-ldap_server=] [-wiki] [-official] [-system] [-int_test] [-int_prod] [-dba] [-aws_cellar]" && return 1
 
 # Set deafult values
 # -------------------
@@ -40,17 +40,18 @@ login=$3
 uid=$4
 
 gecos="${first_name} ${last_name}"
-grep -q gid= 		<<< $@ && gid=`awk -F"gid=" '{print $2}' <<< $@ | awk '{print $1}'`
-grep -q ldap_server= 	<<< $@ && ldap_server=`awk -F"ldap_server=" '{print $2}' <<< $@ | awk '{print $1}'`
-grep -q official=y 	<<< $@ && official=yes
-grep -q wiki=y 		<<< $@ && wiki_user=yes
-grep -q system=y 	<<< $@ && system_team_member=yes
-grep -q int_test=y 	<<< $@ && int_test_member=yes
-grep -q int_prod=y 	<<< $@ && int_prod_member=yes
-grep -q dba=y 		<<< $@ && dba_member=yes
-grep -q aws_cellar=y	<<< $@ && aws_cellar_member=yes
-grep -q '\-dry'		<<< $@ && dryrun="-n"  || dryrun= 	#; echo $dryrun
-grep -q '\-v'		<<< $@ && verbose="-v" || verbose= 	#; echo $verbose
+
+grep -q '\-gid='        <<< $@ && gid=`awk -F"-gid=" '{print $2}' <<< $@ | awk '{print $1}'`
+grep -q '\-ldap_server' <<< $@ && ldap_server=`awk -F"-ldap_server=" '{print $2}' <<< $@ | awk '{print $1}'`
+grep -q '\-official'    <<< $@ && official=yes
+grep -q '\-wiki'        <<< $@ && wiki_user=yes
+grep -q '\-system'      <<< $@ && system_team_member=yes
+grep -q '\-int_test'    <<< $@ && int_test_member=yes
+grep -q '\-int_prod'    <<< $@ && int_prod_member=yes
+grep -q '\-dba'         <<< $@ && dba_member=yes
+grep -q '\-aws_cellar'  <<< $@ && aws_cellar_member=yes
+grep -q '\-dry'         <<< $@ && dryrun="-n"  || dryrun=       #; echo $dryrun
+grep -q '\-v'           <<< $@ && verbose="-v" || verbose=      #; echo $verbose
 
 # The “official” variable is used to specify if this user is an OP official or not.
 # The “wiki_user” variable is used for add the user to the Wiki group.
