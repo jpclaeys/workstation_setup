@@ -62,7 +62,7 @@ grep -q '\-v'           <<< $@ && verbose="-v" || verbose=      #; echo $verbose
 # The “int_test_member” variable is used for add the user to the int_test group.
 # The “dba_member” variable is used for add the user to the rootdba group.
 
-LDAPPWD='0pocE123!!'
+export LDAPPWD='0pocE123!!'
 [ "$test" == "y" ] &&  dryrun="-n"  # force dry-run during test phase
 LDAPADDCMD='ldapadd -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 '"$dryrun $verbose" # && echo $LDAPADDCMD
 
@@ -131,7 +131,7 @@ fi
 # ---------------------------------------
 msgsep Create the user
 {
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
 uid: ${login}
 loginShell: /bin/bash
@@ -158,7 +158,7 @@ EOT
 if [[ $gid -eq $opunix ]]; then
 msgsep Add user to opunix groups
 for group in $opunixgroups; do
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
@@ -174,7 +174,7 @@ fi
 if [[ $dba_member == yes ]]; then
 msgsep Add user to DBA groups
 for group in $dbagroups; do
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
@@ -190,7 +190,7 @@ fi
 if [[ $int_test_member == yes ]]; then
 msgsep Add user to INT TEST groups
 for group in $inttestgroups; do
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
@@ -206,7 +206,7 @@ fi
 {
 if [[ $int_prod_member == yes ]]; then
 msgsep Add user to INT PROD group
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=$intprodgroup,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
@@ -221,7 +221,7 @@ fi
 if [[ $system_team_member == yes ]]; then
 msgsep Add user to SYSTEM groups
 for group in $systemgroups; do
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
@@ -229,14 +229,14 @@ memberUid: $login
 EOT
 done
 
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=ldap-admins,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: member
 member: uid=$login,ou=people,dc=opoce,dc=cec,dc=eu,dc=int
 EOT
 
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=sat-admin,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: uniqueMember
@@ -252,7 +252,7 @@ if [[ $aws_cellar_member == yes ]]; then
 msgsep Add user to AWS_CELLAR groups
 for group in $awscellargroups
 do
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
@@ -267,7 +267,7 @@ fi
 {
 if [[ $wiki_user == yes ]]; then
 msgsep Add user to the wiki group
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=user,ou=wiki,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: memberUid
@@ -280,7 +280,7 @@ fi
 # ---------------------------------------
 {
 msgsep Add the auto_home map for the user
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: automountKey=${login},automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
 automountInformation: -soft ${nfsserver}:/home/&
 automountKey: ${login}
@@ -293,7 +293,7 @@ EOT
 # ---------------------------------------
 {
 msgsep Add the email alias for the user
-$LDAPADDCMD <<EOT
+eval "$LDAPADDCMD" <<EOT
 dn: cn=${login},ou=aliases,dc=opoce,dc=cec,dc=eu,dc=int
 objectClass: mailgroup
 objectClass: nismailalias
@@ -304,7 +304,6 @@ mgrpRFC822MailMember: ${mailaddress}
 rfc822mailMember: ${mailaddress}
 EOT
 }
-
 
 msgsep "Goto $ldap_server and execute the following commands"
 cat<<EOT

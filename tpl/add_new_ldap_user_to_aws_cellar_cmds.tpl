@@ -6,12 +6,12 @@ Ref: https://intragate.ec.europa.eu/publications/opitwiki/doku.php?id=op:nix:how
 1. Define variables
 --------------------
 # Get the first available uid
-get_first_free_uid 30200 | grep -i First
+get_first_free_uid 30250 | grep -i First
 
 FIRST_NAME=<firstname>
 LAST_NAME=<lastname>
 USERLOGIN=<login>
-USERID=
+USERID=`get_first_free_uid 30250 | awk '/First/ {print $NF}'` && echo $USERID
 GIDNUMBER=10    # staff
 
 2. Add the user to ldap

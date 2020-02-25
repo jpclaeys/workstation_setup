@@ -11,7 +11,7 @@ get_first_free_uid 30250 | grep -i First
 FIRST_NAME=<firstname>
 LAST_NAME=<lastname>
 USERLOGIN=<login>
-USERID=
+USERID=`get_first_free_uid 30250 | awk '/First/ {print $NF}'` && echo $USERID
 GIDNUMBER=47110  # opunix
 
 2. Add the user to ldap
