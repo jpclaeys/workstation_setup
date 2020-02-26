@@ -1,4 +1,5 @@
 export LDAPSERVER=ldapa-pk
+
 # ------------------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------------------
@@ -32,6 +33,7 @@ dbagroups="rootdba admindba aws-dba op-dba"
 inttestgroups="int_test aws-t-int op-t-int"
 awscellargroups="staff aws-cellar-pmb aws-unix"
 intprodgroup="root-int"
+satgroups="sat-admin op-satellite"
 
 # Read input parameters
 # ----------------------
@@ -229,6 +231,7 @@ memberUid: $login
 EOT
 done
 
+msgsep Add user to ldap-admins group
 eval "$LDAPADDCMD" <<EOT
 dn: cn=ldap-admins,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
@@ -236,12 +239,15 @@ add: member
 member: uid=$login,ou=people,dc=opoce,dc=cec,dc=eu,dc=int
 EOT
 
+msgsep Add user to satellite groups: $satgroups
+for group in $satgroups; do
 eval "$LDAPADDCMD" <<EOT
-dn: cn=sat-admin,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 add: uniqueMember
 uniqueMember: uid=$login,ou=people,dc=opoce,dc=cec,dc=eu,dc=int
 EOT
+done
 fi
 }
 
@@ -383,7 +389,7 @@ function ldapsearchemail ()
 {
 [ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid>" && return 1
 ldapsearchexists || return 1
-ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 rfc822MailMember | grep rfc822MailMember | awk '{print $2}'
+ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=Aliases,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 rfc822MailMember | grep ^rfc822MailMember | awk '{print $2}'
 }
 
 function ldapsearchuser ()
@@ -441,13 +447,6 @@ function ldapsearchalluidNumbers ()
 {
 ldapsearchexists || return 1
 ldapsearch -x -h $LDAPSERVER -b 'ou=people,dc=opoce,dc=cec,dc=eu,dc=int' -s sub "(uid=*)" uidNumber | awk '/uidNumber/ {print $NF}' | sort
-}
-
-function ldapsearchautomount ()
-{
-ldapsearchexists || return 1
-[ $# -eq 0 ] && msg "Usage: $FUNCNAME <uid>" && return 1
-ldapsearch -x -o ldif-wrap=no -h $LDAPSERVER -b 'dc=opoce,dc=cec,dc=eu,dc=int' -s sub "(&(objectclass=automount)(automountkey=$1))"
 }
 
 function ldapsearchallentries ()
@@ -543,10 +542,26 @@ function ldapsearchgroupmembers ()
 {
 ldapsearchexists || return 1
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <group_name>" && return 1
-ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 | awk '/memberUid:/ {print $2}' | sort | xargs
+#ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 | awk '/memberUid:/ {print $2}' | sort | xargs
+ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=group,dc=opoce,dc=cec,dc=eu,dc=int' cn=$1 | grep -i member | awk '{print $2}' | sort 
 }
 
 function ldapsearch_aws-cellar-pmb_members ()
 {
 ldapsearchgroupmembers aws-cellar-pmb
 }
+
+function ldapsearchautomount ()
+{
+ldapsearchexists || return 1
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <uid>" && return 1
+ldapsearch -x -o ldif-wrap=no -h $LDAPSERVER -b 'dc=opoce,dc=cec,dc=eu,dc=int' -s sub "(&(objectclass=automount)(automountkey=$1))"  | grep auto | egrep -v objectClass
+}
+
+function ldapsearchautohome ()
+{
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
+ldapsearchexists || return 1
+ldapsearch -x 2> /dev/null -h $LDAPSERVER -o ldif-wrap=no -b 'automountKey='$LOGIN',automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int' | grep auto | egrep -v objectClass
+}
+

@@ -365,7 +365,8 @@ HLMULTI=`grep filter *multiple* | sort -u |awk -F= '{print $NF}' |sed 's/|/ /g'|
 # Single hosts in files
 HLS=`ll | awk -F_ '/_satellite_/ {print $(NF-1)}' | grep -v multiple | xargs` # && echo $HLS && wc -w <<< $HLS
 HL="$HLMULTI $HLS" && echo "Deleted hosts list: $HL" && wc -w <<< $HL
-FILTER=`sed 's/ /|/g' <<< $HL` #  && echo $FILTER
+#FILTER=`sed 's/ /|/g' <<< $HL` #  && echo $FILTER
+FILTER=`sed 's/ /.op|/g;s/$/.op/' <<< $HL` #  && echo $FILTER
 # s satellite-pk satellite_host_list $HL
 s satellite-pk satellite_host_list | grep -v virt-who | egrep "$FILTER" | tee $LEFTOVERLIST
 if [ -s "$LEFTOVERLIST" ]; then        # file is not empty

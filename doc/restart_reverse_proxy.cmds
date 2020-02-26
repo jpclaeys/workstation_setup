@@ -1,0 +1,61 @@
+
+------------------------------------------------------------------------------------------------------------------------------------
+[root@opvmwsrvpxy httpd]# systemctl restart httpd
+[root@opvmwsrvpxy httpd]# systemctl status httpd
+● httpd.service - The Apache HTTP Server
+   Loaded: loaded (/usr/lib/systemd/system/httpd.service; enabled; vendor preset: disabled)
+   Active: active (running) since Mo 2020-02-24 14:31:44 CET; 4s ago
+     Docs: man:httpd(8)
+           man:apachectl(8)
+  Process: 33174 ExecStop=/bin/kill -WINCH ${MAINPID} (code=exited, status=0/SUCCESS)
+  Process: 67751 ExecReload=/usr/sbin/httpd $OPTIONS -k graceful (code=exited, status=0/SUCCESS)
+Main PID: 33180 (httpd)
+   Status: "Processing requests..."
+   CGroup: /system.slice/httpd.service
+           ├─33180 /usr/sbin/httpd -DFOREGROUND
+           ├─33181 /usr/sbin/httpd -DFOREGROUND
+           ├─33182 /usr/sbin/httpd -DFOREGROUND
+           ├─33183 /usr/sbin/httpd -DFOREGROUND
+           ├─33184 /usr/sbin/httpd -DFOREGROUND
+           └─33185 /usr/sbin/httpd -DFOREGROUND
+
+Feb 24 14:31:43 opvmwsrvpxy systemd[1]: Starting The Apache HTTP Server...
+Feb 24 14:31:44 opvmwsrvpxy systemd[1]: Started The Apache HTTP Server.
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+Server : opgtwint-pz (OP)
+
+We can’t connect to the server opgtwint-pz ? (from opdt and oppc)
+My colleagues have the same problem .. 
+
+
+I’ve flipped the network interface down/up and restarted nscd and ldap-client.
+Can you please confirm that it’s working again?
+
+The proxy server received an invalid response from an upstream server.
+The proxy server could not handle the request GET /opgtw001/cgi-bin/home.pl.(http://wood-interface/opgtw001/cgi-bin/home.pl)
+Reason: DNS lookup failure for: opgtw001.opoce.cec.eu.int
+
+Check name resolution:
+-----------------------
+
+I just double-checked. The name resolves fine on opgtwint-pz:
+
+root@opgtwint-pz:~# getent hosts opgtw001
+158.167.99.45   opgtw001
+root@opgtwint-pz:~# nslookup opgtw001
+Server:         10.135.43.10
+Address:        10.135.43.10#53
+
+Non-authoritative answer:
+Name:   opgtw001.opoce.cec.eu.int
+Address: 158.167.99.45
+
+
+Looks better. Now I’m getting a username/password prompt on GET /opgtw001/cgi-bin/home.pl (http://wood-interface/opgtw001/cgi-bin/home.pl)
+
+------------------------------------------------------------------------------------------------------------------------------------

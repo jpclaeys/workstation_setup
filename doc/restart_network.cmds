@@ -1,0 +1,53 @@
+Solaris
+--------
+.... DNS dropped out. network interface, ldap/client and name-service/cache restarted.
+
+
+[claeyje@perceval ~]# svcs
+STATE          STIME    FMRI
+<snip>
+online          7:12:17 svc:/network/ldap/client:default
+online          7:12:17 svc:/milestone/name-services:default
+online          7:12:17 svc:/network/sendmail-client:default
+online          7:12:17 svc:/network/nfs/mapid:default
+online          7:12:17 svc:/network/nfs/cbd:default
+online          7:12:18 svc:/network/smtp:sendmail
+online          7:12:27 svc:/system/name-service/cache:default
+online          7:13:39 svc:/system/console-login:default
+
+
+Commands:
+----------
+svcadm restart network
+svcadm restart system/name-service/cache
+svcadm restart network/ldap/client
+
+
+
+Linux:
+-------
+
+Redhat (RHEL) / CentOS / Fedora / Suse / OpenSuse Linux – Restart network interface in Linux
+To restart network interface, enter:
+# /etc/init.d/network restart
+
+To stop and start use the following option (do not run them over remote ssh session as you will get disconnected):
+# /etc/init.d/network stop
+# /etc/init.d/network start
+
+Fedora/RHEL/CentOS/Suse Linux with systemd, run:
+$ sudo systemctl restart network
+
+
+Restart Network Interface Using Command Lines in Linux (generic method)
+The procedure to to turn off eth0 interface is as follows. Run:
+# ifdown eth0
+
+To turn on eth0 interface run:
+# ifup eth0
+
+See ip address info using the ip command:
+# ip a show eth0
+
+
+

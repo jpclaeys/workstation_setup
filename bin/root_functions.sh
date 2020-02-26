@@ -35,7 +35,8 @@ local HL FILTER
 if [ ! -z $1 ]; then
 #  hammer --csv host list --search="name ~ $1"
   HL="$@"
-  FILTER=`echo $HL| sed 's/ /|/g'` && echo "Hosts filter:= $FILTER"
+#  FILTER=`echo $HL| sed 's/ /|/g'` && echo "Hosts filter:= $FILTER"
+  FILTER=`echo $HL| sed 's/ /.op|/g;s/$/.op/'` && echo "Hosts filter:= $FILTER"
   hammer --csv host list --search=$FILTER
 else
   hammer --csv host list
@@ -51,7 +52,8 @@ unset http_proxy
 local HL FILTER
 #satellite_host_list $@
 HL="$@"
-FILTER=`echo $HL| sed 's/ /|/g'` && echo "Hosts filter:= $FILTER"
+#FILTER=`echo $HL| sed 's/ /|/g'` && echo "Hosts filter:= $FILTER"
+FILTER=`echo $HL| sed 's/ /.op|/g;s/$/.op/'` && echo "Hosts filter:= $FILTER"
 hammer --csv host list --search=$FILTER
 cmds=("") && cmdindex=0
 for ID in $(hammer --csv host list --search=$FILTER | grep -vi '^ID' | awk -F, {'print $1'})
