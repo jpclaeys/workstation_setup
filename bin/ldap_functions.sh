@@ -239,7 +239,7 @@ add: member
 member: uid=$login,ou=people,dc=opoce,dc=cec,dc=eu,dc=int
 EOT
 
-msgsep Add user to satellite groups: $satgroups
+msgsep Add user to satellite groups
 for group in $satgroups; do
 eval "$LDAPADDCMD" <<EOT
 dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
@@ -311,6 +311,14 @@ rfc822mailMember: ${mailaddress}
 EOT
 }
 
+# 
+# Get current ldap entry values for the user
+# -------------------------------------------
+msgsep Get current ldap entry values for the user
+ldapsearchuserentries $login
+
+# Create the homedir
+# -------------------
 msgsep "Goto $ldap_server and execute the following commands"
 cat<<EOT
 cd /net/$nfsserver/home
@@ -319,13 +327,146 @@ EOT
 
 }
 
+# ------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------
+
+function ldapdeleteuser ()
+{
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid> [-ldap_server=] [-dry] [-v]" && return 1
+login=$1
+
+LDAPPWD='0pocE123!!'
+BINDDN="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
+GROUPDN=ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+
+grep -q '\-ldap_server' 2> /dev/null <<< $@ && LDAPSERVER=`awk -F"-ldap_server=" '{print $2}' <<< $@ | awk '{print $1}'`;
+grep -q '\-dry' 2> /dev/null <<< $@ && dryrun="-n" || dryrun=
+grep -q '\-v' 2> /dev/null <<< $@ && verbose="-v" || verbose=
+
+LDAPCMD='ldapmodify -w $LDAPPWD -D "$BINDDN" -h $LDAPSERVER -p 389 ' # && echo $LDAPADDCMD
+
+#------------------------------
+# Check the defined variables
+#------------------------------
+{
+echo "
+LDAPSERVER=$LDAPSERVER
+BINDDN=$BINDDN
+login=$login
+LDAPCMD=$LDAPCMD
+dryrun=$dryrun
+verbose=$verbose
+"
+}
+
+# Get current ldap entry values for the user
+# -------------------------------------------
+msgsep Get current ldap entry values for the user
+ldapsearchuserentries $login
+
+confirmexecution "Do you want to proceed with the user removal?" || return 1
+
+# Start removing the user
+# ------------------------
+
+# Remove the user
+# ----------------
+msgsep Remove the user
+eval "$LDAPCMD" $dryrun $verbose <<EOT
+dn: uid=${login},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: delete
+EOT
+
+# Remove the auto_home map
+# -------------------------
+msgsep Remove the auto_home map
+eval "$LDAPCMD" $dryrun $verbose <<EOT
+dn: automountKey=${login},automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: delete
+EOT
+
+# Remove the email alias
+# -----------------------
+msgsep Remove the email alias
+eval "$LDAPCMD" $dryrun $verbose <<EOT
+dn: cn=${login},ou=aliases,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: delete
+EOT
+
+# Remove the user from the groups (memberUid)
+# --------------------------------------------
+
+UG=`ldapsearchusergroups $login`
+msgsep Remove user from $UG
+{
+for group in $UG
+do
+eval "$LDAPCMD" $dryrun $verbose <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: memberUid
+memberUid: $login
+EOT
+done
+}
+
+# Remove the user from the ldap-admins groups (member)
+# ------------------------------------------------------
+group=ldap-admins
+if `ldapsearch -x -h $LDAPSERVER -b $GROUPDN cn=$group | grep -q $login`; then
+  msgsep Remove user from group $group
+  eval "$LDAPCMD" $dryrun $verbose <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: member
+member: uid=$login,ou=people,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+fi
+
+# Remove the user from the satellite groups (uniqueMember)
+# -----------------------------------------------------------
+satgroups="op-satellite sat-admin"
+for group in $satgroups; do
+if `ldapsearch -x -h $LDAPSERVER -b $GROUPDN cn=$group | grep -q $login`; then 
+  msgsep Remove user from group $group
+  eval "$LDAPCMD" $dryrun $verbose <<EOT
+dn: cn=$group,ou=group,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: uniqueMember
+uniqueMember: uid=$login,ou=people,dc=opoce,dc=cec,dc=eu,dc=int
+EOT
+fi
+done
+
+# Remove the user from the wiki
+# --------------------------------
+{
+ldapsearch -x -h $LDAPSERVER -b 'cn=user,ou=wiki,dc=opoce,dc=cec,dc=eu,dc=int' memberuid | grep -q $login
+if [ $? -eq 0 ]; then
+msgsep Remove user from group user,wiki
+eval "$LDAPCMD" $dryrun $verbose <<EOT
+dn: cn=user,ou=wiki,dc=opoce,dc=cec,dc=eu,dc=int
+changetype: modify
+delete: memberUid
+memberUid: $login
+EOT
+fi
+}
+
+# Get current ldap entry values for the user
+# -------------------------------------------
+[ -z "$dryrun" ] && ldapsearchuserentries $login
+
+}
+
 
 # ------------------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------------------------------
+
 function ldapresetpasswd ()
 {
+local LOGIN NEWPWDCLEAR NEWPASSWD
 [ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid> [<new passwd>]" && return 1
-
 id $1 >/dev/null 2>&1 ; [ $? -ne 0 ] && errmsg "no such user $1" && return 1
 LOGIN=$1
 NEWPWDCLEAR=$LOGIN
@@ -394,9 +535,11 @@ ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=Aliases,dc=opoce,dc=cec,dc=eu,d
 
 function ldapsearchuser ()
 {
+local FILTER
 [ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid>" && return 1
 ldapsearchexists || return 1
-ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=people,dc=opoce,dc=cec,dc=eu,dc=int' uid=$1 | grep -v ^version
+FILTER='^(dn|uid|loginShell|uidNumber|gidNumber|homeDirectory|gecos|cn|SolarisAttrKeyValue):'
+ldapsearch -x 2> /dev/null -h $LDAPSERVER -b 'ou=people,dc=opoce,dc=cec,dc=eu,dc=int' uid=$1 | egrep $FILTER
 }
 
 function ldapsearchgecos ()
@@ -551,17 +694,29 @@ function ldapsearch_aws-cellar-pmb_members ()
 ldapsearchgroupmembers aws-cellar-pmb
 }
 
-function ldapsearchautomount ()
+function ldapsearchautohome ()
 {
 ldapsearchexists || return 1
 [ $# -eq 0 ] && msg "Usage: $FUNCNAME <uid>" && return 1
-ldapsearch -x -o ldif-wrap=no -h $LDAPSERVER -b 'dc=opoce,dc=cec,dc=eu,dc=int' -s sub "(&(objectclass=automount)(automountkey=$1))"  | grep auto | egrep -v objectClass
+# ldapsearch -x 2> /dev/null -h $LDAPSERVER -o ldif-wrap=no -b 'automountKey='$1',automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int' | egrep "$1|automountInformation"
+FILTER='^(dn|automountInformation|automountKey):'
+ldapsearch -x -o ldif-wrap=no -h $LDAPSERVER -b 'dc=opoce,dc=cec,dc=eu,dc=int' -s sub "(&(objectclass=automount)(automountkey=$1))"  | egrep $FILTER
 }
 
-function ldapsearchautohome ()
+# Get current ldap entry values for the user
+# -------------------------------------------
+function ldapsearchuserentries ()
 {
-[ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
 ldapsearchexists || return 1
-ldapsearch -x 2> /dev/null -h $LDAPSERVER -o ldif-wrap=no -b 'automountKey='$LOGIN',automountMapName=auto_home,dc=opoce,dc=cec,dc=eu,dc=int' | grep auto | egrep -v objectClass
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
+msgsep Get current ldap entry values for the user: $1
+msgsep user info
+ldapsearchuser $1
+msgsep user groups list
+ldapsearchusergroupsfull $1
+msgsep user mail
+ldapsearchemail $1
+msgsep user autohome
+ldapsearchautohome $1
 }
 
