@@ -426,6 +426,7 @@ Instructions:
 export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/<zone_name>
 cat ${tmp_folder}/network_ip.txt
 for IP in `awk -F":" '/opsrv/ {print $1}' ${tmp_folder}/network_ip.txt | xargs`; do host $IP;done
+OPSRVL=`cat ${tmp_folder}/network_ip.txt | awk '/opsrv/ {print $NF}'| cut -d"." -f1 | xargs` && echo $OPSRVL
 
 For the opsrvxx entries, double-check that the opsrv IP @ still matches the configured IP's
 Go to https://resop/ip, and complete the template to delete all zone and opsrv entries
@@ -434,21 +435,24 @@ Enter the fqdn in the Record Name field, and click on the "IP" icon, the record 
  
   OR
 ------------------------------------------------------------------------------------------------------------------------------------
-# Goto Linux workstation with personal credentials 
 ------------------------------------------------------------------------------------------------------------------------------------
-HL="<zone_name> <opsrv...>" && echo $HL
+HL="<zone_name> $OPSRVL" && echo $HL
 
 # Hosts IP @
 printf "%-12s: " <zone_name> && dig <zone_name>.opoce.cec.eu.int +short
 
 # Create the excel request file (template: OPS-RFC-DNS-delete.xltx)
-generate_ip_delete_hostlist_records $HL | tee ~claeyje/snet/data.txt
+DATAFILE="/home/claeyje/snet/data.txt"
+generate_ip_delete_hostlist_records $HL | tee $DATAFILE && chown claeyje:opunix $DATAFILE && ll $DATAFILE
 
 # Create the ticket for SNET
 create_delete_ip_ticket_for_SNET $HL
 
+------------------------------------------------------------------------------------------------------------------------------------
 
+------------------------------------------------------------------------------------------------------------------------------------
 Ticket: 
+------------------------------------------------------------------------------------------------------------------------------------
 
 3.23 change status in CMDB to archived
 

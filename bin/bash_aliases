@@ -60,7 +60,7 @@ alias fn='f | wc -l'
 unset FALL
 LIST="check clu decom newlog sym powermt show powercut ldap"
 for I in $LIST; do alias f$I="f | grep -i ^$I"; FALL="$FALL f$I"; done
-LIST="dns lun status ticket zpool zone subnet hba asm uid size srdf mirrored eufo mer count primary secondary screen xpra running poolname pool kvm"
+LIST="dns lun status ticket zpool zone subnet hba asm uid size srdf mirrored eufo mer count primary secondary screen xpra running poolname pool kvm satellite"
 for I in $LIST; do alias f$I="f | grep -i $I";FALL="$FALL f$I"; done
 alias fhost='f | grep "host"| grep -v ^t'  && FALL="$FALL fhost"
 alias fthost="f | grep '^t.*host'"  && FALL="$FALL fthost"
