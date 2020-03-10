@@ -39,7 +39,7 @@ if [ ! -z $1 ]; then
   FILTER=`echo $HL| sed 's/ /.op|/g;s/$/.op/'` && echo "Hosts filter:= $FILTER"
   hammer --csv host list --search=$FILTER
 else
-  hammer --csv host list
+  hammer --csv host list | grep -v virt-who
 fi
 }
 

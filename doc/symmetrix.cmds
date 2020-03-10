@@ -50,6 +50,8 @@ symrdf -g <device_group> query
 powermt check
 powermt display
 powermt display dev=<device name> #  (ex. emcpower13a)
+powermt display dev=all | grep "device ID"
+powermt display dev=all | egrep -i "Pseudo|device ID" | xargs -n5 | sort -k2
 
 # Check if there are iopf issues on PowerPath
 powermt display dev=all|grep iopf

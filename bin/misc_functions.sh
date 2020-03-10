@@ -19,4 +19,7 @@ confirmexecution "Do you want to rename $FILENAME to $NEWFILENAME ?" || return 1
 mv "$FILENAME" "$NEWFILENAME"
 }
 
-
+function opdtlist ()
+{
+aws1 w | sed '1,2d' | awk '{print $1,$3}' | cut -d"." -f1| sort -u
+}
