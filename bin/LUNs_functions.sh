@@ -388,6 +388,11 @@ DEV=`cldev show $DID | awk -F":" '/Full/&&/'$(uname -n)'/ {print $NF;exit}'`
 done
 }
 
+function get_poolname_in_all_dids ()
+{
+get_poolname_in_did_list `cldev list`| grep -v rpool | sort -k3 | awk 'NF==5 {printf "%-5s%-6s%-25s%-10s%s\n", $1, $2, $3, $4, $5}'
+}
+
 function get_poolname_in_emc_dev ()
 {
 [ `whoami` != "root" ] && echo "Need to be root to read the disks" && return 1

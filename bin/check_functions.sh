@@ -48,6 +48,13 @@ msggreen $H && s $H zpool status | grep -B1 mirror-0 | egrep -v 'rpool|mirror|--
 done
 }
 
+function check_poolname_all_dids ()
+{
+for H in `clhosts`; do
+msggreen $H && sr $H get_poolname_in_all_dids
+done
+}
+
 function check_ldm ()
 {
 for H in `primary_domains`; do 
