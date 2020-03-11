@@ -97,19 +97,19 @@ function cleanup_unavailable_luns ()
 }
 
 
-function lun_wwn_and_id ()
+function zone_lun_wwn_and_id ()
 {
 local SymmetrixID DEVLIST
-[ $# -eq 0 ] && echo "Please enter the zone name " && return 1
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <zonename>" && return 1
 SymmetrixID=`symdg list| awk '/'$1'/ {print $4;exit}'` # && echo $SymmetrixID
 DEVLIST=`symdg show $1| awk '/\(STD\)/,/RDF Info/'|awk '/DEV/ {print $3}'| sed 's/^0//'` # && echo $DEVLIST
-for DEV in $DEVLIST; do WWN=`symdev show -sid $SymmetrixID $DEV | grep 'Device WWN' | awk '{print $4}'| sort -u` && echo "$WWN;$DEV";done
+for DEV in $DEVLIST; do WWN=`symdev show -sid $SymmetrixID $DEV | grep 'Device WWN' | awk '{print $4}'| sort -u` && echo "$DEV $WWN";done
 }
 
 function symdg_group_type ()
 {
 # Return RDF1 or RDF2
-[ $# -eq 0 ] && echo "Please enter the zone name " && return 1
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <zonename>" && return 1
 symdg list | awk '/'$1'/ {print $1,$2}'
 }
 
@@ -131,19 +131,19 @@ symrdf -g $1 query | head -5
 
 function symdg_dev_list ()
 {
-[ $# -eq 0 ] && echo "Please enter the zone name " && return 1
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <zonename>" && return 1
 DEVLIST=`symdg show $1| awk '/\(STD\)/,/RDF Info/'|awk '/DEV/ {print $3}'| sed 's/^0//'` && echo $DEVLIST
 }
 
 function powermt_lun_info ()
 {
-[ $# -eq 0 ] && echo "Please enter the LUN ID" && return 1
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <LUN ID>" && return 1
 powermt display dev=all | ggrep -A10 -B3 ID=$1$
 }
 
 function powermt_lun_pseudo ()
 {
-[ $# -eq 0 ] && echo "Please enter the LUN ID" && return 1
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <LUN ID>" && return 1
 powermt display dev=all | ggrep -B3 ID=$1$ | awk -F"=" '/Pseudo/ {print $NF}'
 }
 
@@ -413,4 +413,14 @@ echo -n "EMCDEV: $EMCDEV DISK: $DISK " && zdb -l /dev/rdsk/${DISK} | grep -i nam
 done
 }
 
+function get_all_emc_dev_and_wwns ()
+{
+check_root || return 1
+powermt display dev=all | egrep -i "Pseudo|device ID" | xargs -n5 | sort -k5 | while read a b c d e; do
+DID=`awk -F"=" '{print $NF}' <<<$e`
+#for SID in 0060 0069; do symdev show -sid $SID $DID | grep 'Device WWN' | awk '{print $4;exit}';done
+WWNs=`for SID in 0060 0069; do symdev show -sid $SID $DID | grep 'Device WWN' | awk '{print $4;exit}';done | xargs`
+printf "%s %-16s %s %s %s %s\n" $a $b $c $d $e "$WWNs"
+done
+}
 

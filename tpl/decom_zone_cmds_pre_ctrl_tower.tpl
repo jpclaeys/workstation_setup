@@ -29,21 +29,14 @@ Check box "Planned by current group"
 Remove a zone
 --------------
 1 Description
---------------
+
 This procedure describes how to remove a Solaris 10 container
-
 2 Prerequisites
-----------------
-2.1 If the zone rg is in the unmanaged state, then put it back in managed state
---------------------------------------------------------------------------------
-zoneadm -z <zone_name> list -v
-clrg status <zone_name>-rg
-clrg online -M -e -n <primary_host> <zone_name>-rg
 
-2.2 on primary source node, disable the applications
------------------------------------------------------
+# If backup is needed, stop the applications and open a ticket to SBA-OP to ask a last full backup of the zone
+2.1 on primary source node, disable the application
 
-# Check if the apps are already disabled
+# Check if apps are already disabled
 check_apps <zone_name>
 
 # get primary host name
@@ -57,11 +50,32 @@ for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applic
 for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} disable 2>/dev/null; done
 for application in `ls /applications | grep -v wood | sed "s/\///g"`; do /applications/${application}/users/system/init.d/${application} status 2>/dev/null; done | grep -v STATE
 
+2.2 Open an SMT ticket to SBA-OP to run a last full backup
+
+{
+os=`zlogin <zone_name> uname -r | sed -e 's/^5\./Solaris /'` && echo $os  
+echo "
+# Template: BACKUP REQUEST - Client archiving
+# Title: Client last full backup for <zone_name>
+
+# Description:
+
+OS: $os
+Client name: <zone_name>
+Action: run a last full backup
+Retention: 90 days
+
+Note: All applications have been stopped on the zone.
+"
+}
+
+Ticket: 
+
+
 3 Instructions
 3.1 variables, on both global zones
 
 # define the env variables on both globalzones
------------------------------------------------
 
 {
 export zone_name="<zone_name>"
@@ -89,8 +103,16 @@ global_zone_os=     $global_zone_os
 "
 }
 
+
+3.2 If the zone rg is in the unmanaged state, then put it back in managed state
+
+zoneadm -z <zone_name> list -v
+clrg status <zone_name>-rg
+clrg online -M -e -n <primary_host> <zone_name>-rg
+
+3.3 inform integration, db teams
+3.4 schedule dowtine in centreon
 3.5 get OS on primary node
----------------------------
 
 {
 os=`zlogin <zone_name> uname -r | sed -e 's/^5\./Solaris /'` && echo $os
@@ -98,11 +120,40 @@ clrs list -g <zone_name>-rg | xargs
 clrs show -p Zpools <zone_name>-zfs | grep Zpools
 ZP=`clrs show -p Zpools <zone_name>-zfs | awk -F":" '/Zpools/ {print $NF}'` && zpool status $ZP | grep -v errors | grep .
 cldg show <zone_name> 2>/dev/null | grep -i name | grep -i name | sed 's:/dev/did/rdsk/::g;s:s2::g'
-zone_lun_wwn_and_id <zone_name>
 }
 
+
+3.5.1 (3.18) Open an SMT ticket to SBA-OP to remove the backup client
+====================================================================================================================================
+# Open a ticket to delete the backup client
+--------------------------------------------
+
+{
+cat <<EOT
+#SMT Title: Remove backup client for bkp-<hostname>
+#SMT Template: BACKUP REQUEST - Delete client
+
+Client name: bkp-<hostname>
+OS: Linux
+Reason: server removed
+EOT
+}
+
+TO: SBA-OP
+------------------------------------------------------------------------------------------------------------------------------------
+Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
+
+====================================================================================================================================
+
+
+3.5.2 (3.20) Request DB team to remove the RMAN backup client, if any
+
+{
+echo "La zone <zone_name> est en cours de decommissionnement, les clients RMAN peuvent etre supprimes."
+} | mailx -s "remove rman client: <zone_name>" -r $who -c $who OP-INFRA-DB@publications.europa.eu
+
 3.6 get network information, on primary node
----------------------------------------------
 
 {
 global_zone_os=`uname -r`
@@ -124,13 +175,40 @@ cat ${tmp_folder}/network_ip.txt
 OPSRVL=`cmdb opsrv | grep <zone_name> | awk -F ";" '{print $1}' | sort -u | xargs` && echo "opsrv list:= $OPSRVL"
 }
 
+3.6.1 (3.22) remove client monitoring
+
+# Open ticket to remove the monitoring:
+----------------------------------------
+
+Incident type: REQUEST FOR SERVICE
+Configuration item: SERVER
+System: HARDWARE AND OPERATING SYSTEMS
+Component: SERVERS
+
+{
+cat <<EOT
+# Title:
+OP - REMOVE MONITORING: <zone_name>
+
+# Description:
+
+Application Name IS :
+Servers list: <zone_name>
+Action: Stop monitoring
+EOT
+}
+
+TO:  IT-PRODUCTION-OP
+------------------------------------------------------------------------------------------------------------------------------------
+Ticket:
+------------------------------------------------------------------------------------------------------------------------------------
+
+
 3.7 get storage information, on both nodes
--------------------------------------------
 
 /home/admin/bin/storage_info.pl -A > ${tmp_folder}/storage_info_`uname -n`.txt && ls -lh ${tmp_folder}/storage_info_`uname -n`.txt
 
 3.8 get zone storage information on primary node
--------------------------------------------------
 
 {
 zonecfg -z <zone_name> info dataset | grep name | awk '{print $2}' | awk -F'/' '{print $1}'| sort > ${tmp_folder}/zpools_list.txt
@@ -165,7 +243,6 @@ wc -l ${tmp_folder}/storage_info_<zone_name>.txt
 cat ${tmp_folder}/storage_info_<zone_name>.txt| awk '{print $1, $9, $(NF-3), $(NF-7), $3, $(NF-8), substr($8,0,10)}'| sed 's/_$//'| sort -u
 
 3.9 get zone storage information on secondary node
----------------------------------------------------
 
 {
 for id in `cat ${tmp_folder}/storage_hex_lun_id.txt | sort -u`
@@ -180,7 +257,6 @@ cat ${tmp_folder}/storage_info_<zone_name>.txt| awk '{print $1, $9, $(NF-3), $(N
 
 
 3.10 On primary node, get disks WWNs of the zone
--------------------------------------------------
 
 Note:
 Make sure that the the positional parameter in awk filter matches the  LUN id 
@@ -214,14 +290,20 @@ esac
 } | tee ${tmp_folder}/wwn.txt 
 
 ====================================================================================================================================
+====================================================================================================================================
+
+========================================================
+===> W A I T until the long term backup is finished <===
+========================================================
+
+====================================================================================================================================
+====================================================================================================================================
 
 3.11 on primary node, stop the zone
-------------------------------------
 
 zoneadm -z <zone_name> halt && zoneadm -z <zone_name> list -v
 
 3.12 on primary node, unconfigure the cluster resources for the zone
----------------------------------------------------------------------
 
 {
 echo "# <zone_name>-rg"
@@ -233,12 +315,10 @@ echo clrg delete <zone_name>-rg
 }
 
 3.13 on both nodes, unconfigure the zone
------------------------------------------
 
 zonecfg -z <zone_name> delete -F
 
 3.14 on primary node, destroy zpools
--------------------------------------
 
 {
 for pool in `cat ${tmp_folder}/zpools_list.txt`
@@ -288,11 +368,10 @@ Note:
 On old systems, one might have several DG's for one zone 
 cldg list | grep <zone_name>
 
+
 3.16 on both nodes, put the disks offline, one node after the other one (not at same time)
--------------------------------------------------------------------------------------------
 
 # Offline the LUNs
--------------------
 
 # Note: the script only generates the commands that we have to execute, after double checking.
 
@@ -307,17 +386,15 @@ do
 done
 } | sh | sort -u
 
-# If it looks ok, repeat the above command and pipe it to bash
-
 # Unconfigure the removed LUNs
--------------------------------
 
 cleanupluns
 
 3.17 remove puppet client configuration
-----------------------------------------
 Note: ONLY for Solaris 11 (Solaris 10 doesn't use puppet)
 For puppet, delete the host from the Foreman GUI : https://foreman/users/login
+
+3.19 Open an SMT ticket to SBA-OP to recover the storage
 
 ====================================================================================================================================
 # Create ticket for storage: retrieve storage
@@ -338,15 +415,12 @@ EOT
 
 TO: SBA-OP
 ------------------------------------------------------------------------------------------------------------------------------------
-
-------------------------------------------------------------------------------------------------------------------------------------
 Ticket:
 ------------------------------------------------------------------------------------------------------------------------------------
 
 ====================================================================================================================================
 
 3.21 network: free up the zone IP's
-------------------------------------
 
 Instructions:
 export tmp_folder=/net/nfs-infra.isilon/unix/systemstore/temp/<zone_name>
@@ -381,10 +455,10 @@ Ticket:
 ------------------------------------------------------------------------------------------------------------------------------------
 
 3.23 change status in CMDB to archived
----------------------------------------
 
 {
 who=`who am i | awk '{print $1}'`
 echo "The zone <zone_name> has been decommissioned; it can be removed from the CMDB."
 } | mailx -s "Update the CMDB: <zone_name>" -r $who -c $who OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
+
 
