@@ -466,11 +466,17 @@ fi
 function ldapresetpasswd ()
 {
 local LOGIN NEWPWDCLEAR NEWPASSWD
-[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid> [<new passwd>]" && return 1
+[ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid> [<new passwd>] [-ldap_server=] [-dry]" && return 1
 id $1 >/dev/null 2>&1 ; [ $? -ne 0 ] && errmsg "no such user $1" && return 1
 LOGIN=$1
 NEWPWDCLEAR=$LOGIN
 [ -n "$2" ] && NEWPWDCLEAR="$2"
+
+ldap_server=$LDAPSERVER
+grep -q '\-ldap_server' <<< $@ && ldap_server=`awk -F"-ldap_server=" '{print $2}' <<< $@ | awk '{print $1}'`
+grep -q '\-dry'         <<< $@ && dryrun="-n"  || dryrun=       #; echo $dryrun
+
+bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
 
 # Set the LDAP admin password
 LDAPPWD='0pocE123!!'
@@ -485,9 +491,7 @@ confirmexecution "Do you want to proceed with the password reset for $LOGIN ?" |
 
 # Reset the password to the login name
 {
-ldap_server=$LDAPSERVER
-bind_dn="CN=directory manager,DC=opoce,DC=cec,DC=eu,DC=int"
-ldapmodify -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 <<EOT
+ldapmodify -w $LDAPPWD -D "$bind_dn" -h $ldap_server -p 389 $dryrun <<EOT
 dn: uid=${LOGIN},ou=People,dc=opoce,dc=cec,dc=eu,dc=int
 changetype: modify
 replace: userPassword
@@ -495,10 +499,6 @@ userPassword: {CRYPT}$NEWPASSWD
 EOT
 }
 
-# ------------------------------------------------------------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------------------------------
 
 # check new password
@@ -657,21 +657,27 @@ ldapsearchnetgrouphost nfs_cellar_pz_public_ro $1
 
 function ldapsearchuserfull ()
 {
-[ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
+local ldap_server
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <user> [-ldap_server=]" && return 1
 definemypasswd
-sr $LDAPSERVER slapcat -n2 -a uid=$1
+ldap_server=$LDAPSERVER
+grep -q '\-ldap_server' <<< $@ && ldap_server=`awk -F"-ldap_server=" '{print $2}' <<< $@ | awk '{print $1}'`
+sr $ldap_server slapcat -n2 -a uid=$1
 }
 
 function ldapsearchuserpasswd ()
 {
-[ $# -eq 0 ] && msg "Usage: $FUNCNAME <user>" && return 1
+local ldap_server
+[ $# -eq 0 ] && msg "Usage: $FUNCNAME <user> [-ldap_server=]" && return 1
+ldap_server=$LDAPSERVER
+grep -q '\-ldap_server' <<< $@ && ldap_server=`awk -F"-ldap_server=" '{print $2}' <<< $@ | awk '{print $1}'`
 LOCALHOST=`uname -n | cut -d. -f1`
-if [ "$LOCALHOST" == "$LDAPSERVER" ]; then
+if [ "$LOCALHOST" == "$ldap_server" ]; then
    check_root || return 1
    slapcat -n2 -a uid=$1 | grep userPassword 2> /dev/null
 else
    definemypasswd
-   sr $LDAPSERVER slapcat -n2 -a uid=$1 | grep userPassword 2> /dev/null
+   sr $ldap_server slapcat -n2 -a uid=$1 | grep userPassword 2> /dev/null
 fi
 }
 

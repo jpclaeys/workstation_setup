@@ -424,3 +424,9 @@ printf "%s %-16s %s %s %s %s\n" $a $b $c $d $e "$WWNs"
 done
 }
 
+function get_all_symdg_emc_devs ()
+{
+for DG in `symdg list | egrep -v '\*|TEST' | awk '/00029670006/ {print $1}' | grep -v 'k$'`; do 
+msg $DG &&  symdg show $DG | awk '/\(STD\)/,/RDF Info/'|awk '/DEV/ {print $3}'| sed 's/^0//'|xargs
+done
+}
