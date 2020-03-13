@@ -467,7 +467,7 @@ function ldapresetpasswd ()
 {
 local LOGIN NEWPWDCLEAR NEWPASSWD
 [ "$#" -eq 0 ] && echo "Usage: $FUNCNAME <userid> [<new passwd>] [-ldap_server=] [-dry]" && return 1
-id $1 >/dev/null 2>&1 ; [ $? -ne 0 ] && errmsg "no such user $1" && return 1
+#id $1 >/dev/null 2>&1 ; [ $? -ne 0 ] && errmsg "no such user $1" && return 1
 LOGIN=$1
 NEWPWDCLEAR=$LOGIN
 [ -n "$2" ] && NEWPWDCLEAR="$2"
@@ -483,7 +483,7 @@ LDAPPWD='0pocE123!!'
 echo "Resetting password for '$LOGIN' to '$NEWPWDCLEAR'"
 
 # get current passwd
-ldapsearchuserpasswd $LOGIN
+ldapsearchuserpasswd $LOGIN -ldap_server=$ldap_server
 
 NEWPASSWD=`perl -e  'print crypt('${NEWPWDCLEAR}', '${NEWPWDCLEAR}')'` && echo "New passwd: {CRYPT}$NEWPASSWD"
 
@@ -502,7 +502,7 @@ EOT
 # ------------------------------------------------------------------------------------------------------------------------------------
 
 # check new password
-ldapsearchuserpasswd $LOGIN
+ldapsearchuserpasswd $LOGIN -ldap_server=$ldap_server 
 }
 
 function ldapsearchexists ()
