@@ -2,99 +2,45 @@ decom linux physical server - <hostname>
 -----------------------------------------
 
 ====================================================================================================================================
-# Open ticket to remove the monitoring:
-----------------------------------------
-
-Incident type: REQUEST FOR SERVICE
-Configuration item: SERVER
-System: HARDWARE AND OPERATING SYSTEMS
-Component: SERVERS
-
-{
-cat <<EOT
-# Title:
-REMOVE MONITORING: <hostname>
-
-# Description:
-
-Server name: <hostname>
-Action: Stop monitoring
-EOT
-}
-
-TO:  IT-PRODUCTION-OP
-------------------------------------------------------------------------------------------------------------------------------------
-Ticket:
-------------------------------------------------------------------------------------------------------------------------------------
-
-====================================================================================================================================
-# Open a ticket to delete the backup client
---------------------------------------------
-
-{
-cat <<EOT
-#SMT Title: Remove backup client for bkp-<hostname>
-#SMT Template: BACKUP REQUEST - Delete client
-
-Client name: bkp-<hostname>
-OS: Linux
-Reason: server removed
-EOT
-}
-
-TO: SBA-OP
-------------------------------------------------------------------------------------------------------------------------------------
-Ticket: 
-------------------------------------------------------------------------------------------------------------------------------------
-
 ====================================================================================================================================
 Open a session On the host
 ====================================================================================================================================
 
 # Fetch info about the Hosts
 ------------------------------
-!!!!! Note: /net/nfs-infra.isilon/unix/systemstore is only visible from opvmwstsx11 !!!!!
 
-{
-msg "Define the TMP folder"
-TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
-[ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER
-echo $TMP_FOLDER
-
-# Create the sysinfo file (from cmdb)
-msg "Create the sysinfo file (from cmdb)"
-save_decom_linux_vars
-
-# Save HBS WWN's
-msg "Save HBS WWN's"
-cat /sys/class/fc_host/host?/port_name | tee $TMP_FOLDER/hba_wwns_<hostname>.txt
-
-# Save /etc/hosts
-msg "Save /etc/hosts"
-cat /etc/hosts | tee $TMP_FOLDER/etc_hosts_<hostname>.txt
-
-# Save IP info
-msg "Save IP info"
-ip a > $TMP_FOLDER/ip_config_<hostname>.txt
-
-# Get luns
-msg "Get luns"
-# rescan the SCSI bus
-for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
-multipath -ll | egrep 'EMC|HITACHI' | sort | tee $TMP_FOLDER/LUNs_<hostname>.txt
-
-# System product name
-msg "System product name"
-(dmidecode -s system-manufacturer && dmidecode -s system-product-name )| xargs | tee $TMP_FOLDER/product_name_<hostname>.txt
-
-msg "TMP_FOLDER content"
-# List $TMP_FOLDER content
-ls -lh $TMP_FOLDER
-}
+fetch_decom_info_about_linux_host
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------------------------------------------------------------
+
+====================================================================================================================================
+# If there is a freeze period before removing the server
+---------------------------------------------------------
+1. shutdown the server
+-----------------------
+date && shutdown -h now # OR date && poweroff
+date && poweroff
+
+# connect on the console and double-check that the server is powered off
+# If the server is still powered on, force the power-off
+
+2. Put the main ticket in "Planned" and schedule it after 30 days
+------------------------------------------------------------------
+User Additional Info:
+----------------------
+The server <hostname> has been shut down as requested.
+Freeze period before deletion: 30 days
+
+Check box "Planned by current group"
+... After: set current date +30 days.
+
+====================================================================================================================================
+====================================================================================================================================
+                                                  Wait until until the end of the freeze period
+====================================================================================================================================
+====================================================================================================================================
 
 {
 # Remove the luns if any
@@ -131,6 +77,7 @@ multipath -ll | egrep -c 'EMC|HITACHI'
 ----------------------------------------------
 
 {
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
 cat <<EOT
 #SMT Template: STORAGE REQUEST - Retrieve unused storage
 #SMT Title: Recover storage for <hostname>

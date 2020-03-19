@@ -270,3 +270,46 @@ printf "%-40s %-12s %-40s %s\n" Name    Type    Value   Action
 for H in $@; do print_ip_delete_info $H;done
 }
 
+# Fetch decom info about Linux host
+
+function fetch_decom_info_about_linux_host ()
+{
+HOSTNAME=`uname -n | cut -d"." -f1`
+msgsep "Fetching decom info about server $HOSTNAME"
+msgsep "Define the TMP folder"
+TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/${HOSTNAME}
+[ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER && echo "TMP_FOLDER:=  $TMP_FOLDER"
+
+# Create the sysinfo file (from cmdb)
+msgsep "Create the sysinfo file (from cmdb)"
+save_decom_linux_vars
+
+# Save HBS WWN's
+msgsep "Save HBS WWN's"
+cat /sys/class/fc_host/host?/port_name | tee $TMP_FOLDER/hba_wwns_${HOSTNAME}.txt
+
+# Save /etc/hosts
+msgsep "Save /etc/hosts"
+cat /etc/hosts | tee $TMP_FOLDER/etc_hosts_${HOSTNAME}.txt
+
+# Save IP info
+msgsep "Save IP info"
+ip a > $TMP_FOLDER/ip_config_${HOSTNAME}.txt
+
+# Get luns
+msgsep "Get luns"
+# rescan the SCSI bus
+for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
+multipath -ll | egrep 'EMC|HITACHI' | sort | tee $TMP_FOLDER/LUNs_${HOSTNAME}.txt
+msg "NB of LUNs" && multipath -ll | grep -c SYMMET
+
+# System product name
+msgsep "System product name"
+(dmidecode -s system-manufacturer && dmidecode -s system-product-name )| xargs | tee $TMP_FOLDER/product_name_${HOSTNAME}.txt
+
+msgsep "TMP_FOLDER content"
+# List $TMP_FOLDER content
+ls -lh $TMP_FOLDER
+}
+
+

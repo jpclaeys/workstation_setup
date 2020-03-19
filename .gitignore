@@ -1,4 +1,7 @@
 *.swp
 *.retry
+*.bak
 nohup.out
 test.yml
+# Ignore any archive directory anywhere in the repository
+**/archive
