@@ -1,0 +1,292 @@
+Note on sar 
+------------
+In order to avoid the 12 h am/pm output in the dates, define LANG=C to have a 24 h output
+alias sar='LANG=C && sar"
+
+Chapter 6 Networking
+---------------------
+
+network info
+
+ip addr show gives address info about all interfaces
+ip -s link show eno1 gives packet statistics
+DO NOT use ifconfig
+ip route shows routing information
+Use traceroute or tracepath to analyze a path
+ ex. tracepath www.redhat.com
+ Use netstat or ss to analyze ports and services
+ netstat -tulpen
+ ss -tulpen
+
+nmcli
+nmcli con show : find out connections & devices 
+nmcli con show "eno1" show details for a connection
+nmcli dev status : get device status
+nmcli con up "eno1" switch to "eno1"
+
+Working with config files
+config is in /etc/sysconfig/network-scripts/ifcfg-<name>
+After making modifications to these files, use "nmcli con reload" to re-read the configuration files
+
+Managing Host Name and DNS
+The hostname is in /etc/hostname
+Use hostnamectl set-hostname vm0.example.com to set the hostname
+use hostnamectl status to reques the hostname
+DNS name resolver is pushed from /etc/sysconfig/netwok-scripts/ifcfg-<name> to /etc/resolv.conf
+Use nmcli to set the DNS server
+nmcli con mod "<name>" [+]ipv4.dns 8.8.8.8 
+To make the modification effective, either
+nmcli con reload (not always working!)
+or nmcli con down <name>; nmcli con up <name> (better)
+
+Routing
+video 48: config static routing
+use nmtui
+edit a connection
+select the connection
+edit
+go down to the routing option
+edit
+add
+Destination/prefix: ex. 10.0.0.0/24
+Next hop: ie. the router for the desired network: ex. 192.168.4.4
+ok
+ok
+quit
+Check: 
+ip route show   : it hasn't been added yet, because we didn't re-activate the connection
+
+
+In order to make the changes effective, launch nmtui again
+select activate a connection
+do a deactivate
+and an activate
+quit
+ip route show: now show the newly added route.
+What is happened is that in /etc/sysconfig/network-scripts dir , there is a new file called route-<connection name>
+
+Network bridgesD(video 49)
+---------------------------
+brctl show
+required package: bridge-utils
+In order to do bridging, we need to disconnect the current interfaces and reconnect them to bridge
+Show what we have already:
+nmcli dev show
+nmcli dev disconnect <interface name>  # for each interface that will be used in the bridge
+Start defining the bridge
+nmcli con add type bridge-slave con-name br0-port1 ifname <interface name> master br0
+It is complaining that br0 doesn't exist yet; which is normal
+repeat this for all other interfaces you have
+Define the bridge:
+nmcli con add type bridge con-name br0 ifname br0
+check that the bridge has been created
+brctl show  # the bridge should show up
+we need to restart everything to activate this (done later)
+Config files in /etc/sysconfig/network-scripts:
+ifcfg-br0 and ifcfg-br0-port1
+
+man nmcli ; look for nmcli-examples (5)
+man nmcli-examples :)
+
+Example 8. Adding a bridge and two slave profiles
+$ nmcli con add type bridge con-name TowerBridge ifname TowerBridge
+$ nmcli con add type ethernet con-name br-slave-1 ifname ens3 master TowerBridge
+$ nmcli con add type ethernet con-name br-slave-2 ifname ens4 master TowerBridge
+$ nmcli con modify TowerBridge bridge.stp no
+
+This example demonstrates adding a bridge master connection and two slaves. 
+The first command adds a master bridge connection, naming the bridge interface and the profile as TowerBridge. 
+The next two commands add slaves profiles, both will be enslaved to TowerBridge. 
+The first slave will be tied to ens3 interface, the second to ens4. 
+The last command will disable 802.1D STP for the TowerBridge profile.
+
+Understanding Network Bonds and Teams
+---------------------------------------
+
+- Both take care of link aggregation
+- Network Bonding is deprecated, user Network Teaming instead
+- Teaming works with a kernel driver and a user space daemon: teamd
+  - Teamd modes are called runners: broadcast, roundrobin, activebackup, loadbalance, lacp
+  - teamdctl team0 state shows current state of the team with name team0
+  
+Configuring Network Teams (52)
+--------------------------
+Four steps to Configure Teaming
+- Create team interface
+  - nmcli con add type team con-name team0 ifname team0 config '{"runner":{"name":"loadbalance"}}'
+- Determine network configuration
+  - nmcli con mod team0 ipv4.addresses 10.0.0.10/24
+  - nmcli con mod team0 ipv4.method manual
+- Assign the port interfaces
+  - nmcli con add type team-slave con-name team0-eth0 ifname eth0 master team0 con-name team0-eth0
+  - nmcli con add type team-slave con-name team0-eth1 ifname eth1 master team0 
+- Bring team and port interfaces up/down
+  - nmcli con up team0
+  - nmcli dev dis eth0; nmcli dev dis eth1
+- Verify: teamdctl team0 state; ip link show
+
+man nmcli-examples        
+Example 7. Adding a team master and two slave connection profiles
+
+           $ nmcli con add type team con-name Team1 ifname Team1 config team1-master-json.conf
+           $ nmcli con add type ethernet con-name Team1-slave1 ifname em1 master Team1
+           $ nmcli con add type ethernet con-name Team1-slave2 ifname em2 master Team1
+
+       This example demonstrates adding a team master connection profile and two slaves. It is very similar to the bonding example. The first command adds a
+       master team profile, naming the team interface and the profile Team1. The team configuration for the master is read from team1-master-json.conf file.
+       Later, you can change the configuration with modify command (nmcli con modify Team1 team.config team1-master-another-json.conf). The last two
+       commands add slaves profiles, both enslaved to Team1. The first slave will be bound to em1 interface, the second to em2. The slaves don't specify
+       config and thus teamd will use its default configuration. You will activate the whole setup by activating both slaves:
+
+             $ nmcli con up Team1-slave1
+             $ nmcli con up Team1-slave2
+
+       By default, the created profiles are marked for auto-activation. But if another connection has been activated on the device, the new profile won't
+       activate automatically and you need to activate it manually.
+
+ip6 automatically done.
+	   
+Managing Linux-Based Firewalls
+-------------------------------
+
+firewall-cmd
+firewall-cmd --get-zones
+firewall-cmd --get-services
+firewall-cmd --list-services   # active services
+
+cd /usr/lib/firewalld/services   # system default services; DO NOT change !
+In case we want to change, create file in /etc/firewalld/services
+Tip:
+using firewalld-cmd make changes in the running system, but are lost at reboot time
+To make the changes permanent, add the "--permanent" option when typing the firewall-cmd.
+And to apply the permanent changes to the running system, type "firewall-cmd --reload".
+To see the running state of the firewall, type "firewall-cmd --state".
+
+Note:
+In order to use firewalld, one need to disable iptables
+systemctl stop iptables
+systemctl mask iptables  # this is to avoid the restart of the service
+# next, unmask firewalld (just in case)
+systemctl unmask firewalld
+systemctl status firewalld
+
+firewall-cmd --get-active-zones
+firewall-cmd --list-all
+firewall-cmd --list-all  --zone=dmz
+firewall-cmd --add-service=vnc-server   # add to the default zone
+firewall-cmd --add-service=vnc-server --zone=dmz
+firewall-cmd --add-service=vnc-server --permanent
+firewall-cmd --reload
+firewall-cmd --list-all
+
+Lesson 8 Configuring Apache Virtual Hosts (68)
+-----------------------------------------------
+
+- Main configuration file: /etc/httpd/conf/http.conf
+ - ServerRoot "/etc/httpd", all file names relate to that
+- Module configuration: /etc/httpd/modules.d
+ - Include conf.modules.d/*.conf
+- Supplemental configuration: /etc/httpd/conf.d/*.conf
+ - IncludeOptional conf.d/*.conf
+ - Often used by plugin files from RPM's (such as httpd-manual)
+- Default Documenroot is "/var/www/html"
+
+Install apache: 
+yum install -y httpd
+systemctl enable httpd
+systemctl start httpd
+firewall-cmd --permanent --add-service=http --add-service=https
+firewall-cmd --reload
+
+Create an empty html page
+cd /var/www/html
+echo "Welcome to my server" > index.html
+In order to test a web server , we need elinks browser, which is a text only browser
+yum install -y elinks
+
+Test:  
+elinks http://localhost
+Then the "Welcome to my server" text shows up
+
+Changing the ServerRoot:
+mkdir /web
+cd /web
+echo "Welcome to web" > index.html
+# Update the config file
+vi /etc/httpd/http.conf
+look for the DocumentRoot, and replace /var/www/html with /web
+Change also the <Directory statement to /web
+Then, restart the service
+systemctl restart httpd
+elinks http://localhost
+--> New SELinux security alert !
+rootcause: the new document root has the wrong SELinux security label
+cd /
+ls -Zd /web
+--> show security label "default_t", and that's not good
+If we compare this to the /var/www/html
+ls -Zd /var/www/html
+we can see that it's "httpd_sys_content_t"
+Fix it using semanage
+semanage fcontext -a -t httpd_sys_content_t '/web(/.*)?'   # this cmd updates the policy
+# Apply the change
+restorecon -R -v /web
+retry the elinks cmd: it's ok now
+
+Give permissions to the document root to web developers; by default, only root has write access.
+groupadd webdev   # web developers group
+# change access to the existing files
+setfacl -R -m g:webdev:rwX /web    # note the uppercase "X" is used to set execute on the directories only, and not on the files!
+# change access on the new files; "d" stands for default
+setfacl -R -m d:g:webdev:rwX /web  
+# check
+getfacl /web
+
+Apache virtual hosts (73)
+exercice 8: create 2 virtual hosts (75, 76)
+
+- Configure 2 virtual hosts on server 1
+ - Use sales.example.com and account.example.com as names
+ - Put the document root in /web/sales and /web/account
+ - Put a file with name index.html and the contents "Welcome to <severname>" in the DocumentRoot
+- Do all that is necessary to enable access to the virtual hosts from server2
+
+Solution
+- On both servers:
+ - vim /etc/hosts
+	sales.example.com	<ip address>
+	account.example.com	<ip address>
+- On server1
+ - mkdir -p /web/sales; mkdir /web/account
+ - create the index.html files (echo "Welcome to <sales/account>" > /web/<sales/account>/index.html)
+ - semanage -a-t httpd_sys_content_t "/web(/.*)?"
+ - restorecon -Rvv /web
+- Create config files in /etc/http/conf.d for each (see after this section)
+- systemctl start httpd; systemctl enable httpd
+- firewall-cmd --permanent --add-service=http
+- firewall-cmd -reload
+
+Config files in .../conf.d
+
+<Directory /web/sales>
+		Require all granted
+		AllowOverride None
+</Directory>
+
+<VirtualHost *:80>
+		DocumentRoot /web/sales
+		ServerName sales.example.com
+		ServerAlias www.sales.example.com
+		ServerAdmin root@sales.example.com
+		ErrorLog "logs/sales_error_log"
+		CustomLog "logs/sales_access_log" combined
+</VirtualHost>
+
+Setting up Autheticated Web Servers (79)
+-----------------------------------------
+Installing Apache manual (79)
+yum search http | grep manual
+yum install httpd-manual
+cd /etc/httpd/conf.d
+ls show a new file named "manual.conf" that allows the manual pages to be accessed at http://localhost/manual/
+firefox http://localhost/manual

@@ -300,7 +300,7 @@ ip a > $TMP_FOLDER/ip_config_${HOSTNAME}.txt
 msgsep "Get luns"
 # rescan the SCSI bus
 for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
-multipath -ll | egrep 'EMC|HITACHI' | sort | tee $TMP_FOLDER/LUNs_${HOSTNAME}.txt
+multipath -ll | egrep 'EMC|HITACHI' | sort -k2 | tee $TMP_FOLDER/LUNs_${HOSTNAME}.txt
 msg "NB of LUNs" && multipath -ll | grep -c SYMMET
 
 # System product name

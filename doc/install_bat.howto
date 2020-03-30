@@ -1,0 +1,56 @@
+Howto install bat on CentOS 7
+------------------------------
+Download latest openfusion-release rpm from
+http://repo.openfusion.net/centos7-x86_64/
+Install openfusion-release rpm:
+# rpm -Uvh openfusion-release*rpm
+Install bat rpm package:
+# yum install bat
+
+
+OR
+
+[claeyje@opvmwstsx11 ~]# cd
+[claeyje@opvmwstsx11 ~]# cd Downloads/
+[claeyje@opvmwstsx11 Downloads]# ll bat*
+-rw-r--r-- 1 claeyje opunix 2.9M Nov 12 08:44 bat-0.7.0-1.of.el7.x86_64.rpm
+[claeyje@opvmwstsx11 Downloads]# which bat
+/usr/bin/which: no bat in (/sbin:/home/claeyje/log:/home/claeyje/doc:/home/claeyje/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin)
+[claeyje@opvmwstsx11 Downloads]# sudo rpm -Uvh bat-0.7.0-1.of.el7.x86_64.rpm
+[sudo] password for claeyje:
+warning: bat-0.7.0-1.of.el7.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 2a6b914a: NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:bat-0.7.0-1.of.el7               ################################# [100%]
+[claeyje@opvmwstsx11 Downloads]# which bat
+/usr/bin/bat
+[claeyje@opvmwstsx11 Downloads]# ll /usr/bin/bat
+-rwxr-xr-x 1 root root 11M Sep 18  2018 /usr/bin/bat
+
+
+
+OR
+
+wget -O bat.zip https://github.com/sharkdp/bat/releases/download/v0.7.1/bat-v0.7.1-x86_64-unknown-linux-musl.tar.gz
+tar -xvzf bat.zip -C /usr/local
+cd /usr/local && mv bat-v0.7.1-x86_64-unknown-linux-musl bat
+cd ~
+
+----------------------------------------------------------------------------------
+
+root root 6 Apr 24  2019 /var/www/html
+[claeyje@banta doc]# wget -O bat.zip https://github.com/sharkdp/bat/releases/download/v0.7.1/bat-v0.7.1-x86_64-unknown-linux-musl.tar.gz
+--2020-03-26 11:54:02--  https://github.com/sharkdp/bat/releases/download/v0.7.1/bat-v0.7.1-x86_64-unknown-linux-musl.tar.gz
+Resolving psbru.ec.europa.eu (psbru.ec.europa.eu)... 158.169.131.13
+Connecting to psbru.ec.europa.eu (psbru.ec.europa.eu)|158.169.131.13|:8012... connected.
+Proxy request sent, awaiting response... 302 Found
+Location: https://github-production-release-asset-2e65be.s3.amazonaws.com/130464961/08a9bb00-bf20-11e8-8c92-4ad3f4b01570?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20200326%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200326T105402Z&X-Amz-Expires=300&X-Amz-Signature=1ef98df7d35ac0f206aff06117c05e91876ff580c7a7b77098f43f95cbc9bfd3&X-Amz-SignedHeaders=host&actor_id=0&response-content-disposition=attachment%3B%20filename%3Dbat-v0.7.1-x86_64-unknown-linux-musl.tar.gz&response-content-type=application%2Foctet-stream [following]
+--2020-03-26 11:54:03--  https://github-production-release-asset-2e65be.s3.amazonaws.com/130464961/08a9bb00-bf20-11e8-8c92-4ad3f4b01570?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20200326%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200326T105402Z&X-Amz-Expires=300&X-Amz-Signature=1ef98df7d35ac0f206aff06117c05e91876ff580c7a7b77098f43f95cbc9bfd3&X-Amz-SignedHeaders=host&actor_id=0&response-content-disposition=attachment%3B%20filename%3Dbat-v0.7.1-x86_64-unknown-linux-musl.tar.gz&response-content-type=application%2Foctet-stream
+Connecting to psbru.ec.europa.eu (psbru.ec.europa.eu)|158.169.131.13|:8012... connected.
+Proxy request sent, awaiting response... 200 OK
+Length: 2264405 (2.2M) [application/octet-stream]
+Saving to: ‘bat.zip’
+
+100%[=====================================================================================================================================>] 2,264,405    490KB/s   in 5.6s
+
+2020-03-26 11:54:09 (392 KB/s) - ‘bat.zip’ saved [2264405/2264405]

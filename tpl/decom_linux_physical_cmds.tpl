@@ -50,8 +50,8 @@ for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; d
 
 # Try removal by using the removelun_rhel script (Requires Switch.pm module for perl)
 [ ! -f "/usr/share/perl5/Switch.pm" ] && errmsg "Perl Switch.pm module is missing"
-for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort | awk '{print $1}'`; do echo "/home/admin/bin/removelun_rhel $LUN | bash";done
-for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $LUN | bash ;done
+for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort -k2 | awk '{print $1}'`; do echo "/home/admin/bin/removelun_rhel $LUN | bash";done
+for LUN in `multipath -ll | egrep 'EMC|HITACHI' | sort -k2 | awk '{print $1}'`; do /home/admin/bin/removelun_rhel $LUN | bash ;done
 
 # removelun_rhel doesn't work, do it manually
 {
@@ -85,7 +85,7 @@ Type of storage (VNX - VMAX - VMAX3 - NAS - eNAS): VMAX
 Impacted hosts: <hostname>
 Masking info (vm, datastore, zone,... name): <hostname>
 LUN WWN and/or ID:
-`cat $TMP_FOLDER/LUNs_<hostname>.txt`
+`cat $TMP_FOLDER/LUNs_<hostname>.txt | sort -k2`
 EOT
 }
 

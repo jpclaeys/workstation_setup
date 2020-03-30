@@ -1,0 +1,16 @@
+RHCE video
+-----------
+Lesson	mp4	Subject	
+------------------------------------------------------------
+Module 1
+1	1	Configuration Authentication
+2	9	Configuring iSCSI Target and Initiator
+3	17	System Performance Reporting
+4	28	SystemOptimization Basics
+5	38	Configuring Logging
+Module 2
+6	45	Configuring Advances Networking
+7	57	Managing Linux-Based Firewalls
+8	68	Configuring Apache Virtual Hosts
+9	78	Managing Advanced Apache Features
+10	

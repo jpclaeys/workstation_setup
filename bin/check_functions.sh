@@ -365,12 +365,15 @@ separator 80 -
 
 function check_satellite_left_over_entries ()
 { 
+local HLMULTI HLS FILTER
 cd /home/claeyje/log/delete_host_from_satellite
 LEFTOVERLIST=leftover.list
 # Multiple hosts in files
-HLMULTI=`grep filter *multiple* | sort -u |awk -F= '{print $NF}' |sed 's/|/ /g'| xargs` # && echo $HLMULTI && wc -w  <<< $HLMULTI
+#HLMULTI=`grep filter *multiple* | sort -u |awk -F= '{print $NF}' |sed 's/|/ /g'| xargs` # && echo $HLMULTI && wc -w  <<< $HLMULTI
 # Single hosts in files
-HLS=`ll | awk -F_ '/_satellite_/ {print $(NF-1)}' | grep -v multiple | xargs` # && echo $HLS && wc -w <<< $HLS
+#HLS=`ll | awk -F_ '/_satellite_/ {print $(NF-1)}' | grep -v multiple | xargs` # && echo $HLS && wc -w <<< $HLS
+DAYS=${1:-30}  # echo $DAYS
+HLS=`find . -ctime -$DAYS -name '*_satellite_*' | awk -F_ '/_satellite_/ {print $(NF-1)}' | grep -v multiple | xargs` # && echo $HLS && wc -w <<< $HLS
 HL="$HLMULTI $HLS" && echo "Deleted hosts list: $HL" && wc -w <<< $HL
 #FILTER=`sed 's/ /|/g' <<< $HL` #  && echo $FILTER
 FILTER=`sed 's/ /.op|/g;s/$/.op/' <<< $HL` #  && echo $FILTER

@@ -1,0 +1,50 @@
+Take a look at the Bash man page. This notation is part of what's called a here documents & here strings. 
+It allows you the ability to generate multi-line data input as one continuous string. 
+The variation you're asking about is called a here string.
+
+excerpt from Bash man page
+
+Here Strings
+   A variant of here documents, the format is:
+
+          <<<word
+
+   The word is expanded and supplied to the command on its standard input.
+
+
+
+
+
+
+
+<<< denotes a here string.
+
+$ cat <<< 'hi there'
+hi there
+It passes the word on the right to the standard input of the command on the left.
+
+<< denotes a here document.
+
+$ cat <<EOF
+> hi
+> there
+> EOF
+hi
+there
+EOF can be any word.
+
+Here documents are commonly used in shell scripts to create whole files or to display long messages.
+
+cat > some-file <<FILE
+foo
+bar
+bar bar
+foo foo
+FILE
+< passes the contents of a file to a command's standard input.
+
+$ cat < /etc/fstab
+/dev/sda2               /boot   ext4            nosuid,noexec,nodev,rw,noatime,nodiratime       0 2
+/dev/sda4               /       ext4            rw,noatime,nodiratime,  0 1
+/dev/sdb5               /var    ext4            nosuid,noexec,nodev,rw,relatime 0 2
+ ...
