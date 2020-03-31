@@ -314,7 +314,7 @@ ALIVE_SAT_VM=${SATDIR}/alive_vm_satellite_$TIMESTAMP
 ALIVE_CMDB_VM=${SATDIR}/alive_vm_cmdb_$TIMESTAMP
 
 msg "Get all satellite vm's"
-s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l $ALL_SAT_VM
+s satellite-pk hammer --csv host list --search=VMWare | egrep -v '^Id|,$' | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l $ALL_SAT_VM
 msg "Get alive vm's in satellite"
 fping < $ALL_SAT_VM | awk '/alive/ {print $1}' >> $ALIVE_SAT_VM && wc -l $ALIVE_SAT_VM
 msg "Get all cmdb vm's"
@@ -342,10 +342,10 @@ ALIVE_SAT_PHYS=${SATDIR}/alive_phys_satellite_$TIMESTAMP
 ALIVE_CMDB_PHYS=${SATDIR}/alive_phys_cmdb_$TIMESTAMP
 
 msg "Get all satellite hosts"
-s satellite-pk hammer --csv host list | egrep -v '^Id|virt-who|Desktop' 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT && wc -l $ALL_SAT
+s satellite-pk hammer --csv host list | egrep -v '^Id|virt-who|Desktop|,$' 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT && wc -l $ALL_SAT
 msg "Get all satellite vm's"
-s satellite-pk hammer --csv host list --search=VMWare | grep -v ^Id 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l  $ALL_SAT_VM
-msg "Get all in satellite physical hosts"
+s satellite-pk hammer --csv host list --search=VMWare | egrep -v '^Id|,$' > /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l  $ALL_SAT_VM
+msg "Get all satellite physical hosts"
 comm $ALL_SAT $ALL_SAT_VM -3 > $ALL_SAT_PHYS && wc -l $ALL_SAT_PHYS 
 msg "Get alive satellite physical hosts"
 fping < $ALL_SAT_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_SAT_PHYS && wc -l $ALIVE_SAT_PHYS

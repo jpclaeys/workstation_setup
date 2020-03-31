@@ -282,7 +282,7 @@ Config files in .../conf.d
 		CustomLog "logs/sales_access_log" combined
 </VirtualHost>
 
-Setting up Autheticated Web Servers (79)
+Setting up Authenticated Web Servers (79)
 -----------------------------------------
 Installing Apache manual (79)
 yum search http | grep manual
@@ -290,3 +290,31 @@ yum install httpd-manual
 cd /etc/httpd/conf.d
 ls show a new file named "manual.conf" that allows the manual pages to be accessed at http://localhost/manual/
 firefox http://localhost/manual
+
+Enabling Dynamic Content (81)
+------------------------------
+- Content is often dynamically generated
+ - CGI is the oldest standard
+   - Use ScriptAlias /cgi-bin/ "/var/www/cgi-bin"
+ - PHP is more common nowadays
+ - Python is also used
+ 
+Setting up TLS (82)
+--------------------
+Demo (83)
+Tool required to generated the certificates
+yum install  crypto-utils mod_ssl
+Generate a key for a server
+genkey server1.example.com
+
+Module 3 - DNS and File Sharing
+10		87	 Configuration of a cache-only name server
+		89 definitions
+		90 dig examples
+
+(91) In RHEL7 the Cache-only DNS Namserver is provided by the package unbound.
+
+Configuring NFS File Sharing (97)
+----------------------------------
+
+
