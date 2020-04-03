@@ -166,3 +166,6 @@ alias get_hba_wwns='cat /sys/class/fc_host/host?*/port_name'
 alias dcmds=definecmdsaliases
 alias aws1='s $AWS1' && alias aws2='s $AWS2'
 alias aws1r='sr $AWS1' && alias aws2r='sr $AWS2'
+alias thosts='echo perceval karadoc neo trinity tank dozer morpheus niobe'
+alias primary_domains='echo neo trinity morpheus niobe'
+alias tcluster='echo perceval neo tank morpheus'

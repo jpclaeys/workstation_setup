@@ -36,8 +36,7 @@ This procedure describes how to remove a Solaris 10 container
 ----------------
 2.1 If the zone rg is in the unmanaged state, then put it back in managed state
 --------------------------------------------------------------------------------
-zoneadm -z <zone_name> list -v
-clrg status <zone_name>-rg
+zoneadm -z <zone_name> list -v && clrg status <zone_name>-rg
 clrg online -M -e -n <primary_host> <zone_name>-rg
 
 2.2 on primary source node, disable the applications
