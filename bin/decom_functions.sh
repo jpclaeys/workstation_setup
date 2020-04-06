@@ -139,7 +139,7 @@ export ILO=${HOSTNAME}-sc
 OS=`cat /etc/system-release`
 SERIAL=`dmidecode -s system-serial-number` 
 MANUFACTURER=`dmidecode -s system-manufacturer`
-PRODUCTNAME=`dmidecode -s system-product-name`
+PRODUCTNAME=`dmidecode -s system-product-name | cut -d"-" -f1`
 MODEL="$MANUFACTURER $PRODUCTNAME"
 export LOCATION=`/home/admin/bin/getcmdb.sh linux | grep $HOSTNAME-sc | cut  -f 5 -d ";"`
 echo "

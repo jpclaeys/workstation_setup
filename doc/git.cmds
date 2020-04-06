@@ -27,6 +27,11 @@ git revert <commit id>
 git blame <full path of file>
 git show  <modification id>   # Note: specify only the first few characters of the modification id
 --------------------------------------------------------------------------------------------------
+reset a file to HEAD
+---------------------
+git checkout HEAD -- <my-file>
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
 Recover file:
 -------------
 git lg -p <file spec>

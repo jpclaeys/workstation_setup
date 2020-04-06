@@ -60,7 +60,7 @@ alias fn='f | wc -l'
 unset FALL
 LIST="check clu decom newlog sym powermt show powercut ldap"
 for I in $LIST; do alias f$I="f | grep -i ^$I"; FALL="$FALL f$I"; done
-LIST="dns lun status ticket zpool zone subnet hba asm uid size srdf mirrored eufo mer count primary secondary screen xpra running poolname pool kvm satellite emc wwn"
+LIST="dns lun status ticket zpool zone subnet hba asm uid size srdf mirrored eufo mer count primary secondary screen xpra running poolname pool kvm satellite emc wwn did"
 for I in $LIST; do alias f$I="f | grep -i $I";FALL="$FALL f$I"; done
 alias fhost='f | grep "host"| grep -v ^t'  && FALL="$FALL fhost"
 alias fthost="f | grep '^t.*host'"  && FALL="$FALL fthost"
@@ -169,3 +169,4 @@ alias aws1r='sr $AWS1' && alias aws2r='sr $AWS2'
 alias thosts='echo perceval karadoc neo trinity tank dozer morpheus niobe'
 alias primary_domains='echo neo trinity morpheus niobe'
 alias tcluster='echo perceval neo tank morpheus'
+alias consoles='echo t52-01-sc t52-02-sc t54-01-sc t54-02-sc'
