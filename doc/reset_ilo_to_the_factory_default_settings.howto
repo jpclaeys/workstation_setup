@@ -19,8 +19,24 @@ CAUTION: This operation clears all user and license data.
 7. Optional: Use the default iLO account information to log in to iLO after the reset.
 
 
-Resetting iLO to the factory default settings (iLO 4 Configuration Utility)
-----------------------------------------------------------------------------
+Resetting iLO 3 to the factory default settings (iLO RBSU)
+-----------------------------------------------------------
+Valid on blades Proliant BL 460c G7
+
+BOOT
+ F9 twice
+  System Default Options
+   Restore Default System Settings
+     Yes, select to Restore
+
+
+Back to the xonsole web GUI:
+Power Management
+ Check That the Power is OFF
+
+
+Resetting iLO 4 to the factory default settings (iLO 4 Configuration Utility)
+------------------------------------------------------------------------------
 CAUTION: This operation clears all user and license data.
 1. Optional: If you access the server remotely, start an iLO remote console session.
 2. Restart or power on the server.

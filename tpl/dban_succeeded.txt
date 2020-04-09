@@ -1,0 +1,2 @@
+DBAN succeeded.
+All Selected disks have been wiped.

@@ -13,8 +13,8 @@ alias du='du -h'
 unalias ls 2>/dev/null
 alias lrt='ls -lhrt '
 alias lrta='ls -alhrt '
-alias lrt10='lrta | tail -10'
-alias lrt25='lrta | tail -25'
+alias lrt5='lrt -A | grep -v ^d | tail -5'
+alias lrt10='lrt -A | grep -v ^d | tail -10'
 alias ll='ls -lh '                  # long list
 alias lla='ls -Alh '                # long list inc hidden files
 alias lll='ls -Alh | grep ^l'       # long list inc hidden files
@@ -71,7 +71,8 @@ alias linfo='cls;title "info files";ls -c1 $DOCDIR/*.info | sort | sed "s:.*/::g
 alias ltpl='cls;title "Templates";ls -c1 ~/tpl/*.tpl | sort | sed "s:.*/::g"'
 alias lhowto='cls;title "HowTo";ls -c1 $DOCDIR/*.howto | sort | sed "s:.*/::g"'
 alias lcmds='cls;title "cmds";ls -c1 $DOCDIR/*.cmds | sort | sed "s:.*/::g"'
-alias t='set_title $([ `uname -s` == "Linux" ] && hostname -s || uname -n)' #  set terminator title
+alias t='set_title' #  set terminator title
+alias th='set_title $([ `uname -s` == "Linux" ] && hostname -s || uname -n)' #  set terminator title
 #[ "`uname -n`" == "iceman" ] && alias cmdb='linvm getcmdb.sh' || alias cmdb='getcmdb.sh'
 [ "`uname -n`" == "iceman" ] && alias cmdb='linvm /home/admin/bin/getcmdb.sh' || alias cmdb='/home/admin/bin/getcmdb.sh'
 alias viwiki='vi ~/wiki/wiki.txt'

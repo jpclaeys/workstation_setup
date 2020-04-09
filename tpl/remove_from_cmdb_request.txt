@@ -1,0 +1,5 @@
+{
+who=`who am i | awk '{print $1}'`
+echo "The server <hostname> has been decommissioned; it can be removed from the CMDB."
+} | mailx -s "Update the CMDB: <hostname>" -r $who -c $who OP-INFRA-OPENSYSTEMS-CHGMGT@publications.europa.eu
+

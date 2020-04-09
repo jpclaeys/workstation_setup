@@ -211,7 +211,8 @@ function generate_ip_delete_host_records ()
       DIGINFO=`dig $HOST | grep "^$HOST" | sed 's/\.$//' | awk '{print $4,$5}'`
       IFS=" " read  -r RECORD_TYPE RECORD_VALUE <<< $DIGINFO
       if [ "$RECORD_TYPE" == "A" ]; then
-          REVERSE=`dig -x $ADDR | awk '/'$HOST'/{print $1}'| sed 's/\.$//'`
+          #REVERSE=`dig -x $ADDR | awk '/'$HOST'/{print $1}'| sed 's/\.$//'`
+          REVERSE=`dig -x $ADDR | grep -i $HOST | awk '{print $1}'| sed 's/\.$//'`
           printf "%-40s %-12s %s\n" $HOST "A" $ADDR $REVERSE "PTR" $HOST
       elif [ "$RECORD_TYPE" == "CNAME" ]; then
           printf "%-40s %-12s %-40s\n" $HOST "CNAME" $RECORD_VALUE
@@ -278,7 +279,8 @@ HOSTNAME=`uname -n | cut -d"." -f1`
 msgsep "Fetching decom info about server $HOSTNAME"
 msgsep "Define the TMP folder"
 TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/${HOSTNAME}
-[ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER && echo "TMP_FOLDER:=  $TMP_FOLDER"
+[ ! -d "$TMP_FOLDER" ] && mkdir $TMP_FOLDER 
+echo "TMP_FOLDER:=  $TMP_FOLDER"
 
 # Create the sysinfo file (from cmdb)
 msgsep "Create the sysinfo file (from cmdb)"
@@ -300,12 +302,16 @@ ip a > $TMP_FOLDER/ip_config_${HOSTNAME}.txt
 msgsep "Get luns"
 # rescan the SCSI bus
 for DEVICE in `ls /sys/class/scsi_host/host?/scan`; do echo "- - -" > $DEVICE; done
-multipath -ll | egrep 'EMC|HITACHI' | sort -k2 | tee $TMP_FOLDER/LUNs_${HOSTNAME}.txt
-msg "NB of LUNs" && multipath -ll | grep -c SYMMET
+#multipath -ll | egrep 'EMC|HITACHI' | sort -k2 | tee $TMP_FOLDER/LUNs_${HOSTNAME}.txt
+multipath -ll | egrep 'EMC|HITACHI' | sort -k2 > $TMP_FOLDER/LUNs_${HOSTNAME}.txt
+msg "NB of LUNs" && grep -c SYMMET $TMP_FOLDER/LUNs_${HOSTNAME}.txt
 
 # System product name
 msgsep "System product name"
-(dmidecode -s system-manufacturer && dmidecode -s system-product-name )| xargs | tee $TMP_FOLDER/product_name_${HOSTNAME}.txt
+MANUFACTURER=`dmidecode -s system-manufacturer`
+PRODUCTNAME=`dmidecode -s system-product-name | cut -d"-" -f1`
+MODEL="$MANUFACTURER $PRODUCTNAME"
+echo $MODEL | tee $TMP_FOLDER/product_name_${HOSTNAME}.txt
 
 msgsep "TMP_FOLDER content"
 # List $TMP_FOLDER content
