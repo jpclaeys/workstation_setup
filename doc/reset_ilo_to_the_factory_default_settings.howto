@@ -42,8 +42,10 @@ CAUTION: This operation clears all user and license data.
 2. Restart or power on the server.
 3. Press F9 in the server POST screen.
    The UEFI System Utilities start.
-4. From the System Utilities screen, select System Configuration→iLO 4 Configuration
-   Utility→Set to factory defaults, and press Enter.
+4. From the System Utilities screen, 
+   select System Configuration
+   → iLO 4 Configuration Utility
+   → Set to factory defaults, and press Enter.
    The iLO 4 Configuration Utility prompts you to select YES or NO.
 5. Select YES, and press Enter.
 6. When prompted to confirm the request, press Enter.

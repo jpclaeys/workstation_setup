@@ -344,7 +344,7 @@ ALIVE_CMDB_PHYS=${SATDIR}/alive_phys_cmdb_$TIMESTAMP
 msg "Get all satellite hosts"
 s satellite-pk hammer --csv host list | egrep -v '^Id|virt-who|Desktop|,$' 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT && wc -l $ALL_SAT
 msg "Get all satellite vm's"
-s satellite-pk hammer --csv host list --search=VMWare | egrep -v '^Id|,$' > /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l  $ALL_SAT_VM
+s satellite-pk hammer --csv host list --search=VMWare | egrep -v '^Id|,$' 22> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l  $ALL_SAT_VM
 msg "Get all satellite physical hosts"
 comm $ALL_SAT $ALL_SAT_VM -3 > $ALL_SAT_PHYS && wc -l $ALL_SAT_PHYS 
 msg "Get alive satellite physical hosts"
@@ -386,5 +386,43 @@ if [ -s "$LEFTOVERLIST" ]; then        # file is not empty
   [ -n "$DEADVM" ] && msg "Delete dead hosts" && s satellite-pk satellite_delete_host $DEADVM
 fi
 cd - > /dev/null
+}
+
+function check_alive_vm_satellite ()
+{
+local SATDIR TIMESTAMP ALL_SAT_VM ALIVE_SAT_VM
+SATDIR="/home/claeyje/log/satellite"
+TIMESTAMP=`date "+%Y%m%d%H%M%S"`
+ALL_SAT_VM=${SATDIR}/vm_satellite_$TIMESTAMP
+ALIVE_SAT_VM=${SATDIR}/alive_vm_satellite_$TIMESTAMP
+
+msg "Get all satellite vm's"
+s satellite-pk hammer --csv host list --search=VMWare | egrep -v '^Id' | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l $ALL_SAT_VM
+echo "satellite-pk" >>  $ALL_SAT_VM
+msg "Get alive vm's in satellite"
+fping < $ALL_SAT_VM | awk '/alive/ {print $1}' >> $ALIVE_SAT_VM
+cat  $ALIVE_SAT_VM && wc -l $ALIVE_SAT_VM
+}
+
+function check_alive_physical_satellite ()
+{
+local SATDIR TIMESTAMP ALL_SAT ALL_SAT_VM ALL_SAT_PHYS ALIVE_SAT_PHYS
+SATDIR="/home/claeyje/log/satellite"
+TIMESTAMP=`date "+%Y%m%d%H%M%S"`
+ALL_SAT=${SATDIR}/all_satellite_$TIMESTAMP
+ALL_SAT_VM=${SATDIR}/vm_satellite_$TIMESTAMP
+ALL_SAT_PHYS=${SATDIR}/phys_satellite_$TIMESTAMP
+ALIVE_SAT_PHYS=${SATDIR}/alive_phys_satellite_$TIMESTAMP
+
+msg "Get all satellite hosts"
+s satellite-pk hammer --csv host list | egrep -v '^Id|virt-who|Desktop' 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT && wc -l $ALL_SAT
+msg "Get all satellite vm's"
+s satellite-pk hammer --csv host list --search=VMWare | egrep -v '^Id' 2> /dev/null | awk -F, '{print $2}' | cut -d. -f1 | sort > $ALL_SAT_VM && wc -l  $ALL_SAT_VM
+echo "satellite-pk" >>  $ALL_SAT_VM
+msg "Get all satellite physical hosts"
+comm $ALL_SAT $ALL_SAT_VM -3 > $ALL_SAT_PHYS && wc -l $ALL_SAT_PHYS
+msg "Get alive satellite physical hosts"
+fping < $ALL_SAT_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_SAT_PHYS
+cat $ALIVE_SAT_PHYS && wc -l $ALIVE_SAT_PHYS
 }
 

@@ -318,4 +318,7 @@ msgsep "TMP_FOLDER content"
 ls -lh $TMP_FOLDER
 }
 
-
+function solaris_hba_info ()
+{
+ for wwn in `fcinfo hba-port | awk '/HBA/ {print $NF}'` ;  do echo "HBA Port WWN: $wwn";  fcinfo remote-port -p $wwn | grep Remote;done
+}

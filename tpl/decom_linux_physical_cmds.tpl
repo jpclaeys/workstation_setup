@@ -41,6 +41,14 @@ Check box "Planned by current group"
                                                   Wait until until the end of the freeze period
 ====================================================================================================================================
 ====================================================================================================================================
+# Stop asm if still running
+#---------------------------
+ps -ef | grep -c asm
+su - oracle
+. ./ha.env     | or rac.enc
+# Stop cluster srvices 
+crsctl stop crs
+ps -ef | grep -c asm
 
 {
 # Remove the luns if any
@@ -102,6 +110,7 @@ TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
 LOGDIR=/home/claeyje/log/decom_linux_physical
 F=LUNs_<hostname>.txt
 \cp $TMP_FOLDER/$F ${LOGDIR} && chown claeyje:opunix ${LOGDIR}/$F
+wc -l ${LOGDIR}/$F
 cat <<EOT
 #SMT Template: STORAGE REQUEST - Retrieve unused storage
 #SMT Title: Recover storage for <hostname>
@@ -271,12 +280,12 @@ OR
 #----------------------------------------------------
 {
 TMP_FOLDER=/net/nfs-infra.isilon/unix/systemstore/temp/<hostname>
-CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_<hostname>.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
+#CNAME=`grep -i CNAME ${TMP_FOLDER}/etc_hosts_<hostname>.txt | grep -v opsvc0000 | awk '{print $NF}'` && echo "# CNAME=$CNAME"
 echo
 # view the IP @
 for H in <hostname> bkp-<hostname> <hostname>-sc; do printf "%-12s: " $H && dig ${H}.opoce.cec.eu.int +short | head -1 ;done
 echo
-HL="<hostname> <hostname>-sc $CNAME"
+HL="<hostname> <hostname>-sc"
 
 # Create the excel request file (template: OPS-RFC-DNS-delete.xltx)
 DATAFILE="/home/claeyje/snet/data.txt"

@@ -13,17 +13,28 @@ $		SHIFT 4
 ^		SHIFT 6
 §		SHIFT 7
 *		SHIFT 8
+(		SHIFT 9
+)		SHIFT 0
 [		^
 ]		$
 ^]		CTRL SHIFT 5
 /		SHIFT =/+
-|		
-\
+|		printf '\x7c'
+\		printf '\x5c'
 =		-/_
 +		SHIFT -/_
-
+`		printf '`\x60'
 QWERTY US	AZERTY FR
 --------------------------
 @		Alt Gr 0
 !		=
+
+As the | key is mapped on the "enter" key on azerty keyboards, we need to use the printf or echo 
+ex.
+# echo -e '\x7c'
+|
+# printf '\x7c\n'
+
+# printf '\174\n'
+|
 

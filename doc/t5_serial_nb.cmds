@@ -1,0 +1,38 @@
+How to get the serial number on T5 series
+------------------------------------------
+
+1. console
+connect to the console
+
+ show system serial_number
+->  show system serial_number
+
+ex.
+[claeyje@banta tpl]# console t52-01
+
+
+Oracle(R) Integrated Lights Out Manager
+
+Version 4.0.2.2.a r124557
+
+Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+
+Warning: HTTPS certificate is set to factory default.
+
+Hostname: t52-01-sc
+
+->  show system serial_number
+
+ /System
+    Properties:
+        serial_number = AK00306982
+
+
+-> exit
+
+
+2. prtdiag
+
+prtdiag -v | awk '/Chassis Serial/{getline; getline; print}'
+prtdiag -v | awk '/Chassis Serial/{print; getline; print; getline; print}'
+

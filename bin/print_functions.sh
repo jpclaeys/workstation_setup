@@ -173,4 +173,9 @@ function lineh () { separator 132 - ; }
 
 set_title() { printf '\e]2;%s\a' "$*"; }
 
+function set_title_current_dir ()
+{
+set_title `awk -F/ '{print $NF}' <<<$PWD` $@
+}
+
 #==========================================================================

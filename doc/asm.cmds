@@ -1,0 +1,10 @@
+su -  oracle
+. ./ha.env    (or rac.env)
+
+echo "srvctl stop asm -node `uname -n| cut -d'.' -f1` -stopoption immediate -force"
+
+
+If has -> 
+crsctl stop has
+
+

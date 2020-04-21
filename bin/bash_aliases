@@ -72,7 +72,8 @@ alias ltpl='cls;title "Templates";ls -c1 ~/tpl/*.tpl | sort | sed "s:.*/::g"'
 alias lhowto='cls;title "HowTo";ls -c1 $DOCDIR/*.howto | sort | sed "s:.*/::g"'
 alias lcmds='cls;title "cmds";ls -c1 $DOCDIR/*.cmds | sort | sed "s:.*/::g"'
 alias t='set_title' #  set terminator title
-alias th='set_title $([ `uname -s` == "Linux" ] && hostname -s || uname -n)' #  set terminator title
+alias tt='set_title $([ `uname -s` == "Linux" ] && hostname -s || uname -n)' #  set terminator title
+alias td=set_title_current_dir
 #[ "`uname -n`" == "iceman" ] && alias cmdb='linvm getcmdb.sh' || alias cmdb='getcmdb.sh'
 [ "`uname -n`" == "iceman" ] && alias cmdb='linvm /home/admin/bin/getcmdb.sh' || alias cmdb='/home/admin/bin/getcmdb.sh'
 alias viwiki='vi ~/wiki/wiki.txt'
