@@ -426,3 +426,33 @@ fping < $ALL_SAT_PHYS 2>/dev/null | awk '/alive/ {print $1}' >> $ALIVE_SAT_PHYS
 cat $ALIVE_SAT_PHYS && wc -l $ALIVE_SAT_PHYS
 }
 
+function check_connected_users ()
+{
+SATDIR=/home/claeyje/log/satellite
+VM=${SATDIR}/alive_vm_satellite
+PHYS=${SATDIR}/alive_phys_satellite
+msggreen "Connected users on physical servers"
+mypssh $PHYS  '([ `users | grep -c .` -gt 0 ] && echo -n "`uname -n | cut -d. -f1`: " && users | tr " " "\n" | sort -u | xargs;:)'| egrep -v '\[|xauth'
+msggreen "Connected users on vm's"
+mypssh $VM  '([ `users | grep -c .` -gt 0 ] && printf "%-16s : " `uname -n | cut -d. -f1` && users | tr " " "\n" | sort -u | xargs;:)'| egrep -v '\[|xauth'
+msggreen "Connected users on workstations"
+mypssH "`wksmer`"  '([ `users | grep -c .` -gt 0 ] && printf "%-16s : " `uname -n | cut -d. -f1` && users | tr " " "\n" | sort -u | xargs;:)'| egrep -v '\[|xauth'
+}
+
+function check_linux_explorers ()
+{
+msggreen "Linux hosts"
+s infra2-pk ls -c1 /applications/explo/data/oplinuxexplo/latest/| cut -d. -f2
+}
+
+function check_solaris_explorers ()
+{
+msggreen "Solaris hosts"
+s infra2-pk ls -c1 /applications/explo/data/explorer/latest/ | cut -d. -f3 | cut -d- -f1
+}
+
+function check_explorers ()
+{
+check_linux_explorers
+check_solaris_explorers
+}

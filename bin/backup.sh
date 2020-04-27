@@ -2,8 +2,8 @@
 cd $HOME
 BACKUPTYPE=daily
 
-SHORTFILESLIST='.bash_aliases .bash_profile .bashrc jpscreen.ksh .jpscreenrc_* .screenrc .gitrc .gitconfig .vimrc .ssh /home/claeyje/git/workstation_setup/bin fedora_setup wiki /home/claeyje/git/workstation_setup/doc /home/claeyje/git/workstation_setup/tpl .config/google-chrome/Default/Bookmarks bak/bookmarks* Desktop/*.desktop Pictures/*.*g /home/claeyje/git/workstation/config /home/claeyje/setup'
-FULLFILESLIST="$SHORTFILESLIST doc_Oracle doc_IBM doc_RedHat Packages Documents log"
+SHORTFILESLIST='.bash_aliases .bash_profile .bashrc jpscreen.ksh .jpscreenrc_* .screenrc .gitrc .gitconfig .vimrc .ssh /home/claeyje/git/workstation_setup/bin wiki /home/claeyje/git/workstation_setup/doc /home/claeyje/git/workstation_setup/tpl .config/google-chrome/Default/Bookmarks bak/bookmarks* Desktop/*.desktop Pictures/*.*g /home/claeyje/setup /home/claeyje/log'
+FULLFILESLIST="$SHORTFILESLIST Packages Documents log"
 
 ME=`basename $0 .sh`
 if [ "$ME" == "backup_full" ]; then
