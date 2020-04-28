@@ -442,13 +442,13 @@ mypssH "`wksmer`"  '([ `users | grep -c .` -gt 0 ] && printf "%-16s : " `uname -
 function check_linux_explorers ()
 {
 msggreen "Linux hosts"
-s infra2-pk ls -c1 /applications/explo/data/oplinuxexplo/latest/| cut -d. -f2
+LH=`s infra2-pk ls -c1 /applications/explo/data/oplinuxexplo/latest/ | cut -d. -f2` && echo $LH | tr ' ' '\n' && wc -w <<< $LH
 }
 
 function check_solaris_explorers ()
 {
 msggreen "Solaris hosts"
-s infra2-pk ls -c1 /applications/explo/data/explorer/latest/ | cut -d. -f3 | cut -d- -f1
+SH=`s infra2-pk ls -c1 /applications/explo/data/explorer/latest/ | cut -d. -f3 | cut -d- -f1` && echo $SH | tr ' ' '\n' && wc -w <<< $SH
 }
 
 function check_explorers ()
