@@ -7,3 +7,5 @@ alias gitw='cd ~/git/workstation_setup'
 ap --check --tags=pkgs workstation_setup.yml -K
 
 ap  --tags=pkgs workstation_setup.yml -K
+# Change the symlinks
+ap  workstation_setup.yml --tags=bash -K
