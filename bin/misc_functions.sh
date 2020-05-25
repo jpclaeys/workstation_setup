@@ -23,3 +23,13 @@ function opdtlist ()
 {
 aws1 w | sed '1,2d' | awk '{print $1,$3}' | cut -d"." -f1| sort -u
 }
+
+function strindex ()
+{
+# Position of a substring within a string
+# $1: main string 
+# $2: substring to find in the main string
+# Return: substring position if found, or -1 if not
+  x="${1%%$2*}"
+  [[ "$x" = "$1" ]] && echo -1 || echo "${#x}"
+}

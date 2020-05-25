@@ -456,3 +456,28 @@ function check_explorers ()
 check_linux_explorers
 check_solaris_explorers
 }
+
+function check_opoce_vlans ()
+{
+cd ~/tmp
+VLANS=`echo "
+10.10.10
+10.199.99
+158.167.226
+158.167.227
+158.167.96
+158.167.97
+158.167.99
+10.6.0
+10.235.8"`
+
+# Get all online hosts on opoce vlans
+TIMESTAMP=`date "+%Y%M%d"`
+ALLHOSTS=allhosts.${TIMESTAMP}
+for VL in $VLANS; do
+VLAN="$VL.0/24" && msgsep $VLAN
+nmap -sn $VLAN  | egrep -v 'latency|Starting|Done|addresses' | cut -d" " -f5-| grep -v [A-Z]
+done | tee $ALLHOSTS && wc -l $ALLHOSTS
+cd -
+}
+
